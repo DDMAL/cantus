@@ -21,36 +21,43 @@ var jsonData;
 var currentTarget;
 
 
-$(function(){
-	$('#imageInput').change(function(e){
+$(function()
+{
+	$('#imageInput').change(function(e)
+	{
 	    var reader = new FileReader();
-	    reader.onload = function(e) {
+	    reader.onload = function(e) 
+	    {
 	    	drawImage(this.result);
 	    };
 	    reader.readAsDataURL(this.files[0]);
 	});
-	$('#fileInput').change(function(e){
+	$('#fileInput').change(function(e)
+	{
 	    var reader = new FileReader();
-	    reader.onload = function(e) {
+	    reader.onload = function(e) 
+	    {
 	    	loadOverlay(this.result);
 	    };
 	    reader.readAsText(this.files[0]);
 	});
 });
 
-function drawImage(imageIn){
+function drawImage(imageIn)
+{
 	var image = new Image;
 	image.src = imageIn;
 	var canvas = document.getElementById("mainCanvas");
     canvas.height=image.height;
     canvas.width=image.width;
     var ctx = canvas.getContext("2d");
-    ctx.drawImage(image, 0, 0)
+    ctx.drawImage(image, 0, 0);
     $("#xmlShow").css('display', 'inline');
 
 }
 
-function loadOverlay(fileData){
+function loadOverlay(fileData)
+{
 	var canvas = document.getElementById("mainCanvas");
 	var ctx = canvas.getContext("2d");
 	jsonData = x2js.xml_str2json(fileData);
@@ -58,12 +65,15 @@ function loadOverlay(fileData){
 	var curX, curY, endX, endY;
 	neumeArray = jsonData['mei']['music']['body']['neume'];
 	facsArray = jsonData['mei']['music']['facsimile']['surface']['zone'];
-	for(curNeumeIndex in neumeArray){
+	for(curNeumeIndex in neumeArray)
+	{
 		curNeume = neumeArray[curNeumeIndex];
 		facsID = curNeume._facs;
-		for(curZoneIndex in facsArray){
+		for(curZoneIndex in facsArray)
+		{
 			curZone = facsArray[curZoneIndex];
-			if (curZone["_xml:id"] == facsID){
+			if (curZone["_xml:id"] == facsID)
+			{
 				neumeObjects[facsID] = curNeume['_name']
 				curX = curZone._ulx;
 				curY = curZone._uly;
@@ -74,10 +84,12 @@ function loadOverlay(fileData){
 		}
 		createBox(facsID, curX, curY, (endX - curX), (endY - curY));
 	}
-	$(".overlayBox").on('mouseover', function(e){
+	$(".overlayBox").on('mouseover', function(e)
+	{
 		currentTarget = e.target.id;
 		$("#hoverdiv").html(neumeObjects[e.target.id]);
-		$("#hoverdiv").css({
+		$("#hoverdiv").css(
+		{
 			'top': e.pageY - 50,
 			'height': 40,
 			'left': e.pageX,
@@ -89,13 +101,16 @@ function loadOverlay(fileData){
 			'vertical-align': 'middle',
 		});
 
-		$(document).on('mousemove', function(e){
-			if(isOutside(e)){
+		$(document).on('mousemove', function(e)
+		{
+			if(isOutside(e))
+			{
 				currentTarget = "";
 				$(document).unbind('mousemove');
 				$("#hoverdiv").css('display', 'none');
 			}	
-			$("#hoverdiv").css({
+			$("#hoverdiv").css(
+			{
 				'top': e.pageY - 50,
 				'left': e.pageX,
 			});
@@ -104,24 +119,31 @@ function loadOverlay(fileData){
 	});
 }
 
-function isOutside(e){
-	if(!currentTarget){
+function isOutside(e)
+{
+	if(!currentTarget)
+	{
 		return false;
 	}
 	target = $("#"+currentTarget);
-	if(e.pageX < target.offset().left){
+	if(e.pageX < target.offset().left)
+	{
 		return true;
-	} else if (e.pageX > (target.offset().left + target.width())) {
+	} else if (e.pageX > (target.offset().left + target.width())) 
+	{
 		return true;
-	} else if (e.pageY < target.offset().top) {
+	} else if (e.pageY < target.offset().top) 
+	{
 		return true;
-	} else if (e.pageY > (target.offset().top + target.height())) {
+	} else if (e.pageY > (target.offset().top + target.height())) 
+	{
 		return true;
 	}
 	return false;
 }
 
-function createBox(facsID, thisX, thisY, thisWidth, thisHeight){
+function createBox(facsID, thisX, thisY, thisWidth, thisHeight)
+{
 	editedY = parseInt(thisY) + $("#mainCanvas").offset().top;
 	var newString = "<div id='"+facsID+"' class='overlayBox' style='top:"+editedY+";left:"+thisX+";height:"+thisHeight+";width:"+thisWidth+";'></div>";
 	$("#boxes").html($("#boxes").html() + newString);
