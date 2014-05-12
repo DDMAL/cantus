@@ -1,0 +1,48 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Cantus Ultimus</title>
+
+  <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap.css">
+  <link rel="stylesheet" href="{{ STATIC_URL }}css/bootstrap-theme.css">
+  <link rel="stylesheet" href="{{ STATIC_URL }}css/styles.css">
+
+  <!-- DIVA css files -->
+  <link rel="stylesheet" href="{{ STATIC_URL }}css/diva.css">
+  <link rel="stylesheet" href="{{ STATIC_URL }}css/diva.min.css">
+
+  <script src="{{ STATIC_URL }}js/jquery.js"></script>
+  <script src="{{ STATIC_URL }}js/bootstrap.js"></script>
+
+  <!-- DIVA js files -->
+  <script src="{{ STATIC_URL }}js/diva.js"></script>
+  <script src="{{ STATIC_URL }}js/utils.js"></script>
+  <script src="{{ STATIC_URL }}js/plugins/canvas.js"></script>
+  <script src="{{ STATIC_URL }}js/plugins/download.js"></script>
+
+  <!--[if lt IE 9]>
+  <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <script src="{{ STATIC_URL }}js/scripts.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="page-header">
+            <div class="row">
+                <div class="col-md-2"></div>
+                <div class="col-md-10">
+                    <h1>Cantus Ultimus</h1>
+                    <p class="lead">manuscripts</p>
+                </div>
+            </div>
+        </div>
+        {% block body %}
+
+        {% endblock %}
+    </div>
+</body>
+</html>
