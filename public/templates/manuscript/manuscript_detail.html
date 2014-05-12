@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block body %}
+<!--     <h6>{{ content }}</h6> -->
+    <h2>{{ content.name }}</h2>
+    {% for chant in content.chants %}
+        <li><a href="{{ chant.url }}">{{ chant.incipit }}</a></li>
+    {% endfor %}
+{% endblock %}
