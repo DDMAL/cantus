@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block body %}
+<!--     <h6>{{ content }}</h6> -->
+    <ul>
+    {% for manuscript in content %}
+        <li><a href="{{ manuscript.url }}">{{ manuscript.name }}</a></li>
+    {% endfor %}
+    </ul>
+{% endblock %}
