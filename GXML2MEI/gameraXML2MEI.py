@@ -58,8 +58,8 @@ page = MeiElement('page') #gets added to layout
 body = MeiElement('body')
 
 root.addChild(music)
-root.addChild(body)
 music.addChild(facsimile)
+music.addChild(body)
 facsimile.addChild(surface)
 
 for element in zones:
