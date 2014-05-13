@@ -1,0 +1,35 @@
+User password: 1
+
+Used django 1.7b3
+
+Makemigration is like commit, migrate is like push
+
+right now
+localhost:8000/manuscripts/ is the main page, should remove the index page at some point so 
+localhost:8000/ points to this page.
+
+python manage.py flush to clear all tables and data in database
+got an error, removed migrations folder and makemigrations again
+
+manuscript serialized as :
+
+[
+{'pages': 
+    [{'manuscript': 'http://localhost:8000/manuscript/3/', u'url': 'http://localhost:8000/page/5/', 'image': u'p1', 'folio': u'f001'}, 
+    {'manuscript': 'http://localhost:8000/manuscript/3/', u'url': 'http://localhost:8000/page/6/', 'image': u'p2', 'folio': u'f002'}], 
+u'url': 'http://localhost:8000/manuscript/3/', 'name': u'manu1', 'siglum': u'siglum-manu1', 'date': u'100', 'provenance': u'a'},
+{'pages': 
+    [{'manuscript': 'http://localhost:8000/manuscript/4/', u'url': 'http://localhost:8000/page/7/', 'image': u'q1', 'folio': u'f101'}, 
+    {'manuscript': 'http://localhost:8000/manuscript/4/', u'url': 'http://localhost:8000/page/8/', 'image': u'q2', 'folio': u'f202'}], 
+u'url': 'http://localhost:8000/manuscript/4/', 'name': u'manu2', 'siglum': u'siglum-manu2', 'date': u'200', 'provenance': u'b'}]
+
+
+
+removed Page, so manuscript details shows a list of chants, and we can get the folio number from diva image and search through solr
+to get a list of chants for a particulat page.
+
+removed Feast and Concordance from the models too because all these fields will only get expanded when they are stored in solr.
+
+GITHUB:
+
+somehow unable to push a readable cantusdata directory to st_gallen-dev
