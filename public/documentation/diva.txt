@@ -1,0 +1,62 @@
+Install IIPImage on the machine (not in a specific virtualenv)
+
+Brew install nginx
+Brew install supervisor
+
+http://supervisord.org/configuration.html#fcgi-program-x-section-settings
+
+To start or stop nginx
+Brew services start(restart/stop) nginx
+
+Error log : /usr/local/var/log/nginx
+check log : tail -fn0 error.log
+Modified the config files:
+
+/usr/local/etc/nginx/nginx.conf
+/usr/local/etc/nginx/sites-enabled/localhost.conf
+/usr/local/etc/supervisor/conf.d/iipserver.conf
+
+iipserver running
+http://localhost:8080/fcgi-bin/iipsrv.fcgi
+/usr/local/share/iipimage/iipsrv.fcgi
+
+
+
+convert the images for DIVA:
+
+for st-gallen, use images in
+Gershwin: St_Gallen/images(raw)/highres PNG
+
+Process.py convert images to tiff then to jpeg2000 using kdu_compress script
+
+brew libtool
+brew uninstall libpng, png, libtiff, imagemagick
+brew install libpng jpeg libtiff
+brew install (–force) imagemagic
+in /Users/weigao/Documents/development/diva.js/build/processing
+/process.py, changed 
+PATH_TO_KDU_COMPRESS = "/usr/bin/kdu_compress"
+
+using the process.py to convert  high resolution png to tiff
+python process.py -t jpeg /Users/weigao/Documents/development/divatest/testing testout testout-json
+
+kdu_compress can’t read tiff, needs another version
+
+assume we have tiff images, they work with Iipimage.
+http://localhost:8080/fcgi-bin/iipsrv.fcgi?FIF=/Users/weigao/Documents/csg-0390_000a.tif&CVT=JPG
+
+Django running on localhost:8000
+Nginx + iipserver on localhost:8080
+
+
+Diva in Django:
+copied js, css, img folders from diva.js/build to cantus/static
+
+Proxy with nginx to serve both iipserver and django
+Localhost:8080/iipserver connects to iipserver
+Localhost:8080/ serves diva demo index page
+Localhost:8080/diva/ should do the same but doesn’t work
+
+
+TO DO: 
+image processing? Get complete data?

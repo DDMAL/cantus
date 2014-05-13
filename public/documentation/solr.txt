@@ -1,0 +1,51 @@
+TO DO:
+
+expand all abbrebiations in solr using functions that 
+get triggered by signal(save())
+
+couldn't load solr page at localhost:8080/cantusdata-solr, 
+changed dataDir in solrconfig.xml to /var/db/solr/cantusdata-solr/, not sure if
+that solved the problem, but it worked. (also stopped nginx and iipserver)
+
+schema fields (copied form the models, may need to change):
+
+name
+siglum
+date
+provenance
+
+    marg = models.CharField(max_length=255, blank=True, null=True)
+    folio = models.CharField(max_length=50, blank=True, null=True)
+    # sequence can't be blank or null.
+    sequence = models.PositiveSmallIntegerField()
+    cantusID = models.CharField(max_length=50, blank=True, null=True)
+    feast = models.CharField(max_length=255, blank=True, null=True)
+    office = models.CharField(max_length=255, blank=True, null=True)
+    genre = models.CharField(max_length=255, blank=True, null=True)
+    litPosition = models.CharField(max_length=255, blank=True, null=True)
+    mode = models.CharField(max_length=255, blank=True, null=True)
+    differentia = models.CharField(max_length=255, blank=True, null=True)
+    finalis = models.CharField(max_length=255, blank=True, null=True)
+    # masterChant ??
+    # reference ??
+    incipit = models.TextField(blank=True, null=True)
+    fullText = models.TextField(blank=True, null=True)
+    #concordances = models.ManyToManyField("cantusdata.Concordance",related_name="concordances", default="empty-concordance")
+    concordances = models.CharField(max_length=255, blank=True, null=True)
+    # not sure about its type
+    volpiano = models.CharField(max_length=255, blank=True, null=True)
+    manuscript = models.ForeignKey("cantusdata.Manuscript", related_name="chants")
+
+
+Get this error often when loading
+localhost:8080/cantusdata-solr/
+
+{msg=SolrCore 'collection1' is not available due to init failure: Could not load config file /Users/weigao/Documents/development/django-cantus/solr/collection1/solrconfig.xml,trace=org.apache.solr.common.SolrException: SolrCore 'collection1' is not available due to init failure: Could not load config file /Users/weigao/Documents/development/django-cantus/solr/collection1/solrconfig.xml 
+
+but it would just work without changing anything. 
+
+
+
+
+
+

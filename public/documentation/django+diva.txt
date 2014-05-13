@@ -1,0 +1,11 @@
+needs to startup fastcgi in the django project
+
+use fastCGI
+
+pip install flup
+
+python manage.py runfcgi help
+
+  Run a fastcgi server on a UNIX domain socket (posix platforms only)
+    $ manage.py runfcgi method=prefork socket=/tmp/fcgi.sock
+
