@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<div class="row">
+    <div class="col-md-8">
+        <form role="form" id="search-form" action="/search" method="get">
+            <div class="form-group">
+                <input class="form-control" type="text" name="q" id="search-input" />
+            </div>
+            <button type="submit" class="btn">Search</button>
+        </form>
+
+        {% if content.results %}
+            <h3>Results</h3>
+            {% include "search/search_results.html" %}
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

@@ -9,29 +9,30 @@ that solved the problem, but it worked. (also stopped nginx and iipserver)
 
 schema fields (copied form the models, may need to change):
 
-name
-siglum
-date
-provenance
+    name = models.CharField(max_length=255, blank=True, null=True)
+    siglum = models.CharField(max_length=255, blank=True, null=True)
+    #reduced max_length, should be safe
+    date = models.CharField(max_length=50, blank=True, null=True)
+    provenance = models.CharField(max_length=100, blank=True, null=True)
 
-    marg = models.CharField(max_length=255, blank=True, null=True)
-    folio = models.CharField(max_length=50, blank=True, null=True)
+    marg = models.CharField(max_length=255, blank=True, null=True)  max_length=5
+    folio = models.CharField(max_length=50, blank=True, null=True)  max_length = 10
     # sequence can't be blank or null.
     sequence = models.PositiveSmallIntegerField()
     cantusID = models.CharField(max_length=50, blank=True, null=True)
     feast = models.CharField(max_length=255, blank=True, null=True)
-    office = models.CharField(max_length=255, blank=True, null=True)
-    genre = models.CharField(max_length=255, blank=True, null=True)
-    litPosition = models.CharField(max_length=255, blank=True, null=True)
-    mode = models.CharField(max_length=255, blank=True, null=True)
-    differentia = models.CharField(max_length=255, blank=True, null=True)
-    finalis = models.CharField(max_length=255, blank=True, null=True)
+    office = models.CharField(max_length=255, blank=True, null=True) max_length=10
+    genre = models.CharField(max_length=255, blank=True, null=True)  max_length=10
+    litPosition = models.CharField(max_length=255, blank=True, null=True)  max_length=10
+    mode = models.CharField(max_length=255, blank=True, null=True) max_length=10
+    differentia = models.CharField(max_length=255, blank=True, null=True) max_length=10
+    finalis = models.CharField(max_length=255, blank=True, null=True) max_length=10
     # masterChant ??
     # reference ??
     incipit = models.TextField(blank=True, null=True)
     fullText = models.TextField(blank=True, null=True)
     #concordances = models.ManyToManyField("cantusdata.Concordance",related_name="concordances", default="empty-concordance")
-    concordances = models.CharField(max_length=255, blank=True, null=True)
+    concordances = models.CharField(max_length=255, blank=True, null=True) 
     # not sure about its type
     volpiano = models.CharField(max_length=255, blank=True, null=True)
     manuscript = models.ForeignKey("cantusdata.Manuscript", related_name="chants")
@@ -43,8 +44,19 @@ localhost:8080/cantusdata-solr/
 {msg=SolrCore 'collection1' is not available due to init failure: Could not load config file /Users/weigao/Documents/development/django-cantus/solr/collection1/solrconfig.xml,trace=org.apache.solr.common.SolrException: SolrCore 'collection1' is not available due to init failure: Could not load config file /Users/weigao/Documents/development/django-cantus/solr/collection1/solrconfig.xml 
 
 but it would just work without changing anything. 
+I changed dataDir in solrconfig.xml to /var/db/solr/cantusdata-solr or /var/db/solr/cantusdata-solr/ back and forth and the solr page loads..
 
 
+added the solr_index implementation in the models, 
+get SolrException at admin/cantusdata/manuscript/1 when trying to resave an existing manuscript to add
+it in solr. (400 bad request)
+
+to debug:
+/usr/local/Cellar/tomcat/7.0.53/libexec/logs
+tail -f catalina.out
+
+TO DO:
+Latin language ?
 
 
 
