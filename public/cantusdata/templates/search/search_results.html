@@ -1,0 +1,20 @@
+{% if content.results.numFound > 0 %}
+    <div class="list-group">
+    {% for result in content.results.results %}
+        {% if result.type == "cantusdata_manuscript" %}
+            <a href="/manuscript/{{ result.item_id }}" class="list-group-item">
+                <span class="label label-primary pull-right">Manuscript</span>
+                <h4>{{ result.Siglum }}</h4>
+            </a>
+        {% elif result.type == "cantusdata_chant" %}
+            <a href="/chant/{{ result.item_id }}" class="list-group-item">
+                <span class="label label-success pull-right">Chant</span>
+                <h4>{{ result.CantusID }}</h4>
+                <h4>{{ result.Incipit }}</h4>
+            </a>
+        {% endif %}
+    {% endfor %}
+    </div>
+{% else %}
+    <h5>No Results found.</h5>
+{% endif %}
