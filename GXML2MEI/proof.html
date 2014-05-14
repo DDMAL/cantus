@@ -11,8 +11,7 @@
 	background: rgba(255, 255, 255, 0.2);
 }
 </style>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jq
-uery.min.js" ></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js" ></script>
 <script src="https://x2js.googlecode.com/hg/xml2json.js"></script>
 <script>
 var x2js = new X2JS();
@@ -41,6 +40,7 @@ $(function()
 	    };
 	    reader.readAsText(this.files[0]);
 	});
+
 });
 
 function drawImage(imageIn)
@@ -84,7 +84,7 @@ function loadOverlay(fileData)
 		}
 		createBox(facsID, curX, curY, (endX - curX), (endY - curY));
 	}
-	$(".overlayBox").on('mouseover', function(e)
+	$(".overlayBox").hover(function(e)
 	{
 		currentTarget = e.target.id;
 		$("#hoverdiv").html(neumeObjects[e.target.id]);
@@ -103,43 +103,18 @@ function loadOverlay(fileData)
 
 		$(document).on('mousemove', function(e)
 		{
-			if(isOutside(e))
-			{
-				currentTarget = "";
-				$(document).unbind('mousemove');
-				$("#hoverdiv").css('display', 'none');
-			}	
 			$("#hoverdiv").css(
 			{
 				'top': e.pageY - 50,
 				'left': e.pageX,
 			});
 		});
-
+	}, function(e){
+		currentTarget = "";
+		$(document).unbind('mousemove');
+		$("#hoverdiv").css('display', 'none');
+		$("#hoverdiv").html("");
 	});
-}
-
-function isOutside(e)
-{
-	if(!currentTarget)
-	{
-		return false;
-	}
-	target = $("#"+currentTarget);
-	if(e.pageX < target.offset().left)
-	{
-		return true;
-	} else if (e.pageX > (target.offset().left + target.width())) 
-	{
-		return true;
-	} else if (e.pageY < target.offset().top) 
-	{
-		return true;
-	} else if (e.pageY > (target.offset().top + target.height())) 
-	{
-		return true;
-	}
-	return false;
 }
 
 function createBox(facsID, thisX, thisY, thisWidth, thisHeight)
