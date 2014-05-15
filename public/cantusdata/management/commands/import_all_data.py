@@ -11,7 +11,8 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         csv_file_name = args[0]
         # Nuke the db chants
-        self.nuke_db_chants()
+        # TODO: Figure out what the problem with this deleting is!
+        Chant.objects.all().delete()
         # Load in the csv file.  This is a massive list of dictionaries.
         csv_file = CSVParser("data_dumps/" + str(csv_file_name))
         # Temporary manuscript for testing
@@ -20,30 +21,21 @@ class Command(BaseCommand):
         # Create a chant and save it
         for row in csv_file.parsed_data:
             chant = Chant()
-            chant.marg = row["Marginalia"]
+            chant.marginalia = row["Marginalia"]
             chant.folio = row["Folio"]
             chant.sequence = row["Sequence"]
-            chant.cantusID = row["Cantus ID"]
+            chant.cantus_id = row["Cantus ID"]
             chant.feast = row["Feast"]
             chant.office = row["Office"]
             chant.genre = row["Genre"]
-            chant.litPosition = row["Position"]
+            chant.lit_position = row["Position"]
             chant.mode = row["Mode"]
             chant.differentia = row["Differentia"]
             chant.finalis = row["Finalis"]
             chant.incipit = row["Incipit"]
-            chant.fullText = row["Fulltext"]
+            chant.full_text = row["Fulltext"]
             chant.concordances = row["Concordances"]
             chant.volpiano = row["Volpiano"]
             chant.manuscript = manuscript
             chant.save()
         self.stdout.write("Successfully imported chants into database.")
-
-    def nuke_db_chants(self):
-        """
-        Delete all chants in the db.  This should only
-        be used locally for debugging.
-        """
-        chants = Chant.objects.all()
-        for c in chants:
-            c.delete()
