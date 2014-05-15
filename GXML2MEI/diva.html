@@ -39,17 +39,13 @@
     <script src="https://x2js.googlecode.com/hg/xml2json.js"></script>
     <script src="/diva.js/build/js/plugins/highlight.js"></script>
     <script src="mei2DivaHighlight.js"></script>
+    <script src="meiEditor.js"></script>
     <script src="/ace/src/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="http://eligrey.com/demos/FileSaver.js/FileSaver.js"></script>
     <script>
     var dv;
     var editor;
-    var meiArray = [];
-    var activeDoc;
-    var currentPage;
-    var currentDocPosition = {'row': 1, 'col': 1};
-    var pageData = {};
-    var pageLocToData = {};
+    var meiEditor;
 
     $(function() 
     { //onready
@@ -59,11 +55,8 @@
             reader.file = this.files[0];
             reader.onload = function(e) 
             { //when the file is loaded as text
-                tempIndex = meiArray.push(this.result) - 1;
-                pageData[this.file.name] = new ace.EditSession(this.result, "ace/mode/xml"); //add the file's data into a "pageData" array that will eventually feed into the ACE editor
-                pageData[this.file.name].multiSelect = false;
-                pageLocToData[this.file.name] = tempIndex; //because I have to keep the meiArray sequential, populate it into an array that transfers page titles into meiArray sequence
-                $("#file-list").html($("#file-list").html()+this.file.name+"<button onclick='loadPage(\""+this.file.name+"\")'>Load page</button><button onclick='savePage(\""+this.file.name+"\")'>Save page</button><br>"); //add the file to the GUI
+                meiEditor.addPage(this.result, this.file.name);
+                $("#file-list").html($("#file-list").html()+this.file.name+"<button onclick='loadPage(\""+this.file.name+"\")'>Load page</button><button onclick='savePage(\""+this.file.name+"\")'>Save page</button><br>"); //add the file to the GUI    
             };
             reader.readAsText(this.files[0]);
         });
@@ -81,46 +74,24 @@
         editor = ace.edit("editor"); //create the ACE editor
         editor.setTheme("ace/theme/ambiance");
         editor.getSession().setMode("ace/mode/xml");
-        activeDoc = editor.getSession().doc; //get a reference to the active Document
-
+        meiEditor = new AceMeiEditor();
     });
 
-    function pushMeiToPlugin()
-    {
-        createHighlights(meiArray); //calls "createHighlights" from the plugin
+    function loadPage(pageName){
+        meiEditor.changeActivePage(pageName);
     }
 
-    function loadPage(pageName)
-    { //"doc" is used instead of "document" as "doc" is native to ACE.
-        currentPage = pageName;
-        editor.setSession(pageData[pageName]); //inserts text
-        activeDoc = editor.getSession().doc;
+    function savePage(pageName){
+        meiEditor.savePageToClient(pageName);
     }
 
-    function savePage(pageName)
-    {
-        var formattedData = [];
-        var lastRow = pageData[pageName].doc.getLength() - 1; //no row 0, rest are 0-index though?
-        pageData[pageName].doc.getLines(0, lastRow).forEach(function(indexContents, index, entireArr)
-            {
-                formattedData[index] = indexContents+"\n";
-            });
-        formattedData[formattedData.length - 1].trim()
-        var pageBlob = new Blob(formattedData, {type: "text/plain;charset=utf-8"});
-        saveAs(pageBlob, pageName);
-    }
-
-    function reloadFromACE()
-    {
-        meiArray[pageLocToData[currentPage]] = activeDoc.getAllLines().join("\n"); //
-        createHighlights(meiArray);
-    }
+    
 
     </script>
     <div id="file-upload">
         <div id="mei-upload">MEI: <input type="file" id="fileInput"></div>
         <div id="file-list">Files loaded:<br></div>
-        <button onclick="createHighlights(meiArray)">Update display</button>
+        <button onclick="createHighlights(meiEditor.getMeiArray())">Update display</button>
         <button onclick="reloadFromACE()">Reload files from ACE</button>
     </div>
     <div id="editor"></div>
