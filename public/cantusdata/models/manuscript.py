@@ -1,6 +1,8 @@
 from django.db import models
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
+from cantusdata.helpers.unique_code import alpha_numeric
+import re
 
 
 class Manuscript(models.Model):
@@ -13,13 +15,19 @@ class Manuscript(models.Model):
         app_label = "cantusdata"
 
     name = models.CharField(max_length=255, blank=True, null=True)
-    siglum = models.CharField(max_length=255, blank=True, null=True)
+    siglum = models.CharField(max_length=255, unique=True, blank=True, null=True)
     #reduced max_length, should be safe
     date = models.CharField(max_length=50, blank=True, null=True)
     provenance = models.CharField(max_length=100, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
 
     def __unicode__(self):
         return u"{0}".format(self.siglum)
+
+    @property
+    def unique_siglum_code(self):
+        return alpha_numeric(self.siglum)
+
 
 # maybe a function to get tht total number of chants in a manuscript
 
@@ -46,7 +54,8 @@ def solr_index(sender, instance, created, **kwargs):
         'Name': manuscript.name,
         'Siglum': manuscript.siglum,
         'Date': manuscript.date,
-        'Provenance': manuscript.provenance
+        'Provenance': manuscript.provenance,
+        'Description': manuscript.description
     }
     solrconn.add(**d)
     solrconn.commit()
@@ -57,6 +66,7 @@ def solr_delete(sender, instance, **kwargs):
     import solr
     solrconn = solr.SolrConnection(settings.SOLR_SERVER)
     record = solrconn.query("type:cantusdata_manuscript item_id:{0}".format(instance.id), q_op="AND")
-    solrconn.delete(record.results[0]['id'])
-    solrconn.commit()
+    if record:
+        solrconn.delete(record.results[0]['id'])
+        solrconn.commit()
 
