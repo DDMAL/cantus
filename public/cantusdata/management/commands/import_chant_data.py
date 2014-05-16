@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.chant import Chant
-from cantusdata.helpers.csv_tools import CSVParser
 
 import csv
 
@@ -12,7 +11,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         """
-        Run "python manage.py import_all_data filename.csv" to import a chant
+        Run "python manage.py import_chant_data filename.csv" to import a chant
         file into the db.  filename.csv must exist in /public/data_dumps/.
         """
         csv_file_name = args[0]
