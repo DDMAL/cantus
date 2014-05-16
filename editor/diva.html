@@ -110,21 +110,43 @@
         meiEditor = new AceMeiEditor(editor);
     });
 
-    function loadPage(pageName){
+    function loadPage(pageName)
+    {
         meiEditor.changeActivePage(pageName);
     }
 
-    function savePage(pageName){
+    function savePage(pageName)
+    {
         meiEditor.savePageToClient(pageName);
     }
 
-    
+    function changeFileListVisibility(willBeVisible)
+    {
+        if(willBeVisible)
+        {
+            $("#file-upload-contents-wrapper").css('display', 'block');
+            $("#file-upload-minimized-wrapper").css('display', 'none');
+        } else 
+        {
+            previousWidth = $("#file-upload").width();
+            $("#file-upload-minimized-wrapper").css('display', 'block');
+            $("#file-upload-contents-wrapper").css('display', 'none');
+            $("#file-upload").width(previousWidth);
+        }
+    }
 
     </script>
     <div id="file-upload">
-        <input type="file" value="Add a new file" id="fileInput">
-        <div id="file-list">Files loaded:<br></div>
-        <button onclick="meiEditor.createHighlights()">Update display</button>
+        <div id="file-upload-contents-wrapper">
+            <input type="file" value="Add a new file" id="fileInput">
+            <div id="file-list">Files loaded:<br></div>
+            <button onclick="meiEditor.createHighlights()">Update DIVA</button>
+            <button onclick="changeFileListVisibility(false)" style="float:right;">Minimize</button>
+        </div>
+        <div id="file-upload-minimized-wrapper" style="display:none;">
+            <span id="file-list">Files loaded:</span>
+            <button onclick="changeFileListVisibility(true)" style="float:right;">Maximize</button>
+        </div>
     </div>
     <div id="editor"></div>
     <div id="diva-wrapper"></div>
