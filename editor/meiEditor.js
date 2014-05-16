@@ -3,7 +3,7 @@
 	var AceMeiEditor = function(element, aceEditor){
 		var element = $(element);
 		var self = this;
-	    var activeDoc = aceEditor.getSession().doc;
+	    var activeDoc;
 	    var currentPage;
 	    var currentDocPosition = {'row': 1, 'col': 1};
 	    var pageData = {};
@@ -68,10 +68,23 @@
 			});
 	    }
 
+	    var reorderFiles = function(newOrder)
+	    {
+	    	orderedPageData = [];
+	    	var curPage = 0;
+	    	while(curPage < newOrder.length){
+	    		orderedPageData.push(newOrder[curPage]);
+	    		curPage++;
+	    	}
+	    }
+
 	    this.createHighlights = function()
 		{			
+			console.log(pageData);
+			console.log(orderedPageData);
 			var x2js = new X2JS(); //from xml2json.js
 			var pageIndex = orderedPageData.length;
+			dv.resetHighlights();
 			while(pageIndex--)
 			{ //for each page
 				curPage = orderedPageData[pageIndex];
@@ -82,7 +95,6 @@
 				var neume_ulx, neume_uly, neume_width, neume_height;
 				neumeArray = jsonData['mei']['music']['body']['neume'];
 				facsArray = jsonData['mei']['music']['facsimile']['surface']['zone'];
-
 				for (curZoneIndex in facsArray)
 				{ //for each "zone" object
 					curZone = facsArray[curZoneIndex];
@@ -114,15 +126,6 @@
 	        activeDoc = editor.getSession().doc;
 	    }
 
-	    this.reorderFiles = function(newOrder)
-	    {
-	    	var curPage = 0;
-	    	while(curPage < newOrder.length){
-	    		orderedPageData.push(newOrder[curPage]);
-	    		curPage++;
-	    	}
-	    }
-
 	    this.savePageToClient = function(pageName)
 	    {
 	    	formatToSave = function(lineIn, indexIn)
@@ -148,6 +151,10 @@
 	        orderedPageData.push(fileNameIn); //keep track of the page orders to push the right highlights to the right pages
 	    }
 
+	    var manualReset = function(){
+	    	dv.resetHighlights();
+	    }
+
 	    var _init = function()
 	    {
 
@@ -165,6 +172,7 @@
         		+'<div id="file-upload-minimized-wrapper" style="display:none;">'
             	+'<span id="file-list">Files loaded:</span>'
             	+'<button id="maximize" style="float:right;">Maximize</button>'
+            	+'<button id="buttonReset">reset em</button>'
         		+'</div>'
     			+'</div>');
 	    	$('#diva-wrapper').diva(
@@ -183,7 +191,7 @@
 	        editor.getSession().setMode("ace/mode/xml");
 
 	    	$("#updateDiva").on('click', self.createHighlights);
-
+	    	$("#buttonReset").on('click', manualReset);
 	    	$("#minimize").on('click', function(){
 	    		previousWidth = $("#file-upload").width();
 	            $("#file-upload-minimized-wrapper").css('display', 'block');
@@ -229,7 +237,7 @@
 	            {
 	                newOrder.push(fileList[curFileIndex].id);
 	            }
-	            meiEditor.reorderFiles(newOrder);
+	            reorderFiles(newOrder);
 	        });
 	    }    
 
