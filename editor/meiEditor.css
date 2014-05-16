@@ -14,13 +14,16 @@ body{
 #diva-wrapper{
     float:right;
     width:50%;
-    height:100%;
+    height:98%;
 }
 #editor{
     float:left;
     width:50%;
-    height:100%;
+    height:98%;
     top:0%;
+}
+#mei-editor{
+    height:100%;
 }
 #file-upload{
     z-index:5;
@@ -38,6 +41,7 @@ body{
     clear:both;
 }
 .meiFile{
+    background: #DDDDDD;
     border-radius:10px;
     border:thin black solid;
     padding:5px;
