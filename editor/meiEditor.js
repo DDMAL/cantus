@@ -1,19 +1,13 @@
-var AceMeiEditor = function(){
-	var meiArray = [];
-    var activeDoc;
+var AceMeiEditor = function(aceEditor){
+    var activeDoc = aceEditor.getSession().doc;
     var currentPage;
     var currentDocPosition = {'row': 1, 'col': 1};
     var pageData = {};
-    var pageLocToData = {};
+    var orderedPageData = [];
     var neumeObjects = [];
     var currentTarget;
 
-	_init = function()
-	{
-        activeDoc = editor.getSession().doc; //get a reference to the active Document
-    }
-
-    createHighlights = function()
+    this.createHighlights = function()
 	{
 		function reapplyHoverListener()
 		{
@@ -56,10 +50,11 @@ var AceMeiEditor = function(){
 		}
 		
 		var x2js = new X2JS(); //from xml2json.js
-		var pageIndex = meiArray.length;
-		while (pageIndex--)
+		var pageIndex = orderedPageData.length;
+		while(pageIndex--)
 		{ //for each page
-			jsonData = x2js.xml_str2json(meiArray[pageIndex]); //convert to json
+			curPage = orderedPageData[pageIndex];
+			jsonData = x2js.xml_str2json(pageData[curPage].doc.getAllLines().join("\n"));
 			regions = [];
 
 			xmlns = jsonData['mei']['_xmlns'] //find the xml namespace file
@@ -98,6 +93,10 @@ var AceMeiEditor = function(){
         activeDoc = editor.getSession().doc;
     }
 
+    this.reorderFiles = function(newOrder){
+    	pageData
+    }
+
     this.savePageToClient = function(pageName)
     {
     	formatToSave = function(lineIn, indexIn)
@@ -119,20 +118,8 @@ var AceMeiEditor = function(){
 
     this.addPage = function(pageDataIn, fileNameIn)
     {
-    	var tempIndex = meiArray.push(pageDataIn) - 1;
         pageData[fileNameIn] = new ace.EditSession(pageDataIn, "ace/mode/xml"); //add the file's data into a "pageData" array that will eventually feed into the ACE editor
-        pageLocToData[fileNameIn] = tempIndex; //because I have to keep the meiArray sequential, populate it into an array that transfers page titles into meiArray sequence
+        orderedPageData.push(fileNameIn); //keep track of the page orders to push the right highlights to the right pages
     }
 
-	this.reloadFromACE = function()
-    {
-        meiArray[pageLocToData[currentPage]] = activeDoc.getAllLines().join("\n"); //
-        createHighlights(meiArray);
-    }
-
-    this.getMeiArray = function(){
-    	return meiArray;
-    }
-
-    _init();
 }
