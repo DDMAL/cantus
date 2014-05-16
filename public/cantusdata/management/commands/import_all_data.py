@@ -4,6 +4,8 @@ from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.chant import Chant
 from cantusdata.helpers.csv_tools import CSVParser
 
+import csv
+
 
 class Command(BaseCommand):
     args = ""
@@ -17,9 +19,9 @@ class Command(BaseCommand):
         # Nuke the db chants
         Chant.objects.all().delete()
         # Load in the csv file.  This is a massive list of dictionaries.
-        csv_file = CSVParser("data_dumps/" + str(csv_file_name))
+        csv_file = csv.DictReader(open("data_dumps/" + str(csv_file_name)))
         # Create a chant and save it
-        for row in csv_file.parsed_data:
+        for row in csv_file:
             # Get the corresponding manuscript
             manuscript_list = Manuscript.objects.filter(siglum=row["Siglum"])
             # Throw exception if no corresponding manuscript
