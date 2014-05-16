@@ -17,37 +17,6 @@
 
     $(function() 
     {
-        //various jQueryUI designators
-        $("#file-upload").draggable();
-        $("#file-list").sortable();
-        $("#file-list").disableSelection();
-        $("#file-list").on("sortstop", function(e, ui){
-            fileList = $(".meiFile");
-            newOrder = [];
-            numberOfFiles = $(".meiFile").length;
-            for(curFileIndex = 0; curFileIndex < numberOfFiles; curFileIndex++)
-            {
-                newOrder.push(fileList[curFileIndex].id);
-            }
-            meiEditor.reorderFiles(newOrder);
-        });
-
-        //when a new file is uploaded
-        $('#fileInput').change(function(e)
-        { 
-            var reader = new FileReader();
-            reader.file = this.files[0];
-
-            //when the file is loaded as text
-            reader.onload = function(e) 
-            { 
-                fileName = this.file.name
-                meiEditor.addPage(this.result, fileName);
-                //$("#file-list").html($("#file-list").html()+"<span class='meiFile'><span class='meiName'>"+this.file.name+"</span><span class='meiLoad' onclick='loadPage(\""+this.file.name+"\")'>Load</span><span class='meiSave' onclick='savePage(\""+this.file.name+"\")'>Save</span></span>"); //add the file to the GUI    
-                $("#file-list").html($("#file-list").html()+"<div class='meiFile' id='"+fileName+"'>"+fileName+"<button class='meiLoad' onclick='loadPage(\""+fileName+"\")'>Load</button><button class='meiSave' onclick='savePage(\""+fileName+"\")'>Save</button></div>"); //add the file to the GUI
-            };
-            reader.readAsText(this.files[0]);
-        });
         $('#diva-wrapper').diva(
         {//create the diva wrapper
             contained: true,
@@ -62,7 +31,7 @@
         editor = ace.edit("editor"); //create the ACE editor
         editor.setTheme("ace/theme/ambiance");
         editor.getSession().setMode("ace/mode/xml");
-        meiEditor = new AceMeiEditor(editor);
+        meiEditor = $("#mei-editor").AceMeiEditor(editor);
     });
 
     function loadPage(pageName)
@@ -75,36 +44,10 @@
         meiEditor.savePageToClient(pageName);
     }
 
-    function changeFileListVisibility(willBeVisible)
-    {
-        if(willBeVisible)
-        {
-            $("#file-upload-contents-wrapper").css('display', 'block');
-            $("#file-upload-minimized-wrapper").css('display', 'none');
-        } else 
-        {
-            previousWidth = $("#file-upload").width();
-            $("#file-upload-minimized-wrapper").css('display', 'block');
-            $("#file-upload-contents-wrapper").css('display', 'none');
-            $("#file-upload").width(previousWidth);
-        }
-    }
-
     </script>
-    <div id="file-upload">
-        <div id="file-upload-contents-wrapper">
-            <input type="file" value="Add a new file" id="fileInput">
-            <div id="file-list">Files loaded:<br></div>
-            <button onclick="meiEditor.createHighlights()">Update DIVA</button>
-            <button onclick="changeFileListVisibility(false)" style="float:right;">Minimize</button>
-        </div>
-        <div id="file-upload-minimized-wrapper" style="display:none;">
-            <span id="file-list">Files loaded:</span>
-            <button onclick="changeFileListVisibility(true)" style="float:right;">Maximize</button>
-        </div>
-    </div>
     <div id="editor"></div>
     <div id="diva-wrapper"></div>
     <div class="clear"></div>
+    <div id="mei-editor"></div>
     <span id="hover-div"></span>
 </html> 
