@@ -93,8 +93,13 @@ var AceMeiEditor = function(aceEditor){
         activeDoc = editor.getSession().doc;
     }
 
-    this.reorderFiles = function(newOrder){
-    	pageData
+    this.reorderFiles = function(newOrder)
+    {
+    	var curPage = 0;
+    	while(curPage < newOrder.length){
+    		orderedPageData.push(newOrder[curPage]);
+    		curPage++;
+    	}
     }
 
     this.savePageToClient = function(pageName)
