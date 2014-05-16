@@ -9,17 +9,23 @@ class Command(BaseCommand):
     args = ""
 
     def handle(self, *args, **kwargs):
+        """
+        Run "python manage.py import_all_data filename.csv" to import a chant
+        file into the db.  filename.csv must exist in /public/data_dumps/.
+        """
         csv_file_name = args[0]
         # Nuke the db chants
-        # TODO: Figure out what the problem with this deleting is!
         Chant.objects.all().delete()
         # Load in the csv file.  This is a massive list of dictionaries.
         csv_file = CSVParser("data_dumps/" + str(csv_file_name))
-        # Temporary manuscript for testing
-        # TODO: Implement proper chant -> manuscript mapping
-        manuscript = Manuscript.objects.filter(id=2)[0]
         # Create a chant and save it
         for row in csv_file.parsed_data:
+            # Get the corresponding manuscript
+            manuscript_list = Manuscript.objects.filter(siglum=row["Siglum"])
+            # Throw exception if no corresponding manuscript
+            if not manuscript_list:
+                raise NameError(u"Manuscript with Siglum={0} does not exist!".format(row["Siglum"]))
+
             chant = Chant()
             chant.marginalia = row["Marginalia"]
             chant.folio = row["Folio"]
@@ -36,6 +42,6 @@ class Command(BaseCommand):
             chant.full_text = row["Fulltext"]
             chant.concordances = row["Concordances"]
             chant.volpiano = row["Volpiano"]
-            chant.manuscript = manuscript
+            chant.manuscript = manuscript_list[0]
             chant.save()
         self.stdout.write("Successfully imported chants into database.")
