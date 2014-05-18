@@ -11,16 +11,19 @@ body{
     position:absolute;
     display:none;
 }
-#diva-wrapper{
+#diva-wrapper-wrapper{
     float:right;
-    width:50%;
-    height:98%;
+    background: #DDDDDD;
+    border-radius:10px;
+    border:thin black solid;
+    padding-right:1px;
 }
 #editor{
     float:left;
     width:50%;
-    height:98%;
     top:0%;
+    border-radius:10px;
+    border:thin black solid;
 }
 #mei-editor{
     height:100%;
@@ -29,7 +32,7 @@ body{
     z-index:5;
     border:thin black solid;
     position:fixed;
-    background: #DDDDDD;
+    background: #EEEEEE;
     padding:10px;
     border-radius:10px;
     height:auto;

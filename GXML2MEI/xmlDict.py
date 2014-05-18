@@ -1,4 +1,7 @@
+#code taken from http://code.activestate.com/recipes/573463-converting-xml-to-dictionary-and-back/
+
 from xml.etree import ElementTree
+
 
 # calling example
 def main():
