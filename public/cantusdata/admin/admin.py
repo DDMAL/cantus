@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.chant import Chant
+from cantusdata.models.concordance import Concordance
 
 def reindex_in_solr(modeladmin, request, queryset):
     for item in queryset:
@@ -16,5 +17,9 @@ class ManuscriptAdmin(admin.ModelAdmin):
 class ChantAdmin(admin.ModelAdmin):
     actions = [reindex_in_solr]
 
+# class ConcordanceAdmin(admin.ModelAdmin):
+#     actions = [reindex_in_solr]
+
 admin.site.register(Manuscript, ManuscriptAdmin)
 admin.site.register(Chant, ChantAdmin)
+admin.site.register(Concordance)
