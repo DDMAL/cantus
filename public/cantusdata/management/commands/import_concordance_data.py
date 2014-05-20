@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from cantusdata.models import Concordance
+import sys
 
 
 class Command(BaseCommand):
@@ -16,11 +17,13 @@ class Command(BaseCommand):
         if args:
             file_name = str(args[0])
         else:
-            return self.stdout.write("Please provide a file name!")
+            self.stdout.write("Please provide a file name!")
+            sys.exit(-1)
         try:
             file = open("data_dumps/" + file_name)
         except IOError:
-            return self.stdout.write(u"File {0} does not exist!".format(file_name))
+            self.stdout.write(u"File {0} does not exist!".format(file_name))
+            sys.exit(-1)
         if self.debug:
             self.stdout.write("Deleting all old concordance data...")
             # Nuke the db concordances
