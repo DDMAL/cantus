@@ -28,7 +28,6 @@ class Command(BaseCommand):
             self.stdout.write("Old concordance data deleted.")
         # Every line is a new concordance
         self.stdout.write("Starting concordance import process.")
-        index = 0
         for index, line in enumerate(file.readlines()):
             # This method is pretty hacky, but it seems to work
             concordance = Concordance()

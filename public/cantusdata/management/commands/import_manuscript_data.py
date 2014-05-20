@@ -29,7 +29,6 @@ class Command(BaseCommand):
 
         self.stdout.write("Starting manuscript import process.")
         # Create a manuscript and save it
-        index = 0
         for index, row in enumerate(csv_file):
             manuscript = Manuscript()
             # TODO: Figure out what encodings to use...

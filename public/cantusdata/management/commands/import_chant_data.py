@@ -37,7 +37,6 @@ class Command(BaseCommand):
         position_expander = expandr.PositionExpander()
 
         # Create a chant and save it
-        index = 0
         for index, row in enumerate(csv_file):
             # Get the corresponding manuscript
             manuscript_list = Manuscript.objects.filter(siglum=row["Siglum"])
