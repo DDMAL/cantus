@@ -3,6 +3,7 @@ from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.chant import Chant
 from cantusdata.models.concordance import Concordance
 from cantusdata.helpers import expandr
+
 import csv
 
 
@@ -31,6 +32,10 @@ class Command(BaseCommand):
             return self.stdout.write(u"File {0} does not exist!".format(csv_file_name))
 
         self.stdout.write("Starting chant import process.")
+
+        # Use position expander object to get correct positions
+        position_expander = expandr.PositionExpander()
+
         # Create a chant and save it
         index = 0
         for index, row in enumerate(csv_file):
@@ -54,7 +59,7 @@ class Command(BaseCommand):
             chant.incipit = row["Incipit"]
             chant.full_text = row["Fulltext"]
             chant.volpiano = row["Volpiano"]
-            chant.lit_position = expandr.expand_position(row["Position"], chant.genre, chant.office)
+            chant.lit_position = position_expander.get_text(row["Office"], row["Genre"], row["Position"])
             chant.manuscript = manuscript_list[0]
             chant.save()
 

@@ -1,3 +1,5 @@
+import csv
+from django.utils.text import slugify
 
 
 def ordinal(value):
@@ -59,48 +61,6 @@ def feast_code_lookup(feast_code, feast_file):
         if str(record["FeastCode"]) == str(feast_code):
             return record["EnglishName"]
     return None
-
-def expand_position(position, genre, office):
-    output = None
-    if position.isdigit():
-        if genre == "Hymn" or genre == "Responsory Verse":
-            temp_string = "Hymn Verse" if genre == "Hymn" else "Verse"
-            output = "{0} {1}".format(temp_string, position.lstrip("0"))
-        elif genre == "Versicle":
-            output = "{0} {1}".format(ordinal(int(position)), genre)
-        elif office in ("Lauds", "First Vespers", "Second Vespers", "Terce") and genre != "Hymn":
-            output = "{0} for the {1} Psalm".format("Antiphon", ordinal(int(position)))
-        elif office == "Matins" and genre in ("Responsory", "Antiphon"):
-            temp_string = "Lessons" if genre == "Responsory" else "Psalms"
-            output = "{0} for all {1} of Nocturn {2}".format(
-                position.lstrip("0"), temp_string, position)
-        elif office == "Matins" and genre == "Antiphon Verse":
-            output = "{0} {1}".format(genre, position.lstrip("0"))
-    else:
-        if position == "p":
-            output = "Antiphon for all Psalms/Canticles"
-        elif "." in position:
-            if len(position) == 3:
-                noc, les = position.split(".")
-                temp_string = "Psalm" if genre == "Antiphon" else "Lesson"
-                output = "{0} for Nocturn {1}, {2} {3}".format(genre, noc, temp_string, les)
-            else:
-                noc, nul = position.split(".")
-                output = "Antiphon for all Psalms of Nocturn {0}".format(noc)
-        elif position == "M":
-            output = "Antiphon for the Magnificat"
-        elif position == "B":
-            output = "Antiphon for the Benedictus"
-        elif position == "N":
-            output = "Antiphon for the Nunc Dimittis"
-        elif position == "R":
-            output = "Antiphon sung as a memorial"
-        elif len(position) == 2:
-            if position[1] == "B":
-                output = "{0} Antiphon for the Benedictus".format(ordinal(int(position[0])))
-            elif position[1] == "M":
-                output = "{0} Antiphon for the Magnificat".format(ordinal(int(position[0])))
-    return output
 
 def expand_mode(input):
     input_list = input.strip().split()
@@ -166,3 +126,62 @@ def expand_office(input):
         "CA": "Chapter",
         "X": "Supplementary"
     }.get(input, "Error")
+
+
+class PositionExpander(object):
+
+    position_data_base = None
+
+    def __init__(self):
+        self.csv_file = csv.DictReader(open("data_dumps/position_names.csv"))
+        self.position_data_base = dict()
+        for row in self.csv_file:
+            office_code = self.remove_double_dash(row["Office"]).strip()
+            genre_code = self.remove_double_dash(row["Genre"]).strip()
+            position_code = self.remove_double_dash(row["Position"]).strip().lstrip("0").rstrip(".")
+            text = self.remove_double_dash(row["Text Phrase"]).strip()
+
+            # We are creating a 3-dimensional dictionary for fast lookup of names
+            self.add_text(office_code, genre_code, position_code, text)
+
+    def get_text(self, office_code, genre_code, position_code):
+        try:
+            return self.position_data_base[office_code.strip()][genre_code.strip()][position_code.strip().lstrip("0").rstrip(".")]
+        except KeyError:
+            # If it's not in the dictionary then we just use an empty string
+            return ""
+
+    def add_text(self, office, genre, position, text):
+        """
+        Add a record to self.position_data_base, which is a 3d dictionary.
+        Raises KeyError if a dictionary position is already taken.
+        """
+        if office in self.position_data_base:
+            if genre in self.position_data_base[office]:
+                if position in self.position_data_base[office][genre]:
+                    raise KeyError(
+                        u"Position record {0} {1} {2} already set to {3}!".format(
+                            office,
+                            genre,
+                            position,
+                            self.position_data_base[office][genre][position]
+                        )
+                    )
+                else:
+                    # Position doesn't exist, so we create it
+                    self.position_data_base[office][genre].update({position: text})
+            else:
+                # Genre doesn't exist, so we create it and position
+                self.position_data_base[office].update({genre: {position: text}})
+        else :
+            # Office doesn't exist, so we create office, genre, and position
+            self.position_data_base.update({office: {genre: {position: text}}})
+
+    def remove_double_dash(self, input):
+        """
+        Turns double dashes into empty strings
+        """
+        if input.strip() == "--":
+            return ""
+        else:
+            return input
