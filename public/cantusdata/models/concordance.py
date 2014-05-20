@@ -19,7 +19,7 @@ class Concordance(models.Model):
     rism_code = models.CharField(max_length=255, blank=True, null=True)
 
     def __unicode__(self):
-        return u"{1}, {2}, {3} ({4}, from {5}) [RISM: {6}]".format(
+        return u"{0} {1}, {2}, {3} ({4}, from {5}) [RISM: {6}]".format(
             self.letter_code, self.institution_city, self.institution_name,
             self.sections, self.date, self.location, self.rism_code)
 

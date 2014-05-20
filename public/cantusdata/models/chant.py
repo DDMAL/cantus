@@ -30,9 +30,10 @@ class Chant(models.Model):
     # reference ??
     incipit = models.TextField(blank=True, null=True)
     full_text = models.TextField(blank=True, null=True)
-    # TODO: Define Concordances model. One-to-many relation.
-    #concordances = models.ManyToManyField("cantusdata.Concordance",related_name="concordances", default="empty-concordance")
-    concordances = models.CharField(max_length=255, blank=True, null=True)
+    concordances = models.ManyToManyField(
+        "cantusdata.Concordance", related_name="concordances",
+        default="empty-concordance")
+    # concordances = models.CharField(max_length=255, blank=True, null=True)
     # not sure about its type
     volpiano = models.CharField(max_length=255, blank=True, null=True)
     manuscript = models.ForeignKey("cantusdata.Manuscript", related_name="chants")
@@ -69,7 +70,7 @@ def solr_index(sender, instance, created, **kwargs):
         'Finalis': chant.finalis,
         'Incipit': chant.incipit,
         'FullText': chant.full_text,
-        'Concordances': chant.concordances
+        # 'Concordances': chant.concordances
     }
     solrconn.add(**d)
     solrconn.commit()
