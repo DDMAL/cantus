@@ -1,24 +1,32 @@
-from django.core.management.base import BaseCommand, CommandError
-from django.conf import settings
+from django.core.management.base import BaseCommand
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.chant import Chant
-
+from cantusdata.models.concordance import Concordance
 import csv
 
 
 class Command(BaseCommand):
     args = ""
+    debug = True
 
     def handle(self, *args, **kwargs):
         """
         Run "python manage.py import_chant_data filename.csv" to import a chant
         file into the db.  filename.csv must exist in /public/data_dumps/.
         """
-        csv_file_name = args[0]
-        # Nuke the db chants
-        Chant.objects.all().delete()
+        if args:
+            csv_file_name = args[0]
+        else:
+            return self.stdout.write("Please provide a file name!")
+        if self.debug:
+            # Nuke the db chants
+            Chant.objects.all().delete()
         # Load in the csv file.  This is a massive list of dictionaries.
-        csv_file = csv.DictReader(open("data_dumps/" + str(csv_file_name)))
+        try:
+            csv_file = csv.DictReader(open("data_dumps/" + str(csv_file_name)))
+        except IOError:
+            return self.stdout.write(u"File {0} does not exist!".format(csv_file_name))
+
         # Create a chant and save it
         for row in csv_file:
             # Get the corresponding manuscript
@@ -41,8 +49,13 @@ class Command(BaseCommand):
             chant.finalis = row["Finalis"]
             chant.incipit = row["Incipit"]
             chant.full_text = row["Fulltext"]
-            chant.concordances = row["Concordances"]
             chant.volpiano = row["Volpiano"]
             chant.manuscript = manuscript_list[0]
             chant.save()
+
+            # Concordances
+            for c in list(row["Concordances"]):
+                matching_concordance = Concordance.objects.filter(letter_code=c)
+                if matching_concordance:
+                    chant.concordances.add(matching_concordance[0])
         self.stdout.write("Successfully imported chants into database.")
