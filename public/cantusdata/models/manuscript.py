@@ -1,8 +1,7 @@
 from django.db import models
 from django.dispatch import receiver
-from django.db.models.signals import post_save, post_delete
-from cantusdata.helpers.unique_code import alpha_numeric_lower
-import re
+from django.db.models.signals import pre_save, post_save, post_delete
+from django.utils.text import slugify
 
 
 class Manuscript(models.Model):
@@ -15,7 +14,8 @@ class Manuscript(models.Model):
         app_label = "cantusdata"
 
     name = models.CharField(max_length=255, blank=True, null=True)
-    siglum = models.CharField(max_length=255, unique=True, blank=True, null=True)
+    siglum = models.CharField(max_length=255, blank=True, null=True)
+    siglum_slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
     #reduced max_length, should be safe
     date = models.CharField(max_length=50, blank=True, null=True)
     provenance = models.CharField(max_length=100, blank=True, null=True)
@@ -24,10 +24,6 @@ class Manuscript(models.Model):
     def __unicode__(self):
         return u"{0}".format(self.siglum)
 
-    @property
-    def unique_siglum_code(self):
-        return alpha_numeric_lower(self.siglum)
-
 
 # maybe a function to get tht total number of chants in a manuscript
 
@@ -35,6 +31,10 @@ class Manuscript(models.Model):
 #    def chant_count(self):
 #        for p in self.pages:
 #            for c in p.getChants
+
+@receiver(pre_save, sender=Manuscript)
+def auto_siglum_slug(sender, instance, **kwargs):
+    instance.siglum_slug = slugify(instance.siglum)
 
 @receiver(post_save, sender=Manuscript)
 def solr_index(sender, instance, created, **kwargs):

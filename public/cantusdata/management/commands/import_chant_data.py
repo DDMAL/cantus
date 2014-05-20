@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.utils.text import slugify
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.chant import Chant
 from cantusdata.models.concordance import Concordance
@@ -39,10 +40,11 @@ class Command(BaseCommand):
         # Create a chant and save it
         for index, row in enumerate(csv_file):
             # Get the corresponding manuscript
-            manuscript_list = Manuscript.objects.filter(siglum=row["Siglum"])
+            manuscript_list = Manuscript.objects.filter(
+                siglum_slug=slugify(unicode(row["Siglum"])))
             # Throw exception if no corresponding manuscript
             if not manuscript_list:
-                raise NameError(u"Manuscript with Siglum={0} does not exist!".format(row["Siglum"]))
+                raise NameError(u"Manuscript with Siglum={0} does not exist!".format(slugify(unicode(row["Siglum"]))))
 
             chant = Chant()
             chant.marginalia = row["Marginalia"]
