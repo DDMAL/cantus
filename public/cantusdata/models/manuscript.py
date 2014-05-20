@@ -1,7 +1,7 @@
 from django.db import models
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
-from cantusdata.helpers.unique_code import alpha_numeric
+from cantusdata.helpers.unique_code import alpha_numeric_lower
 import re
 
 
@@ -26,7 +26,7 @@ class Manuscript(models.Model):
 
     @property
     def unique_siglum_code(self):
-        return alpha_numeric(self.siglum)
+        return alpha_numeric_lower(self.siglum)
 
 
 # maybe a function to get tht total number of chants in a manuscript
