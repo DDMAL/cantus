@@ -3,7 +3,7 @@ from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.chant import Chant
 from cantusdata.models.concordance import Concordance
 from cantusdata.helpers import expandr
-
+import sys
 import csv
 
 
@@ -19,23 +19,23 @@ class Command(BaseCommand):
         if args:
             csv_file_name = args[0]
         else:
-            return self.stdout.write("Please provide a file name!")
+            self.stdout.write("Please provide a file name!")
+            sys.exit(-1)
+        try:
+            csv_file = csv.DictReader(open("data_dumps/" + str(csv_file_name)))
+        except IOError:
+            self.stdout.write(u"File {0} does not exist!".format(csv_file_name))
+            sys.exit(-1)
         if self.debug:
             self.stdout.write("Deleting all old chant data...")
             # Nuke the db chants
             Chant.objects.all().delete()
             self.stdout.write("Old chant data deleted.")
         # Load in the csv file.  This is a massive list of dictionaries.
-        try:
-            csv_file = csv.DictReader(open("data_dumps/" + str(csv_file_name)))
-        except IOError:
-            return self.stdout.write(u"File {0} does not exist!".format(csv_file_name))
 
         self.stdout.write("Starting chant import process.")
-
         # Use position expander object to get correct positions
         position_expander = expandr.PositionExpander()
-
         # Create a chant and save it
         for index, row in enumerate(csv_file):
             # Get the corresponding manuscript
