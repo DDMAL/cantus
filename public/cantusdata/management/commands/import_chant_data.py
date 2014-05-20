@@ -19,16 +19,20 @@ class Command(BaseCommand):
         else:
             return self.stdout.write("Please provide a file name!")
         if self.debug:
+            self.stdout.write("Deleting all old chant data...")
             # Nuke the db chants
             Chant.objects.all().delete()
+            self.stdout.write("Old chant data deleted.")
         # Load in the csv file.  This is a massive list of dictionaries.
         try:
             csv_file = csv.DictReader(open("data_dumps/" + str(csv_file_name)))
         except IOError:
             return self.stdout.write(u"File {0} does not exist!".format(csv_file_name))
 
+        self.stdout.write("Starting chant import process.")
         # Create a chant and save it
-        for row in csv_file:
+        index = 0
+        for index, row in enumerate(csv_file):
             # Get the corresponding manuscript
             manuscript_list = Manuscript.objects.filter(siglum=row["Siglum"])
             # Throw exception if no corresponding manuscript
@@ -58,4 +62,9 @@ class Command(BaseCommand):
                 matching_concordance = Concordance.objects.filter(letter_code=c)
                 if matching_concordance:
                     chant.concordances.add(matching_concordance[0])
-        self.stdout.write("Successfully imported chants into database.")
+
+            # Tracking
+            if (index % 100) == 0:
+                self.stdout.write(u"{0} chants imported.".format(index))
+
+        self.stdout.write(u"Successfully imported {0} chants into database.".format(index))
