@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.chant import Chant
 from cantusdata.models.concordance import Concordance
+from cantusdata.helpers import expandr
 import csv
 
 
@@ -45,15 +46,15 @@ class Command(BaseCommand):
             chant.sequence = row["Sequence"]
             chant.cantus_id = row["Cantus ID"]
             chant.feast = row["Feast"]
-            chant.office = row["Office"]
-            chant.genre = row["Genre"]
-            chant.lit_position = row["Position"]
-            chant.mode = row["Mode"]
+            chant.office = expandr.expand_office(row["Office"])
+            chant.genre = expandr.expand_genre(row["Genre"])
+            chant.mode = expandr.expand_mode(row["Mode"])
             chant.differentia = row["Differentia"]
             chant.finalis = row["Finalis"]
             chant.incipit = row["Incipit"]
             chant.full_text = row["Fulltext"]
             chant.volpiano = row["Volpiano"]
+            chant.lit_position = expandr.expand_position(row["Position"], chant.genre, chant.office)
             chant.manuscript = manuscript_list[0]
             chant.save()
 
