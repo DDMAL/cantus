@@ -11,6 +11,7 @@ def reindex_in_solr(modeladmin, request, queryset):
 reindex_in_solr.short_description = "ReIndex in Solr"
 
 class ManuscriptAdmin(admin.ModelAdmin):
+    prepopulated_fields = {"siglum_slug": ("siglum",)}
     actions = [reindex_in_solr]
 
 
