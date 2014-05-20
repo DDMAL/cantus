@@ -18,33 +18,38 @@ class Command(BaseCommand):
         except IOError:
             return self.stdout.write(u"File {0} does not exist!".format(file_name))
         if self.debug:
+            self.stdout.write("Deleting all old concordance data...")
             # Nuke the db concordances
             Concordance.objects.all().delete()
+            self.stdout.write("Old concordance data deleted.")
         # Every line is a new concordance
-        for line in file.readlines():
+        self.stdout.write("Starting concordance import process.")
+        index = 0
+        for index, line in enumerate(file.readlines()):
             # This method is pretty hacky, but it seems to work
             concordance = Concordance()
 
-            concordance.letter_code = line.split(" ", 1)[0]
+            concordance.letter_code = line.split(" ", 1)[0].rstrip()
             line = line.split(" ", 1)[1]
 
-            concordance.institution_city = line.split(",", 1)[0]
+            concordance.institution_city = line.split(",", 1)[0].rstrip()
             line = line.split(",", 1)[1]
 
-            concordance.institution_name = line.split(",", 1)[0]
+            concordance.institution_name = line.split(",", 1)[0].rstrip()
             line = line.split(",", 1)[1]
 
-            concordance.sections = line.split(" (", 1)[0]
+            concordance.sections = line.split(" (", 1)[0].rstrip()
             line = line.split(" (", 1)[1]
 
-            concordance.date = line.split(", from", 1)[0]
+            concordance.date = line.split(", from", 1)[0].rstrip()
             line = line.split(", from", 1)[1]
 
-            concordance.location = line.split(")", 1)[0]
+            concordance.location = line.split(")", 1)[0].rstrip()
             line = line.split(")", 1)[1]
 
             line = line.split(": ", 1)[1]
 
-            concordance.rism_code = line.split("]", 1)[0]
+            concordance.rism_code = line.split("]", 1)[0].rstrip()
 
             concordance.save()
+        self.stdout.write(u"Successfully imported {0} concordances into database.".format(index))
