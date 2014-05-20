@@ -8,6 +8,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         """
+        Run "python manage.py import_concordance_data filename" to import
+        a concordance list file into the db.
+
+        filename must exist in /public/data_dumps/.
         """
         if args:
             file_name = str(args[0])
@@ -29,27 +33,27 @@ class Command(BaseCommand):
             # This method is pretty hacky, but it seems to work
             concordance = Concordance()
 
-            concordance.letter_code = line.split(" ", 1)[0].rstrip()
+            concordance.letter_code = line.split(" ", 1)[0].strip()
             line = line.split(" ", 1)[1]
 
-            concordance.institution_city = line.split(",", 1)[0].rstrip()
+            concordance.institution_city = line.split(",", 1)[0].strip()
             line = line.split(",", 1)[1]
 
-            concordance.institution_name = line.split(",", 1)[0].rstrip()
+            concordance.institution_name = line.split(",", 1)[0].strip()
             line = line.split(",", 1)[1]
 
-            concordance.sections = line.split(" (", 1)[0].rstrip()
+            concordance.sections = line.split(" (", 1)[0].strip()
             line = line.split(" (", 1)[1]
 
-            concordance.date = line.split(", from", 1)[0].rstrip()
+            concordance.date = line.split(", from", 1)[0].strip()
             line = line.split(", from", 1)[1]
 
-            concordance.location = line.split(")", 1)[0].rstrip()
+            concordance.location = line.split(")", 1)[0].strip()
             line = line.split(")", 1)[1]
 
             line = line.split(": ", 1)[1]
 
-            concordance.rism_code = line.split("]", 1)[0].rstrip()
+            concordance.rism_code = line.split("]", 1)[0].strip()
 
             concordance.save()
         self.stdout.write(u"Successfully imported {0} concordances into database.".format(index))
