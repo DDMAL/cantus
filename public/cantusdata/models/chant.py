@@ -15,6 +15,7 @@ class Chant(models.Model):
         app_label = "cantusdata"
 
     marginalia = models.CharField(max_length=255, blank=True, null=True)
+    # TODO: Figure out if folios should be broken-out into their own model.
     folio = models.CharField(max_length=50, blank=True, null=True)
     # sequence can't be blank or null.
     sequence = models.PositiveSmallIntegerField()
@@ -28,18 +29,18 @@ class Chant(models.Model):
     finalis = models.CharField(max_length=255, blank=True, null=True)
     # masterChant ??
     # reference ??
-    incipit = models.TextField(blank=True, null=True)
+    incipit = models.TextField(blank=True, null=True )
     full_text = models.TextField(blank=True, null=True)
     concordances = models.ManyToManyField(
         "cantusdata.Concordance", related_name="concordances",
         default="empty-concordance")
-    # concordances = models.CharField(max_length=255, blank=True, null=True)
     # not sure about its type
     volpiano = models.CharField(max_length=255, blank=True, null=True)
     manuscript = models.ForeignKey("cantusdata.Manuscript", related_name="chants")
 
     def __unicode__(self):
-        return u"{0}".format(self.cantus_id)
+        return u"{0} - {1}".format(self.cantus_id, self.incipit)
+
 
 @receiver(post_save, sender=Chant)
 def solr_index(sender, instance, created, **kwargs):
@@ -75,6 +76,7 @@ def solr_index(sender, instance, created, **kwargs):
     solrconn.add(**d)
     solrconn.commit()
 
+
 @receiver(post_delete, sender=Chant)
 def solr_delete(sender, instance, **kwargs):
     from django.conf import settings
@@ -84,4 +86,3 @@ def solr_delete(sender, instance, **kwargs):
     if record:
         solrconn.delete(record.results[0]['id'])
         solrconn.commit()
-

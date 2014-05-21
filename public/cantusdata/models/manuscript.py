@@ -22,7 +22,7 @@ class Manuscript(models.Model):
     description = models.TextField(blank=True, null=True)
 
     def __unicode__(self):
-        return u"{0}".format(self.siglum)
+        return u"{0} - {1}".format(self.siglum, self.name)
 
 
 # maybe a function to get tht total number of chants in a manuscript
@@ -35,6 +35,7 @@ class Manuscript(models.Model):
 @receiver(pre_save, sender=Manuscript)
 def auto_siglum_slug(sender, instance, **kwargs):
     instance.siglum_slug = slugify(instance.siglum)
+
 
 @receiver(post_save, sender=Manuscript)
 def solr_index(sender, instance, created, **kwargs):
@@ -60,6 +61,7 @@ def solr_index(sender, instance, created, **kwargs):
     solrconn.add(**d)
     solrconn.commit()
 
+
 @receiver(post_delete, sender=Manuscript)
 def solr_delete(sender, instance, **kwargs):
     from django.conf import settings
@@ -69,4 +71,3 @@ def solr_delete(sender, instance, **kwargs):
     if record:
         solrconn.delete(record.results[0]['id'])
         solrconn.commit()
-
