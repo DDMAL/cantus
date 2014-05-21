@@ -58,4 +58,6 @@ class Command(BaseCommand):
             concordance.rism_code = line.split("]", 1)[0].strip()
 
             concordance.save()
-        self.stdout.write(u"Successfully imported {0} concordances into database.".format(index))
+        self.stdout.write(
+            u"Successfully imported {0} concordances into database."
+            .format(index))
