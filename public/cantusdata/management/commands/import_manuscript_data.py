@@ -3,6 +3,7 @@ from cantusdata.models.manuscript import Manuscript
 import csv
 import sys
 
+
 class Command(BaseCommand):
     args = ""
     debug = True
@@ -34,10 +35,10 @@ class Command(BaseCommand):
         for index, row in enumerate(csv_file):
             manuscript = Manuscript()
             # TODO: Figure out what encodings to use...
-            manuscript.name = unicode(row["Title"], "Latin-1")
-            manuscript.siglum = unicode(row["Siglum"], "Latin-1")
-            manuscript.date = unicode(row["Date"], "Latin-1")
-            manuscript.provenance = unicode(row["Provenance"], "Latin-1")
-            manuscript.description = unicode(row["Description"], "Latin-1")
+            manuscript.name = row["Title"].decode("Latin-1")
+            manuscript.siglum = row["Siglum"].decode("Latin-1")
+            manuscript.date = row["Date"].decode("Latin-1")
+            manuscript.provenance = row["Provenance"].decode("Latin-1")
+            manuscript.description = row["Description"].decode("Latin-1")
             manuscript.save()
         self.stdout.write(u"Successfully imported {0} manuscripts into database.".format(index))
