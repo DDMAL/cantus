@@ -1,4 +1,5 @@
 from django.db import models
+from cantusdata.models.chant import Chant
 
 
 class Folio(models.Model):
@@ -14,3 +15,7 @@ class Folio(models.Model):
 
     def __unicode__(self):
         return u"{0} - {1}".format(self.number, self.manuscript)
+
+    @property
+    def chant_count(self):
+        return len(Chant.objects.filter(folio=self))

@@ -13,8 +13,8 @@ reindex_in_solr.short_description = "ReIndex in Solr"
 
 
 class ManuscriptAdmin(admin.ModelAdmin):
-    prepopulated_fields = {"siglum_slug": ("siglum",)}
     actions = [reindex_in_solr]
+    readonly_fields = ('folio_count', 'siglum_slug')
 
 
 class ChantAdmin(admin.ModelAdmin):
@@ -23,11 +23,13 @@ class ChantAdmin(admin.ModelAdmin):
 
 class FolioAdmin(admin.ModelAdmin):
     actions = [reindex_in_solr]
+    readonly_fields = ('chant_count',)
 
-# class ConcordanceAdmin(admin.ModelAdmin):
-#     actions = [reindex_in_solr]
+
+class ConcordanceAdmin(admin.ModelAdmin):
+    actions = [reindex_in_solr]
 
 admin.site.register(Manuscript, ManuscriptAdmin)
 admin.site.register(Chant, ChantAdmin)
-admin.site.register(Concordance)
-admin.site.register(Folio)
+admin.site.register(Concordance, ConcordanceAdmin)
+admin.site.register(Folio, FolioAdmin)
