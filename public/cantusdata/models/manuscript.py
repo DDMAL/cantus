@@ -1,6 +1,8 @@
 from django.db import models
 from django.dispatch import receiver
 from django.db.models.signals import pre_save, post_save, post_delete
+from cantusdata.models.folio import Folio
+from cantusdata.models.chant import Chant
 from django.utils.text import slugify
 
 
@@ -24,13 +26,10 @@ class Manuscript(models.Model):
     def __unicode__(self):
         return u"{0} - {1}".format(self.siglum, self.name)
 
+    @property
+    def folio_count(self):
+        return len(Folio.objects.filter(manuscript=self))
 
-# maybe a function to get tht total number of chants in a manuscript
-
-#    @property
-#    def chant_count(self):
-#        for p in self.pages:
-#            for c in p.getChants
 
 @receiver(pre_save, sender=Manuscript)
 def auto_siglum_slug(sender, instance, **kwargs):
