@@ -3,6 +3,7 @@ from django.utils.text import slugify
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.chant import Chant
 from cantusdata.models.concordance import Concordance
+from cantusdata.models import Folio
 from cantusdata.helpers import expandr
 import sys
 import csv
@@ -28,10 +29,11 @@ class Command(BaseCommand):
             self.stdout.write(u"File {0} does not exist!".format(csv_file_name))
             sys.exit(-1)
         if self.debug:
-            self.stdout.write("Deleting all old chant data...")
+            self.stdout.write("Deleting all old chant and folio data...")
             # Nuke the db chants
             Chant.objects.all().delete()
-            self.stdout.write("Old chant data deleted.")
+            Folio.objects.all().delete()
+            self.stdout.write("Old chant and folio data deleted.")
         # Load in the csv file.  This is a massive list of dictionaries.
 
         self.stdout.write("Starting chant import process.")
@@ -44,11 +46,11 @@ class Command(BaseCommand):
                 siglum_slug=slugify(unicode(row["Siglum"])))
             # Throw exception if no corresponding manuscript
             if not manuscript_list:
-                raise NameError(u"Manuscript with Siglum={0} does not exist!".format(slugify(unicode(row["Siglum"]))))
+                raise NameError(u"Manuscript with Siglum={0} does not exist!"
+                                .format(slugify(unicode(row["Siglum"]))))
 
             chant = Chant()
             chant.marginalia = row["Marginalia"]
-            chant.folio = row["Folio"]
             chant.sequence = row["Sequence"]
             chant.cantus_id = row["Cantus ID"]
             chant.feast = row["Feast"]
@@ -60,8 +62,24 @@ class Command(BaseCommand):
             chant.incipit = row["Incipit"]
             chant.full_text = row["Fulltext"]
             chant.volpiano = row["Volpiano"]
-            chant.lit_position = position_expander.get_text(row["Office"], row["Genre"], row["Position"])
+            chant.lit_position = position_expander.get_text(row["Office"],
+                                                            row["Genre"],
+                                                            row["Position"])
             chant.manuscript = manuscript_list[0]
+
+            folio_code = slugify(row["Folio"].decode("utf-8"))
+            # See if this folio already exists
+            try:
+                folio = Folio.objects.get(number=folio_code,
+                                          manuscript=manuscript_list[0])
+            except Folio.DoesNotExist:
+                # If the folio doesn't exist, create it
+                folio = Folio()
+                folio.number = folio_code
+                folio.manuscript = manuscript_list[0]
+                folio.save()
+            chant.folio = folio
+
             chant.save()
 
             # Concordances
@@ -74,4 +92,5 @@ class Command(BaseCommand):
             if (index % 100) == 0:
                 self.stdout.write(u"{0} chants imported.".format(index))
 
-        self.stdout.write(u"Successfully imported {0} chants into database.".format(index))
+        self.stdout.write(
+            u"Successfully imported {0} chants into database.".format(index))
