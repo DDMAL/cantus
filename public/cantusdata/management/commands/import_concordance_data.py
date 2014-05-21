@@ -44,7 +44,7 @@ class Command(BaseCommand):
             concordance.institution_name = line.split(",", 1)[0].strip()
             line = line.split(",", 1)[1]
 
-            concordance.sections = line.split(" (", 1)[0].strip()
+            concordance.library_manuscript_name = line.split(" (", 1)[0].strip()
             line = line.split(" (", 1)[1]
 
             concordance.date = line.split(", from", 1)[0].strip()
