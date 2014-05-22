@@ -29,7 +29,7 @@ class Manuscript(models.Model):
 
     @property
     def folio_count(self):
-        return len(Folio.objects.filter(manuscript=self))
+        return len(self.folio_set.all())
 
     @property
     def chant_set(self):
@@ -51,7 +51,7 @@ def auto_count_chants(sender, instance, **kwargs):
     """
     manuscript = instance.manuscript
     count = 0
-    for folio in Folio.objects.filter(manuscript=manuscript):
+    for folio in manuscript.folio_set.all():
         count += folio.chant_count
     manuscript.chant_count = count
     manuscript.save()
