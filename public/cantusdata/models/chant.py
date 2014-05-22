@@ -15,7 +15,7 @@ class Chant(models.Model):
         app_label = "cantusdata"
 
     marginalia = models.CharField(max_length=255, blank=True, null=True)
-    folio = models.ForeignKey("Folio", blank=True, null=True)
+    folio = models.ForeignKey("cantusdata.Folio", blank=True, null=True)
     # sequence can't be blank or null.
     sequence = models.PositiveSmallIntegerField()
     cantus_id = models.CharField(max_length=50, blank=True, null=True)
