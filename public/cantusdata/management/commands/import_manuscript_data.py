@@ -34,11 +34,10 @@ class Command(BaseCommand):
         # Create a manuscript and save it
         for index, row in enumerate(csv_file):
             manuscript = Manuscript()
-            # TODO: Figure out what encodings to use...
-            manuscript.name = row["Title"].decode("Latin-1")
-            manuscript.siglum = row["Siglum"].decode("Latin-1")
-            manuscript.date = row["Date"].decode("Latin-1")
-            manuscript.provenance = row["Provenance"].decode("Latin-1")
-            manuscript.description = row["Description"].decode("Latin-1")
+            manuscript.name = row["Title"].decode("utf-8")
+            manuscript.siglum = row["Siglum"].decode("utf-8")
+            manuscript.date = row["Date"].decode("utf-8")
+            manuscript.provenance = row["Provenance"].decode("utf-8")
+            manuscript.description = row["Description"].decode("utf-8")
             manuscript.save()
         self.stdout.write(u"Successfully imported {0} manuscripts into database.".format(index))
