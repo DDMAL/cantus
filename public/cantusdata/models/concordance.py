@@ -19,7 +19,8 @@ class Concordance(models.Model):
                                                blank=True, null=True)
     date = models.CharField(max_length=255, blank=True, null=True)
     location = models.CharField(max_length=255, blank=True, null=True)
-    rism_code = models.CharField(max_length=255, blank=True, null=True)
+    rism_code = models.CharField(max_length=255, blank=True, null=True,
+                                 verbose_name="RISM code")
 
     def __unicode__(self):
         # return self.__str__().decode("utf-8")
