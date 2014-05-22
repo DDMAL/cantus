@@ -22,4 +22,5 @@ class ManuscriptList(generics.ListCreateAPIView):
 class ManuscriptDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Manuscript
     serializer_class = ManuscriptSerializer
-    renderer_classes = (JSONRenderer, JSONPRenderer, ManuscriptDetailHTMLRenderer)
+    renderer_classes = (JSONRenderer, JSONPRenderer,
+                        ManuscriptDetailHTMLRenderer)

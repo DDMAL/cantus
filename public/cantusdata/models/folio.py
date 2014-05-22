@@ -1,6 +1,6 @@
 from django.db import models
 from cantusdata.models.chant import Chant
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
