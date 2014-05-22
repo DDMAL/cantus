@@ -2,7 +2,7 @@ from django.test import TestCase
 from cantusdata.helpers.expandr import PositionExpander
 
 
-class TestPositionExpander(TestCase):
+class PositionExpanderTestCase(TestCase):
 
     position_expander = None
 
