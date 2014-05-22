@@ -23,8 +23,7 @@ class Concordance(models.Model):
                                  verbose_name="RISM code")
 
     def __unicode__(self):
-        # return self.__str__().decode("utf-8")
-        return u"{0}".format(self.letter_code)
+        return u"{0} - {1}".format(self.letter_code, self.institution_name)
 
     @property
     def citation(self):
@@ -52,7 +51,6 @@ def solr_index(sender, instance, created, **kwargs):
         solrconn.delete(record.results[0]['id'])
 
     concordance = instance
-    # print concordance.__str__()
     d = {
         'type': 'cantusdata_concordance',
         'id': str(uuid.uuid4()),
