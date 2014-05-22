@@ -29,8 +29,8 @@ urlpatterns += format_suffix_patterns(
     url(r'^chants/$', ChantList.as_view(), name="chant-list"),
     url(r'^chant/(?P<pk>[0-9]+)/$', ChantDetail.as_view(), name="chant-detail"),
     # Concordances
-    url(r'^folios/$', ConcordanceList.as_view(), name="concordance-list"),
-    url(r'^folio/(?P<pk>[0-9]+)/$', ConcordanceDetail.as_view(),
+    url(r'^concordances/$', ConcordanceList.as_view(), name="concordance-list"),
+    url(r'^concordance/(?P<pk>[0-9]+)/$', ConcordanceDetail.as_view(),
         name="concordance-detail"),
 
     url(r'^search/$', SearchView.as_view(), name="search-view"),
