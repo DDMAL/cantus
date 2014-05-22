@@ -11,7 +11,8 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         """
         Run "python manage.py import_manuscript_data filename.csv" to import
-        a manuscript file into the db.  filename.csv must exist in /public/data_dumps/.
+        a manuscript file into the db.
+        filename.csv must exist in /public/data_dumps/.
         """
         if args:
             csv_file_name = args[0]
@@ -19,7 +20,8 @@ class Command(BaseCommand):
             self.stdout.write("Please provide a file name!")
             sys.exit(-1)
         try:
-            csv_file = csv.DictReader(open("data_dumps/" + str(csv_file_name), "rU"))
+            csv_file = csv.DictReader(open("data_dumps/" + str(csv_file_name),
+                                           "rU"))
         except IOError:
             self.stdout.write(u"File {0} does not exist!".format(csv_file_name))
             sys.exit(-1)
@@ -40,4 +42,6 @@ class Command(BaseCommand):
             manuscript.provenance = row["Provenance"].decode("utf-8")
             manuscript.description = row["Description"].decode("utf-8")
             manuscript.save()
-        self.stdout.write(u"Successfully imported {0} manuscripts into database.".format(index))
+        self.stdout.write(
+            u"Successfully imported {0} manuscripts into database."
+            .format(index))

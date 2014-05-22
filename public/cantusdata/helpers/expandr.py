@@ -1,5 +1,4 @@
 import csv
-from django.utils.text import slugify
 
 
 def ordinal(value):
@@ -7,7 +6,7 @@ def ordinal(value):
     Converts zero or a *postive* integer (or their string
     representations) to an ordinal value.
 
-    >>> for i in range(1,13):
+    >>> for i in range(1, 13):
     ...     ordinal(i)
     ...
     u'1st'
@@ -62,8 +61,8 @@ def feast_code_lookup(feast_code, feast_file):
             return record["EnglishName"]
     return None
 
-def expand_mode(input):
-    input_list = input.strip().split()
+def expand_mode(mode_code):
+    input_list = mode_code.strip().split()
     mode_output = []
     if "1" in input_list:
         mode_output.append("Mode 1")
@@ -94,7 +93,7 @@ def expand_mode(input):
     outstring = " ".join(mode_output)
     return outstring
 
-def expand_genre(input):
+def expand_genre(genre_code):
     return {
         "A":"Antiphon",
         "AV": "Antiphon Verse",
@@ -106,9 +105,9 @@ def expand_genre(input):
         "P": "Invitatory Psalm",
         "M": "Miscellaneous",
         "G": "Mass chants"
-    }.get(input, "Error")
+    }.get(genre_code, "Error")
 
-def expand_office(input):
+def expand_office(office_code):
     return {
         "V": "First Vespers",
         "C": "Compline",
@@ -125,7 +124,7 @@ def expand_office(input):
         "H": "Antiphons based on texts from the Historia",
         "CA": "Chapter",
         "X": "Supplementary"
-    }.get(input, "Error")
+    }.get(office_code, "Error")
 
 
 class PositionExpander(object):
@@ -138,7 +137,8 @@ class PositionExpander(object):
         for row in self.csv_file:
             office_code = self.remove_double_dash(row["Office"]).strip()
             genre_code = self.remove_double_dash(row["Genre"]).strip()
-            position_code = self.remove_double_dash(row["Position"]).strip().lstrip("0").rstrip(".")
+            position_code = self.remove_double_dash(row["Position"]).strip()\
+                .lstrip("0").rstrip(".")
             text = self.remove_double_dash(row["Text Phrase"]).strip()
 
             # We are creating a 3-dimensional dictionary for fast lookup of names
@@ -177,11 +177,11 @@ class PositionExpander(object):
             # Office doesn't exist, so we create office, genre, and position
             self.position_data_base.update({office: {genre: {position: text}}})
 
-    def remove_double_dash(self, input):
+    def remove_double_dash(self, text):
         """
         Turns double dashes into empty strings
         """
-        if input.strip() == "--":
+        if text.strip() == "--":
             return ""
         else:
-            return input
+            return text

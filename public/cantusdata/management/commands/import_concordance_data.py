@@ -20,7 +20,7 @@ class Command(BaseCommand):
             self.stdout.write("Please provide a file name!")
             sys.exit(-1)
         try:
-            file = open("data_dumps/" + file_name)
+            csv_file = open("data_dumps/" + file_name)
         except IOError:
             self.stdout.write(u"File {0} does not exist!".format(file_name))
             sys.exit(-1)
@@ -31,7 +31,7 @@ class Command(BaseCommand):
             self.stdout.write("Old concordance data deleted.")
         # Every line is a new concordance
         self.stdout.write("Starting concordance import process.")
-        for index, line in enumerate(file.readlines()):
+        for index, line in enumerate(csv_file.readlines()):
             # This method is pretty hacky, but it seems to work
             concordance = Concordance()
 

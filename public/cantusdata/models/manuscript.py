@@ -16,7 +16,8 @@ class Manuscript(models.Model):
 
     name = models.CharField(max_length=255, blank=True, null=True)
     siglum = models.CharField(max_length=255, blank=True, null=True)
-    siglum_slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
+    siglum_slug = models.SlugField(max_length=255, unique=True, blank=True,
+                                   null=True)
     #reduced max_length, should be safe
     date = models.CharField(max_length=50, blank=True, null=True)
     provenance = models.CharField(max_length=100, blank=True, null=True)
@@ -56,7 +57,8 @@ def solr_index(sender, instance, created, **kwargs):
     import solr
 
     solrconn = solr.SolrConnection(settings.SOLR_SERVER)
-    record = solrconn.query("type:cantusdata_manuscript item_id:{0}".format(instance.id), q_op="AND")
+    record = solrconn.query("type:cantusdata_manuscript item_id:{0}"
+                            .format(instance.id), q_op="AND")
     if record:
         solrconn.delete(record.results[0]['id'])
     manuscript = instance
@@ -79,7 +81,8 @@ def solr_delete(sender, instance, **kwargs):
     from django.conf import settings
     import solr
     solrconn = solr.SolrConnection(settings.SOLR_SERVER)
-    record = solrconn.query("type:cantusdata_manuscript item_id:{0}".format(instance.id), q_op="AND")
+    record = solrconn.query("type:cantusdata_manuscript item_id:{0}"
+                            .format(instance.id), q_op="AND")
     if record:
         solrconn.delete(record.results[0]['id'])
         solrconn.commit()
