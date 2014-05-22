@@ -2,7 +2,6 @@ from django.db import models
 from django.dispatch import receiver
 from django.db.models.signals import pre_save, post_save, post_delete
 from cantusdata.models.folio import Folio
-from cantusdata.models.chant import Chant
 from django.utils.text import slugify
 
 
@@ -22,6 +21,7 @@ class Manuscript(models.Model):
     date = models.CharField(max_length=50, blank=True, null=True)
     provenance = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
+    chant_count = models.IntegerField(default=0)
 
     def __unicode__(self):
         return u"{0} - {1}".format(self.siglum, self.name)
@@ -34,6 +34,19 @@ class Manuscript(models.Model):
 @receiver(pre_save, sender=Manuscript)
 def auto_siglum_slug(sender, instance, **kwargs):
     instance.siglum_slug = slugify(instance.siglum)
+
+
+@receiver(post_save, sender=Folio)
+def auto_count_chants(sender, instance, **kwargs):
+    """
+    Compute the number of chants on the folio whenever a chant is saved.
+    """
+    manuscript = instance.manuscript
+    count = 0
+    for folio in Folio.objects.filter(manuscript=manuscript):
+        count += folio.chant_count
+    manuscript.chant_count = count
+    manuscript.save()
 
 
 @receiver(post_save, sender=Manuscript)
