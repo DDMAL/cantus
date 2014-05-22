@@ -11,7 +11,12 @@ def api_root(request, format=None):
     return Response({'manuscripts': reverse('manuscript-list', request=request,
                                             format=format),
                      'chants': reverse('chant-list', request=request,
-                                       format=format)})
+                                       format=format),
+                     'folios': reverse('folio-list', request=request,
+                                       format=format),
+                     'concordances': reverse('concordance-list', request=request,
+                                       format=format)
+                     })
 
 @ensure_csrf_cookie
 def home(request):
