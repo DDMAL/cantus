@@ -26,5 +26,5 @@ def auto_count_chants(sender, instance, **kwargs):
     Compute the number of chants on the folio whenever a chant is saved.
     """
     folio = instance.folio
-    folio.chant_count = len(Chant.objects.filter(folio=folio))
+    folio.chant_count = len(folio.chants)
     folio.save()

@@ -31,6 +31,13 @@ class Manuscript(models.Model):
     def folio_count(self):
         return len(Folio.objects.filter(manuscript=self))
 
+    @property
+    def chant_set(self):
+        chants = list()
+        for folio in self.folio_set.all():
+            chants += folio.chant_set.all()
+        return chants
+
 
 @receiver(pre_save, sender=Manuscript)
 def auto_siglum_slug(sender, instance, **kwargs):
