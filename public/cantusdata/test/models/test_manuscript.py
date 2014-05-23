@@ -49,30 +49,25 @@ class ManuscriptModelTestCase(TestCase):
         test_chant_set = set()
         first_manuscript = Manuscript.objects.get(name="MyName")
         second_manuscript = Manuscript.objects.get(name="NumberTwo")
-        Folio.objects.create(number="f1", manuscript=first_manuscript)
-        first_folio = Folio.objects.get(number="f1")
-        Folio.objects.create(number="f2", manuscript=second_manuscript)
-        second_folio = Folio.objects.get(number="f2")
+        first_folio = Folio.objects.create(number="f1", manuscript=first_manuscript)
+        second_folio = Folio.objects.create(number="f2", manuscript=second_manuscript)
 
         # No chants
         self.assertEqual(set(first_manuscript.chant_set), set())
         # One chant
-        Chant.objects.create(sequence=1, manuscript=first_manuscript,
+        first_chant = Chant.objects.create(sequence=1, manuscript=first_manuscript,
                              folio=first_folio)
-        first_chant = Chant.objects.get(sequence=1)
         self.assertEqual(set(first_manuscript.chant_set), {first_chant})
         # Two chants
-        Chant.objects.create(sequence=2, manuscript=first_manuscript,
+        second_chant = Chant.objects.create(sequence=2, manuscript=first_manuscript,
                              folio=first_folio)
-        second_chant = Chant.objects.get(sequence=2)
         self.assertEqual(set(first_manuscript.chant_set),
                          {first_chant, second_chant})
 
         # Make sure that a chant from another manuscript doesn't affect set
         self.assertEqual(set(second_manuscript.chant_set), set())
-        Chant.objects.create(sequence=3, manuscript=second_manuscript,
+        third_chant = Chant.objects.create(sequence=3, manuscript=second_manuscript,
                              folio=second_folio)
-        third_chant = Chant.objects.get(sequence=3)
         self.assertEqual(set(second_manuscript.chant_set),
                          {third_chant})
         self.assertEqual(set(first_manuscript.chant_set),
