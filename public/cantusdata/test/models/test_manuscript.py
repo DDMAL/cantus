@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.db import IntegrityError
 from cantusdata.models.manuscript import Manuscript
+from cantusdata.models.chant import Chant
 from cantusdata.models.folio import Folio
 
 
@@ -17,10 +18,11 @@ class ManuscriptModelTestCase(TestCase):
         """
         Test that the manuscript folio count is updated correctly.
         """
-        # No folios
         first_manuscript = Manuscript.objects.get(name="MyName")
-        self.assertEqual(first_manuscript.folio_count, 0)
+        second_manuscript = Manuscript.objects.get(name="NumberTwo")
 
+        # No folios
+        self.assertEqual(first_manuscript.folio_count, 0)
         # One folio
         Folio.objects.create(number="123", manuscript=first_manuscript)
         self.assertEqual(first_manuscript.folio_count, 1)
@@ -29,7 +31,6 @@ class ManuscriptModelTestCase(TestCase):
         self.assertEqual(first_manuscript.folio_count, 2)
 
         # Make sure that a folio from another manuscript doesn't affect count
-        second_manuscript = Manuscript.objects.get(name="NumberTwo")
         self.assertEqual(second_manuscript.folio_count, 0)
         Folio.objects.create(number="789", manuscript=second_manuscript)
         self.assertEqual(second_manuscript.folio_count, 1)
@@ -43,7 +44,46 @@ class ManuscriptModelTestCase(TestCase):
         self.assertEqual(first_manuscript.folio_count, 0)
 
     def test_chant_set(self):
-        pass
+        """
+        Test that the manuscript chant set is updated correctly.
+        """
+        test_chant_set = set()
+        first_manuscript = Manuscript.objects.get(name="MyName")
+        second_manuscript = Manuscript.objects.get(name="NumberTwo")
+        Folio.objects.create(number="f1", manuscript=first_manuscript)
+        first_folio = Folio.objects.get(number="f1")
+        Folio.objects.create(number="f2", manuscript=second_manuscript)
+        second_folio = Folio.objects.get(number="f2")
+
+        # No chants
+        self.assertEqual(set(first_manuscript.chant_set), set())
+        # One chant
+        Chant.objects.create(sequence=1, manuscript=first_manuscript,
+                             folio=first_folio)
+        first_chant = Chant.objects.get(sequence=1)
+        self.assertEqual(set(first_manuscript.chant_set), set([first_chant]))
+        # Two chants
+        Chant.objects.create(sequence=2, manuscript=first_manuscript,
+                             folio=first_folio)
+        second_chant = Chant.objects.get(sequence=2)
+        self.assertEqual(set(first_manuscript.chant_set),
+                         set([first_chant, second_chant]))
+
+        # Make sure that a chant from another manuscript doesn't affect set
+        self.assertEqual(set(second_manuscript.chant_set), set())
+        Chant.objects.create(sequence=3, manuscript=second_manuscript,
+                             folio=second_folio)
+        third_chant = Chant.objects.get(sequence=3)
+        self.assertEqual(set(second_manuscript.chant_set),
+                 set([third_chant]))
+        self.assertEqual(set(first_manuscript.chant_set), set([second_chant, first_chant]))
+
+        # First deletion
+        first_chant.delete()
+        self.assertEqual(set(first_manuscript.chant_set), set([second_chant]))
+        # Second deletion
+        second_chant.delete()
+        self.assertEqual(set(first_manuscript.chant_set), set())
 
     def test_siglum_slug(self):
         """
