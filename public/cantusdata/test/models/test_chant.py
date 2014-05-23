@@ -7,4 +7,4 @@ class ChantModelTestCase(TestCase):
     chant = None
 
     def setUp(self):
-        self.position_expander = Chant()
+        self.chant = Chant()
