@@ -4,7 +4,7 @@ from cantusdata.models.chant import Chant
 from cantusdata.models.manuscript import Manuscript
 
 
-class ChantModelTestCase(TestCase):
+class FolioModelTestCase(TestCase):
 
     def setUp(self):
         # Generic folio
