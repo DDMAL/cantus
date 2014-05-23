@@ -2,6 +2,7 @@ from django.db import models
 from django.dispatch import receiver
 from django.db.models.signals import pre_save, post_save, post_delete
 from cantusdata.models.folio import Folio
+from cantusdata.models.chant import Chant
 from django.utils.text import slugify
 
 
@@ -33,10 +34,7 @@ class Manuscript(models.Model):
 
     @property
     def chant_set(self):
-        chants = list()
-        for folio in self.folio_set.all():
-            chants += folio.chant_set.all()
-        return chants
+        return Chant.objects.filter(manuscript=self)
 
 
 @receiver(pre_save, sender=Manuscript)
