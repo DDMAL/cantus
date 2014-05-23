@@ -28,6 +28,7 @@ class FolioAdmin(admin.ModelAdmin):
 
 class ConcordanceAdmin(admin.ModelAdmin):
     actions = [reindex_in_solr]
+    readonly_fields = ('citation',)
 
 admin.site.register(Manuscript, ManuscriptAdmin)
 admin.site.register(Chant, ChantAdmin)
