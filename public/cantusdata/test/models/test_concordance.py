@@ -2,7 +2,7 @@ from django.test import TestCase
 from cantusdata.models.concordance import Concordance
 
 
-class ChantModelTestCase(TestCase):
+class ConcordanceModelTestCase(TestCase):
 
     def setUp(self):
         Concordance.objects.create(letter_code="A",
