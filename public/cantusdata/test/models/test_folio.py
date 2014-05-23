@@ -18,19 +18,13 @@ class FolioModelTestCase(TestCase):
         # Folio has no chants yet
         self.assertEqual(folio.chant_count, 0)
         # We are going to give it a chant
-        chant = Chant()
-        chant.sequence = 2
-        chant.manuscript = manuscript
-        chant.folio = folio
-        chant.save()
+        chant = Chant.objects.create(sequence=2, manuscript=manuscript,
+                                     folio=folio)
         # After saving the chant, the folio should have 1 chant
         self.assertEqual(folio.chant_count, 1)
         # Now we want to try it again and see if we go to 2
-        second_chant = Chant()
-        second_chant.sequence = 5
-        second_chant.manuscript = manuscript
-        second_chant.folio = folio
-        second_chant.save()
+        second_chant = Chant.objects.create(sequence=5, manuscript=manuscript,
+                                            folio=folio)
         # After saving the chant, the folio should have 1 chant
         self.assertEqual(folio.chant_count, 2)
         # Now we test deletes
