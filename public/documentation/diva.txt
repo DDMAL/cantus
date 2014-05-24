@@ -8,16 +8,18 @@ http://supervisord.org/configuration.html#fcgi-program-x-section-settings
 To start or stop nginx
 Brew services start(restart/stop) nginx
 
-Error log : /usr/local/var/log/nginx
-check log : tail -fn0 error.log
+Error log is at /usr/local/var/log/nginx
+to check error log : tail -fn0 error.log
 Modified the config files:
 
 /usr/local/etc/nginx/nginx.conf
 /usr/local/etc/nginx/sites-enabled/localhost.conf
 /usr/local/etc/supervisor/conf.d/iipserver.conf
 
-iipserver running
-http://localhost:8080/fcgi-bin/iipsrv.fcgi
+To check if the iipserver is running, go to
+http://localhost:8001/fcgi-bin/iipsrv.fcgi
+
+TO CKECK: fcgi-bin/iipserver.fcgi is alias of 
 /usr/local/share/iipimage/iipsrv.fcgi
 
 
@@ -27,8 +29,9 @@ convert the images for DIVA:
 for st-gallen, use images in
 Gershwin: Shared2/St_Gallen/images(raw)/highres PNG
 
-Process.py convert images to tiff then to jpeg2000 using kdu_compress script
+process.py convert images to tiff then to jpeg2000 using kdu_compress script
 
+DEBUG: 
 brew libtool
 brew uninstall libpng, png, libtiff, imagemagick
 brew install libpng jpeg libtiff
@@ -38,25 +41,25 @@ in /Users/weigao/Documents/development/diva.js/build/processing
 PATH_TO_KDU_COMPRESS = "/usr/bin/kdu_compress"
 
 using the process.py to convert  high resolution png to tiff
-python process.py -t jpeg /Users/weigao/Documents/development/divatest/testing testout testout-json
+python process.py -t tiff /Users/weigao/Documents/development/divatest/testing testout testout-json
+(because there is a problem with kdu_compress, we will only use process.py to convert to tiff.)
 
-kdu_compress can’t read tiff, needs another version
+assume we have tiff images, to check if they work with the iipserver.
+http://localhost:8001/fcgi-bin/iipserver.fcgi?FIF=path/to/image&CVT=JPG
+in my case:
+http://localhost:8001/fcgi-bin/iipserver.fcgi?FIF=/Users/weigao/Documents/development/diva.js/build/demo/images/csg-0390_022.tiff&CVT=JPG
 
-assume we have tiff images, they work with Iipimage.
-http://localhost:8080/fcgi-bin/iipsrv.fcgi?FIF=/Users/weigao/Documents/csg-0390_000a.tif&CVT=JPG
+
+However, when I modified single.html to display a local image, I get 
+GET http://localhost:8001/fcgi-bin/iipsrv.fcgi?FIF=/Users/weigao/Documents/development/diva.js/build/demo/images/csg-0390_022.tiff&JTL=2,7 404 not found
+
+not sure where does "JTL" come from. that's not the problem. 
+iipServerURL: "http://localhost:8001/fcgi-bin/iipserver.fcgi" ==> not iipsrv.fcgi
 
 Django running on localhost:8000
-Nginx + iipserver on localhost:8080
+Nginx + iipserver on localhost:8001
 
 
 Diva in Django:
 copied js, css, img folders from diva.js/build to cantus/static
 
-Proxy with nginx to serve both iipserver and django
-Localhost:8080/iipserver connects to iipserver
-Localhost:8080/ serves diva demo index page
-Localhost:8080/diva/ should do the same but doesn’t work
-
-
-TO DO: 
-image processing? Get complete data?

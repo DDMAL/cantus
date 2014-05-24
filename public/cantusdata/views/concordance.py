@@ -16,12 +16,12 @@ class ConcordanceDetailHTMLRenderer(CustomHTMLRenderer):
 class ConcordanceList(generics.ListCreateAPIView):
     model = Concordance
     serializer_class = ConcordanceSerializer
-    renderer_classes = (JSONRenderer, JSONPRenderer)
-                        # ConcordanceListHTMLRenderer)
+    renderer_classes = (JSONRenderer, JSONPRenderer,
+                         ConcordanceListHTMLRenderer)
 
 
 class ConcordanceDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Concordance
     serializer_class = ConcordanceSerializer
-    renderer_classes = (JSONRenderer, JSONPRenderer)
-                        # ConcordanceDetailHTMLRenderer)
+    renderer_classes = (JSONRenderer, JSONPRenderer,
+                         ConcordanceDetailHTMLRenderer)

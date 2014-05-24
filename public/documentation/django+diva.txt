@@ -6,6 +6,27 @@ pip install flup
 
 python manage.py runfcgi help
 
-  Run a fastcgi server on a UNIX domain socket (posix platforms only)
-    $ manage.py runfcgi method=prefork socket=/tmp/fcgi.sock
+Run a fastcgi server on a UNIX domain socket (posix platforms only)
 
+    python manage.py runfcgi method=prefork socket=/var/run/supervisor/django.sock
+
+can only see he manuscript list page, manuscript details can't display diva part
+
+in nginx erro log:
+WSGIServer: missing FastCGI param SERVER_PORT required by WSGI!
+
+try add 
+        fastcgi_param SERVER_ADDR $server_addr;
+        fastcgi_param SERVER_PORT $server_port;
+        fastcgi_param SERVER_NAME $server_name;
+        fastcgi_param SERVER_PROTOCOL $server_protocol;
+
+        in localhost.conf
+
+created 2 conf files in /usr/local/etc/nginx/site-enabled
+one for django and one for diva.
+
+created a socket file django.sock in /var/run/supervisor/
+
+to run the project using fcgi:
+python manage.py runfcgi method=prefork socket=/var/run/supervisor/django.sock

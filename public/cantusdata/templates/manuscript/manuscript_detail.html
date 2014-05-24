@@ -1,9 +1,20 @@
 {% extends "base.html" %}
-
 {% block body %}
-<!--     <h6>{{ content }}</h6> -->
-    <h2>{{ content.name }}</h2>
-    {% for chant in content.chants %}
-        <li><a href="{{ chant.url }}">{{ chant.incipit }}</a></li>
-    {% endfor %}
+<head>
+  <script type="text/javascript">
+      $(document).ready(function() {
+          $('#diva-wrapper').diva({
+              enableAutoHeight: true,
+              fixedHeightGrid: false,
+              iipServerURL: "http://132.206.14.201:8001/fcgi-bin/iipserver.fcgi",
+              objectData: "{{ STATIC_URL }}/st-gallen.json",
+              imageDir: "/Users/weigao/Documents/development/diva.js/build/demo/images",
+              
+          });
+      });
+  </script>
+</head>
+<body>
+    <div id="diva-wrapper"></div>
+</body>
 {% endblock %}
