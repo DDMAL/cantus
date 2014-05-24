@@ -16,12 +16,12 @@ class ManuscriptDetailHTMLRenderer(CustomHTMLRenderer):
 class ManuscriptList(generics.ListCreateAPIView):
     model = Manuscript
     serializer_class = ManuscriptSerializer
-    renderer_classes = (JSONRenderer, JSONPRenderer)
-    # ManuscriptListHTMLRenderer)
+    renderer_classes = (JSONRenderer, JSONPRenderer,
+     ManuscriptListHTMLRenderer)
 
 
 class ManuscriptDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Manuscript
     serializer_class = ManuscriptSerializer
-    renderer_classes = (JSONRenderer, JSONPRenderer)
-                        # ManuscriptDetailHTMLRenderer)
+    renderer_classes = (JSONRenderer, JSONPRenderer,
+                        ManuscriptDetailHTMLRenderer)
