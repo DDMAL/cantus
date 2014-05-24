@@ -1,6 +1,6 @@
 from django.db import models
 from cantusdata.models.chant import Chant
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
 
@@ -20,11 +20,20 @@ class Folio(models.Model):
         return u"{0} - {1}".format(self.number, self.manuscript)
 
 
+@receiver(post_delete, sender=Chant)
+def pre_chant_delete(sender, instance, **kwargs):
+    auto_count_chants(instance)
+
+
 @receiver(post_save, sender=Chant)
-def auto_count_chants(sender, instance, **kwargs):
+def post_chant_delete(sender, instance, **kwargs):
+    auto_count_chants(instance)
+
+
+def auto_count_chants(chant):
     """
-    Compute the number of chants on the folio whenever a chant is saved.
+    Compute the number of chants on the chant's folio
     """
-    folio = instance.folio
+    folio = chant.folio
     folio.chant_count = len(Chant.objects.filter(folio=folio))
     folio.save()
