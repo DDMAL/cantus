@@ -1,20 +1,28 @@
 {% extends "base.html" %}
 {% block body %}
-<head>
-  <script type="text/javascript">
-      $(document).ready(function() {
-          $('#diva-wrapper').diva({
-              enableAutoHeight: true,
-              fixedHeightGrid: false,
-              iipServerURL: "http://132.206.14.201:8001/fcgi-bin/iipserver.fcgi",
-              objectData: "{{ STATIC_URL }}/st-gallen.json",
-              imageDir: "/Users/weigao/Documents/development/diva.js/build/demo/images",
-              
-          });
-      });
-  </script>
-</head>
-<body>
-    <div id="diva-wrapper"></div>
-</body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <script type="text/javascript">
+                    $(document).ready(function() {
+                        $('#diva-wrapper').diva({
+                            enableAutoHeight: true,
+                            fixedHeightGrid: false,
+                            iipServerURL: "http://132.206.14.201:8001/fcgi-bin/iipserver.fcgi",
+                            objectData: "{{ STATIC_URL }}/st-gallen.json",
+                            imageDir: "/Users/weigao/Documents/development/diva.js/build/demo/images",
+                        });
+                    });
+                </script>
+                <div id="diva-wrapper"></div>
+            </div>
+            <div class="col-md-4">
+                <ul>
+                {% for folio in content.folio_set %}
+                    <li><a href="{{ folio }}">{{ folio }}</a></li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
 {% endblock %}
