@@ -1,0 +1,74 @@
+In /usr/local/etc/nginx/sites-enabled, add two configurations files:
+localhost.conf and django.conf
+my localhost.conf looks like this:
+
+upstream iip {
+    server unix:/var/run/supervisor/iipserver.sock fail_timeout=0;
+}
+
+server {
+    listen         8001;
+    server_name  132.206.14.201;
+    root /Users/weigao/Documents/development/diva.js/build;
+
+    location /fcgi-bin/iipserver.fcgi{
+        fastcgi_pass    iip;
+        fastcgi_param   PATH_INFO $fastcgi_script_name;
+        fastcgi_param   REQUEST_METHOD $request_method;
+        fastcgi_param   QUERY_STRING $query_string;
+        fastcgi_param   CONTENT_TYPE $content_type;
+        fastcgi_param   CONTENT_LENGTH $content_length;
+    }
+}
+
+Assuming diva is cloned to /Users/weigao/Documents/development/diva.js/ and it can display
+a local image.
+you have to create the socket file iipserver.sock if it doesn't exist
+
+in django.conf< add the following:
+
+upstream django {
+    server unix:/var/run/supervisor/django.sock fail_timeout=0;
+
+}
+
+server {
+    listen         8000;
+    server_name  132.206.14.201; # this should be the ip of your server.
+    root /Users/weigao/Documents/development/st_gallen-dev/public/cantusdata/templates/;
+
+    location /static/ {
+        alias /Users/weigao/Documents/development/st_gallen-dev/public/cantusdata/static/;
+    }
+
+    location / {
+        fastcgi_pass    django;
+        fastcgi_param   PATH_INFO $fastcgi_script_name;
+        fastcgi_param   REQUEST_METHOD $request_method;
+        fastcgi_param   QUERY_STRING $query_string;
+        fastcgi_param   CONTENT_TYPE $content_type;
+        fastcgi_param   CONTENT_LENGTH $content_length;
+        fastcgi_param SERVER_ADDR $server_addr;
+        fastcgi_param SERVER_PORT $server_port;
+        fastcgi_param SERVER_NAME $server_name;
+        fastcgi_param SERVER_PROTOCOL $server_protocol;
+    }
+}
+
+Next, go to /usr/local/etc/nginx/nginx.conf
+
+add the following line at the end of the file in the http block. 
+include /usr/local/etc/nginx/sites-enabled/*.conf
+
+Finally, go to /usr/local/etc/supervisor/conf.d/iipserver.conf,add the following:
+
+[fcgi-program:iipserver]
+command=/usr/local/share/iipimage/iipsrv.fcgi
+socket=unix:/var/run/supervisor/iipserver.sock
+user=www-data
+autostart=true
+autorestart=unexpected
+redirect_stderr=true
+redirect_stdout=true
+
+
