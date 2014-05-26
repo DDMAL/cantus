@@ -16,12 +16,12 @@ class FolioDetailHTMLRenderer(CustomHTMLRenderer):
 class FolioList(generics.ListCreateAPIView):
     model = Folio
     serializer_class = FolioSerializer
-    renderer_classes = (JSONRenderer, JSONPRenderer,
-                         FolioListHTMLRenderer)
+    renderer_classes = (JSONRenderer, JSONPRenderer)
+                         #FolioListHTMLRenderer)
 
 
 class FolioDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Folio
     serializer_class = FolioSerializer
-    renderer_classes = (JSONRenderer, JSONPRenderer,
-                         FolioDetailHTMLRenderer)
+    renderer_classes = (JSONRenderer, JSONPRenderer)
+                         #FolioDetailHTMLRenderer)

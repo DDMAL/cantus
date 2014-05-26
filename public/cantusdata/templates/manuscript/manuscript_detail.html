@@ -5,13 +5,19 @@
             <div class="col-md-8">
                 <script type="text/javascript">
                     $(document).ready(function() {
+                        var dv;
                         $('#diva-wrapper').diva({
+                            enableAutoWidth: true,
                             enableAutoHeight: true,
                             fixedHeightGrid: false,
                             iipServerURL: "http://132.206.14.201:8001/fcgi-bin/iipserver.fcgi",
                             objectData: "{{ STATIC_URL }}/st-gallen.json",
                             imageDir: "/Users/weigao/Documents/development/diva.js/build/demo/images",
+                            onScroll: function () {console.log('Just scrolled to: '+ dv.getState()['i']);},
+                            // onJump: function () {console.log('Just jumped to: ' );},
+                            onDocumentLoaded: function () {console.log('Document loaded' );},
                         });
+                        var dv = $('#diva-wrapper').data('diva');
                     });
                 </script>
                 <div id="diva-wrapper"></div>
