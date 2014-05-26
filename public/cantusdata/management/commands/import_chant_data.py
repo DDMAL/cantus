@@ -42,41 +42,40 @@ class Command(BaseCommand):
         # Create a chant and save it
         for index, row in enumerate(csv_file):
             # Get the corresponding manuscript
-            manuscript_list = Manuscript.objects.filter(
-                siglum_slug=slugify(unicode(row["Siglum"])))
+            manuscript = Manuscript.objects.get(siglum=row["Siglum"])
             # Throw exception if no corresponding manuscript
-            if not manuscript_list:
+            if not manuscript:
                 raise NameError(u"Manuscript with Siglum={0} does not exist!"
                                 .format(slugify(unicode(row["Siglum"]))))
 
             chant = Chant()
-            chant.marginalia = row["Marginalia"]
-            chant.sequence = row["Sequence"]
-            chant.cantus_id = row["Cantus ID"]
-            chant.feast = row["Feast"]
-            chant.office = expandr.expand_office(row["Office"])
-            chant.genre = expandr.expand_genre(row["Genre"])
-            chant.mode = expandr.expand_mode(row["Mode"])
-            chant.differentia = row["Differentia"]
-            chant.finalis = row["Finalis"]
-            chant.incipit = row["Incipit"]
-            chant.full_text = row["Fulltext"]
-            chant.volpiano = row["Volpiano"]
-            chant.lit_position = position_expander.get_text(row["Office"],
-                                                            row["Genre"],
-                                                            row["Position"])
-            chant.manuscript = manuscript_list[0]
+            chant.marginalia = row["Marginalia"].strip()
+            chant.sequence = row["Sequence"].strip()
+            chant.cantus_id = row["Cantus ID"].strip()
+            chant.feast = row["Feast"].strip()
+            chant.office = expandr.expand_office(row["Office"].strip())
+            chant.genre = expandr.expand_genre(row["Genre"].strip())
+            chant.mode = expandr.expand_mode(row["Mode"].strip())
+            chant.differentia = row["Differentia"].strip()
+            chant.finalis = row["Finalis"].strip()
+            chant.incipit = row["Incipit"].strip()
+            chant.full_text = row["Fulltext"].strip()
+            chant.volpiano = row["Volpiano"].strip()
+            chant.lit_position = position_expander.get_text(
+                row["Office"].strip(), row["Genre"].strip(),
+                row["Position"].strip())
+            chant.manuscript = manuscript
 
             folio_code = slugify(row["Folio"].decode("utf-8"))
             # See if this folio already exists
             try:
                 folio = Folio.objects.get(number=folio_code,
-                                          manuscript=manuscript_list[0])
+                                          manuscript=manuscript)
             except Folio.DoesNotExist:
                 # If the folio doesn't exist, create it
                 folio = Folio()
                 folio.number = folio_code
-                folio.manuscript = manuscript_list[0]
+                folio.manuscript = manuscript
                 folio.save()
             chant.folio = folio
 
