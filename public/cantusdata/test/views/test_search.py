@@ -17,5 +17,4 @@ class MainViewTestCase(APITestCase):
 
     def test_get_results(self):
         response = self.client.get("/search/", {'q': '*:*'})
-        print response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
