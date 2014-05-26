@@ -1,3 +1,4 @@
+from django.middleware import transaction
 from django.test import TestCase
 from django.db import IntegrityError
 from cantusdata.models.manuscript import Manuscript
@@ -82,22 +83,11 @@ class ManuscriptModelTestCase(TestCase):
         second_chant.delete()
         self.assertEqual(set(self.first_manuscript.chant_set), set())
 
-    def test_siglum_slug(self):
+    def tearDown(self):
         """
-        Test that automatic siglum slug generation works.
+        It's important that we delete the models in the order of their
+        dependancy.
         """
-        manuscript = Manuscript.objects.get(name="MyName")
-        self.assertEqual(manuscript.siglum_slug, u"67-a-_-1")
-        # Now we want to try to change the siglum slug
-        manuscript.siglum = u"  ano ther @ attmpt"
-        manuscript.save()
-        self.assertEqual(manuscript.siglum_slug, "ano-ther-attmpt")
-
-    def test_unique_siglum_slug(self):
-        """
-        Test that the manuscript siglum is unique by asserting that an
-        IntegrityError is raised when we try to create a duplicate manuscript.
-        """
-        with self.assertRaises(IntegrityError):
-            Manuscript.objects.create(name="NumberTwo",
-                                      siglum=u"    67  a# _ 1*")
+        Chant.objects.all().delete()
+        Folio.objects.all().delete()
+        Manuscript.objects.all().delete()

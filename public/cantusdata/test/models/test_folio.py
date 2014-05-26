@@ -38,3 +38,12 @@ class FolioModelTestCase(TestCase):
         self.assertEqual(self.folio.chant_count, 1)
         second_chant.delete()
         self.assertEqual(self.folio.chant_count, 0)
+
+    def tearDown(self):
+        """
+        It's important that we delete the models in the order of their
+        dependancy.
+        """
+        Chant.objects.all().delete()
+        Folio.objects.all().delete()
+        Manuscript.objects.all().delete()
