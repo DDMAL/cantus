@@ -36,11 +36,11 @@ class Command(BaseCommand):
         # Create a manuscript and save it
         for index, row in enumerate(csv_file):
             manuscript = Manuscript()
-            manuscript.name = row["Title"].decode("utf-8")
-            manuscript.siglum = row["Siglum"].decode("utf-8")
-            manuscript.date = row["Date"].decode("utf-8")
-            manuscript.provenance = row["Provenance"].decode("utf-8")
-            manuscript.description = row["Description"].decode("utf-8")
+            manuscript.name = row["Title"].decode("utf-8").strip()
+            manuscript.siglum = row["Siglum"].decode("utf-8").strip()
+            manuscript.date = row["Date"].decode("utf-8").strip()
+            manuscript.provenance = row["Provenance"].decode("utf-8").strip()
+            manuscript.description = row["Description"].decode("utf-8").strip()
             manuscript.save()
         self.stdout.write(
             u"Successfully imported {0} manuscripts into database."
