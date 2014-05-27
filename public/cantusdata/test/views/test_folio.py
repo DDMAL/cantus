@@ -1,7 +1,7 @@
 from rest_framework.test import APITestCase
 from rest_framework import status
 
-from cantusdata.models.folio import Folio
+from cantusdata.models import Folio, Chant, Manuscript
 # Refer to http://www.django-rest-framework.org/api-guide/testing
 
 
@@ -29,3 +29,8 @@ class FolioViewTestCase(APITestCase):
     def test_get_nonexistent_detail(self):
         response = self.client.get("/chant/2f63f986449349769d7a313e0fc6edb3/")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def tearDown(self):
+        Chant.objects.all().delete()
+        Folio.objects.all().delete()
+        Manuscript.objects.all().delete()

@@ -1,6 +1,6 @@
 from rest_framework.test import APITestCase
 from rest_framework import status
-
+from cantusdata.models import Chant, Folio, Manuscript, Concordance
 # Refer to http://www.django-rest-framework.org/api-guide/testing
 
 
@@ -18,3 +18,9 @@ class MainViewTestCase(APITestCase):
     def test_get_results(self):
         response = self.client.get("/search/", {'q': '*:*'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def tearDown(self):
+        Chant.objects.all().delete()
+        Folio.objects.all().delete()
+        Concordance.objects.all().delete()
+        Manuscript.objects.all().delete()
