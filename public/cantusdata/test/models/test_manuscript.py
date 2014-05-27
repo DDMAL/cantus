@@ -8,15 +8,14 @@ from cantusdata.models.folio import Folio
 
 class ManuscriptModelTestCase(TestCase):
 
+    fixtures = ["1_users", "2_initial_data"]
+
     first_manuscript = None
     second_manuscript = None
 
     def setUp(self):
-        self.first_manuscript = Manuscript.objects.create(
-            name="MyName", siglum=u"    67  a# _ 1*", date="tomorrow",
-            provenance="provigo", description="A very nice manuscript...")
-        self.second_manuscript = Manuscript.objects.create(name="NumberTwo",
-                                                           siglum=u"abcde")
+        self.first_manuscript = Manuscript.objects.get(name="MyName")
+        self.second_manuscript = Manuscript.objects.get(name="NumberTwo")
 
     def test_unicode(self):
         self.assertEqual(self.first_manuscript.__unicode__(),
@@ -29,21 +28,21 @@ class ManuscriptModelTestCase(TestCase):
         # No folios
         self.assertEqual(self.first_manuscript.folio_count, 0)
         # One folio
-        Folio.objects.create(number="123", manuscript=self.first_manuscript)
+        Folio.objects.create(number="I", manuscript=self.first_manuscript)
         self.assertEqual(self.first_manuscript.folio_count, 1)
         # Two folios
-        Folio.objects.create(number="456", manuscript=self.first_manuscript)
+        Folio.objects.create(number="II", manuscript=self.first_manuscript)
         self.assertEqual(self.first_manuscript.folio_count, 2)
         # Make sure that a folio from another manuscript doesn't affect count
         self.assertEqual(self.second_manuscript.folio_count, 0)
-        Folio.objects.create(number="789", manuscript=self.second_manuscript)
+        Folio.objects.create(number="III", manuscript=self.second_manuscript)
         self.assertEqual(self.second_manuscript.folio_count, 1)
         self.assertEqual(self.first_manuscript.folio_count, 2)
         # First deletion
-        Folio.objects.get(number="123").delete()
+        Folio.objects.get(number="I").delete()
         self.assertEqual(self.first_manuscript.folio_count, 1)
         # Second deletion
-        Folio.objects.get(number="456").delete()
+        Folio.objects.get(number="II").delete()
         self.assertEqual(self.first_manuscript.folio_count, 0)
 
     def test_chant_set(self):
