@@ -21,10 +21,8 @@ class FolioViewTestCase(APITestCase):
         folio = Folio.objects.get(number="123")
         if not folio:
             self.fail("No folios loading!")
-        response = self.client.get("/folio/{0}".format(folio.id))
-        # TODO: Figure out why this gets us a 301 response!
-        # print response
-        self.assertEqual(response.status_code, status.HTTP_301_MOVED_PERMANENTLY)
+        response = self.client.get("/folio/{0}/".format(folio.id))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_nonexistent_detail(self):
         response = self.client.get("/chant/2f63f986449349769d7a313e0fc6edb3/")

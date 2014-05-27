@@ -21,10 +21,8 @@ class ManuscriptViewTestCase(APITestCase):
         manuscript = Manuscript.objects.get(name="MyName")
         if not manuscript:
             self.fail("No manuscripts loading!")
-        response = self.client.get("/manuscript/{0}".format(manuscript.id))
-        # TODO: Figure out why this gets us a 301 response!
-        # print response
-        self.assertEqual(response.status_code, status.HTTP_301_MOVED_PERMANENTLY)
+        response = self.client.get("/manuscript/{0}/".format(manuscript.id))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_nonexistent_detail(self):
         response = self.client.get("/manuscript/2f63f986449349769d7a313e0fc6edb3/")
