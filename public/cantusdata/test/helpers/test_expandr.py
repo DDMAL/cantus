@@ -51,16 +51,6 @@ class ExpandrFunctionsTestCase(TestCase):
             self.assertEqual(expandr.expand_mode(combination_string),
                              expected_output)
 
-
-    def recursive_permutations_helper(depth, symbols, outputs_so_far):
-        """
-        A helper for test_expand_mode()
-        """
-        outputs = list()
-        for symbol in symbols:
-            for current in outputs_so_far:
-                outputs.append(current + symbol)
-
     def test_expand_genre(self):
         self.assertEquals(expandr.expand_genre("A"), "Antiphon")
         self.assertEquals(expandr.expand_genre("AV"), "Antiphon Verse")
