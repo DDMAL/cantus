@@ -5,16 +5,12 @@ from cantusdata.models.concordance import Concordance
 
 class ConcordanceModelTestCase(TestCase):
 
+    fixtures = ["1_users", "2_initial_data"]
+
     concordance = None
 
     def setUp(self):
-        self.concordance = Concordance.objects.create(letter_code="A",
-                                   institution_city="Montreal",
-                                   institution_name="DDMAL",
-                                   library_manuscript_name="ABC123",
-                                   date="Today",
-                                   location="Saturn",
-                                   rism_code="QUE - 982")
+        self.concordance = Concordance.objects.get(letter_code="A")
 
     def test_unicode(self):
         self.assertEqual(self.concordance.__unicode__(), u"A - DDMAL")

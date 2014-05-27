@@ -7,20 +7,16 @@ from cantusdata.models.folio import Folio
 
 class ChantModelTestCase(TestCase):
 
+    fixtures = ["1_users", "2_initial_data"]
+
     manuscript = None
     folio = None
     chant = None
 
     def setUp(self):
-        self.manuscript = Manuscript.objects.create(name="MyName",
-                                siglum=u"    67  a# _ 1*", date="tomorrow",
-                                provenance="provigo",
-                                description="A very nice manuscript...")
-        self.folio = Folio.objects.create(manuscript=self.manuscript,
-                                          number="123",)
-        self.chant = Chant.objects.create(cantus_id="1234", incipit="5678",
-                                          sequence="72", folio=self.folio,
-                                          manuscript=self.manuscript)
+        self.manuscript = Manuscript.objects.get(name="MyName")
+        self.folio = Folio.objects.get(number="123")
+        self.chant = Chant.objects.get(cantus_id="1234")
 
     def test_unicode(self):
         chant = Chant.objects.get(cantus_id="1234")
