@@ -14,16 +14,14 @@ class Command(BaseCommand):
 
         filename must exist in /public/data_dumps/.
         """
-        if args:
+        if args and args[0]:
             file_name = str(args[0])
         else:
-            self.stdout.write("Please provide a file name!")
-            sys.exit(-1)
+            raise NameError("Please provide a file name!")
         try:
             csv_file = open("data_dumps/" + file_name)
         except IOError:
-            self.stdout.write(u"File {0} does not exist!".format(file_name))
-            sys.exit(-1)
+            raise IOError(u"File {0} does not exist!".format(file_name))
         if self.debug:
             self.stdout.write("Deleting all old concordance data...")
             # Nuke the db concordances
