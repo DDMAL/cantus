@@ -14,17 +14,15 @@ class Command(BaseCommand):
         a manuscript file into the db.
         filename.csv must exist in /public/data_dumps/.
         """
-        if args:
+        if args and args[0]:
             csv_file_name = args[0]
         else:
-            self.stdout.write("Please provide a file name!")
-            sys.exit(-1)
+            raise NameError("Please provide a file name!")
         try:
             csv_file = csv.DictReader(open("data_dumps/" + str(csv_file_name),
                                            "rU"))
         except IOError:
-            self.stdout.write(u"File {0} does not exist!".format(csv_file_name))
-            sys.exit(-1)
+            raise IOError(u"File {0} does not exist!".format(csv_file_name))
         if self.debug:
             self.stdout.write("Deleting all old manuscript data...")
             # Nuke the db manuscripts
