@@ -1,7 +1,7 @@
 from rest_framework.test import APITestCase
 from rest_framework import status
 
-from cantusdata.models.concordance import Concordance
+from cantusdata.models import Concordance, Chant, Folio, Manuscript
 # Refer to http://www.django-rest-framework.org/api-guide/testing
 
 
@@ -29,3 +29,9 @@ class ConcordanceViewTestCase(APITestCase):
     def test_get_nonexistent_detail(self):
         response = self.client.get("/concordance/2f63f986449349769d7a313e0fc6edb3/")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def tearDown(self):
+        Chant.objects.all().delete()
+        Folio.objects.all().delete()
+        Concordance.objects.all().delete()
+        Manuscript.objects.all().delete()
