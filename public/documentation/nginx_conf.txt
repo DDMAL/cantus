@@ -8,7 +8,7 @@ upstream iip {
 
 server {
     listen         8001;
-    server_name  132.206.14.201;
+    server_name  localhost;
     root /Users/weigao/Documents/development/diva.js/build;
 
     location /fcgi-bin/iipserver.fcgi{
@@ -64,7 +64,7 @@ Finally, go to /usr/local/etc/supervisor/conf.d/iipserver.conf,add the following
 
 [fcgi-program:iipserver]
 command=/usr/local/share/iipimage/iipsrv.fcgi
-socket=unix:/var/run/supervisor/iipserver.sock
+socket=unix:///var/run/supervisor/iipserver.sock
 user=www-data
 autostart=true
 autorestart=unexpected
