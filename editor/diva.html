@@ -20,10 +20,11 @@
 
         <!--project-specific code -->
         <script src="meiEditor.js"></script>
+        <script src="meiEditorFileUpload.js"></script>
         <script>
         $(function() 
         {
-            meiEditor = $("#mei-editor").AceMeiEditor({});
+            meiEditor = $("#mei-editor").AceMeiEditor([new meiEditorFileUpload], {});
         });
 
         </script>
