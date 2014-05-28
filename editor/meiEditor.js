@@ -13,11 +13,13 @@
         var dv;
         var editor;
         var editorWidth = .5; //how much of the screen this takes up
+        var validatorLink = "mei-Neumes.rng";
+        var validatorText;
 
         /*
             Function called when new load/save buttons are created to refresh the listeners.
         */
-        var reapplyLoadSaveListeners = function()
+        var reapplyButtonListeners = function()
         {
             $(".meiLoad").on('click', function(e)
             {
@@ -25,11 +27,17 @@
                 self.changeActivePage(fileName);
             });
 
-            $(".meiSave").on('click', function()
+            $(".meiSave").on('click', function(e)
             {
                 fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
                 self.savePageToClient(fileName);
             });
+
+            /*$(".meiValidate").on('click', function(e)
+            {
+                fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
+                self.validateMei(fileName);
+            });*/
         };
 
         /*
@@ -191,6 +199,26 @@
             saveAs(pageBlob, pageName); //download it! from FileSaver.js
         };
 
+
+        /* 
+            Validates MEI using the locally-hosted .RNG file
+            @param pageName The page to validate.
+        */
+        /*this.validateMei = function(pageName)
+        {
+            var Module = 
+            {
+                xml: pageData[pageName].doc.getAllLines().join("\n"),
+                schema: validatorText,
+                //arguments: ["--noout", "--relaxng", "http://localhost:8000/mei-Neumes.rng", "http://localhost:8000/mei/015.xml"]
+            }
+            validationWorker = new Worker("xmllintNew.js");
+            validationWorker.onmessage = function(event){
+                console.log(event.data);
+            }
+            validationWorker.postMessage(Module);
+        }*/
+
         /*
             Adds a page to the database
             @param pageDataIn The result of a FileReader.readAsText operation containing the data from the MEI file.
@@ -209,9 +237,7 @@
         {
             element.height($(window).height());
             element.append('<div id="editor"></div>' //ACE editor
-                +'<div id="diva-wrapper-wrapper">' //yup
                 +'<div id="diva-wrapper"></div>' //Diva
-                +'</div>'
                 +'<div class="clear"></div>'
                 +'<span id="hover-div"></span>' //the div that pops up when highlights are hovered over
                 +'<div id="file-upload">' //the file upload 
@@ -237,7 +263,8 @@
                 objectData: "imagesOut.json",
                 imageDir: "/opt/stgall",
                 enableHighlight: true,
-                percentOfWindowWidth: 0.5,
+                viewerWidthPadding: 0,
+                viewerHeightPadding: 0,
             });
             dv = $('#diva-wrapper').data('diva');
 
@@ -252,6 +279,16 @@
 
             //Events.subscribe("VisiblePageDidChange") - have ACE page automatically update to reflect currently viewed page?
 
+            //load in the XML validator
+
+            /*$.ajax(
+            {
+                url: validatorLink,
+                success: function(data)
+                {
+                    validatorText = data;
+                }
+            });*/
 
             //when a new file is uploaded; easier to write inline than separately because of the "this" references
             $('#fileInput').change(function(e)
@@ -268,8 +305,9 @@
                         +"<div class='meiFile' id='"+fileName+"'>"+fileName
                         +"<button class='meiLoad' pageTitle='"+fileName+"'>Load</button>"
                         +"<button class='meiSave' pageTitle='"+fileName+"'>Save</button>"
+                        //+"<button class='meiValidate' pageTitle='"+fileName+"'>Validate</button>"
                         +"</div>"); //add the file to the GUI
-                    reapplyLoadSaveListeners();
+                    reapplyButtonListeners();
                 };
                 reader.readAsText(this.files[0]);
             });
@@ -294,11 +332,12 @@
             $(window).on('resize', function ()
             {
                 windowHeight = $(window).height() - 20;
-                $("#editor").height(windowHeight);
-                $("#diva-wrapper").height(windowHeight);
-                windowWidth = $(window).width();
-                $("#editor").width(windowWidth*editorWidth - 11);
-                $("#diva-wrapper").width(windowWidth*(1 - editorWidth) - 11);
+                $("#mei-editor").height(windowHeight);
+                $("#editor").height($("#diva-wrapper").height());
+                //$("#diva-wrapper").height(windowHeight);
+                 windowWidth = $(window).width();
+                //$("#editor").width(windowWidth*editorWidth - 11);
+                //$("#diva-wrapper").width(windowWidth*(1 - editorWidth) - 11);
                 if($("#file-upload-minimized-wrapper").css('display') == ('block'))
                 {
                     halfwayThroughDiva = $("#diva-wrapper").offset().left + ($("#diva-wrapper").width() / 2);
@@ -311,7 +350,7 @@
                 }
             });
 
-            $(window).trigger('resize');
+            //$(window).trigger('resize');
         };
 
         _init();
