@@ -16,6 +16,10 @@
         var validatorLink = "mei-Neumes.rng";
         var validatorText;
 
+        //for topbar plugins
+        var numMinimized = 0;
+        var previousSizes = {};
+
         /*
             Function called when new load/save buttons are created to refresh the listeners.
         */
@@ -86,27 +90,49 @@
         /*
             Minimizes the file list.
         */
-        var minimizeFileList = function(){
-            previousWidth = $("#file-upload").width(); //needed to make it look nice. could take this out.
-            $("#file-upload-minimized-wrapper").css('display', 'block');
-            $("#file-upload-maximized-wrapper").css('display', 'none');
-            $("#file-upload").width(previousWidth);
+        var minimizeObject = function(divID){
+            //previousWidth = $("#file-upload").width(); //needed to make it look nice. could take this out.
+            previousSizes[divID] = 
+            {
+                 'left': $("#"+divID).offset().left,
+                 'top': $("#"+divID).offset().top,
+                 'width': $("#"+divID).width(),
+                 'height': $("#"+divID).height(),
+                 'margin': $("#"+divID).css('margin'),
+                 'padding': $("#"+divID).css('padding'),
+            };
 
             //get it out of the way
-            halfwayThroughDiva = $("#diva-wrapper").offset().left + ($("#diva-wrapper").width() / 2);
-            $("#file-upload").animate(
+            $("#"+divID).animate(
             {
-                'left': halfwayThroughDiva - ($("#file-upload").width() / 2),
-                'top': '50px'
+                'left': numMinimized*200,
+                'margin': '2px',
+                'width': '196px',
+                'height': 'auto',
+                'top': '0px',
+                'padding': '3px',
             }, 500);
+            $("#"+divID+"-minimized-wrapper").css('display', 'block');
+            $("#"+divID+"-maximized-wrapper").css('display', 'none');
+            numMinimized += 1;
         };
 
         /*
             Maximizes the file list.
         */
-        var maximizeFileList = function(){
-            $("#file-upload-maximized-wrapper").css('display', 'block');
-            $("#file-upload-minimized-wrapper").css('display', 'none');
+        var maximizeObject = function(divID){
+            function resetDims(){
+                $("#"+divID).css('width', 'auto');
+                $("#"+divID).css('height', 'auto');
+            }
+            $("#"+divID).animate(previousSizes[divID], 
+            {
+                duration: 500,
+                complete: resetDims 
+            });
+            $("#"+divID+"-maximized-wrapper").css('display', 'block');
+            $("#"+divID+"-minimized-wrapper").css('display', 'none');
+            numMinimized -= 1;
         };
 
         /*
@@ -236,22 +262,27 @@
         var _init = function()
         {
             element.height($(window).height());
-            element.append('<div id="editor"></div>' //ACE editor
-                +'<div id="diva-wrapper"></div>' //Diva
-                +'<div class="clear"></div>'
-                +'<span id="hover-div"></span>' //the div that pops up when highlights are hovered over
+            element.append('<div id="topbar">'
                 +'<div id="file-upload">' //the file upload 
                 +'<div id="file-upload-maximized-wrapper">' //what shows when it's maximized
                 +'<input type="file" value="Add a new file" id="fileInput">' 
                 +'<div id="file-list">Files loaded:<br></div>'
                 +'<button id="updateDiva">Update DIVA</button>'
-                +'<button id="minimize" style="float:right;">Minimize</button>'
+                +'<button id="minimizeFileUpload" style="float:right;">Minimize</button>'
                 +'</div>'
                 +'<div id="file-upload-minimized-wrapper" style="display:none;">' //or when it's minimized
                 +'<span id="file-list">Files loaded:</span>'
-                +'<button id="maximize" style="float:right;">Maximize</button>'
+                +'<button id="maximizeFileUpload" style="float:right;">Maximize</button>'
                 +'</div>'
-                +'</div>');
+                +'</div>'
+                +'</div>' //header
+                +'<div id="container">'
+                +'<div id="editor"></div>' //ACE editor
+                +'<div id="diva-wrapper"></div>' //Diva
+                +'<div class="clear"></div>'
+                +'<span id="hover-div"></span>' //the div that pops up when highlights are hovered over
+                +'</div>' //container for body
+                );
 
             //create the diva wrapper and editor
             $('#diva-wrapper').diva(
@@ -274,8 +305,14 @@
 
             //various jQuery listeners that have to be put in after the buttons exist
             $("#updateDiva").on('click', self.createHighlights);
-            $("#minimize").on('click', minimizeFileList);
-            $("#maximize").on('click', maximizeFileList);
+            $("#minimizeFileUpload").on('click', function()
+            {
+                minimizeObject("file-upload");
+            });
+            $("#maximizeFileUpload").on('click', function()
+            {
+                maximizeObject("file-upload");
+            });
 
             //Events.subscribe("VisiblePageDidChange") - have ACE page automatically update to reflect currently viewed page?
 
@@ -331,23 +368,14 @@
             //little graphics things
             $(window).on('resize', function ()
             {
-                windowHeight = $(window).height() - 20;
+                windowHeight = $(window).height() - 10;
                 $("#mei-editor").height(windowHeight);
                 $("#editor").height($("#diva-wrapper").height());
                 //$("#diva-wrapper").height(windowHeight);
                  windowWidth = $(window).width();
                 //$("#editor").width(windowWidth*editorWidth - 11);
                 //$("#diva-wrapper").width(windowWidth*(1 - editorWidth) - 11);
-                if($("#file-upload-minimized-wrapper").css('display') == ('block'))
-                {
-                    halfwayThroughDiva = $("#diva-wrapper").offset().left + ($("#diva-wrapper").width() / 2);
-                    
-                    $("#file-upload").css(
-                    {
-                        'left': halfwayThroughDiva - ($("#file-upload").width() / 2),
-                        'top': '50px'
-                    });
-                }
+                
             });
 
             //$(window).trigger('resize');

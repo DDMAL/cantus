@@ -1,5 +1,7 @@
 body{
     font-family: "Trebuchet MS", Helvetica, sans-serif;
+    margin:0px;
+    padding:0px;
 }
 .overlay-box{
     border: thin black solid;
@@ -11,22 +13,35 @@ body{
     position:absolute;
     display:none;
 }
+#topbar{
+    height:30px;
+    width:100%;
+    position:absolute;
+    overflow:scroll;
+}
+#container{
+    top:30px;
+    position:absolute;
+    height: calc(100% - 40px);
+    width: calc(100% - 20px);
+}
 #diva-wrapper{
     float:right;
     background: #DDDDDD;
     border-radius:10px;
     border:thin black solid;
-    padding-right:1px;
-    width:49%;
-    height:98%;
+    width:50%;
+    height:100%;
+    position:relative;
 }
 #editor{
     float:left;
-    width:49%;
-    height:98%;
-    top:0%;
+    width:calc(50% - 20px);
+    margin-left:5px;
+    height:100%;
     border-radius:10px;
     border:thin black solid;
+    position:relative;
 }
 #mei-editor{
     height:100%;
