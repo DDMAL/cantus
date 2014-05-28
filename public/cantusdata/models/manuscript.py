@@ -1,8 +1,9 @@
 from django.db import models
 from django.dispatch import receiver
-from django.db.models.signals import post_save, post_delete
-from cantusdata.helpers.unique_code import alpha_numeric
-import re
+from django.db.models.signals import pre_save, post_save, post_delete
+from cantusdata.models.folio import Folio
+from cantusdata.models.chant import Chant
+from django.utils.text import slugify
 
 
 class Manuscript(models.Model):
@@ -15,26 +16,39 @@ class Manuscript(models.Model):
         app_label = "cantusdata"
 
     name = models.CharField(max_length=255, blank=True, null=True)
-    siglum = models.CharField(max_length=255, unique=True, blank=True, null=True)
+    siglum = models.CharField(max_length=255, blank=True, null=True)
+    # siglum_slug = models.SlugField(max_length=255, unique=True, blank=True,
+    #                                null=True)
     #reduced max_length, should be safe
     date = models.CharField(max_length=50, blank=True, null=True)
     provenance = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
+    chant_count = models.IntegerField(default=0)
 
     def __unicode__(self):
-        return u"{0}".format(self.siglum)
+        return u"{0} - {1}".format(self.siglum, self.name)
 
     @property
-    def unique_siglum_code(self):
-        return alpha_numeric(self.siglum)
+    def folio_count(self):
+        return len(self.folio_set.all())
+
+    @property
+    def chant_set(self):
+        return Chant.objects.filter(manuscript=self)
 
 
-# maybe a function to get tht total number of chants in a manuscript
+@receiver(post_save, sender=Folio)
+def auto_count_chants(sender, instance, **kwargs):
+    """
+    Compute the number of chants on the folio whenever a chant is saved.
+    """
+    manuscript = instance.manuscript
+    count = 0
+    for folio in manuscript.folio_set.all():
+        count += folio.chant_count
+    manuscript.chant_count = count
+    manuscript.save()
 
-#    @property
-#    def chant_count(self):
-#        for p in self.pages:
-#            for c in p.getChants
 
 @receiver(post_save, sender=Manuscript)
 def solr_index(sender, instance, created, **kwargs):
@@ -43,7 +57,8 @@ def solr_index(sender, instance, created, **kwargs):
     import solr
 
     solrconn = solr.SolrConnection(settings.SOLR_SERVER)
-    record = solrconn.query("type:cantusdata_manuscript item_id:{0}".format(instance.id), q_op="AND")
+    record = solrconn.query("type:cantusdata_manuscript item_id:{0}"
+                            .format(instance.id), q_op="AND")
     if record:
         solrconn.delete(record.results[0]['id'])
     manuscript = instance
@@ -60,13 +75,14 @@ def solr_index(sender, instance, created, **kwargs):
     solrconn.add(**d)
     solrconn.commit()
 
+
 @receiver(post_delete, sender=Manuscript)
 def solr_delete(sender, instance, **kwargs):
     from django.conf import settings
     import solr
     solrconn = solr.SolrConnection(settings.SOLR_SERVER)
-    record = solrconn.query("type:cantusdata_manuscript item_id:{0}".format(instance.id), q_op="AND")
+    record = solrconn.query("type:cantusdata_manuscript item_id:{0}"
+                            .format(instance.id), q_op="AND")
     if record:
         solrconn.delete(record.results[0]['id'])
         solrconn.commit()
-
