@@ -33,11 +33,11 @@
                 self.savePageToClient(fileName);
             });
 
-            /*$(".meiValidate").on('click', function(e)
+            $(".meiValidate").on('click', function(e)
             {
                 fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
                 self.validateMei(fileName);
-            });*/
+            });
         };
 
         /*
@@ -204,7 +204,7 @@
             Validates MEI using the locally-hosted .RNG file
             @param pageName The page to validate.
         */
-        /*this.validateMei = function(pageName)
+        this.validateMei = function(pageName)
         {
             var Module = 
             {
@@ -217,7 +217,7 @@
                 console.log(event.data);
             }
             validationWorker.postMessage(Module);
-        }*/
+        }
 
         /*
             Adds a page to the database
@@ -281,14 +281,14 @@
 
             //load in the XML validator
 
-            /*$.ajax(
+            $.ajax(
             {
                 url: validatorLink,
                 success: function(data)
                 {
                     validatorText = data;
                 }
-            });*/
+            });
 
             //when a new file is uploaded; easier to write inline than separately because of the "this" references
             $('#fileInput').change(function(e)
@@ -305,7 +305,7 @@
                         +"<div class='meiFile' id='"+fileName+"'>"+fileName
                         +"<button class='meiLoad' pageTitle='"+fileName+"'>Load</button>"
                         +"<button class='meiSave' pageTitle='"+fileName+"'>Save</button>"
-                        //+"<button class='meiValidate' pageTitle='"+fileName+"'>Validate</button>"
+                        +"<button class='meiValidate' pageTitle='"+fileName+"'>Validate</button>"
                         +"</div>"); //add the file to the GUI
                     reapplyButtonListeners();
                 };

@@ -4,7 +4,6 @@ this.addEventListener('message', function(event){
   Module['print'] = function(x) {
       postMessage(x);
     };
-  }
   Module['printErr'] = function(x) {
     postMessage(x);
   };
