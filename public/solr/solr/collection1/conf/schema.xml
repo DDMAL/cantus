@@ -114,6 +114,7 @@
     <field name="Siglum" type="text_general" indexed="true" stored="true"/>
     <field name="Date" type="string" indexed="true" stored="true"/>
     <field name="Provenance" type="text_general" indexed="true" stored="true"/>
+    <field name="Description" type="text_general" indexed="true" stored="true"/>
 
     <field name="Marg" type="text_general" indexed="true" stored="true"/>
     <field name="Folio" type="text_general" indexed="true" stored="true"/>
@@ -134,9 +135,12 @@
     <field name="Finalis" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="Incipit" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="FullText" type="text_general" indexed="true" stored="true" multiValued="false" />
-    <!-- not sure how to store concordances.  -->
-    <field name="Concordances" type="text_general" indexed="true" stored="true" multiValued="true" />
-    <!-- <field name="Volpiano" type="text_general" indexed="true" stored="true" multiValued="false" /> -->
+
+
+     <!-- Fields related to concordances  -->
+    <field name="concordance_citation" type="text_general" indexed="true" stored="true" />
+
+     <!-- <field name="Volpiano" type="text_general" indexed="true" stored="true" multiValued="false" /> -->
 
 
    <!-- Common metadata fields, named specifically to match up with

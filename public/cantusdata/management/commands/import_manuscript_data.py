@@ -1,32 +1,45 @@
-from django.core.management.base import BaseCommand, CommandError
-from django.conf import settings
+from django.core.management.base import BaseCommand
 from cantusdata.models.manuscript import Manuscript
-import re
 import csv
+import sys
 
 
 class Command(BaseCommand):
     args = ""
+    debug = True
 
     def handle(self, *args, **kwargs):
         """
         Run "python manage.py import_manuscript_data filename.csv" to import
-        a manuscript file into the db.  filename.csv must exist in /public/data_dumps/.
+        a manuscript file into the db.
+        filename.csv must exist in /public/data_dumps/.
         """
-        csv_file_name = args[0]
-        # Nuke the db manuscripts
-        Manuscript.objects.all().delete()
+        if args and args[0]:
+            csv_file_name = args[0]
+        else:
+            raise NameError("Please provide a file name!")
+        try:
+            csv_file = csv.DictReader(open("data_dumps/" + str(csv_file_name),
+                                           "rU"))
+        except IOError:
+            raise IOError(u"File {0} does not exist!".format(csv_file_name))
+        if self.debug:
+            self.stdout.write("Deleting all old manuscript data...")
+            # Nuke the db manuscripts
+            Manuscript.objects.all().delete()
+            self.stdout.write("Old manuscript data deleted.")
         # Load in the csv file.  This is a massive list of dictionaries.
-        csv_file = csv.DictReader(open("data_dumps/" + str(csv_file_name), "rU"))
 
+        self.stdout.write("Starting manuscript import process.")
         # Create a manuscript and save it
-        for row in csv_file:
+        for index, row in enumerate(csv_file):
             manuscript = Manuscript()
-            # TODO: Figure out what encodings to use...
-            manuscript.name = unicode(row["Title"], "Latin-1")
-            manuscript.siglum = unicode(row["Siglum"], "Latin-1")
-            manuscript.date = unicode(row["Date"], "Latin-1")
-            manuscript.provenance = unicode(row["Provenance"], "Latin-1")
-            manuscript.description = unicode(row["Description"], "Latin-1")
+            manuscript.name = row["Title"].decode("utf-8").strip()
+            manuscript.siglum = row["Siglum"].decode("utf-8").strip()
+            manuscript.date = row["Date"].decode("utf-8").strip()
+            manuscript.provenance = row["Provenance"].decode("utf-8").strip()
+            manuscript.description = row["Description"].decode("utf-8").strip()
             manuscript.save()
-        self.stdout.write("Successfully imported manuscripts into database.")
+        self.stdout.write(
+            u"Successfully imported {0} manuscripts into database."
+            .format(index))

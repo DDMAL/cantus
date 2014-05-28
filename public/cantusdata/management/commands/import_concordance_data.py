@@ -1,41 +1,61 @@
+from django.core.management.base import BaseCommand
 from cantusdata.models import Concordance
-from django.core.management.base import BaseCommand, CommandError
+import sys
 
 
 class Command(BaseCommand):
     args = ""
+    debug = True
 
     def handle(self, *args, **kwargs):
         """
+        Run "python manage.py import_concordance_data filename" to import
+        a concordance list file into the db.
+
+        filename must exist in /public/data_dumps/.
         """
-        file = open("data_dumps/" + str(args[0]))
-        # Nuke the db concordances
-        Concordance.objects.all().delete()
+        if args and args[0]:
+            file_name = str(args[0])
+        else:
+            raise NameError("Please provide a file name!")
+        try:
+            csv_file = open("data_dumps/" + file_name)
+        except IOError:
+            raise IOError(u"File {0} does not exist!".format(file_name))
+        if self.debug:
+            self.stdout.write("Deleting all old concordance data...")
+            # Nuke the db concordances
+            Concordance.objects.all().delete()
+            self.stdout.write("Old concordance data deleted.")
         # Every line is a new concordance
-        for line in file.readlines():
+        self.stdout.write("Starting concordance import process.")
+        for index, line in enumerate(csv_file.readlines()):
             # This method is pretty hacky, but it seems to work
             concordance = Concordance()
 
-            concordance.letter_code = line.split(" ", 1)[0]
+            concordance.letter_code = line.split(" ", 1)[0].strip()
             line = line.split(" ", 1)[1]
 
-            concordance.institution_city = line.split(",", 1)[0]
+            concordance.institution_city = line.split(",", 1)[0].strip()
             line = line.split(",", 1)[1]
 
-            concordance.institution_name = line.split(",", 1)[0]
+            concordance.institution_name = line.split(",", 1)[0].strip()
             line = line.split(",", 1)[1]
 
-            concordance.sections = line.split(" (", 1)[0]
+            concordance.library_manuscript_name = line.split(" (", 1)[0].strip()
             line = line.split(" (", 1)[1]
 
-            concordance.date = line.split(", from", 1)[0]
+            concordance.date = line.split(", from", 1)[0].strip()
             line = line.split(", from", 1)[1]
 
-            concordance.location = line.split(")", 1)[0]
+            concordance.location = line.split(")", 1)[0].strip()
             line = line.split(")", 1)[1]
 
             line = line.split(": ", 1)[1]
 
-            concordance.rism_code = line.split("]", 1)[0]
+            concordance.rism_code = line.split("]", 1)[0].strip()
 
             concordance.save()
+        self.stdout.write(
+            u"Successfully imported {0} concordances into database."
+            .format(index))
