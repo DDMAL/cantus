@@ -1,21 +1,32 @@
-var meiEditorFileUpload = function(){
-	var retval = {
+var meiEditorFileUpload = function()
+{
+	var retval = 
+	{
 		divName: "file-upload",
 	    maximizedAppearance: '<input type="file" value="Add a new file" id="fileInput">' 
-        +'<div id="file-list">Files loaded:<br></div>'
-        +'<button id="updateDiva">Update DIVA</button>'
-        +'<button class="minimize" name="file-upload" style="float:right;">Minimize</button>',
-    	minimizedAppearance: '<span id="file-list">Files loaded:</span>'
-        +'<button class="maximize" name="file-upload" style="float:right;">Maximize</button>',
-	    _init: function(meiEditor){
+	        +'<div id="file-list">Files loaded:<br></div>'
+	        +'<button id="updateDiva">Update DIVA</button>'
+	        +'<button class="minimize" name="file-upload" style="float:right;">Minimize</button>',
+    	minimizedAppearance: '<span>Files loaded:</span>'
+        	+'<button class="maximize" name="file-upload" style="float:right;">Maximize</button>',
+	    _init: function(meiEditor, meiEditorSettings){
+	    	$.extend(meiEditorSettings, {
+	    		activeDoc: "",
+	    		currentPage: "",
+	            currentDocPosition: {'row': 1, 'col': 1},
+	            pageData: {},
+	            orderedPageData: [],
+	            neumeObjects: [],
+	            currentTarget: "",
+	    	});
 	        /*
 	            Changes the active page in the editor.
 	            @param pageName The page to switch to.
 	        */
 	        meiEditor.changeActivePage = function(pageName)
 	        {
-	            editor.setSession(pageData[pageName]); //inserts text
-	            activeDoc = editor.getSession().doc;
+	            meiEditorSettings.editor.setSession(pageData[pageName]); //inserts text
+	            meiEditorSettings.activeDoc = editor.getSession().doc;
 	        };
 
 	        /*
@@ -45,8 +56,8 @@ var meiEditorFileUpload = function(){
 	        */
 	        meiEditor.addPage = function(pageDataIn, fileNameIn)
 	        {
-	            pageData[fileNameIn] = new ace.EditSession(pageDataIn, "ace/mode/xml"); //add the file's data into a "pageData" array that will eventually feed into the ACE editor
-	            orderedPageData.push(fileNameIn); //keep track of the page orders to push the right highlights to the right pages
+	            meiEditorSettings.pageData[fileNameIn] = new ace.EditSession(pageDataIn, "ace/mode/xml"); //add the file's data into a "pageData" array that will eventually feed into the ACE editor
+	            meiEditorSettings.orderedPageData.push(fileNameIn); //keep track of the page orders to push the right highlights to the right pages
 	        };
 		    /* 
 	            Validates MEI using the locally-hosted .RNG file
@@ -168,14 +179,19 @@ var meiEditorFileUpload = function(){
                 reader.onload = function(e) 
                 { 
                     fileName = this.file.name
-                    self.addPage(this.result, fileName);
+                    meiEditor.addPage(this.result, fileName);
                     $("#file-list").html($("#file-list").html()
                         +"<div class='meiFile' id='"+fileName+"'>"+fileName
                         +"<button class='meiLoad' pageTitle='"+fileName+"'>Load</button>"
                         +"<button class='meiSave' pageTitle='"+fileName+"'>Save</button>"
-                        +"<button class='meiValidate' pageTitle='"+fileName+"'>Validate</button>"
                         +"</div>"); //add the file to the GUI
-                    reapplyButtonListeners();
+                   	if(typeof(meiEditorXMLValidator) !== undefined){
+	                    $("#validate-file-list").html($("#validate-file-list").html()
+	                        +"<div class='meiFile' id='"+fileName+"'>"+fileName
+	                        +"<button class='meiValidate' pageTitle='"+fileName+"'>Validate</button>"
+	                        +"</div>"); //add the file to the GUI
+                   	}
+                    meiEditor.reapplyButtonListeners();
                 };
                 reader.readAsText(this.files[0]);
             });

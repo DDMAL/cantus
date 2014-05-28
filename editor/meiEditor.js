@@ -3,18 +3,12 @@
     var AceMeiEditor = function(element, plugins, options){
         var element = $(element);
         var self = this;
-        var activeDoc;
-        var currentPage;
-        var currentDocPosition = {'row': 1, 'col': 1};
-        var pageData = {};
-        var orderedPageData = [];
-        var neumeObjects = [];
-        var currentTarget;
-        var dv;
-        var editor;
-        var editorWidth = .5; //how much of the screen this takes up
-        var validatorLink = "mei-Neumes.rng";
-        var validatorText;
+        var settings = {
+            dv: "",
+            editor: "",
+            validatorLink: "mei-Neumes.rng",
+            validatorText: "",
+        }
 
         //for topbar plugins
         var numMinimized = 0;
@@ -23,7 +17,7 @@
         /*
             Function called when new load/save buttons are created to refresh the listeners.
         */
-        var reapplyButtonListeners = function()
+        this.reapplyButtonListeners = function()
         {
             $(".meiLoad").on('click', function(e)
             {
@@ -166,18 +160,19 @@
             pluginLength = plugins.length;
             while(pluginLength--){
                 curPlugin = plugins[pluginLength];
-                $("#topbar").append('<div id="'+curPlugin.divName+'">'
+                $("#topbar").append('<div id="'+curPlugin.divName+'" class="toolbar-object">'
                     +'<div id="'+curPlugin.divName+'-maximized-wrapper">'
                     +curPlugin.maximizedAppearance
                     +'</div>'
-                    +'<div id="'+curPlugin.divName+'-minimized-wrapper">'
+                    +'<div id="'+curPlugin.divName+'-minimized-wrapper" style="display:none;">'
                     +curPlugin.minimizedAppearance
                     +'</div>'
                     +'</div>'
                     );
                 minimizeObject(curPlugin.divName, true);
                 $("#"+curPlugin.divName).draggable();
-                curPlugin._init(self);
+                console.log()
+                curPlugin._init(self, settings);
             }
             //create the diva wrapper and editor
             $('#diva-wrapper').diva(
@@ -193,11 +188,11 @@
                 viewerWidthPadding: 0,
                 viewerHeightPadding: 0,
             });
-            dv = $('#diva-wrapper').data('diva');
+            settings.dv = $('#diva-wrapper').data('diva');
 
-            editor = ace.edit("editor"); //create the ACE editor
-            editor.setTheme("ace/theme/ambiance");
-            editor.getSession().setMode("ace/mode/xml");
+            settings.editor = ace.edit("editor"); //create the ACE editor
+            settings.editor.setTheme("ace/theme/ambiance");
+            settings.editor.getSession().setMode("ace/mode/xml");
 
             //various jQuery listeners that have to be put in after the buttons exist
             $(".minimize").on('click', function(event)
@@ -215,10 +210,10 @@
 
             $.ajax(
             {
-                url: validatorLink,
+                url: settings.validatorLink,
                 success: function(data)
                 {
-                    validatorText = data;
+                    settings.validatorText = data;
                 }
             });
 

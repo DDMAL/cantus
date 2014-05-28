@@ -21,10 +21,11 @@
         <!--project-specific code -->
         <script src="meiEditor.js"></script>
         <script src="meiEditorFileUpload.js"></script>
+        <script src="meiEditorXMLValidator.js"></script>
         <script>
         $(function() 
         {
-            meiEditor = $("#mei-editor").AceMeiEditor([new meiEditorFileUpload], {});
+            meiEditor = $("#mei-editor").AceMeiEditor([new meiEditorFileUpload, new meiEditorXMLValidator], {});
         });
 
         </script>
