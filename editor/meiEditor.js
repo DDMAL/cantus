@@ -151,6 +151,32 @@
         };
 
         /*
+            Function to be called on resizing. Not leaving this anonymous so that it can be called at the beginning without triggering the Diva .resize() listener.
+        */
+        var resizeComponents = function()
+        {
+            topbarHeight = $("#topbar").height();
+            $("#topbar").css({
+                'left': '0.2%',
+                'width': '99.6%' 
+            });
+            $("#container").css({
+                'top': topbarHeight,
+                'left': '0.2%',
+                'width': '99.6%',
+                'height': window.height - topbarHeight,
+            });
+            containerWidth = $("#container").width();
+            innerMargin = containerWidth * 0.006; //for inner margin
+            windowHeight = $(window).height() - topbarHeight - 7; //7 for padding
+            $("#mei-editor").height(windowHeight);
+            $("#diva-wrapper").height(windowHeight);
+            $("#editor").height(windowHeight);
+            $("#editor").width((containerWidth / 2) - innerMargin);
+            $("#diva-wrapper").width((containerWidth / 2) - innerMargin);
+        }
+
+        /*
             Creates highlights based on the ACE documents.
         */
         this.createHighlights = function()
@@ -289,6 +315,7 @@
             {
                 contained: true,
                 enableAutoHeight: true,
+                enableAutoWidth: true,
                 fixedHeightGrid: false,
                 iipServerURL: "http://132.206.14.136:8000/fcgi-bin/iipsrv.fcgi",
                 objectData: "imagesOut.json",
@@ -366,19 +393,9 @@
             });
 
             //little graphics things
-            $(window).on('resize', function ()
-            {
-                windowHeight = $(window).height() - 10;
-                $("#mei-editor").height(windowHeight);
-                $("#editor").height($("#diva-wrapper").height());
-                //$("#diva-wrapper").height(windowHeight);
-                 windowWidth = $(window).width();
-                //$("#editor").width(windowWidth*editorWidth - 11);
-                //$("#diva-wrapper").width(windowWidth*(1 - editorWidth) - 11);
-                
-            });
+            $(window).on('resize', resizeComponents);
 
-            //$(window).trigger('resize');
+            resizeComponents();
         };
 
         _init();
