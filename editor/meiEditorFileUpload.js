@@ -7,8 +7,7 @@ var meiEditorFileUpload = function()
             +'<div id="file-list">Files loaded:<br></div>'
             +'<button id="updateDiva">Update DIVA</button>'
             +'<button class="minimize" name="file-upload" style="float:right;">Minimize</button>',
-        minimizedAppearance: '<span>Files loaded:</span>'
-            +'<button class="maximize" name="file-upload" style="float:right;">Maximize</button>',
+        minimizedAppearance: '<span>Files loaded:</span>',
         _init: function(meiEditor, meiEditorSettings)
         {
             $.extend(meiEditorSettings, {
@@ -35,7 +34,7 @@ var meiEditorFileUpload = function()
                 Prompts local download of a page.
                 @param pageName The page to download.
             */
-            meiEditor.savePageToClient = function(pageName)
+            meiEditor.savePageToClient = function(pageName, pageNameOriginal)
             {
                 formatToSave = function(lineIn, indexIn)
                 {          
@@ -47,9 +46,9 @@ var meiEditorFileUpload = function()
 
                 var formattedData = [];
                 var lastRow = pageData[pageName].doc.getLength() - 1; //0-indexed
-                pageData[pageName].doc.getLines(0, lastRow).forEach(formatToSave); //format each
+                meiEditorSettings.pageData[pageName].doc.getLines(0, lastRow).forEach(formatToSave); //format each
                 var pageBlob = new Blob(formattedData, {type: "text/plain;charset=utf-8"}); //create a blob
-                saveAs(pageBlob, pageName); //download it! from FileSaver.js
+                meiEditor.saveAs(pageBlob, pageNameOriginal); //download it! from FileSaver.js
             };
 
             /*
@@ -113,12 +112,12 @@ var meiEditorFileUpload = function()
                 };
 
                 var x2js = new X2JS(); //from xml2json.js
-                var pageIndex = orderedPageData.length;
-                dv.resetHighlights();
+                var pageIndex = omeiEditorSettings.rderedPageData.length;
+                meiEditorSettings.dv.resetHighlights();
                 while(pageIndex--)
                 { //for each page
-                    curPage = orderedPageData[pageIndex];
-                    pageText = pageData[curPage].doc.getAllLines().join("\n"); //get the information from the page expressed in one string
+                    curPage = meiEditorSettings.orderedPageData[pageIndex];
+                    pageText = meiEditorSettings.pageData[curPage].doc.getAllLines().join("\n"); //get the information from the page expressed in one string
                     jsonData = x2js.xml_str2json(pageText); //turn this into a JSON "dict"
                     regions = [];
 
@@ -147,7 +146,7 @@ var meiEditorFileUpload = function()
                         regions.push({'width': neume_width, 'height': neume_height, 'ulx': neume_ulx, 'uly': neume_uly, 'divID': neumeID});
                     }
                     //at the end of each page, call the highlights
-                    dv.highlightOnPage(pageIndex, regions, undefined, "overlay-box", reapplyHoverListener);
+                    meiEditorSettings.dv.highlightOnPage(pageIndex, regions, undefined, "overlay-box", reapplyHoverListener);
                 }
             };
 
@@ -169,7 +168,7 @@ var meiEditorFileUpload = function()
                         + "<div class='meiFile' id='" + fileName + "'>" + fileNameTitle
                         + "<span class='meiFileButtons'>"
                         + "<button class='meiLoad' pageTitle='" + fileName + "'>Load</button>"
-                        + "<button class='meiSave' pageTitle='" + fileName + "'>Save</button>"
+                        + "<button class='meiSave' pageTitle='" + fileName + "' pageTitleOrig='" + fileNameTitle + "'>Save</button>"
                         + "</span>"
                         + "</div>"); //add the file to the GUI
 
@@ -179,7 +178,7 @@ var meiEditorFileUpload = function()
                             + "<div class='meiFile' id='validate-" + fileName + "'>" + fileNameTitle
                             + "<span class='meiFileButtons'>"
                             + "<button class='meiClear' pageTitle='" + fileName + "'>Clear output</button>"
-                            + "<button class='meiValidate' pageTitle='" + fileName + "'>Validate</button>"
+                            + "<button class='meiValidate' pageTitle='" + fileName + "' pageTitleOrig='" + fileNameTitle + "'>Validate</button>"
                             + "</span>"
                             + "<div class='validateOutput' id='validate-output-" + fileName + "'></div>"
                             + "</div>");
@@ -195,19 +194,19 @@ var meiEditorFileUpload = function()
                     $(".meiLoad").on('click', function(e)
                     {
                         fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
-                        meiEditor.changeActivePage(fileName);
+                        meiEditor.changeActivePage(fileNameTitle);
                     });
 
                     $(".meiSave").on('click', function(e)
                     {
                         fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
-                        meiEditor.savePageToClient(fileName);
+                        meiEditor.savePageToClient(fileName, fileNameTitle);
                     });
 
                     $(".meiValidate").on('click', function(e)
                     {
                         fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
-                        meiEditor.validateMei(fileName);
+                        meiEditor.validateMei(fileName, fileNameTitle);
                     });
                 };
                 reader.readAsText(this.files[0]);
@@ -224,11 +223,11 @@ var meiEditorFileUpload = function()
                 */
                 var reorderFiles = function(newOrder)
                 {
-                    orderedPageData = [];
+                    meiEditorSettings.orderedPageData = [];
                     var curPage = 0;
                     while(curPage < newOrder.length) //go through new order 
                     {
-                        orderedPageData.push(newOrder[curPage]); //push them into ordered array
+                        meiEditorSettings.orderedPageData.push(newOrder[curPage]); //push them into ordered array
                         curPage++;
                     }
                 };

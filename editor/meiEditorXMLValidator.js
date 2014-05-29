@@ -2,10 +2,9 @@ var meiEditorXMLValidator = function(){
     var retval = {
         divName: "xml-validator",
         maximizedAppearance: '<div id="validate-file-list">Files to validate:<br></div>'
-        +'<button class="minimize" name="xml-validator">Minimize</button>',
-        minimizedAppearance: '<span id="validate-file-list-minimized">Files to validate:</span>'
-        +'<button class="maximize" name="xml-validator">Maximize</button>'
-        +'<span id="numNewMessages">0</span>',
+        + '<button class="minimize" name="xml-validator">Minimize</button>',
+        minimizedAppearance: '<span id="numNewMessages">0</span>'
+        + '<span id="validate-file-list-minimized">Files to validate:</span>',
         _init: function(meiEditor, meiEditorSettings){
             $.extend(meiEditorSettings, {
                 validatorLink: "mei-Neumes.rng",
@@ -15,13 +14,13 @@ var meiEditorXMLValidator = function(){
                 Validates MEI using the locally-hosted .RNG file
                 @param pageName The page to validate.
             */
-            meiEditor.validateMei = function(pageName)
+            meiEditor.validateMei = function(pageName, pageNameOriginal)
             {
                 var Module = 
                 {
                     xml: meiEditorSettings.pageData[pageName].doc.getAllLines().join("\n"),
                     schema: meiEditorSettings.validatorText,
-                    title: pageName
+                    title: pageNameOriginal
                 }
                 validationWorker = new Worker("xmllintNew.js");
                 validationWorker.pageName = pageName;

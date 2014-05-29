@@ -70,7 +70,6 @@
                 },
                 stop: function(e, ui)
                 {
-                    console.log("triggered");
                     $(e.target).css('z-index', '5');
                     reorderToolbarObjects();
                 },
@@ -202,6 +201,7 @@
                     + '</div>'
                     + '<div id="' + curPlugin.divName + '-minimized-wrapper" style="display:none;">'
                     + curPlugin.minimizedAppearance
+                    + '<button class="maximize" name="' + curPlugin.divName + '">Maximize</button>'
                     + '</div>'
                     + '</div>'
                     );
