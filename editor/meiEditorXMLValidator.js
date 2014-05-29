@@ -1,10 +1,9 @@
 var meiEditorXMLValidator = function(){
     var retval = {
         divName: "xml-validator",
-        maximizedAppearance: '<div id="validate-file-list">Files to validate:<br></div>'
-        + '<button class="minimize" name="xml-validator">Minimize</button>',
-        minimizedAppearance: '<span id="numNewMessages">0</span>'
-        + '<span id="validate-file-list-minimized">Files to validate:</span>',
+        minimizedTitle: "Files to validate:",
+        maximizedAppearance: '<div id="validate-file-list">Files to validate:<br></div>',
+        minimizedAppearance: '<span id="numNewMessages">0</span>',
         _init: function(meiEditor, meiEditorSettings){
             $.extend(meiEditorSettings, {
                 validatorLink: "mei-Neumes.rng",

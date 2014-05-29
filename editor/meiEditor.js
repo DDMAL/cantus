@@ -198,8 +198,10 @@
                 $("#topbar").append('<div id="' + curPlugin.divName + '" class="toolbar-object">'
                     + '<div id="' + curPlugin.divName + '-maximized-wrapper">'
                     + curPlugin.maximizedAppearance
+                    + '<button class="minimize" name="' + curPlugin.divName + '">Minimize</button>'
                     + '</div>'
                     + '<div id="' + curPlugin.divName + '-minimized-wrapper" style="display:none;">'
+                    + '<span id="' + curPlugin.divName + '-minimized-title">' + curPlugin.minimizedTitle + '</span>'
                     + curPlugin.minimizedAppearance
                     + '<button class="maximize" name="' + curPlugin.divName + '">Maximize</button>'
                     + '</div>'

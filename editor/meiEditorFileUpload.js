@@ -5,9 +5,9 @@ var meiEditorFileUpload = function()
         divName: "file-upload",
         maximizedAppearance: '<input type="file" value="Add a new file" id="fileInput">' 
             +'<div id="file-list">Files loaded:<br></div>'
-            +'<button id="updateDiva">Update DIVA</button>'
-            +'<button class="minimize" name="file-upload" style="float:right;">Minimize</button>',
-        minimizedAppearance: '<span>Files loaded:</span>',
+            +'<button id="updateDiva">Update DIVA</button>',
+        minimizedTitle: 'Files loaded:',
+        minimizedAppearance: '',
         _init: function(meiEditor, meiEditorSettings)
         {
             $.extend(meiEditorSettings, {
