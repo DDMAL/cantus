@@ -10,6 +10,22 @@ var meiEditorXMLValidator = function(){
                 validatorText: "",
             });
             /* 
+                Function called to reapply button listeners
+            */
+            var reapplyXMLValidatorButtonListeners = function(){
+                $(".meiClear").on('click', function(e)
+                {
+                    fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
+                    $("#validate-output-" + fileName).html("");
+                });
+                $(".meiValidate").on('click', function(e)
+                {
+                    fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
+                    meiEditor.validateMei(fileName, fileNameOriginal);
+                });
+            }
+            
+            /* 
                 Validates MEI using the locally-hosted .RNG file
                 @param pageName The page to validate.
             */
@@ -50,20 +66,29 @@ var meiEditorXMLValidator = function(){
                     + "</span>"
                     + "<div class='validateOutput' id='validate-output-" + fileName + "'></div>"
                     + "</div>");
+                reapplyXMLValidatorButtonListeners();
+            });
 
-                var reapplyXMLValidatorButtonListeners = function(){
-                    $(".meiClear").on('click', function(e)
+            meiEditor.events.subscribe("NewOrder", function(newOrder){
+                {
+                    var tempChildren = [];
+                    var curPage = 0;
+                    while(curPage < newOrder.length)
                     {
-                        fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
-                        console.log(fileName);
-                        $("#validate-output-" + fileName).html("");
-                        console.log($("#validate-output-" + fileName).html());
-                    });
-                    $(".meiValidate").on('click', function(e)
-                    {
-                        fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
-                        meiEditor.validateMei(fileName, fileNameOriginal);
-                    });
+                        var curPageTitle = newOrder[curPage];
+                        var curChildren = $("#validate-file-list").children();
+                        var curCount = curChildren.length;
+                        while(curCount--)
+                        {
+                            if($(curChildren[curCount]).attr('pageTitle') == curPageTitle)
+                            {
+                                tempChildren.push(curChildren[curCount].outerHTML);
+                                break;
+                            } 
+                        }
+                        curPage++;
+                    }
+                    $("#validate-file-list").html(tempChildren.join(""));
                 }
                 reapplyXMLValidatorButtonListeners();
             });

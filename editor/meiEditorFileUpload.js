@@ -219,27 +219,7 @@ var meiEditorFileUpload = function()
                         meiEditorSettings.orderedPageData.push(newOrder[curPage]); //push them into ordered array
                         curPage++;
                     }
-                    if(typeof(meiEditorXMLValidator) !== undefined) //if using the validator plugin
-                    {
-                        var tempChildren = [];
-                        var curPage = 0;
-                        while(curPage < newOrder.length)
-                        {
-                            var curPageTitle = newOrder[curPage];
-                            var curChildren = $("#validate-file-list").children();
-                            var curCount = curChildren.length;
-                            while(curCount--)
-                            {
-                                if($(curChildren[curCount]).attr('pageTitle') == curPageTitle)
-                                {
-                                    tempChildren.push(curChildren[curCount].outerHTML);
-                                    break;
-                                } 
-                            }
-                            curPage++;
-                        }
-                        $("#validate-file-list").html(tempChildren.join(""));
-                    }
+                    meiEditor.events.publish("NewOrder", [newOrder]);
                 };
                 fileList = $("#file-list .meiFile"); //gets a list of all objects with the "meiFile" class
                 newOrder = [];
