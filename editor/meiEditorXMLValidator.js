@@ -41,6 +41,33 @@ var meiEditorXMLValidator = function(){
                 validationWorker.postMessage(Module);
             }
 
+            meiEditor.events.subscribe("NewFile", function(fileData, fileName, fileNameOriginal){
+                $("#validate-file-list").html($("#validate-file-list").html()
+                    + "<div class='meiFile' pageTitle='" + fileName + "' id='validate-" + fileName + "'>" + fileNameOriginal
+                    + "<span class='meiFileButtons'>"
+                    + "<button class='meiClear' pageTitle='" + fileName + "'>Clear output</button>"
+                    + "<button class='meiValidate' pageTitle='" + fileName + "' pageTitleOrig='" + fileNameOriginal + "'>Validate</button>"
+                    + "</span>"
+                    + "<div class='validateOutput' id='validate-output-" + fileName + "'></div>"
+                    + "</div>");
+
+                var reapplyXMLValidatorButtonListeners = function(){
+                    $(".meiClear").on('click', function(e)
+                    {
+                        fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
+                        console.log(fileName);
+                        $("#validate-output-" + fileName).html("");
+                        console.log($("#validate-output-" + fileName).html());
+                    });
+                    $(".meiValidate").on('click', function(e)
+                    {
+                        fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
+                        meiEditor.validateMei(fileName, fileNameOriginal);
+                    });
+                }
+                reapplyXMLValidatorButtonListeners();
+            });
+
             //load in the XML validator
 
             $.ajax(

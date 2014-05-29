@@ -11,6 +11,77 @@
         //for topbar plugins
         var previousSizes = {};
 
+        this.events = (function (){
+            var cache = {},
+            /**
+             *      Events.publish
+             *      e.g.: Events.publish("/Article/added", [article], this);
+             *
+             *      @class Events
+             *      @method publish
+             *      @param topic {String}
+             *      @param args     {Array}
+             *      @param scope {Object} Optional
+             */
+            publish = function (topic, args, scope) {
+                if (cache[topic]) {
+                    var thisTopic = cache[topic],
+                        i = thisTopic.length;
+
+                    while (i--) {
+                        thisTopic[i].apply( scope || this, args || []);
+                    }
+                }
+            },
+            /**
+             *      Events.subscribe
+             *      e.g.: Events.subscribe("/Article/added", Articles.validate)
+             *
+             *      @class Events
+             *      @method subscribe
+             *      @param topic {String}
+             *      @param callback {Function}
+             *      @return Event handler {Array}
+             */
+            subscribe = function (topic, callback) {
+                if (!cache[topic]) {
+                    cache[topic] = [];
+                }
+                cache[topic].push(callback);
+                return [topic, callback];
+            },
+            /**
+             *      Events.unsubscribe
+             *      e.g.: var handle = Events.subscribe("/Article/added", Articles.validate);
+             *              Events.unsubscribe(handle);
+             *
+             *      @class Events
+             *      @method unsubscribe
+             *      @param handle {Array}
+             *      @param completely {Boolean}
+             */
+            unsubscribe = function (handle, completely) {
+                var t = handle[0],
+                    i = cache[t].length;
+
+                if (cache[t]) {
+                    while (i--) {
+                        if (cache[t][i] === handle[1]) {
+                            cache[t].splice(cache[t][i], 1);
+                            if(completely){ delete cache[t]; }
+                        }
+                    }
+                }
+            };
+
+            return {
+                    publish: publish,
+                    subscribe: subscribe,
+                    unsubscribe: unsubscribe
+            };
+        }());
+        
+
         /*
             Minimizes an object.
             @param divID The root ID of the object to minimize.
@@ -34,7 +105,8 @@
                  'padding': $("#" + divID).css('padding'),
             };
 
-            if(!animateOverride){
+            if(!animateOverride)
+            {
                 $("#" + divID).animate(
                 {
                     'left': numMinimized * 300,
@@ -44,7 +116,9 @@
                     'top': '0px',
                     'padding': '1px 8px 0px 8px',
                 }, 500);
-            } else {
+            } 
+            else 
+            {
                 $("#" + divID).css(
                 {
                     'left': numMinimized * 300,
