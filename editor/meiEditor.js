@@ -11,7 +11,6 @@
         }
 
         //for topbar plugins
-        var numMinimized = 0;
         var previousSizes = {};
 
         /*
@@ -24,7 +23,9 @@
             if(typeof animateOverride === undefined){
                 animateOverride = false;
             }
-            //previousWidth = $("#file-upload").width(); //needed to make it look nice. could take this out.
+
+            var numMinimized = $(".minimized").length;
+
             previousSizes[divID] = 
             {
                  'left': $("#"+divID).offset().left,
@@ -60,9 +61,44 @@
 
             $("#"+divID+"-minimized-wrapper").css('display', 'block');
             $("#"+divID+"-maximized-wrapper").css('display', 'none');
-            numMinimized += 1;
+
+            //sortable wasn't working the way I wanted it to so I implemented something manually
+            $(".toolbar-object").draggable(
+            {
+                axis: "x",
+                start: function(e, ui)
+                {
+                    $(e.target).css('z-index', '1000');
+                },
+                stop: function(e, ui)
+                {
+                    console.log("triggered");
+                    $(e.target).css('z-index', '5');
+                    reorderToolbarObjects();
+                },
+            });
+
             $("#"+divID).trigger('minimize');
+            $("#"+divID).addClass('minimized');
         };
+
+        var reorderToolbarObjects = function()
+        {
+            var numMinimized = $(".minimized").length;
+            var orderedByLeft = [];
+
+            while(numMinimized--)
+            {
+                orderedByLeft.push({'id': $($(".minimized")[numMinimized]).attr('id'), 'left': $($(".minimized")[numMinimized]).offset().left});
+            }
+
+            var sortedByLeft = jsonSort(orderedByLeft, 'left', true);
+            var numMinimized = sortedByLeft.length;
+            while(numMinimized--)
+            {
+                $("#"+sortedByLeft[numMinimized]['id']).animate({'left': numMinimized * 300 + 3}, 500);
+            }
+        }
 
         /*
             Maximizes the file list.
@@ -84,8 +120,16 @@
 
             $("#"+divID+"-maximized-wrapper").css('display', 'block');
             $("#"+divID+"-minimized-wrapper").css('display', 'none');
-            numMinimized -= 1;
             $("#"+divID).trigger('maximize');
+            $("#"+divID).removeClass('minimized');
+            reorderToolbarObjects();
+            $("#"+divID).draggable(
+            {
+                axis: "",
+                start: "",
+                stop: "",
+            }); //needed to reset axes and start/stop listeners
+
         };
 
         /*
@@ -114,6 +158,15 @@
             $("#editor").height(windowHeight);
             $("#editor").width((containerWidth / 2) - innerMargin);
             $("#diva-wrapper").width((containerWidth / 2) - innerMargin);
+        }
+
+        //stolen with no mercy from http://stackoverflow.com/questions/881510/jquery-sorting-json-by-properties
+        var jsonSort = function(jsonObject, prop, asc) {
+            newJsonObject = jsonObject.sort(function(a, b) {
+                if (asc) return (a[prop] > b[prop]);
+                else return (b[prop] > a[prop]);
+            });
+            return newJsonObject;
         }
 
         /*
@@ -153,7 +206,7 @@
 
                 //call the init function to set up some more stuff
                 curPlugin._init(self, settings);
-            }
+            }            
 
             //create the diva wrapper and editor
             $('#diva-wrapper').diva(

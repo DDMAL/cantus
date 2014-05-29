@@ -39,6 +39,9 @@ var meiEditorXMLValidator = function(){
                 }
             });
 
+            $("#" + this.divName).on('maximize', function(){
+            	console.log("I just got maximized!");
+            })
 	    }
 	}
 	return retval;
