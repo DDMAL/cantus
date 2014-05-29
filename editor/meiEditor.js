@@ -15,35 +15,12 @@
         var previousSizes = {};
 
         /*
-            Function called when new load/save buttons are created to refresh the listeners.
-        */
-        this.reapplyButtonListeners = function()
-        {
-            $(".meiLoad").on('click', function(e)
-            {
-                fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
-                self.changeActivePage(fileName);
-            });
-
-            $(".meiSave").on('click', function(e)
-            {
-                fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
-                self.savePageToClient(fileName);
-            });
-
-            $(".meiValidate").on('click', function(e)
-            {
-                fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
-                self.validateMei(fileName);
-            });
-        };
-
-        /*
             Minimizes an object.
             @param divID The root ID of the object to minimize.
-            @param animateOverride Used at initial load and as needed after to override the animation to old position.
+            @param animateOverride Used at initial load and as needed to skip the jQuery animate function.
         */
-        var minimizeObject = function(divID, animateOverride){
+        var minimizeObject = function(divID, animateOverride)
+        {
             if(typeof animateOverride === undefined){
                 animateOverride = false;
             }
@@ -61,9 +38,9 @@
             if(!animateOverride){
                 $("#"+divID).animate(
                 {
-                    'left': numMinimized*200,
+                    'left': numMinimized*300,
                     'margin': '2px',
-                    'width': '196px',
+                    'width': '290px', //300(actual width) - 4(2 for both margins) - 6(3 for both paddings)
                     'height': 'auto',
                     'top': '0px',
                     'padding': '3px',
@@ -71,37 +48,44 @@
             } else {
                 $("#"+divID).css(
                 {
-                    'left': numMinimized*200,
+                    'left': numMinimized*300,
                     'margin': '2px',
-                    'width': '196px',
+                    'width': '290px',
                     'height': 'auto',
                     'top': '0px',
                     'padding': '3px',
                 });
 
             }
+
             $("#"+divID+"-minimized-wrapper").css('display', 'block');
             $("#"+divID+"-maximized-wrapper").css('display', 'none');
             numMinimized += 1;
+            $("#"+divID).trigger('minimize');
         };
 
         /*
             Maximizes the file list.
             @param divID The root ID of the object to maximize.
         */
-        var maximizeObject = function(divID){
-            function resetDims(){
+        var maximizeObject = function(divID)
+        {
+            function resetDims()
+            {
                 $("#"+divID).css('width', 'auto');
                 $("#"+divID).css('height', 'auto');
             }
+
             $("#"+divID).animate(previousSizes[divID], 
             {
                 duration: 500,
                 complete: resetDims 
             });
+
             $("#"+divID+"-maximized-wrapper").css('display', 'block');
             $("#"+divID+"-minimized-wrapper").css('display', 'none');
             numMinimized -= 1;
+            $("#"+divID).trigger('maximize');
         };
 
         /*
@@ -120,9 +104,11 @@
                 'width': '99.6%',
                 'height': window.height - topbarHeight,
             });
+            
             containerWidth = $("#container").width();
             innerMargin = containerWidth * 0.006; //for inner margin
             windowHeight = $(window).height() - topbarHeight - 7; //7 for padding
+            
             $("#mei-editor").height(windowHeight);
             $("#diva-wrapper").height(windowHeight);
             $("#editor").height(windowHeight);
@@ -135,18 +121,6 @@
         */
         var _init = function()
         {
-            /*                +'<div id="file-upload">' //the file upload 
-                +'<div id="file-upload-maximized-wrapper">' //what shows when it's maximized
-                +'<input type="file" value="Add a new file" id="fileInput">' 
-                +'<div id="file-list">Files loaded:<br></div>'
-                +'<button id="updateDiva">Update DIVA</button>'
-                +'<button class="minimize" name="file-upload" style="float:right;">Minimize</button>'
-                +'</div>'
-                +'<div id="file-upload-minimized-wrapper" style="display:none;">' //or when it's minimized
-                +'<span id="file-list">Files loaded:</span>'
-                +'<button class="maximize" name="file-upload" style="float:right;">Maximize</button>'
-                +'</div>'
-                +'</div>'*/
             element.height($(window).height());
             element.append('<div id="topbar">'
                 +'</div>' //header
@@ -157,23 +131,30 @@
                 +'<span id="hover-div"></span>' //the div that pops up when highlights are hovered over
                 +'</div>' //container for body
                 );
+
+            //for each plugin...
             pluginLength = plugins.length;
-            while(pluginLength--){
+            while(pluginLength--)
+            {
                 curPlugin = plugins[pluginLength];
-                $("#topbar").append('<div id="'+curPlugin.divName+'" class="toolbar-object">'
-                    +'<div id="'+curPlugin.divName+'-maximized-wrapper">'
-                    +curPlugin.maximizedAppearance
-                    +'</div>'
-                    +'<div id="'+curPlugin.divName+'-minimized-wrapper" style="display:none;">'
-                    +curPlugin.minimizedAppearance
-                    +'</div>'
-                    +'</div>'
+                //append a basic structure
+                $("#topbar").append('<div id="' + curPlugin.divName + '" class="toolbar-object">'
+                    + '<div id="' + curPlugin.divName + '-maximized-wrapper">'
+                    + curPlugin.maximizedAppearance
+                    + '</div>'
+                    + '<div id="' + curPlugin.divName + '-minimized-wrapper" style="display:none;">'
+                    + curPlugin.minimizedAppearance
+                    + '</div>'
+                    + '</div>'
                     );
+
                 minimizeObject(curPlugin.divName, true);
                 $("#"+curPlugin.divName).draggable();
-                console.log()
+
+                //call the init function to set up some more stuff
                 curPlugin._init(self, settings);
             }
+
             //create the diva wrapper and editor
             $('#diva-wrapper').diva(
             {
@@ -205,17 +186,6 @@
             });
 
             //Events.subscribe("VisiblePageDidChange") - have ACE page automatically update to reflect currently viewed page?
-
-            //load in the XML validator
-
-            $.ajax(
-            {
-                url: settings.validatorLink,
-                success: function(data)
-                {
-                    settings.validatorText = data;
-                }
-            });
 
             //little graphics things
             $(window).on('resize', resizeComponents);

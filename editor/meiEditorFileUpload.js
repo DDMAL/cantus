@@ -9,7 +9,8 @@ var meiEditorFileUpload = function()
 	        +'<button class="minimize" name="file-upload" style="float:right;">Minimize</button>',
     	minimizedAppearance: '<span>Files loaded:</span>'
         	+'<button class="maximize" name="file-upload" style="float:right;">Maximize</button>',
-	    _init: function(meiEditor, meiEditorSettings){
+	    _init: function(meiEditor, meiEditorSettings)
+	    {
 	    	$.extend(meiEditorSettings, {
 	    		activeDoc: "",
 	    		currentPage: "",
@@ -19,6 +20,7 @@ var meiEditorFileUpload = function()
 	            neumeObjects: [],
 	            currentTarget: "",
 	    	});
+
 	        /*
 	            Changes the active page in the editor.
 	            @param pageName The page to switch to.
@@ -49,6 +51,7 @@ var meiEditorFileUpload = function()
 	            var pageBlob = new Blob(formattedData, {type: "text/plain;charset=utf-8"}); //create a blob
 	            saveAs(pageBlob, pageName); //download it! from FileSaver.js
 	        };
+
 		    /*
 	            Adds a page to the database
 	            @param pageDataIn The result of a FileReader.readAsText operation containing the data from the MEI file.
@@ -59,24 +62,7 @@ var meiEditorFileUpload = function()
 	            meiEditorSettings.pageData[fileNameIn] = new ace.EditSession(pageDataIn, "ace/mode/xml"); //add the file's data into a "pageData" array that will eventually feed into the ACE editor
 	            meiEditorSettings.orderedPageData.push(fileNameIn); //keep track of the page orders to push the right highlights to the right pages
 	        };
-		    /* 
-	            Validates MEI using the locally-hosted .RNG file
-	            @param pageName The page to validate.
-	        */
-	        meiEditor.validateMei = function(pageName)
-	        {
-	            var Module = 
-	            {
-	                xml: pageData[pageName].doc.getAllLines().join("\n"),
-	                schema: validatorText,
-	                //arguments: ["--noout", "--relaxng", "http://localhost:8000/mei-Neumes.rng", "http://localhost:8000/mei/015.xml"]
-	            }
-	            validationWorker = new Worker("xmllintNew.js");
-	            validationWorker.onmessage = function(event){
-	                console.log(event.data);
-	            }
-	            validationWorker.postMessage(Module);
-	        }
+
 		    /*
 	            Creates highlights based on the ACE documents.
 	        */
@@ -165,8 +151,6 @@ var meiEditorFileUpload = function()
 	            }
 	        };
 
-
-
 	        $("#updateDiva").on('click', meiEditor.createHighlights);
 
 	        //when a new file is uploaded; easier to write inline than separately because of the "this" references
@@ -178,20 +162,52 @@ var meiEditorFileUpload = function()
                 //when the file is loaded as text
                 reader.onload = function(e) 
                 { 
-                    fileName = this.file.name
+                    fileName = this.file.name.replace(/\W+/g, "");
                     meiEditor.addPage(this.result, fileName);
                     $("#file-list").html($("#file-list").html()
-                        +"<div class='meiFile' id='"+fileName+"'>"+fileName
-                        +"<button class='meiLoad' pageTitle='"+fileName+"'>Load</button>"
-                        +"<button class='meiSave' pageTitle='"+fileName+"'>Save</button>"
-                        +"</div>"); //add the file to the GUI
-                   	if(typeof(meiEditorXMLValidator) !== undefined){
+                        + "<div class='meiFile' id='" + fileName + "'>" + fileName
+                        + "<span class='meiFileButtons'>"
+                        + "<button class='meiLoad' pageTitle='" + fileName + "'>Load</button>"
+                        + "<button class='meiSave' pageTitle='" + fileName + "'>Save</button>"
+                        + "</span>"
+                        + "</div>"); //add the file to the GUI
+
+                   	if(typeof(meiEditorXMLValidator) !== undefined) //if using the validator plugin
+                   	{
 	                    $("#validate-file-list").html($("#validate-file-list").html()
-	                        +"<div class='meiFile' id='"+fileName+"'>"+fileName
-	                        +"<button class='meiValidate' pageTitle='"+fileName+"'>Validate</button>"
-	                        +"</div>"); //add the file to the GUI
+	                        + "<div class='meiFile' id='validate-" + fileName + "'>" + fileName
+                        	+ "<span class='meiFileButtons'>"
+	                        + "<button class='meiClear' pageTitle='" + fileName + "'>Clear output</button>"
+	                        + "<button class='meiValidate' pageTitle='" + fileName + "'>Validate</button>"
+	                        + "</span>"
+	                        + "<div class='validateOutput' id='validate-output-" + fileName + "'></div>"
+	                        + "</div>");
+
+	                    $(".meiClear").on('click', function(e)
+	                    {
+	                        fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
+			                $("#validate-output-" + fileName).html("");
+	                    });
                    	}
-                    meiEditor.reapplyButtonListeners();
+
+                   	$(".meiFileButtons").offset({'top': '-2px'});
+		            $(".meiLoad").on('click', function(e)
+		            {
+		                fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
+		                meiEditor.changeActivePage(fileName);
+		            });
+
+		            $(".meiSave").on('click', function(e)
+		            {
+		                fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
+		                meiEditor.savePageToClient(fileName);
+		            });
+
+		            $(".meiValidate").on('click', function(e)
+		            {
+		                fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
+		                meiEditor.validateMei(fileName);
+		            });
                 };
                 reader.readAsText(this.files[0]);
             });
