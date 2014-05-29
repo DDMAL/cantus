@@ -114,7 +114,7 @@
                     'width': '280px', //300(actual width) - 4(2 for both margins) - 16(7 for both paddings)
                     'height': 'auto',
                     'top': '0px',
-                    'padding': '1px 8px 0px 8px',
+                    'padding': '2px 8px 0px 8px',
                 }, 500);
             } 
             else 
@@ -126,7 +126,7 @@
                     'width': '280px',
                     'height': 'auto',
                     'top': '0px',
-                    'padding': '1px 8px 0px 8px',
+                    'padding': '2px 8px 0px 8px',
                 });
 
             }
@@ -149,8 +149,43 @@
                 },
             });
 
+            //it's better to do jQuery built-in events rather than self.events because I have to check for ID with the latter.
             $("#" + divID).trigger('minimize');
             $("#" + divID).addClass('minimized');
+        };
+
+        /*
+            Maximizes the file list.
+            @param divID The root ID of the object to maximize.
+        */
+        var maximizeObject = function(divID)
+        {
+            function resetDims()
+            {
+                $("#" + divID).css('width', 'auto');
+                $("#" + divID).css('height', 'auto');
+            }
+
+            $("#" + divID).animate(previousSizes[divID], 
+            {
+                duration: 500,
+                complete: resetDims 
+            });
+
+            $("#" + divID + "-maximized-wrapper").css('display', 'block');
+            $("#" + divID + "-minimized-wrapper").css('display', 'none');
+            
+            //it's better to do jQuery built-in events rather than self.events because I have to check for ID with the latter.
+            $("#" + divID).trigger('maximize');
+            $("#" + divID).removeClass('minimized');
+            reorderToolbarObjects();
+            $("#" + divID).draggable(
+            {
+                axis: "",
+                start: "",
+                stop: "",
+            }); //needed to reset axes and start/stop listeners
+
         };
 
         /*
@@ -173,38 +208,6 @@
                 $("#" + sortedByLeft[numMinimized]['id']).animate({'left': numMinimized * 300 + 3}, 500);
             }
         }
-
-        /*
-            Maximizes the file list.
-            @param divID The root ID of the object to maximize.
-        */
-        var maximizeObject = function(divID)
-        {
-            function resetDims()
-            {
-                $("#" + divID).css('width', 'auto');
-                $("#" + divID).css('height', 'auto');
-            }
-
-            $("#" + divID).animate(previousSizes[divID], 
-            {
-                duration: 500,
-                complete: resetDims 
-            });
-
-            $("#" + divID + "-maximized-wrapper").css('display', 'block');
-            $("#" + divID + "-minimized-wrapper").css('display', 'none');
-            $("#" + divID).trigger('maximize');
-            $("#" + divID).removeClass('minimized');
-            reorderToolbarObjects();
-            $("#" + divID).draggable(
-            {
-                axis: "",
-                start: "",
-                stop: "",
-            }); //needed to reset axes and start/stop listeners
-
-        };
 
         /*
             Function to be called on resizing. Not leaving this anonymous so that it can be called at the beginning without triggering the Diva .resize() listener.
@@ -318,10 +321,6 @@
             {
                 maximizeObject(event.target.name);
             });
-
-            /*Events.subscribe("VisiblePageDidChange", function(a, b, c){
-                console.log(a, b, c);
-            });*/
 
             //little graphics things
             $(window).on('resize', resizeComponents);
