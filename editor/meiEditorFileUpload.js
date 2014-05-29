@@ -4,7 +4,8 @@ var meiEditorFileUpload = function()
     {
         divName: "file-upload",
         maximizedAppearance: '<input type="file" value="Add a new file" id="fileInput">' 
-            +'<div id="file-list">Files loaded:<br></div>'
+            +'<br>Files loaded:<br>'
+            +'<div id="file-list"></div>'
             +'<button id="updateDiva">Update DIVA</button>',
         minimizedTitle: 'Files loaded:',
         minimizedAppearance: '',
@@ -26,8 +27,8 @@ var meiEditorFileUpload = function()
             */
             meiEditor.changeActivePage = function(pageName)
             {
-                meiEditorSettings.editor.setSession(pageData[pageName]); //inserts text
-                meiEditorSettings.activeDoc = editor.getSession().doc;
+                meiEditorSettings.editor.setSession(meiEditorSettings.pageData[pageName]); //inserts text
+                meiEditorSettings.activeDoc = meiEditorSettings.editor.getSession().doc;
             };
 
             /*
@@ -45,7 +46,7 @@ var meiEditorFileUpload = function()
                 }
 
                 var formattedData = [];
-                var lastRow = pageData[pageName].doc.getLength() - 1; //0-indexed
+                var lastRow = meiEditorSettings.pageData[pageName].doc.getLength() - 1; //0-indexed
                 meiEditorSettings.pageData[pageName].doc.getLines(0, lastRow).forEach(formatToSave); //format each
                 var pageBlob = new Blob(formattedData, {type: "text/plain;charset=utf-8"}); //create a blob
                 meiEditor.saveAs(pageBlob, pageNameOriginal); //download it! from FileSaver.js
@@ -152,6 +153,12 @@ var meiEditorFileUpload = function()
 
             $("#updateDiva").on('click', meiEditor.createHighlights);
 
+
+            /*$('#fileInput').click(function(e)
+            {
+                e.preventDefault(); //we don't want anything to happen here because this is supposed to be draggable and there's not much empty to space to drag.
+            });*/
+
             //when a new file is uploaded; easier to write inline than separately because of the "this" references
             $('#fileInput').change(function(e)
             { 
@@ -161,58 +168,68 @@ var meiEditorFileUpload = function()
                 //when the file is loaded as text
                 reader.onload = function(e) 
                 { 
-                    fileName = this.file.name.replace(/\W+/g, "");
-                    fileNameTitle = this.file.name;
-                    meiEditor.addPage(this.result, fileName);
-                    $("#file-list").html($("#file-list").html()
-                        + "<div class='meiFile' id='" + fileName + "'>" + fileNameTitle
+                    fileNameOriginal = this.file.name;
+                    fileName = this.file.name.replace(/\W+/g, ""); //this one strips spaces/periods so that it can be used as a jQuery selector
+                    meiEditor.addPage(this.result, fileName); 
+
+                    $("#file-list").html($("#file-list").html() //add the file to the GUI
+                        + "<div class='meiFile' id='" + fileName + "'>" + fileNameOriginal
                         + "<span class='meiFileButtons'>"
                         + "<button class='meiLoad' pageTitle='" + fileName + "'>Load</button>"
-                        + "<button class='meiSave' pageTitle='" + fileName + "' pageTitleOrig='" + fileNameTitle + "'>Save</button>"
+                        + "<button class='meiSave' pageTitle='" + fileName + "' pageTitleOrig='" + fileNameOriginal + "'>Save</button>"
                         + "</span>"
-                        + "</div>"); //add the file to the GUI
+                        + "</div>");
 
                     if(typeof(meiEditorXMLValidator) !== undefined) //if using the validator plugin
                     {
                         $("#validate-file-list").html($("#validate-file-list").html()
-                            + "<div class='meiFile' id='validate-" + fileName + "'>" + fileNameTitle
+                            + "<div class='meiFile' pageTitle='" + fileName + "' id='validate-" + fileName + "'>" + fileNameOriginal
                             + "<span class='meiFileButtons'>"
                             + "<button class='meiClear' pageTitle='" + fileName + "'>Clear output</button>"
-                            + "<button class='meiValidate' pageTitle='" + fileName + "' pageTitleOrig='" + fileNameTitle + "'>Validate</button>"
+                            + "<button class='meiValidate' pageTitle='" + fileName + "' pageTitleOrig='" + fileNameOriginal + "'>Validate</button>"
                             + "</span>"
                             + "<div class='validateOutput' id='validate-output-" + fileName + "'></div>"
                             + "</div>");
 
-                        $(".meiClear").on('click', function(e)
-                        {
-                            fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
-                            $("#validate-output-" + fileName).html("");
-                        });
+                        var reapplyXMLValidatorButtonListeners = function(){
+                            $(".meiClear").on('click', function(e)
+                            {
+                                fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
+                                console.log(fileName);
+                                $("#validate-output-" + fileName).html("");
+                                console.log($("#validate-output-" + fileName).html());
+                            });
+                        }
+                        reapplyXMLValidatorButtonListeners();
                     }
 
-                    $(".meiFileButtons").offset({'top': '-2px'});
-                    $(".meiLoad").on('click', function(e)
-                    {
-                        fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
-                        meiEditor.changeActivePage(fileNameTitle);
-                    });
+                    var reapplyFileUploadButtonListeners = function(){
+                        $(".meiFileButtons").offset({'top': '-2px'});
+                        $(".meiLoad").on('click', function(e)
+                        {
+                            fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
+                            meiEditor.changeActivePage(fileName);
+                        });
 
-                    $(".meiSave").on('click', function(e)
-                    {
-                        fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
-                        meiEditor.savePageToClient(fileName, fileNameTitle);
-                    });
+                        $(".meiSave").on('click', function(e)
+                        {
+                            fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
+                            meiEditor.savePageToClient(fileName, fileNameOriginal); 
+                        });
 
-                    $(".meiValidate").on('click', function(e)
-                    {
-                        fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
-                        meiEditor.validateMei(fileName, fileNameTitle);
-                    });
+                        $(".meiValidate").on('click', function(e)
+                        {
+                            fileName = $(e.target).attr('pageTitle'); //grabs page title from custom attribute
+                            meiEditor.validateMei(fileName, fileNameOriginal);
+                        });
+                    }
+                    reapplyFileUploadButtonListeners();
+                    
                 };
                 reader.readAsText(this.files[0]);
             });
 
-            //various jQueryUI designators
+            //make the files re-orderable
             $("#file-list").sortable();
             $("#file-list").disableSelection();
             $("#file-list").on("sortstop", function(e, ui) //when dragging a sortable item ends
@@ -230,10 +247,31 @@ var meiEditorFileUpload = function()
                         meiEditorSettings.orderedPageData.push(newOrder[curPage]); //push them into ordered array
                         curPage++;
                     }
+                    if(typeof(meiEditorXMLValidator) !== undefined) //if using the validator plugin
+                    {
+                        var tempChildren = [];
+                        var curPage = 0;
+                        while(curPage < newOrder.length)
+                        {
+                            var curPageTitle = newOrder[curPage];
+                            var curChildren = $("#validate-file-list").children();
+                            var curCount = curChildren.length;
+                            while(curCount--)
+                            {
+                                if($(curChildren[curCount]).attr('pageTitle') == curPageTitle)
+                                {
+                                    tempChildren.push(curChildren[curCount].outerHTML);
+                                    break;
+                                } 
+                            }
+                            curPage++;
+                        }
+                        $("#validate-file-list").html(tempChildren.join(""));
+                    }
                 };
-                fileList = $(".meiFile"); //gets a list of all objects with the "meiFile" class
+                fileList = $("#file-list .meiFile"); //gets a list of all objects with the "meiFile" class
                 newOrder = [];
-                numberOfFiles = $(".meiFile").length;
+                numberOfFiles = $("#file-list .meiFile").length;
                 for(curFileIndex = 0; curFileIndex < numberOfFiles; curFileIndex++)
                 {
                     newOrder.push(fileList[curFileIndex].id); //creates an array with the new order

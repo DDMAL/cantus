@@ -39,20 +39,20 @@
                 {
                     'left': numMinimized * 300,
                     'margin': '2px',
-                    'width': '290px', //300(actual width) - 4(2 for both margins) - 6(3 for both paddings)
+                    'width': '280px', //300(actual width) - 4(2 for both margins) - 16(7 for both paddings)
                     'height': 'auto',
                     'top': '0px',
-                    'padding': '3px',
+                    'padding': '1px 8px 0px 8px',
                 }, 500);
             } else {
                 $("#" + divID).css(
                 {
                     'left': numMinimized * 300,
                     'margin': '2px',
-                    'width': '290px',
+                    'width': '280px',
                     'height': 'auto',
                     'top': '0px',
-                    'padding': '3px',
+                    'padding': '1px 8px 0px 8px',
                 });
 
             }
@@ -146,16 +146,16 @@
                 'top': topbarHeight,
                 'left': '0.2%',
                 'width': '99.6%',
-                'height': window.height - topbarHeight,
+                'height': $(window).height() - topbarHeight - 7, //7 for padding
             });
             
             containerWidth = $("#container").width();
+            containerHeight = $("#container").height();
             innerMargin = containerWidth * 0.006; //for inner margin
-            windowHeight = $(window).height() - topbarHeight - 7; //7 for padding
             
-            $("#mei-editor").height(windowHeight);
-            $("#diva-wrapper").height(windowHeight);
-            $("#editor").height(windowHeight);
+            $("#mei-editor").height(containerHeight);
+            $("#diva-wrapper").height(containerHeight);
+            $("#editor").height(containerHeight);
             $("#editor").width((containerWidth / 2) - innerMargin);
             $("#diva-wrapper").width((containerWidth / 2) - innerMargin);
         }
@@ -194,16 +194,16 @@
             while(pluginLength--)
             {
                 curPlugin = plugins[pluginLength];
-                //append a basic structure
-                $("#topbar").append('<div id="' + curPlugin.divName + '" class="toolbar-object">'
+                //append a formattable structure
+                $("#topbar").append('<div id="' + curPlugin.divName + '" class="toolbar-object">' //creates toolbar object
                     + '<div id="' + curPlugin.divName + '-maximized-wrapper">'
-                    + curPlugin.maximizedAppearance
-                    + '<button class="minimize" name="' + curPlugin.divName + '">Minimize</button>'
+                    + curPlugin.maximizedAppearance //user-settable
+                    + '<button class="minimize" name="' + curPlugin.divName + '">Minimize</button>' //minimize button
                     + '</div>'
-                    + '<div id="' + curPlugin.divName + '-minimized-wrapper" style="display:none;">'
+                    + '<div id="' + curPlugin.divName + '-minimized-wrapper">'
                     + '<span id="' + curPlugin.divName + '-minimized-title">' + curPlugin.minimizedTitle + '</span>'
-                    + curPlugin.minimizedAppearance
-                    + '<button class="maximize" name="' + curPlugin.divName + '">Maximize</button>'
+                    + curPlugin.minimizedAppearance //also user-settable
+                    + '<button class="maximize" name="' + curPlugin.divName + '">Maximize</button>' //maximize button
                     + '</div>'
                     + '</div>'
                     );
@@ -240,12 +240,14 @@
             {
                 minimizeObject(event.target.name);
             });
-            $(".maximize").on('click', function()
+            $(".maximize").on('click', function(event)
             {
                 maximizeObject(event.target.name);
             });
 
-            //Events.subscribe("VisiblePageDidChange") - have ACE page automatically update to reflect currently viewed page?
+            /*Events.subscribe("VisiblePageDidChange", function(a, b, c){
+                console.log(a, b, c);
+            });*/
 
             //little graphics things
             $(window).on('resize', resizeComponents);
