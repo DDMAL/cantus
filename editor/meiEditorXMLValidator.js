@@ -1,34 +1,49 @@
 var meiEditorXMLValidator = function(){
-	var retval = {
-		divName: "xml-validator",
-	    maximizedAppearance: '<div id="validate-file-list">Files to validate:<br></div>'
+    var retval = {
+        divName: "xml-validator",
+        maximizedAppearance: '<div id="validate-file-list">Files to validate:<br></div>'
         +'<button class="minimize" name="xml-validator">Minimize</button>',
-    	minimizedAppearance: '<span>Files to validate:</span>'
-        +'<button class="maximize" name="xml-validator">Maximize</button>',
-	    _init: function(meiEditor, meiEditorSettings){
-	    	/* 
-	            Validates MEI using the locally-hosted .RNG file
-	            @param pageName The page to validate.
-	        */
-	        meiEditor.validateMei = function(pageName)
-	        {
-	            var Module = 
-	            {
-	                xml: meiEditorSettings.pageData[pageName].doc.getAllLines().join("\n"),
-	                schema: meiEditorSettings.validatorText,
-	            }
-	            validationWorker = new Worker("xmllintNew.js");
-	            validationWorker.pageName = pageName;
-	            validationWorker.onmessage = function(event)
-	            {
-	            	pageName = this.pageName;
-	            	console.log(pageName, event.data, $("#validate-output-"+pageName));
-	                $("#validate-output-" + pageName).html($("#validate-output-" + pageName).html() + "<br>" + event.data);
-	            }
-	            validationWorker.postMessage(Module);
-	        }
+        minimizedAppearance: '<span id="validate-file-list-minimized">Files to validate:</span>'
+        +'<button class="maximize" name="xml-validator">Maximize</button>'
+        +'<span id="numNewMessages">0</span>',
+        _init: function(meiEditor, meiEditorSettings){
+            $.extend(meiEditorSettings, {
+                validatorLink: "mei-Neumes.rng",
+                validatorText: "",
+            });
+            /* 
+                Validates MEI using the locally-hosted .RNG file
+                @param pageName The page to validate.
+            */
+            meiEditor.validateMei = function(pageName)
+            {
+                var Module = 
+                {
+                    xml: meiEditorSettings.pageData[pageName].doc.getAllLines().join("\n"),
+                    schema: meiEditorSettings.validatorText,
+                    title: pageName
+                }
+                validationWorker = new Worker("xmllintNew.js");
+                validationWorker.pageName = pageName;
+                $("#validate-output-" + pageName).html("Sent to validator...");
+                validationWorker.onmessage = function(event)
+                {
+                    pageName = this.pageName;
+                    $("#validate-output-" + pageName).html($("#validate-output-" + pageName).html() + "<br>" + event.data);
+                    if($("#xml-validator").hasClass('minimized')){
+                        var curCount = 0;
+                        if($("#numNewMessages").html() != ""){
+                            curCount = parseInt($("#numNewMessages").html())
+                        }
+                        curCount += 1;
+                        $("#numNewMessages").html(curCount);
+                        $("#numNewMessages").css('display', 'block');
+                    }
+                }
+                validationWorker.postMessage(Module);
+            }
 
-	        //load in the XML validator
+            //load in the XML validator
 
             $.ajax(
             {
@@ -40,9 +55,16 @@ var meiEditorXMLValidator = function(){
             });
 
             $("#" + this.divName).on('maximize', function(){
-            	console.log("I just got maximized!");
-            })
-	    }
-	}
-	return retval;
+                $("#numNewMessages").css('display', 'block');
+                $("#numNewMessages").html('0');
+            });
+
+            $("#" + this.divName).on('minimize', function(){
+                if($("#numNewMessages").html() == '0'){
+                    $("#numNewMessages").css('display', 'none');
+                }
+            });
+        }
+    }
+    return retval;
 }

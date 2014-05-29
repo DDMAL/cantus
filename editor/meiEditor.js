@@ -6,8 +6,6 @@
         var settings = {
             dv: "",
             editor: "",
-            validatorLink: "mei-Neumes.rng",
-            validatorText: "",
         }
 
         //for topbar plugins
