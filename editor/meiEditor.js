@@ -20,26 +20,26 @@
         */
         var minimizeObject = function(divID, animateOverride)
         {
-            if(typeof animateOverride === undefined){
+            if(typeof animateOverride === undefined)
+            {
                 animateOverride = false;
             }
 
             var numMinimized = $(".minimized").length;
 
-            previousSizes[divID] = 
-            {
-                 'left': $("#"+divID).offset().left,
-                 'top': $("#"+divID).offset().top,
-                 'width': $("#"+divID).width(),
-                 'height': $("#"+divID).height(),
-                 'margin': $("#"+divID).css('margin'),
-                 'padding': $("#"+divID).css('padding'),
+            previousSizes[divID] = {
+                 'left': $("#" + divID).offset().left,
+                 'top': $("#" + divID).offset().top,
+                 'width': $("#" + divID).width(),
+                 'height': $("#" + divID).height(),
+                 'margin': $("#" + divID).css('margin'),
+                 'padding': $("#" + divID).css('padding'),
             };
 
             if(!animateOverride){
-                $("#"+divID).animate(
+                $("#" + divID).animate(
                 {
-                    'left': numMinimized*300,
+                    'left': numMinimized * 300,
                     'margin': '2px',
                     'width': '290px', //300(actual width) - 4(2 for both margins) - 6(3 for both paddings)
                     'height': 'auto',
@@ -47,9 +47,9 @@
                     'padding': '3px',
                 }, 500);
             } else {
-                $("#"+divID).css(
+                $("#" + divID).css(
                 {
-                    'left': numMinimized*300,
+                    'left': numMinimized * 300,
                     'margin': '2px',
                     'width': '290px',
                     'height': 'auto',
@@ -59,11 +59,11 @@
 
             }
 
-            $("#"+divID+"-minimized-wrapper").css('display', 'block');
-            $("#"+divID+"-maximized-wrapper").css('display', 'none');
+            $("#" + divID + "-minimized-wrapper").css('display', 'block');
+            $("#" + divID + "-maximized-wrapper").css('display', 'none');
 
             //sortable wasn't working the way I wanted it to so I implemented something manually
-            $(".toolbar-object").draggable(
+            $("#" + divID).draggable(
             {
                 axis: "x",
                 start: function(e, ui)
@@ -78,10 +78,13 @@
                 },
             });
 
-            $("#"+divID).trigger('minimize');
-            $("#"+divID).addClass('minimized');
+            $("#" + divID).trigger('minimize');
+            $("#" + divID).addClass('minimized');
         };
 
+        /*
+            Function called to reorder the toolbar objects.
+        */
         var reorderToolbarObjects = function()
         {
             var numMinimized = $(".minimized").length;
@@ -96,7 +99,7 @@
             var numMinimized = sortedByLeft.length;
             while(numMinimized--)
             {
-                $("#"+sortedByLeft[numMinimized]['id']).animate({'left': numMinimized * 300 + 3}, 500);
+                $("#" + sortedByLeft[numMinimized]['id']).animate({'left': numMinimized * 300 + 3}, 500);
             }
         }
 
@@ -108,22 +111,22 @@
         {
             function resetDims()
             {
-                $("#"+divID).css('width', 'auto');
-                $("#"+divID).css('height', 'auto');
+                $("#" + divID).css('width', 'auto');
+                $("#" + divID).css('height', 'auto');
             }
 
-            $("#"+divID).animate(previousSizes[divID], 
+            $("#" + divID).animate(previousSizes[divID], 
             {
                 duration: 500,
                 complete: resetDims 
             });
 
-            $("#"+divID+"-maximized-wrapper").css('display', 'block');
-            $("#"+divID+"-minimized-wrapper").css('display', 'none');
-            $("#"+divID).trigger('maximize');
-            $("#"+divID).removeClass('minimized');
+            $("#" + divID + "-maximized-wrapper").css('display', 'block');
+            $("#" + divID + "-minimized-wrapper").css('display', 'none');
+            $("#" + divID).trigger('maximize');
+            $("#" + divID).removeClass('minimized');
             reorderToolbarObjects();
-            $("#"+divID).draggable(
+            $("#" + divID).draggable(
             {
                 axis: "",
                 start: "",
@@ -160,9 +163,13 @@
             $("#diva-wrapper").width((containerWidth / 2) - innerMargin);
         }
 
-        //stolen with no mercy from http://stackoverflow.com/questions/881510/jquery-sorting-json-by-properties
-        var jsonSort = function(jsonObject, prop, asc) {
-            newJsonObject = jsonObject.sort(function(a, b) {
+        /*
+            Stolen with no mercy from http://stackoverflow.com/questions/881510/jquery-sorting-json-by-properties
+        */
+        var jsonSort = function(jsonObject, prop, asc) 
+        {
+            newJsonObject = jsonObject.sort(function(a, b) 
+            {
                 if (asc) return (a[prop] > b[prop]);
                 else return (b[prop] > a[prop]);
             });
@@ -176,13 +183,13 @@
         {
             element.height($(window).height());
             element.append('<div id="topbar">'
-                +'</div>' //header
-                +'<div id="container">'
-                +'<div id="editor"></div>' //ACE editor
-                +'<div id="diva-wrapper"></div>' //Diva
-                +'<div class="clear"></div>'
-                +'<span id="hover-div"></span>' //the div that pops up when highlights are hovered over
-                +'</div>' //container for body
+                + '</div>' //header
+                + '<div id="container">'
+                + '<div id="editor"></div>' //ACE editor
+                + '<div id="diva-wrapper"></div>' //Diva
+                + '<div class="clear"></div>'
+                + '<span id="hover-div"></span>' //the div that pops up when highlights are hovered over
+                + '</div>' //container for body
                 );
 
             //for each plugin...
