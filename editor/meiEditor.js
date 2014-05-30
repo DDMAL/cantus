@@ -6,12 +6,81 @@
         var settings = {
             dv: "",
             editor: "",
-            validatorLink: "mei-Neumes.rng",
-            validatorText: "",
         }
 
         //for topbar plugins
         var previousSizes = {};
+
+        this.events = (function (){
+            var cache = {},
+            /**
+             *      Events.publish
+             *      e.g.: Events.publish("/Article/added", [article], this);
+             *
+             *      @class Events
+             *      @method publish
+             *      @param topic {String}
+             *      @param args     {Array}
+             *      @param scope {Object} Optional
+             */
+            publish = function (topic, args, scope) {
+                if (cache[topic]) {
+                    var thisTopic = cache[topic],
+                        i = thisTopic.length;
+
+                    while (i--) {
+                        thisTopic[i].apply( scope || this, args || []);
+                    }
+                }
+            },
+            /**
+             *      Events.subscribe
+             *      e.g.: Events.subscribe("/Article/added", Articles.validate)
+             *
+             *      @class Events
+             *      @method subscribe
+             *      @param topic {String}
+             *      @param callback {Function}
+             *      @return Event handler {Array}
+             */
+            subscribe = function (topic, callback) {
+                if (!cache[topic]) {
+                    cache[topic] = [];
+                }
+                cache[topic].push(callback);
+                return [topic, callback];
+            },
+            /**
+             *      Events.unsubscribe
+             *      e.g.: var handle = Events.subscribe("/Article/added", Articles.validate);
+             *              Events.unsubscribe(handle);
+             *
+             *      @class Events
+             *      @method unsubscribe
+             *      @param handle {Array}
+             *      @param completely {Boolean}
+             */
+            unsubscribe = function (handle, completely) {
+                var t = handle[0],
+                    i = cache[t].length;
+
+                if (cache[t]) {
+                    while (i--) {
+                        if (cache[t][i] === handle[1]) {
+                            cache[t].splice(cache[t][i], 1);
+                            if(completely){ delete cache[t]; }
+                        }
+                    }
+                }
+            };
+
+            return {
+                    publish: publish,
+                    subscribe: subscribe,
+                    unsubscribe: unsubscribe
+            };
+        }());
+        
 
         /*
             Minimizes an object.
@@ -36,25 +105,28 @@
                  'padding': $("#" + divID).css('padding'),
             };
 
-            if(!animateOverride){
+            if(!animateOverride)
+            {
                 $("#" + divID).animate(
                 {
                     'left': numMinimized * 300,
                     'margin': '2px',
-                    'width': '290px', //300(actual width) - 4(2 for both margins) - 6(3 for both paddings)
+                    'width': '280px', //300(actual width) - 4(2 for both margins) - 16(7 for both paddings)
                     'height': 'auto',
                     'top': '0px',
-                    'padding': '3px',
+                    'padding': '2px 8px 0px 8px',
                 }, 500);
-            } else {
+            } 
+            else 
+            {
                 $("#" + divID).css(
                 {
                     'left': numMinimized * 300,
                     'margin': '2px',
-                    'width': '290px',
+                    'width': '280px',
                     'height': 'auto',
                     'top': '0px',
-                    'padding': '3px',
+                    'padding': '2px 8px 0px 8px',
                 });
 
             }
@@ -72,14 +144,48 @@
                 },
                 stop: function(e, ui)
                 {
-                    console.log("triggered");
                     $(e.target).css('z-index', '5');
                     reorderToolbarObjects();
                 },
             });
 
+            //it's better to do jQuery built-in events rather than self.events because I have to check for ID with the latter.
             $("#" + divID).trigger('minimize');
             $("#" + divID).addClass('minimized');
+        };
+
+        /*
+            Maximizes the file list.
+            @param divID The root ID of the object to maximize.
+        */
+        var maximizeObject = function(divID)
+        {
+            function resetDims()
+            {
+                $("#" + divID).css('width', 'auto');
+                $("#" + divID).css('height', 'auto');
+            }
+
+            $("#" + divID).animate(previousSizes[divID], 
+            {
+                duration: 500,
+                complete: resetDims 
+            });
+
+            $("#" + divID + "-maximized-wrapper").css('display', 'block');
+            $("#" + divID + "-minimized-wrapper").css('display', 'none');
+            
+            //it's better to do jQuery built-in events rather than self.events because I have to check for ID with the latter.
+            $("#" + divID).trigger('maximize');
+            $("#" + divID).removeClass('minimized');
+            reorderToolbarObjects();
+            $("#" + divID).draggable(
+            {
+                axis: "",
+                start: "",
+                stop: "",
+            }); //needed to reset axes and start/stop listeners
+
         };
 
         /*
@@ -104,38 +210,6 @@
         }
 
         /*
-            Maximizes the file list.
-            @param divID The root ID of the object to maximize.
-        */
-        var maximizeObject = function(divID)
-        {
-            function resetDims()
-            {
-                $("#" + divID).css('width', 'auto');
-                $("#" + divID).css('height', 'auto');
-            }
-
-            $("#" + divID).animate(previousSizes[divID], 
-            {
-                duration: 500,
-                complete: resetDims 
-            });
-
-            $("#" + divID + "-maximized-wrapper").css('display', 'block');
-            $("#" + divID + "-minimized-wrapper").css('display', 'none');
-            $("#" + divID).trigger('maximize');
-            $("#" + divID).removeClass('minimized');
-            reorderToolbarObjects();
-            $("#" + divID).draggable(
-            {
-                axis: "",
-                start: "",
-                stop: "",
-            }); //needed to reset axes and start/stop listeners
-
-        };
-
-        /*
             Function to be called on resizing. Not leaving this anonymous so that it can be called at the beginning without triggering the Diva .resize() listener.
         */
         var resizeComponents = function()
@@ -149,16 +223,16 @@
                 'top': topbarHeight,
                 'left': '0.2%',
                 'width': '99.6%',
-                'height': window.height - topbarHeight,
+                'height': $(window).height() - topbarHeight - 7, //7 for padding
             });
             
             containerWidth = $("#container").width();
+            containerHeight = $("#container").height();
             innerMargin = containerWidth * 0.006; //for inner margin
-            windowHeight = $(window).height() - topbarHeight - 7; //7 for padding
             
-            $("#mei-editor").height(windowHeight);
-            $("#diva-wrapper").height(windowHeight);
-            $("#editor").height(windowHeight);
+            $("#mei-editor").height(containerHeight);
+            $("#diva-wrapper").height(containerHeight);
+            $("#editor").height(containerHeight);
             $("#editor").width((containerWidth / 2) - innerMargin);
             $("#diva-wrapper").width((containerWidth / 2) - innerMargin);
         }
@@ -197,13 +271,16 @@
             while(pluginLength--)
             {
                 curPlugin = plugins[pluginLength];
-                //append a basic structure
-                $("#topbar").append('<div id="' + curPlugin.divName + '" class="toolbar-object">'
+                //append a formattable structure
+                $("#topbar").append('<div id="' + curPlugin.divName + '" class="toolbar-object">' //creates toolbar object
                     + '<div id="' + curPlugin.divName + '-maximized-wrapper">'
-                    + curPlugin.maximizedAppearance
+                    + curPlugin.maximizedAppearance //user-settable
+                    + '<button class="minimize" name="' + curPlugin.divName + '">Minimize</button>' //minimize button
                     + '</div>'
-                    + '<div id="' + curPlugin.divName + '-minimized-wrapper" style="display:none;">'
-                    + curPlugin.minimizedAppearance
+                    + '<div id="' + curPlugin.divName + '-minimized-wrapper">'
+                    + '<span id="' + curPlugin.divName + '-minimized-title">' + curPlugin.minimizedTitle + '</span>'
+                    + curPlugin.minimizedAppearance //also user-settable
+                    + '<button class="maximize" name="' + curPlugin.divName + '">Maximize</button>' //maximize button
                     + '</div>'
                     + '</div>'
                     );
@@ -240,12 +317,10 @@
             {
                 minimizeObject(event.target.name);
             });
-            $(".maximize").on('click', function()
+            $(".maximize").on('click', function(event)
             {
                 maximizeObject(event.target.name);
             });
-
-            //Events.subscribe("VisiblePageDidChange") - have ACE page automatically update to reflect currently viewed page?
 
             //little graphics things
             $(window).on('resize', resizeComponents);

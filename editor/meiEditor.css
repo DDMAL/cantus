@@ -27,7 +27,6 @@ body{
 #diva-wrapper{
     float:right;
     background: #DDDDDD;
-    border-radius:10px;
     border:thin black solid;
     width:50%;
     height:100%;
@@ -37,7 +36,6 @@ body{
     float:left;
     width:calc(50% - 20px);
     height:100%;
-    border-radius:10px;
     border:thin black solid;
     position:relative;
 }
@@ -49,10 +47,10 @@ body{
     border:thin black solid;
     position:fixed;
     background: #EEEEEE;
-    padding:10px;
     border-radius:10px;
     height:auto;
     width:auto;
+    padding:10px;
     top:30px;
     left:30px;
 }
@@ -72,7 +70,19 @@ body{
 }
 .maximize{
     float:right;
+    vertical-align: middle;
 }
+
 .minimize{
     float:right;
+    vertical-align: middle;
+}
+#numNewMessages{
+    display: none;
+    background-color: red;
+    vertical-align: middle;
+    text-align: center;
+    padding: 1px 3px 1px 3px;
+    top: 2px;
+    margin-left: 10px;
 }

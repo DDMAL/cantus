@@ -1,5 +1,4 @@
 this.addEventListener('message', function(event){
-  postMessage('received');
   Module = event.data;
   Module['print'] = function(x) {
       postMessage(x);
@@ -11,8 +10,7 @@ this.addEventListener('message', function(event){
 }, false);
 function validateXML(Module) {
   Module['preRun'] = function() {
-    FS.createDataFile('/', 'test.xml', Module['intArrayFromString'](Module['xml']), true, true);
+    FS.createDataFile('/', Module['title'], Module['intArrayFromString'](Module['xml']), true, true);
     FS.createDataFile('/', 'test.rng', Module['intArrayFromString'](Module['schema']), true, true);
-    postMessage("here");
 };
-Module.arguments = ['--noout', '--relaxng', 'test.rng', 'test.xml'];
+Module.arguments = ['--noout', '--relaxng', 'test.rng', Module['title']];
