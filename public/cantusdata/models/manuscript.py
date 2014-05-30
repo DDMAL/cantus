@@ -3,7 +3,6 @@ from django.dispatch import receiver
 from django.db.models.signals import pre_save, post_save, post_delete
 from cantusdata.models.folio import Folio
 from cantusdata.models.chant import Chant
-from django.utils.text import slugify
 
 
 class Manuscript(models.Model):

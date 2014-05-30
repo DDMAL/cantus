@@ -5,7 +5,6 @@ import sys
 
 class Command(BaseCommand):
     args = ""
-    debug = True
 
     def handle(self, *args, **kwargs):
         """
@@ -22,11 +21,6 @@ class Command(BaseCommand):
             csv_file = open("data_dumps/" + file_name)
         except IOError:
             raise IOError(u"File {0} does not exist!".format(file_name))
-        if self.debug:
-            self.stdout.write("Deleting all old concordance data...")
-            # Nuke the db concordances
-            Concordance.objects.all().delete()
-            self.stdout.write("Old concordance data deleted.")
         # Every line is a new concordance
         self.stdout.write("Starting concordance import process.")
         for index, line in enumerate(csv_file.readlines()):
