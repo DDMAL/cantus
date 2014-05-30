@@ -6,7 +6,6 @@ import sys
 
 class Command(BaseCommand):
     args = ""
-    debug = True
 
     def handle(self, *args, **kwargs):
         """
@@ -23,13 +22,7 @@ class Command(BaseCommand):
                                            "rU"))
         except IOError:
             raise IOError(u"File {0} does not exist!".format(csv_file_name))
-        if self.debug:
-            self.stdout.write("Deleting all old manuscript data...")
-            # Nuke the db manuscripts
-            Manuscript.objects.all().delete()
-            self.stdout.write("Old manuscript data deleted.")
         # Load in the csv file.  This is a massive list of dictionaries.
-
         self.stdout.write("Starting manuscript import process.")
         # Create a manuscript and save it
         for index, row in enumerate(csv_file):

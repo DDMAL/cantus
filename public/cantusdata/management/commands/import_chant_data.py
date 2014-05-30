@@ -11,7 +11,6 @@ import csv
 
 class Command(BaseCommand):
     args = ""
-    debug = True
 
     def handle(self, *args, **kwargs):
         """
@@ -26,12 +25,6 @@ class Command(BaseCommand):
             csv_file = csv.DictReader(open("data_dumps/" + str(csv_file_name)))
         except IOError:
             raise IOError(u"File {0} does not exist!".format(csv_file_name))
-        if self.debug:
-            self.stdout.write("Deleting all old chant and folio data...")
-            # Nuke the db chants
-            Chant.objects.all().delete()
-            Folio.objects.all().delete()
-            self.stdout.write("Old chant and folio data deleted.")
         # Load in the csv file.  This is a massive list of dictionaries.
 
         self.stdout.write("Starting chant import process.")
