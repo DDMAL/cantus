@@ -19,53 +19,70 @@
             <ul class="nav nav-pills pull-right">
             <li class="active"><a href="/">Home</a></li>
             <li><a href="/manuscripts/">Manuscripts</a></li>
-            <li><a href="#">Contact</a></li>
+{#            <li><a href="#">Contact</a></li>#}
             </ul>
             <h3 class="text-muted">Cantus Ultimus</h3>
         </div>
-
-{#        <div class="jumbotron">#}
-{#            <h1>Jumbotron heading</h1>#}
-{#            <p class="lead">Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>#}
-{#            <p><a class="btn btn-lg btn-success" href="#" role="button">Sign up today</a></p>#}
-{#        </div>#}
+        <hr/>
 
         <div class="row content">
             <!-- Templates -->
             <div id="view-goes-here">Empty</div>
 
+            <script type="text/template" id="index-template">
+            <div class="jumbotron">
+                <h1>Hey, do you like chants?</h1>
+                <p class="lead">If so, then we've got you covered!</p>
+                <p><a class="btn btn-lg btn-success" href="/manuscripts/" role="button">Check out the manuscripts</a></p>
+            </div>
+            </script>
+
             <script type="text/template" id="folios-template">
-            <h2>Manuscripts</h2>
+            <h2>Folios</h2>
             <% _.forEach(folios, function(folio) { %>
                 <p>Folio: <%= folio.number %></p>
             <% }); %>
             </script>
 
             <script type="text/template" id="manuscripts-template">
-            <h2>Manuscripts</h2>
+            <ol class="breadcrumb">
+              <li><a href="/">Home</a></li>
+              <li><a href="/manuscripts/">Manuscripts</a></li>
+            </ol>
+            <h1>Manuscripts</h1>
             <% _.forEach(manuscripts, function(aManuscript) { %>
                 <p><a href="<%= aManuscript.url %>" ><%= aManuscript.name %></a></p>
             <% }); %>
             </script>
-
-            <script type="text/template" id="manuscript-template">
-            <h3><%= manuscript.name %></h3>
-            <p>siglum: <%= manuscript.siglum %></p>
-            <p>Url: <%= manuscript.url %></p>
-            <p>Date: <%= manuscript.date %></p>
-            <p>Provenance:<%= manuscript.provenance %></p>
-            <p>Description: <%= manuscript.description %></p>
-            <p>Folio_set:</p>
-            <ul>
-            <% _.forEach(manuscript.folio_set, function(aFolio) { %>
-                <p><a href="<%= aFolio.url %>" ><%= aFolio.name %></a></p>
-            <% }); %>
-            </ul>
-            </script>
-
             <div id="diva-wrapper"></div>
-        </div>
+            <script type="text/template" id="manuscript-template">
+            <ol class="breadcrumb">
+              <li><a href="/">Home</a></li>
+              <li><a href="/manuscripts/">Manuscripts</a></li>
+              <li><a href="<%= manuscript.url %>"><%= manuscript.name %></a></li>
+            </ol>
+            <h1><%= manuscript.name %></h1>
 
+            <hr/>
+            <h3>Details</h3>
+            <h4>Siglum</h4>
+            <p><%= manuscript.siglum %></p>
+            <h4>Date</h4>
+            <p><%= manuscript.date %></p>
+            <h4>Provenance</h4>
+            <p><%= manuscript.provenance %></p>
+            <h4>Description</h4>
+            <p><%= manuscript.description %></p>
+{#            <h4>Folio Set</h4>#}
+{#            <p>Folio_set:</p>#}
+{#            <ul>#}
+{#            <% _.forEach(manuscript.folio_set, function(aFolio) { %>#}
+{#                <p><a href="<%= aFolio.url %>" ><%= aFolio.name %></a></p>#}
+{#            <% }); %>#}
+{#            </ul>#}
+            </script>
+        </div>
+        <hr/>
         <div class="footer">
             <p>&copy; DDMAL 2014</p>
         </div>

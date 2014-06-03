@@ -192,7 +192,7 @@
         render: function()
         {
             console.log("Rendering");
-            console.log(this.manuscript.toJSON());
+//            console.log(this.manuscript.toJSON());
             $(this.el).html(this.template({
                 manuscript: this.manuscript.toJSON()
             }));
@@ -217,30 +217,31 @@
         renderDiva: function() {
             siglum = this.manuscript.siglum;
             console.log("Rendering Diva View");
-            $(document).ready(function() {
+                $(document).ready(function() {
                 var dv;
-                $('#diva-wrapper').diva({
+                $("#diva-wrapper").diva({
                     enableAutoWidth: true,
                     enableAutoHeight: true,
                     fixedHeightGrid: false,
                     iipServerURL: "http://localhost:8001/fcgi-bin/iipserver.fcgi",
-                    objectData: "/st-gallen-" + siglum + ".json",
-                    imageDir: "/Users/afogarty/Documents/manuscript-images/processed/" + siglum,
+                    objectData: "/st-gallen-test.json",
+                    imageDir: "/Users/afogarty/Documents/manuscript-images/processed/",
                     onScroll: function ()
                     {
-                        console.log('Just scrolled to: '+ dv.getState()['i']);
+                        console.log("Just scrolled to: "+ dv.getState()["i"]);
                     },
                     onJump: function ()
                     {
-                        console.log('Just jumped to: ' );
+                        console.log("Just jumped to: " );
                     },
                     onDocumentLoaded: function ()
                     {
-                        console.log('Document loaded' );
+                        console.log("Document loaded" );
                     }
                 });
-                var dv = $('#diva-wrapper').data('diva');
+                var dv = $("#diva-wrapper").data("diva");
             });
+
             console.log("Done rendering Diva View");
         }
     });
@@ -289,7 +290,7 @@
         initialize: function()
         {
             _.bindAll(this, 'render', 'afterFetch');
-            this.template= _.template($('#manuscripts-template').html()),
+            this.template= _.template($('#manuscripts-template').html());
             this.collection = new ManuscriptCollection();
             this.listenTo(this.collection, 'sync', this.afterFetch);
 //            this.listenTo(this.collection, 'fetchComplete', this.afterFetch);
@@ -317,10 +318,7 @@
         render: function()
         {
             console.log("About to render ManuscriptCollectionViewtemplate...");
-            console.log(this.collection.toJSON());
-            console.log(this.template({
-                manuscripts: this.collection.toJSON()
-            }));
+//            console.log(this.collection.toJSON());
             $(this.el).html(this.template({
                 manuscripts: this.collection.toJSON()
             }));
@@ -329,18 +327,46 @@
         }
     });
 
+    var IndexView = Backbone.View.extend({
+
+        el: $('#view-goes-here'),
+
+        initialize: function()
+        {
+            _.bindAll(this, 'render');
+            this.template= _.template($('#index-template').html());
+        },
+
+        render: function()
+        {
+            console.log("About to render IndexView...");
+//            console.log(this.collection.toJSON());
+            $(this.el).html(this.template());
+            console.log("IndexView template rendered...");
+            return this;
+        }
+    });
+
 
     var Workspace = Backbone.Router.extend({
 
         routes: {
+            "" : "index",
             "manuscript/:query/": "manuscript",
             "manuscripts/": "manuscripts",
             '*path': "notFound"
         },
 
-        manuscripts: function()
+        index: function()
         {
             console.log("Index route.");
+            var app = new IndexView();
+            app.render();
+        },
+
+        manuscripts: function()
+        {
+            console.log("Manuscripts route.");
             var app = new ManuscriptCollectionView();
             // Render initial templates
             app.render();
