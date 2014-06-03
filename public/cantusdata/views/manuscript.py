@@ -6,11 +6,11 @@ from rest_framework.renderers import JSONRenderer, JSONPRenderer
 
 
 class ManuscriptListHTMLRenderer(CustomHTMLRenderer):
-    template_name = "manuscript/manuscript_list.html"
+    template_name = "backbone.html"
 
 
 class ManuscriptDetailHTMLRenderer(CustomHTMLRenderer):
-    template_name = "manuscript/manuscript_detail.html"
+    template_name = "backbone.html"
 
 
 class ManuscriptList(generics.ListCreateAPIView):

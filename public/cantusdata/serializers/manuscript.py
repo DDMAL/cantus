@@ -6,9 +6,9 @@ from rest_framework import serializers
 class ManuscriptSerializer(serializers.HyperlinkedModelSerializer):
     # chants = ChantSerializer(many=True, required=False)
     folio_set = serializers.HyperlinkedRelatedField(many=True, read_only=True,
-                                                 view_name="folio-detail")
-    chant_set = serializers.HyperlinkedRelatedField(many=True, read_only=True,
-                                                 view_name="chant-detail")
+                                                view_name="folio-detail")
+    #chant_set = serializers.HyperlinkedRelatedField(many=True, read_only=True,
+    #                                             view_name="chant-detail")
 
     class Meta:
         model = Manuscript

@@ -21,5 +21,5 @@ def api_root(request, format=None):
 @ensure_csrf_cookie
 def home(request):
     data = {}
-    return render(request, "index.html", data)
+    return render(request, "backbone.html", data)
     #return render(request, "manuscript/manuscript_list.html", data)

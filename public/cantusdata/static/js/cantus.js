@@ -5,12 +5,13 @@
      */
 
     var Chant = Backbone.Model.extend({
-        id: 0,
-        url: 'http://localhost:8000/chant/' + this.id,
+//        id: 0,
+//        url: 'http://localhost:8000/chant/' + this.id,
 
-        initialize: function(id)
+        initialize: function(url)
         {
-            this.id = id;
+            this.url = url;
+//            this.id = id;
         },
 
         defaults: function()
@@ -37,12 +38,13 @@
     });
 
     var Concordance = Backbone.Model.extend({
-        id: 0,
-        url: 'http://localhost:8000/concordance/' + this.id,
+//        id: 0,
+//        url: 'http://localhost:8000/concordance/' + this.id,
 
-        initialize: function(id)
+        initialize: function(url)
         {
-            this.id = id;
+            this.url = url;
+//            this.id = id;
         },
 
         defaults: function()
@@ -60,12 +62,13 @@
     });
 
     var Folio = Backbone.Model.extend({
-        id: 0,
-        url: 'http://localhost:8000/folio/' + this.id,
+//        id: 0,
+//        url: 'http://localhost:8000/folio/' + this.id,
 
-        initialize: function(id)
+        initialize: function(url)
         {
-            this.id = id;
+            this.url = url;
+//            this.id = id;
         },
 
         defaults: function()
@@ -80,9 +83,10 @@
 
     var Manuscript = Backbone.Model.extend(
     {
-        initialize: function(id)
+        initialize: function(url)
         {
-            this.url = 'http://localhost:8000/manuscript/' + id + "/";
+            this.url = url;
+//            this.url = 'http://localhost:8000/manuscript/' + id + "/";
         },
 
         defaults: function()
@@ -152,21 +156,22 @@
 
     var ManuscriptView = Backbone.View.extend(
     {
-        el: $('body'),
+        el: $('#view-goes-here'),
 
+        id: null,
         manuscript: null,
         folioSet: null,
+        activeFolio: null,
 
         initialize: function()
         {
-            _.bindAll(this, 'render');
-            console.log("Setting model");
-            this.template= _.template($('#manuscript-template').html()),
-            this.manuscript = new Manuscript(448);
-            this.manuscript.fetch();
-            console.log("Done setting");
+            _.bindAll(this, 'render', 'afterFetch');
+            this.template= _.template($('#manuscript-template').html());
+            console.log("Creating manuscript with id=" + this.id);
+            this.manuscript = new Manuscript("http://localhost:8000/manuscript/" + this.id + "/");
+            this.folioSet = new FolioCollection();
             // Render every time the model changes...
-            this.listenTo(this.manuscript, 'change', this.render);
+            this.listenTo(this.manuscript, 'sync', this.afterFetch);
             // Render self
             this.render();
         },
@@ -177,14 +182,33 @@
             console.log("HomePageView data fetched.");
         },
 
+        afterFetch: function()
+        {
+            console.log("after fetch...");
+//            this.folioSet.reset(this.manuscript.folio_set.toJSON());
+            this.render();
+        },
+
         render: function()
         {
             console.log("Rendering");
-//            $(this.el).html(this.template({
-//                manuscript: this.manuscript.toJSON()
-//            }));
+            console.log(this.manuscript.toJSON());
+            $(this.el).html(this.template({
+                manuscript: this.manuscript.toJSON()
+            }));
+            this.renderDiva();
             console.log("Rendering done");
             return this;
+        },
+
+        /**
+         * Assign the active folio to be displayed.
+         * @param url
+         */
+        setActiveFolio: function(url)
+        {
+            this.activeFolio = new Folio(url);
+            this.activeFolio.fetch();
         },
 
         /**
@@ -221,41 +245,41 @@
         }
     });
 
-    var FolioCollectionView = Backbone.View.extend(
-    {
-        el: $('body'),
-
-        initialize: function()
-        {
-            _.bindAll(this, 'render');
-            this.template= _.template($('#folios-template').html()),
-            this.collection = new FolioCollection();
-            this.listenTo(this.collection, 'change', this.render());
-        },
-
-        getData: function()
-        {
-            this.collection.fetch();
-            console.log("FolioCollectionView data fetched.");
-        },
-
-        render: function()
-        {
-            console.log("About to render HomePageView template...");
-            $(this.el).html(this.template({
-                manuscripts: this.collection.toJSON()
-            }));
-            console.log(this.collection.toJSON());
-            console.log("HomePageView template rendered...");
-            return this;
-        },
-
-        replaceFolios: function(newFolioCollection)
-        {
-            this.collection = newFolioCollection;
-            this.getData();
-        }
-    });
+//    var FolioCollectionView = Backbone.View.extend(
+//    {
+//        el: $('body'),
+//
+//        initialize: function()
+//        {
+//            _.bindAll(this, 'render');
+//            this.template= _.template($('#folios-template').html()),
+//            this.collection = new FolioCollection();
+//            this.listenTo(this.collection, 'change', this.render());
+//        },
+//
+//        getData: function()
+//        {
+//            this.collection.fetch();
+//            console.log("FolioCollectionView data fetched.");
+//        },
+//
+//        render: function()
+//        {
+//            console.log("About to render HomePageView template...");
+//            $(this.el).html(this.template({
+//                manuscripts: this.collection.toJSON()
+//            }));
+//            console.log(this.collection.toJSON());
+//            console.log("HomePageView template rendered...");
+//            return this;
+//        },
+//
+//        replaceFolios: function(newFolioCollection)
+//        {
+//            this.collection = newFolioCollection;
+//            this.getData();
+//        }
+//    });
 
 
     var ManuscriptCollectionView = Backbone.View.extend(
@@ -264,53 +288,86 @@
 
         initialize: function()
         {
-            _.bindAll(this, 'render');
+            _.bindAll(this, 'render', 'afterFetch');
             this.template= _.template($('#manuscripts-template').html()),
             this.collection = new ManuscriptCollection();
-            this.listenTo(this.collection, 'change', this.afterFetch());
+            this.listenTo(this.collection, 'sync', this.afterFetch);
+//            this.listenTo(this.collection, 'fetchComplete', this.afterFetch);
         },
 
         getData: function()
         {
-            this.collection.fetch({
-                    success: function(collection){
+            //this.collection.fetch({
+                    //success: function(collection){
                     // This code block will be triggered only after receiving the data.
-                    console.log(collection.toJSON());
-                }
-            });
+                    //console.log(collection.toJSON());
+                    //this.trigger('fetchComplete');
+                //}
+            //});
+            this.collection.fetch();
             console.log("ManuscriptCollectionView data fetched.");
         },
 
-        afterFetch: function() {
+        afterFetch: function()
+        {
             console.log("ManuscriptCollectionView afterFetch()");
-            console.log(this.collection);
             this.render();
         },
 
         render: function()
         {
             console.log("About to render ManuscriptCollectionViewtemplate...");
+            console.log(this.collection.toJSON());
+            console.log(this.template({
+                manuscripts: this.collection.toJSON()
+            }));
             $(this.el).html(this.template({
                 manuscripts: this.collection.toJSON()
             }));
             console.log("ManuscriptCollectionView template rendered...");
             return this;
         }
-
     });
 
 
-    //Start the app
-//    var app = new ManuscriptView();
-    var app = new ManuscriptCollectionView();
+    var Workspace = Backbone.Router.extend({
 
-    // Render initial templates
-    app.render();
+        routes: {
+            "manuscript/:query/": "manuscript",
+            "manuscripts/": "manuscripts",
+            '*path': "notFound"
+        },
 
-    // Fetch the data
-    app.getData();
+        manuscripts: function()
+        {
+            console.log("Index route.");
+            var app = new ManuscriptCollectionView();
+            // Render initial templates
+            app.render();
+            // Fetch the data
+            app.getData();
+        },
 
-//    app.renderDiva();
+        manuscript: function(query)
+        {
+            console.log("Manuscript route.");
+            console.log(query);
+            var app = new ManuscriptView({ id: query });
+            // Render initial templates
+            app.render();
+            // Fetch the data
+            app.getData();
+        },
 
-//var App = new ManuscriptView;
+        notFound: function()
+        {
+            console.log("404 - Backbone route not found!");
+        }
+    });
+
+    var route = new Workspace();
+
+    // This gets the router working
+    Backbone.history.start({ pushState: true });
+
 })(jQuery);
