@@ -1,8 +1,9 @@
 from django.db import models
 from django.dispatch import receiver
-from django.db.models.signals import pre_save, post_save, post_delete
+from django.db.models.signals import post_save, post_delete
 from cantusdata.models.folio import Folio
 from cantusdata.models.chant import Chant
+from django.utils.text import slugify
 
 
 class Manuscript(models.Model):
@@ -34,6 +35,10 @@ class Manuscript(models.Model):
     @property
     def chant_set(self):
         return Chant.objects.filter(manuscript=self)
+
+    @property
+    def siglum_slug(self):
+        return slugify(self.siglum)
 
 
 @receiver(post_save, sender=Folio)
