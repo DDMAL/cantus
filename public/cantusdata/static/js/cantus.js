@@ -92,9 +92,10 @@
         defaults: function()
         {
             return {
-                url: "http://www.google.ca",
+                url: "#",
                 name: "Test Name",
                 siglum: "Test Siglum",
+                siglum_slug: "#",
                 date: "Tomorrow",
                 provenance: "Test provenance",
                 description: "This is a nice manuscript...",
@@ -215,17 +216,19 @@
          * This function currently doesn't work...
          */
         renderDiva: function() {
-            siglum = this.manuscript.siglum;
+            siglum = this.manuscript.get("siglum_slug");
             console.log("Rendering Diva View");
-                $(document).ready(function() {
+            $(document).ready(function() {
                 var dv;
                 $("#diva-wrapper").diva({
+                    enableAutoTitle: false,
                     enableAutoWidth: true,
                     enableAutoHeight: true,
                     fixedHeightGrid: false,
                     iipServerURL: "http://localhost:8001/fcgi-bin/iipserver.fcgi",
-                    objectData: "/st-gallen-test.json",
-                    imageDir: "/Users/afogarty/Documents/manuscript-images/processed/",
+                    objectData: "/static/" + siglum + ".json",
+                    imageDir: "/Users/afogarty/Documents/manuscript-images/processed/"
+                        + siglum + "/",
                     onScroll: function ()
                     {
                         console.log("Just scrolled to: "+ dv.getState()["i"]);
@@ -318,7 +321,7 @@
         render: function()
         {
             console.log("About to render ManuscriptCollectionViewtemplate...");
-//            console.log(this.collection.toJSON());
+            console.log(this.collection.toJSON());
             $(this.el).html(this.template({
                 manuscripts: this.collection.toJSON()
             }));
