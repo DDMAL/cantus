@@ -45,15 +45,13 @@
             <% }); %>
             </script>
 
-            <script type="text/template" id="manuscripts-template">
+            <script type="text/template" id="manuscripts-page-template">
             <ol class="breadcrumb">
               <li><a href="/">Home</a></li>
               <li><a href="/manuscripts/">Manuscripts</a></li>
             </ol>
             <h1>Manuscripts</h1>
-            <% _.forEach(manuscripts, function(aManuscript) { %>
-                <p><a href="<%= aManuscript.url %>" ><%= aManuscript.name %></a></p>
-            <% }); %>
+            <div class="manuscript-list"></div>
             </script>
 
             <script type="text/template" id="manuscript-collection-template">
@@ -136,12 +134,17 @@
             </script>
         </div>
         <hr/>
+        <h2>Search Results</h2>
+        <div id="search-results">
+            <p>There are no results.</p>
+        </div>
+        <hr/>
         <div class="footer">
             <p>&copy; DDMAL 2014</p>
         </div>
 
     </div> <!-- /container -->
-    <!--Load scripts first-->
+    <!--Load scripts last-->
     <script src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script>
     <script src="/static/js/underscore.js"></script>
     <script src="/static/js/backbone.js"></script>

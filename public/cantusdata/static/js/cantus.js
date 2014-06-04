@@ -9,6 +9,8 @@
         initialize: function(url)
         {
             this.url = url;
+//            console.log("Model URL: " + this.url);
+//            console.log(this.url);
         }
     });
 
@@ -107,10 +109,10 @@
      */
     var SearchResult = CantusAbstractModel.extend(
     {
-        initialize: function(query)
+        initialize: function(pQuery)
         {
             CantusAbstractModel.__super__.initialize.apply(
-                this, "http://localhost:8000/search/?q=" + query);
+                this, "http://localhost:8000/search/?q=" + pQuery);
         },
 
         /**
@@ -133,6 +135,8 @@
         initialize: function(url)
         {
             this.url = url;
+            console.log("Collection URL: " + this.url);
+            console.log(this.url);
         }
     });
 
@@ -175,22 +179,8 @@
         }
     });
 
-    var ChantView = CantusAbstractView.extend(
-    {
-        chant: null,
 
-        initialize: function(url)
-        {
-            this.chant = new Chant(url);
-        },
-
-        render: function()
-        {
-
-        }
-    });
-
-    var ManuscriptPageView = CantusAbstractView.extend(
+    var ManuscriptIndividualPageView = CantusAbstractView.extend(
     {
         el: $('#view-goes-here'),
 
@@ -209,15 +199,18 @@
             this.template= _.template($('#manuscript-template').html());
 
             console.log("Creating manuscript with id=" + this.id);
-            this.manuscript = new Manuscript("http://localhost:8000/manuscript/" + this.id + "/");
-            this.folioSet = new FolioCollection();
+            this.manuscript = new Manuscript(
+                "http://localhost:8000/manuscript/" + this.id + "/");
+//            this.folioSet = new FolioCollection();
 
             // Render every time the model changes...
             this.listenTo(this.manuscript, 'sync', this.afterFetch);
 
             // Build the subviews
             this.headerView = new HeaderView();
-            this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
+            console.log("Siglum Slug: " + this.manuscript.get("siglum_slug"));
+            console.log(this.manuscript.get("siglum_slug"));
+            this.divaView = new DivaView(this.manuscript.get("siglum_slug"));
 
             // Render self
 //            this.render();
@@ -232,7 +225,7 @@
         afterFetch: function()
         {
             console.log("after manuscript fetch...");
-            this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
+            this.divaView = new DivaView({}, this.manuscript.get("siglum_slug"));
             this.render();
         },
 
@@ -245,51 +238,35 @@
 
             // Render subviews
             this.assign(this.headerView,        '.header');
-            if (this.divaView !== undefined)
-            this.assign(this.divaView, '#diva-wrapper');
+            if (this.divaView !== undefined) {
+                this.assign(this.divaView, '#diva-wrapper');
+            }
+
 
             console.log("Rendering done");
             return this.trigger('render', this);
-        },
-
-        /**
-         * Assign the active folio to be displayed.
-         * @param url
-         */
-        setActiveFolio: function(url)
-        {
-            this.activeFolio = new Folio(url);
-            this.activeFolio.fetch();
         }
+
+//        /**
+//         * Assign the active folio to be displayed.
+//         * @param url
+//         */
+//        setActiveFolio: function(url)
+//        {
+//            this.activeFolio = new Folio(url);
+//            this.activeFolio.fetch();
+//        }
     });
 
-    var FolioView = CantusAbstractView.extend(
-    {
-        folio: null,
-
-        // Subviews
-        chantCollectionView: null,
-
-        initialize: function(url)
-        {
-            this.folio = new Folio(url);
-        },
-
-        render: function()
-        {
-
-        }
-    });
 
     var DivaView = CantusAbstractView.extend(
     {
-        siglum: null,
-
-        initialize: function(siglum)
+        initialize: function(pSiglum)
         {
             console.log("DivaView initialized.");
-            // TODO: Figure out this nonsense
-            this.siglum = siglum.siglum;
+            // TODO: Figure out why the urls get passed as JSON
+            console.log("Siglum: " + pSiglum);
+            this.siglum = pSiglum;
         },
 
         render: function()
@@ -338,14 +315,11 @@
 
     var HeaderView = CantusAbstractView.extend(
     {
-//        el: $('.header'),
-        title: null,
-
         initialize: function(title)
         {
             this.title = title;
             this.template= _.template($('#header-template').html());
-            console.log("HeaderView initialized.");
+            console.log("HeaderView constructed.");
         },
 
         render: function()
@@ -358,11 +332,22 @@
 
     var ManuscriptCollectionView = CantusAbstractView.extend(
     {
-        initialize: function(url)
+        template: null,
+        collection: null,
+
+        initialize: function(options)
         {
+            _.bindAll(this, 'render', 'update');
             this.template= _.template($('#manuscript-collection-template').html());
 
-            this.collection = new ManuscriptCollection({url: url});
+            this.collection = new ManuscriptCollection(options.url);
+            this.collection.fetch();
+
+            this.listenTo(this.collection, 'sync', this.render);
+        },
+
+        update: function()
+        {
             this.collection.fetch();
         },
 
@@ -385,38 +370,30 @@
 
         initialize: function()
         {
-            _.bindAll(this, 'render', 'afterFetch');
-            this.template= _.template($('#manuscripts-template').html());
-            this.collection = new ManuscriptCollection("http://localhost:8000/manuscripts/");
-            this.listenTo(this.collection, 'sync', this.afterFetch);
+            _.bindAll(this, 'render', 'update');
+            this.template= _.template($('#manuscripts-page-template').html());
 
             //Subviews
             this.headerView = new HeaderView();
-            this.manuscriptCollectionView = new ManuscriptCollectionView()
-                .initialize("http://localhost:8000/manuscripts/");
+            this.manuscriptCollectionView = new ManuscriptCollectionView(
+                {url: "http://localhost:8000/manuscripts/"});
+
+            // Listen for changes
+            this.listenTo(this.manuscriptCollectionView.collection, 'sync', this.afterFetch);
         },
 
-        getData: function()
+        update: function()
         {
-            this.collection.fetch();
-            console.log("ManuscriptCollectionView data fetched.");
-        },
-
-        afterFetch: function()
-        {
-            console.log("ManuscriptCollectionView afterFetch()");
-            this.render();
+            this.manuscriptCollectionView.update();
         },
 
         render: function()
         {
             console.log("About to render ManuscriptCollectionViewtemplate...");
-            console.log(this.collection.toJSON());
-            $(this.el).html(this.template({
-                manuscripts: this.collection.toJSON()
-            }));
+            $(this.el).html(this.template());
 
-            this.assign(this.headerView,        '.header');
+            this.assign(this.headerView, '.header');
+            this.assign(this.manuscriptCollectionView, '.manuscript-list');
 
             console.log("ManuscriptCollectionView template rendered...");
             return this.trigger('render', this);
@@ -480,13 +457,13 @@
             // Render initial templates
             manuscripts.render();
             // Fetch the data
-            manuscripts.getData();
+            manuscripts.update();
         },
 
         manuscript: function(query)
         {
             console.log("Manuscript route.");
-            var manuscript = new ManuscriptPageView({ id: query });
+            var manuscript = new ManuscriptIndividualPageView({ id: query });
             // Render initial templates
             manuscript.render();
             // Fetch the data
