@@ -4,8 +4,8 @@
     Models
      */
 
-    var CantusAbstractModel = Backbone.Model.extend(
-    {
+    var CantusAbstractModel = Backbone.Model.extend
+    ({
         initialize: function(url)
         {
             this.url = url;
@@ -14,8 +14,8 @@
         }
     });
 
-    var Chant = CantusAbstractModel.extend(
-    {
+    var Chant = CantusAbstractModel.extend
+    ({
         defaults: function()
         {
             return {
@@ -39,8 +39,8 @@
         }
     });
 
-    var Concordance = CantusAbstractModel.extend(
-    {
+    var Concordance = CantusAbstractModel.extend
+    ({
         defaults: function()
         {
             return {
@@ -55,8 +55,8 @@
         }
     });
 
-    var Folio = CantusAbstractModel.extend(
-    {
+    var Folio = CantusAbstractModel.extend
+    ({
         defaults: function()
         {
             return {
@@ -67,8 +67,8 @@
         }
     });
 
-    var Manuscript = CantusAbstractModel.extend(
-    {
+    var Manuscript = CantusAbstractModel.extend
+    ({
         defaults: function()
         {
             return {
@@ -107,8 +107,8 @@
     /**
      * This represents a search result.  It is experimental.
      */
-    var SearchResult = CantusAbstractModel.extend(
-    {
+    var SearchResult = CantusAbstractModel.extend
+    ({
         initialize: function(pQuery)
         {
             CantusAbstractModel.__super__.initialize.apply(
@@ -130,8 +130,8 @@
     /*
     Collections
      */
-    var CantusAbstractCollection = Backbone.Collection.extend(
-    {
+    var CantusAbstractCollection = Backbone.Collection.extend
+    ({
         initialize: function(url)
         {
             this.url = url;
@@ -140,23 +140,23 @@
         }
     });
 
-    var ChantCollection = CantusAbstractCollection.extend(
-    {
+    var ChantCollection = CantusAbstractCollection.extend
+    ({
         model: Chant
     });
 
-    var ConcordanceCollection = CantusAbstractCollection.extend(
-    {
+    var ConcordanceCollection = CantusAbstractCollection.extend
+    ({
         model: Concordance
     });
 
-    var FolioCollection = CantusAbstractCollection.extend(
-    {
+    var FolioCollection = CantusAbstractCollection.extend
+    ({
         model: Folio
     });
 
-    var ManuscriptCollection = CantusAbstractCollection.extend(
-    {
+    var ManuscriptCollection = CantusAbstractCollection.extend
+    ({
         model: Manuscript
     });
 
@@ -165,8 +165,8 @@
     Views
     */
 
-    var CantusAbstractView = Backbone.View.extend(
-    {
+    var CantusAbstractView = Backbone.View.extend
+    ({
         /**
          * Used to render subviews.
          *
@@ -179,9 +179,14 @@
         }
     });
 
+    var FolioView = CantusAbstractView.extend
+    ({
 
-    var ManuscriptIndividualPageView = CantusAbstractView.extend(
-    {
+    }),
+
+
+    var ManuscriptIndividualPageView = CantusAbstractView.extend
+    ({
         el: $('#view-goes-here'),
 
         id: null,
@@ -192,6 +197,7 @@
         // Subviews
         headerView: null,
         divaView: null,
+        folioView: null,
 
         initialize: function(options)
         {
@@ -204,7 +210,6 @@
             console.log("Creating manuscript with id=" + this.id);
             this.manuscript = new Manuscript(
                 "http://localhost:8000/manuscript/" + this.id + "/");
-//            this.folioSet = new FolioCollection();
 
             // Render every time the model changes...
             this.listenTo(this.manuscript, 'sync', this.afterFetch);
@@ -214,9 +219,6 @@
             console.log("Siglum Slug: " + this.manuscript.get("siglum_slug"));
             console.log(this.manuscript.get("siglum_slug"));
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
-
-            // Render self
-//            this.render();
         },
 
         getData: function()
@@ -241,10 +243,10 @@
 
             // Render subviews
             this.assign(this.headerView,        '.header');
+
             if (this.divaView !== undefined) {
                 this.assign(this.divaView, '#diva-wrapper');
             }
-
 
             console.log("Rendering done");
             return this.trigger('render', this);
@@ -262,8 +264,8 @@
     });
 
 
-    var DivaView = CantusAbstractView.extend(
-    {
+    var DivaView = CantusAbstractView.extend
+    ({
         initialize: function(options)
         {
             console.log("DivaView initialized.");
@@ -315,8 +317,8 @@
         }
     });
 
-    var HeaderView = CantusAbstractView.extend(
-    {
+    var HeaderView = CantusAbstractView.extend
+    ({
         initialize: function(title)
         {
             this.title = title;
@@ -332,8 +334,8 @@
         }
     });
 
-    var ManuscriptCollectionView = CantusAbstractView.extend(
-    {
+    var ManuscriptCollectionView = CantusAbstractView.extend
+    ({
         template: null,
         collection: null,
 
@@ -362,8 +364,8 @@
         }
     });
 
-    var ManuscriptsPageView = CantusAbstractView.extend(
-    {
+    var ManuscriptsPageView = CantusAbstractView.extend
+    ({
         el: $('#view-goes-here'),
 
         //Subviews
@@ -402,8 +404,8 @@
         }
     });
 
-    var IndexPageView = CantusAbstractView.extend(
-    {
+    var IndexPageView = CantusAbstractView.extend
+    ({
         el: $('#view-goes-here'),
 
         // Subviews
@@ -436,8 +438,8 @@
     Routers
      */
 
-    var Workspace = Backbone.Router.extend(
-    {
+    var Workspace = Backbone.Router.extend
+    ({
         routes: {
             "" : "index",
             "manuscript/:query/": "manuscript",
