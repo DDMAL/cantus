@@ -181,8 +181,81 @@
 
     var FolioView = CantusAbstractView.extend
     ({
+        // Subviews
+        chantCollectionView: null,
 
-    }),
+        initialize: function(options)
+        {
+            _.bindAll(this, 'render', 'update', 'assignChants');
+            this.template= _.template($('#folio-template').html());
+
+            console.log("Initializing Folio: " + options.url);
+            this.model = new Folio(options.url);
+
+            // Assign the chant list!
+            this.assignChants();
+
+            this.listenTo(this.model, 'sync', this.assignChants);
+        },
+
+        update: function()
+        {
+            this.model.fetch();
+            this.chantCollectionView.update();
+        },
+
+        /**
+         * Rebuild the list of chants
+         */
+        assignChants: function()
+        {
+            this.chantCollectionView = new ChantCollectionView(
+                {
+                    collection: this.model.chant_set
+                }
+            )
+        },
+
+        render: function()
+        {
+            $(this.el).html(this.template(this.model.toJSON()));
+
+            this.assign(this.chantCollectionView, '.chant-list');
+
+            return this.trigger('render', this);
+        }
+    });
+
+    var ChantCollectionView = CantusAbstractView.extend
+    ({
+        initialize: function(options)
+        {
+            _.bindAll(this, 'render', 'update');
+            this.template= _.template($('#chant-collection-template').html());
+            // If a set of chants is supplied, use it!
+            if (options.collection)
+            {
+                this.collection = new ChantCollection(options.collection);
+            }
+            else if (options.url)
+            {
+                this.collection = new ChantCollection(options.url);
+            }
+        },
+
+        update: function()
+        {
+            this.collection.fetch();
+        },
+
+        render: function()
+        {
+            // Render out the template
+            $(this.el).html(this.template(this.model.toJSON()));
+
+            return this.trigger('render', this);
+        }
+    })
 
 
     var ManuscriptIndividualPageView = CantusAbstractView.extend
