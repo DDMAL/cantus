@@ -193,9 +193,12 @@
         headerView: null,
         divaView: null,
 
-        initialize: function()
+        initialize: function(options)
         {
             _.bindAll(this, 'render', 'afterFetch');
+
+            console.log("VIEW ID: " + this.id);
+
             this.template= _.template($('#manuscript-template').html());
 
             console.log("Creating manuscript with id=" + this.id);
@@ -210,7 +213,7 @@
             this.headerView = new HeaderView();
             console.log("Siglum Slug: " + this.manuscript.get("siglum_slug"));
             console.log(this.manuscript.get("siglum_slug"));
-            this.divaView = new DivaView(this.manuscript.get("siglum_slug"));
+            this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
 
             // Render self
 //            this.render();
@@ -225,7 +228,7 @@
         afterFetch: function()
         {
             console.log("after manuscript fetch...");
-            this.divaView = new DivaView({}, this.manuscript.get("siglum_slug"));
+            this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
             this.render();
         },
 
@@ -261,12 +264,11 @@
 
     var DivaView = CantusAbstractView.extend(
     {
-        initialize: function(pSiglum)
+        initialize: function(options)
         {
             console.log("DivaView initialized.");
-            // TODO: Figure out why the urls get passed as JSON
-            console.log("Siglum: " + pSiglum);
-            this.siglum = pSiglum;
+            console.log("Diva Siglum: " + options.siglum);
+            this.siglum = options.siglum;
         },
 
         render: function()
