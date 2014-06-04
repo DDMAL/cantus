@@ -4,7 +4,8 @@
     Models
      */
 
-    var Chant = Backbone.Model.extend({
+    var Chant = Backbone.Model.extend(
+    {
 //        id: 0,
 //        url: 'http://localhost:8000/chant/' + this.id,
 
@@ -37,7 +38,8 @@
         }
     });
 
-    var Concordance = Backbone.Model.extend({
+    var Concordance = Backbone.Model.extend(
+    {
 //        id: 0,
 //        url: 'http://localhost:8000/concordance/' + this.id,
 
@@ -61,7 +63,8 @@
         }
     });
 
-    var Folio = Backbone.Model.extend({
+    var Folio = Backbone.Model.extend(
+    {
 //        id: 0,
 //        url: 'http://localhost:8000/folio/' + this.id,
 
@@ -124,22 +127,50 @@
         }
     });
 
+    /**
+     * This represents a search result.  It is experimental.
+     */
+    var SearchResult = Backbone.Model.extend({
+
+        initialize: function(query)
+        {
+            this.url = "http://localhost:8000/search/?q=" + query;
+        },
+
+        /**
+         * An empty search is empty.
+         */
+        defaults: function()
+        {
+            return {
+                results: []
+            }
+        }
+    });
+
 
     /*
     Collections
      */
 
-    var ChantCollection = Backbone.Collection.extend({
+    var ChantCollection = Backbone.Collection.extend(
+    {
         model: Chant,
-        url: 'http://localhost:8000/chants/'
+
+        initialize: function(url)
+        {
+            this.url = url;
+        }
     })
 
-    var ConcordanceCollection = Backbone.Collection.extend({
+    var ConcordanceCollection = Backbone.Collection.extend(
+    {
         model: Concordance,
         url: 'http://localhost:8000/concordances/'
     })
 
-    var FolioCollection = Backbone.Collection.extend({
+    var FolioCollection = Backbone.Collection.extend(
+    {
         model: Folio,
         url: 'http://localhost:8000/folios/'
     })
@@ -154,6 +185,11 @@
     /*
     Views
     */
+
+    var ChantView = Backbone.View.extend(
+    {
+
+    })
 
     var ManuscriptView = Backbone.View.extend(
     {
@@ -215,7 +251,8 @@
         /**
          * This function currently doesn't work...
          */
-        renderDiva: function() {
+        renderDiva: function()
+        {
             siglum = this.manuscript.get("siglum_slug");
             console.log("Rendering Diva View");
             $(document).ready(function() {
@@ -351,7 +388,8 @@
     });
 
 
-    var Workspace = Backbone.Router.extend({
+    var Workspace = Backbone.Router.extend(
+    {
 
         routes: {
             "" : "index",
