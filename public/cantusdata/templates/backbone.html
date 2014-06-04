@@ -14,15 +14,17 @@
     <script src="/static/js/diva.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <ul class="nav nav-pills pull-right">
-            <li class="active"><a href="/">Home</a></li>
-            <li><a href="/manuscripts/">Manuscripts</a></li>
-            <li><a href="#">Search</a></li>
-            </ul>
-            <h3 class="text-muted">Cantus Ultimus</h3>
+    <div class="cantus-container">
+        <div class="header"></div>
+        <script type="text/template" id="header-template">
+        <ul class="nav nav-pills pull-right">
+        <li class="active"><a href="/">Home</a></li>
+        <li><a href="/manuscripts/">Manuscripts</a></li>
+        <li><a href="#">Search</a></li>
+        </ul>
+        <h3 class="text-muted">Cantus Ultimus</h3>
         </div>
+        </script>
         <hr/>
 
         <div class="row content">
@@ -54,6 +56,12 @@
             <% }); %>
             </script>
 
+            <script type="text/template" id="manuscript-collection-template">
+            <% _.forEach(manuscripts, function(aManuscript) { %>
+                <p><a href="<%= aManuscript.url %>" ><%= aManuscript.name %></a></p>
+            <% }); %>
+            </script>
+
             <script type="text/template" id="manuscript-template">
             <ol class="breadcrumb">
               <li><a href="/">Home</a></li>
@@ -63,7 +71,6 @@
             <h1><%= manuscript.name %></h1>
             <div class="row">
                 <div class="col-md-9">
-                    <h3>Diva Viewer</h3>
                     <div id="diva-wrapper"></div>
                 </div>
                 <div class="col-md-3">

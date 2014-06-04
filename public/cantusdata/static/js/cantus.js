@@ -4,17 +4,16 @@
     Models
      */
 
-    var Chant = Backbone.Model.extend(
+    var CantusAbstractModel = Backbone.Model.extend(
     {
-//        id: 0,
-//        url: 'http://localhost:8000/chant/' + this.id,
-
         initialize: function(url)
         {
             this.url = url;
-//            this.id = id;
-        },
+        }
+    });
 
+    var Chant = CantusAbstractModel.extend(
+    {
         defaults: function()
         {
             return {
@@ -38,17 +37,8 @@
         }
     });
 
-    var Concordance = Backbone.Model.extend(
+    var Concordance = CantusAbstractModel.extend(
     {
-//        id: 0,
-//        url: 'http://localhost:8000/concordance/' + this.id,
-
-        initialize: function(url)
-        {
-            this.url = url;
-//            this.id = id;
-        },
-
         defaults: function()
         {
             return {
@@ -63,17 +53,8 @@
         }
     });
 
-    var Folio = Backbone.Model.extend(
+    var Folio = CantusAbstractModel.extend(
     {
-//        id: 0,
-//        url: 'http://localhost:8000/folio/' + this.id,
-
-        initialize: function(url)
-        {
-            this.url = url;
-//            this.id = id;
-        },
-
         defaults: function()
         {
             return {
@@ -84,14 +65,8 @@
         }
     });
 
-    var Manuscript = Backbone.Model.extend(
+    var Manuscript = CantusAbstractModel.extend(
     {
-        initialize: function(url)
-        {
-            this.url = url;
-//            this.url = 'http://localhost:8000/manuscript/' + id + "/";
-        },
-
         defaults: function()
         {
             return {
@@ -130,11 +105,12 @@
     /**
      * This represents a search result.  It is experimental.
      */
-    var SearchResult = Backbone.Model.extend({
-
+    var SearchResult = CantusAbstractModel.extend(
+    {
         initialize: function(query)
         {
-            this.url = "http://localhost:8000/search/?q=" + query;
+            CantusAbstractModel.__super__.initialize.apply(
+                this, "http://localhost:8000/search/?q=" + query);
         },
 
         /**
@@ -152,33 +128,32 @@
     /*
     Collections
      */
-
-    var ChantCollection = Backbone.Collection.extend(
+    var CantusAbstractCollection = Backbone.Collection.extend(
     {
-        model: Chant,
-
         initialize: function(url)
         {
             this.url = url;
         }
-    })
+    });
 
-    var ConcordanceCollection = Backbone.Collection.extend(
+    var ChantCollection = CantusAbstractCollection.extend(
     {
-        model: Concordance,
-        url: 'http://localhost:8000/concordances/'
-    })
+        model: Chant
+    });
 
-    var FolioCollection = Backbone.Collection.extend(
+    var ConcordanceCollection = CantusAbstractCollection.extend(
     {
-        model: Folio,
-        url: 'http://localhost:8000/folios/'
-    })
+        model: Concordance
+    });
 
-    var ManuscriptCollection = Backbone.Collection.extend(
+    var FolioCollection = CantusAbstractCollection.extend(
     {
-        model: Manuscript,
-        url: 'http://localhost:8000/manuscripts/'
+        model: Folio
+    });
+
+    var ManuscriptCollection = CantusAbstractCollection.extend(
+    {
+        model: Manuscript
     });
 
 
@@ -186,31 +161,66 @@
     Views
     */
 
-    var ChantView = Backbone.View.extend(
+    var CantusAbstractView = Backbone.View.extend(
     {
+        /**
+         * Used to render subviews.
+         *
+         * @param view The view object to be rendered
+         * @param selector The html selector where you want to render the view
+         */
+        assign : function (view, selector) {
+            view.setElement(selector).render();
+//            view.setElement(this.$(selector)).render();
+        }
+    });
 
-    })
+    var ChantView = CantusAbstractView.extend(
+    {
+        chant: null,
 
-    var ManuscriptView = Backbone.View.extend(
+        initialize: function(url)
+        {
+            this.chant = new Chant(url);
+        },
+
+        render: function()
+        {
+
+        }
+    });
+
+    var ManuscriptPageView = CantusAbstractView.extend(
     {
         el: $('#view-goes-here'),
 
         id: null,
         manuscript: null,
         folioSet: null,
-        activeFolio: null,
+        activeFolioNumber: null,
+
+        // Subviews
+        headerView: null,
+        divaView: null,
 
         initialize: function()
         {
             _.bindAll(this, 'render', 'afterFetch');
             this.template= _.template($('#manuscript-template').html());
+
             console.log("Creating manuscript with id=" + this.id);
             this.manuscript = new Manuscript("http://localhost:8000/manuscript/" + this.id + "/");
             this.folioSet = new FolioCollection();
+
             // Render every time the model changes...
             this.listenTo(this.manuscript, 'sync', this.afterFetch);
+
+            // Build the subviews
+            this.headerView = new HeaderView();
+            this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
+
             // Render self
-            this.render();
+//            this.render();
         },
 
         getData: function()
@@ -221,21 +231,25 @@
 
         afterFetch: function()
         {
-            console.log("after fetch...");
-//            this.folioSet.reset(this.manuscript.folio_set.toJSON());
+            console.log("after manuscript fetch...");
+            this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
             this.render();
         },
 
         render: function()
         {
             console.log("Rendering");
-//            console.log(this.manuscript.toJSON());
             $(this.el).html(this.template({
                 manuscript: this.manuscript.toJSON()
             }));
-            this.renderDiva();
+
+            // Render subviews
+            this.assign(this.headerView,        '.header');
+            if (this.divaView !== undefined)
+            this.assign(this.divaView, '#diva-wrapper');
+
             console.log("Rendering done");
-            return this;
+            return this.trigger('render', this);
         },
 
         /**
@@ -246,21 +260,51 @@
         {
             this.activeFolio = new Folio(url);
             this.activeFolio.fetch();
+        }
+    });
+
+    var FolioView = CantusAbstractView.extend(
+    {
+        folio: null,
+
+        // Subviews
+        chantCollectionView: null,
+
+        initialize: function(url)
+        {
+            this.folio = new Folio(url);
         },
 
-        /**
-         * This function currently doesn't work...
-         */
-        renderDiva: function()
+        render: function()
         {
-            siglum = this.manuscript.get("siglum_slug");
+
+        }
+    });
+
+    var DivaView = CantusAbstractView.extend(
+    {
+        siglum: null,
+
+        initialize: function(siglum)
+        {
+            console.log("DivaView initialized.");
+            // TODO: Figure out this nonsense
+            this.siglum = siglum.siglum;
+        },
+
+        render: function()
+        {
+            siglum = this.siglum;
+            console.log(siglum);
             console.log("Rendering Diva View");
             $(document).ready(function() {
                 var dv;
                 $("#diva-wrapper").diva({
+                // $(this.el).diva({
                     enableAutoTitle: false,
                     enableAutoWidth: true,
                     enableAutoHeight: true,
+                    enableFilename: false,
                     fixedHeightGrid: false,
                     iipServerURL: "http://localhost:8001/fcgi-bin/iipserver.fcgi",
                     objectData: "/static/" + siglum + ".json",
@@ -268,7 +312,11 @@
                         + siglum + "/",
                     onScroll: function ()
                     {
-                        console.log("Just scrolled to: "+ dv.getState()["i"]);
+                        // This is the page number
+                        console.log(dv.getState()["p"]);
+
+                        // This is the photograph file name
+                        // console.log("Just scrolled to: "+ dv.getState()["i"]);
                     },
                     onJump: function ()
                     {
@@ -280,71 +328,76 @@
                     }
                 });
                 var dv = $("#diva-wrapper").data("diva");
+//                var dv = $(this.el).data("diva");
             });
 
             console.log("Done rendering Diva View");
+            return this.trigger('render', this);
         }
     });
 
-//    var FolioCollectionView = Backbone.View.extend(
-//    {
-//        el: $('body'),
-//
-//        initialize: function()
-//        {
-//            _.bindAll(this, 'render');
-//            this.template= _.template($('#folios-template').html()),
-//            this.collection = new FolioCollection();
-//            this.listenTo(this.collection, 'change', this.render());
-//        },
-//
-//        getData: function()
-//        {
-//            this.collection.fetch();
-//            console.log("FolioCollectionView data fetched.");
-//        },
-//
-//        render: function()
-//        {
-//            console.log("About to render HomePageView template...");
-//            $(this.el).html(this.template({
-//                manuscripts: this.collection.toJSON()
-//            }));
-//            console.log(this.collection.toJSON());
-//            console.log("HomePageView template rendered...");
-//            return this;
-//        },
-//
-//        replaceFolios: function(newFolioCollection)
-//        {
-//            this.collection = newFolioCollection;
-//            this.getData();
-//        }
-//    });
+    var HeaderView = CantusAbstractView.extend(
+    {
+//        el: $('.header'),
+        title: null,
 
+        initialize: function(title)
+        {
+            this.title = title;
+            this.template= _.template($('#header-template').html());
+            console.log("HeaderView initialized.");
+        },
 
-    var ManuscriptCollectionView = Backbone.View.extend(
+        render: function()
+        {
+            $(this.el).html(this.template());
+            console.log("HeaderView rendered.");
+            return this.trigger('render', this);
+        }
+    });
+
+    var ManuscriptCollectionView = CantusAbstractView.extend(
+    {
+        initialize: function(url)
+        {
+            this.template= _.template($('#manuscript-collection-template').html());
+
+            this.collection = new ManuscriptCollection({url: url});
+            this.collection.fetch();
+        },
+
+        render: function()
+        {
+            $(this.el).html(this.template({
+                manuscripts: this.collection.toJSON()
+            }));
+            return this.trigger('render', this);
+        }
+    });
+
+    var ManuscriptsPageView = CantusAbstractView.extend(
     {
         el: $('#view-goes-here'),
+
+        //Subviews
+        headerView: null,
+        manuscriptCollectionView: null,
 
         initialize: function()
         {
             _.bindAll(this, 'render', 'afterFetch');
             this.template= _.template($('#manuscripts-template').html());
-            this.collection = new ManuscriptCollection();
+            this.collection = new ManuscriptCollection("http://localhost:8000/manuscripts/");
             this.listenTo(this.collection, 'sync', this.afterFetch);
-//            this.listenTo(this.collection, 'fetchComplete', this.afterFetch);
+
+            //Subviews
+            this.headerView = new HeaderView();
+            this.manuscriptCollectionView = new ManuscriptCollectionView()
+                .initialize("http://localhost:8000/manuscripts/");
         },
 
         getData: function()
         {
-            //this.collection.fetch({
-                    //success: function(collection){
-                    // This code block will be triggered only after receiving the data.
-                    //console.log(collection.toJSON());
-                    //this.trigger('fetchComplete');
-                //}
-            //});
             this.collection.fetch();
             console.log("ManuscriptCollectionView data fetched.");
         },
@@ -362,19 +415,28 @@
             $(this.el).html(this.template({
                 manuscripts: this.collection.toJSON()
             }));
+
+            this.assign(this.headerView,        '.header');
+
             console.log("ManuscriptCollectionView template rendered...");
-            return this;
+            return this.trigger('render', this);
         }
     });
 
-    var IndexView = Backbone.View.extend({
-
+    var IndexPageView = CantusAbstractView.extend(
+    {
         el: $('#view-goes-here'),
+
+        // Subviews
+        headerView: null,
 
         initialize: function()
         {
             _.bindAll(this, 'render');
             this.template= _.template($('#index-template').html());
+
+            // Initialize the subviews
+            this.headerView = new HeaderView();
         },
 
         render: function()
@@ -382,15 +444,21 @@
             console.log("About to render IndexView...");
 //            console.log(this.collection.toJSON());
             $(this.el).html(this.template());
+            // Render subviews
+            this.assign(this.headerView, '.header');
+
             console.log("IndexView template rendered...");
-            return this;
+            return this.trigger('render', this);
         }
     });
 
 
+    /*
+    Routers
+     */
+
     var Workspace = Backbone.Router.extend(
     {
-
         routes: {
             "" : "index",
             "manuscript/:query/": "manuscript",
@@ -401,29 +469,28 @@
         index: function()
         {
             console.log("Index route.");
-            var app = new IndexView();
-            app.render();
+            var index = new IndexPageView();
+            index.render();
         },
 
         manuscripts: function()
         {
             console.log("Manuscripts route.");
-            var app = new ManuscriptCollectionView();
+            var manuscripts = new ManuscriptsPageView();
             // Render initial templates
-            app.render();
+            manuscripts.render();
             // Fetch the data
-            app.getData();
+            manuscripts.getData();
         },
 
         manuscript: function(query)
         {
             console.log("Manuscript route.");
-            console.log(query);
-            var app = new ManuscriptView({ id: query });
+            var manuscript = new ManuscriptPageView({ id: query });
             // Render initial templates
-            app.render();
+            manuscript.render();
             // Fetch the data
-            app.getData();
+            manuscript.getData();
         },
 
         notFound: function()
