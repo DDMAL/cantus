@@ -57,11 +57,16 @@
 </script>
 
 <script type="text/template" id="folio-template">
-
+<h3>Folio <%= number %></h3>
+<div id="chant-list"></div>
 </script>
 
-<script type="text/javascript" id="chant-collection-template">
-
+<script type="text/template" id="chant-collection-template">
+<ul>
+<% _.forEach(chants, function(chant) { %>
+    <li><%= chant.incipit %></li>
+<% }); %>
+</ul>
 </script>
 
 <script type="text/template" id="search-page-template">
@@ -121,6 +126,7 @@
         <div id="diva-wrapper"></div>
     </div>
     <div class="col-md-3">
+        <div id="folio"></div>
         <h3>Chants</h3>
         <div class="panel-group" id="accordion">
             <div class="panel panel-default">
