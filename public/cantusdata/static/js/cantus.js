@@ -107,12 +107,19 @@
     /**
      * This represents a search result.  It is experimental.
      */
-    var SearchResult = CantusAbstractModel.extend
+    var SearchResult = Backbone.Model.extend
     ({
         initialize: function(pQuery)
         {
-            CantusAbstractModel.__super__.initialize.apply(
-                this, "http://localhost:8000/search/?q=" + pQuery);
+            this.setQuery(pQuery);
+        },
+
+        setQuery: function(query)
+        {
+            console.log("Constructing search result for query:");
+            console.log(query);
+            this.url = "http://localhost:8000/search/?q=" + query;
+            console.log(this.url);
         },
 
         /**
@@ -409,11 +416,109 @@
         }
     });
 
+    var SearchView = CantusAbstractView.extend
+    ({
+        query: null,
+
+        // Subviews
+        searchResultView: null,
+
+        events: {
+            // This should call newSearch when the button is clicked
+            "click #search-button" : "newSearch",
+            "change #search-input" : "newSearch"
+        },
+
+        initialize: function(options)
+        {
+            _.bindAll(this, 'render');
+            this.template= _.template($('#search-template').html());
+
+            // If not supplied, the query is blank
+            if (options !== undefined && options.query !== undefined) {
+                this.query = options.query;
+            } else {
+                this.query = "";
+            }
+
+            this.searchResultView = new SearchResultView({query: this.query});
+        },
+
+        newSearch: function()
+        {
+            // Grab the new search query
+            var newQuery = $('#search-input').val();
+
+            if (newQuery !== this.query) {
+                this.query = newQuery;
+                console.log("NewQuery = " + this.query);
+                // Set the new query and fetch it!
+                this.searchResultView.model.setQuery(this.query);
+                // This should automatically re-render the results... I think...
+                this.searchResultView.model.fetch();
+            }
+        },
+
+        render: function()
+        {
+            $(this.el).html(this.template());
+
+            // Render subviews
+            this.assign(this.searchResultView, '#search-result');
+
+            return this.trigger('render', this);
+        }
+    });
+
+    var SearchResultView = CantusAbstractView.extend
+    ({
+        initialize: function(options)
+        {
+            _.bindAll(this, 'render');
+            this.template= _.template($('#search-result-template').html());
+
+            console.log("Constructing search results for q=" + options.query);
+
+            if (options.query !== undefined)
+            {
+                this.model = new SearchResult(options.query);
+            }
+            else
+            {
+                this.model = new SearchResult();
+            }
+
+            // Query the search result
+            this.model.fetch();
+            this.listenTo(this.model, 'sync', this.render);
+        },
+
+        render: function()
+        {
+            if (this.model !== undefined)
+            {
+                // Only render if the model is defined
+                console.log("Rendering search result view.");
+                console.log(this.model.toJSON());
+                $(this.el).html(this.template(this.model.toJSON()));
+            }
+            else
+            {
+                console.log("No search result defined, so not rendering.");
+            }
+            return this.trigger('render', this);
+        }
+    })
 
     /*
     Page Views
      */
 
+    /**
+     * This is the homepage of the website.
+     *
+     * @type {*|void}
+     */
     var IndexPageView = CantusAbstractView.extend
     ({
         el: $('#view-goes-here'),
@@ -443,6 +548,12 @@
         }
     });
 
+    /**
+     * This page shows an individual manuscript.  You get a nice diva viewer
+     * and you can look through the chant info.
+     *
+     * @type {*|void}
+     */
     var ManuscriptIndividualPageView = CantusAbstractView.extend
     ({
         el: $('#view-goes-here'),
@@ -511,6 +622,11 @@
         }
     });
 
+    /**
+     * This page is a big list of manuscripts.
+     *
+     * @type {*|void}
+     */
     var ManuscriptsPageView = CantusAbstractView.extend
     ({
         el: $('#view-goes-here'),
@@ -551,31 +667,39 @@
         }
     });
 
+    /**
+     * This page is for searching.
+     *
+     * @type {*|void}
+     */
     var SearchPageView = CantusAbstractView.extend
     ({
         el: $('#view-goes-here'),
 
         // Subviews
+        headerView: null,
         searchView: null,
 
-        initialize: function()
+        initialize: function(options)
         {
             _.bindAll(this, 'render');
-            this.template= _.template($('#index-template').html());
+            this.template= _.template($('#search-page-template').html());
 
             // Initialize the subviews
             this.headerView = new HeaderView();
+            this.searchView = new SearchView({query: options.query});
         },
 
         render: function()
         {
-            console.log("About to render IndexView...");
-//            console.log(this.collection.toJSON());
+            console.log("About to render SearchPageView...");
             $(this.el).html(this.template());
+
             // Render subviews
             this.assign(this.headerView, '.header');
+            this.assign(this.searchView, '#search');
 
-            console.log("IndexView template rendered...");
+            console.log("SearchPageView template rendered...");
             return this.trigger('render', this);
         }
     });
@@ -626,8 +750,8 @@
         search: function(query)
         {
             console.log("Search route.");
-            var index = new IndexPageView();
-            index.render();
+            var search = new SearchPageView({query: query});
+            search.render();
         },
 
         notFound: function()

@@ -16,145 +16,167 @@
 <body>
     <div class="cantus-container">
         <div class="header"></div>
-        <script type="text/template" id="header-template">
-        <ul id="top-menu" class="nav nav-pills pull-right">
-        </ul>
-        <h3 class="text-muted">Cantus Ultimus</h3>
-        </div>
-        </script>
         <hr/>
-
-        <script type="text/template" id="top-menu-template">
-        <% _.forEach(items, function(item) { %>
-            <li <% if (item.active) { %> class="active" <% } %>><a href="<%= item.url %>"><%= item.name %></a></li>
-        <% }); %>
-        </script>
-
         <div class="row content">
             <!-- Templates -->
             <div id="view-goes-here">Empty</div>
-            <script type="text/template" id="index-template">
-            <div class="jumbotron">
-                <h1>Hey, do you like chants?</h1>
-                <p class="lead">If so, then we've got you covered!</p>
-                <p><a class="btn btn-lg btn-success" href="/manuscripts/" role="button">Check out the manuscripts</a></p>
-            </div>
-            </script>
-
-            <script type="text/template" id="folios-template">
-            <h2>Folios</h2>
-            <% _.forEach(folios, function(folio) { %>
-                <p>Folio: <%= folio.number %></p>
-            <% }); %>
-            </script>
-
-            <script type="text/template" id="folio-template">
-
-            </script>
-
-            <script type="text/javascript" id="chant-collection-template">
-
-            </script>
-
-            <script type="text/template" id="manuscripts-page-template">
-            <ol class="breadcrumb">
-              <li><a href="/">Home</a></li>
-              <li><a href="/manuscripts/">Manuscripts</a></li>
-            </ol>
-            <h1>Manuscripts</h1>
-            <div class="manuscript-list"></div>
-            </script>
-
-            <script type="text/template" id="manuscript-collection-template">
-            <% _.forEach(manuscripts, function(aManuscript) { %>
-                <p><a href="<%= aManuscript.url %>" ><%= aManuscript.name %></a></p>
-            <% }); %>
-            </script>
-
-            <script type="text/template" id="manuscript-template">
-            <ol class="breadcrumb">
-              <li><a href="/">Home</a></li>
-              <li><a href="/manuscripts/">Manuscripts</a></li>
-              <li><a href="<%= manuscript.url %>"><%= manuscript.name %></a></li>
-            </ol>
-            <h1><%= manuscript.name %></h1>
-            <div class="row">
-                <div class="col-md-9">
-                    <div id="diva-wrapper"></div>
-                </div>
-                <div class="col-md-3">
-                    <h3>Chants</h3>
-                    <div class="panel-group" id="accordion">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h4 class="panel-title">
-                                    <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-                                    Collapsible Group Item #1
-                                    </a>
-                                </h4>
-                            </div>
-                            <div id="collapseOne" class="panel-collapse collapse in">
-                                <div class="panel-body">
-                                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h4 class="panel-title">
-                                    <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
-                                    Collapsible Group Item #2
-                                    </a>
-                                </h4>
-                    </div>
-                    <div id="collapseTwo" class="panel-collapse collapse">
-                    <div class="panel-body">
-                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
-                    </div>
-                    </div>
-                    </div>
-                    <div class="panel panel-default">
-                    <div class="panel-heading">
-                    <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree">
-                    Collapsible Group Item #3
-                    </a>
-                    </h4>
-                    </div>
-                    <div id="collapseThree" class="panel-collapse collapse">
-                    <div class="panel-body">
-                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
-                    </div>
-                    </div>
-                    </div>
-                    </div>
-
-                    <hr/>
-
-                    <h3>Manuscript Details</h3>
-                    <h4>Siglum</h4>
-                    <p><%= manuscript.siglum %></p>
-                    <h4>Date</h4>
-                    <p><%= manuscript.date %></p>
-                    <h4>Provenance</h4>
-                    <p><%= manuscript.provenance %></p>
-                    <h4>Description</h4>
-                    <p><%= manuscript.description %></p>
-                </div>
-            </div>
-            </script>
-        </div>
-        <hr/>
-        <h2>Search Results</h2>
-        <div id="search-results">
-            <p>There are no results.</p>
         </div>
         <hr/>
         <div class="footer">
             <p>&copy; DDMAL 2014</p>
         </div>
-
     </div> <!-- /container -->
+
+<!--Templates -->
+<script type="text/template" id="header-template">
+<ul id="top-menu" class="nav nav-pills pull-right">
+</ul>
+<h3 class="text-muted">Cantus Ultimus</h3>
+</div>
+</script>
+
+<script type="text/template" id="top-menu-template">
+<% _.forEach(items, function(item) { %>
+    <li <% if (item.active) { %> class="active" <% } %>><a href="<%= item.url %>"><%= item.name %></a></li>
+<% }); %>
+</script>
+
+<script type="text/template" id="index-template">
+<div class="jumbotron">
+    <h1>Hey, do you like chants?</h1>
+    <p class="lead">If so, then we've got you covered!</p>
+    <p><a class="btn btn-lg btn-success" href="/manuscripts/" role="button">Check out the manuscripts</a></p>
+</div>
+</script>
+
+<script type="text/template" id="folios-template">
+<h2>Folios</h2>
+<% _.forEach(folios, function(folio) { %>
+    <p>Folio: <%= folio.number %></p>
+<% }); %>
+</script>
+
+<script type="text/template" id="folio-template">
+
+</script>
+
+<script type="text/javascript" id="chant-collection-template">
+
+</script>
+
+<script type="text/template" id="search-page-template">
+<div id="search"></div>
+</script>
+
+<script type="text/template" id="search-template">
+{#<form role="search">#}
+  <div class="form-group">
+    <input type="text" id="search-input" class="form-control" placeholder="Search">
+  </div>
+  <button type="submit" id="search-button" class="btn btn-default">Submit</button>
+{#</form>#}
+<div id="search-result"></div>
+</script>
+
+<script type="text/template" id="search-result-template">
+<h2>Search Results</h2>
+<ul>
+<% _.forEach(results, function(item) { %>
+    <% if (item.type == "cantusdata_manuscript") { %>
+    <li><p><a href="/manuscript/<%= item.item_id %>" ><%= item.Name %></a></p></li>
+    <% } %>
+<% }); %>
+</ul>
+</script>
+
+<script type="text/template" id="manuscripts-page-template">
+<ol class="breadcrumb">
+  <li><a href="/">Home</a></li>
+  <li><a href="/manuscripts/">Manuscripts</a></li>
+</ol>
+<h1>Manuscripts</h1>
+<div class="manuscript-list"></div>
+</script>
+
+<script type="text/template" id="manuscript-collection-template">
+<% _.forEach(manuscripts, function(aManuscript) { %>
+    <p><a href="<%= aManuscript.url %>" ><%= aManuscript.name %></a></p>
+<% }); %>
+</script>
+
+<script type="text/template" id="manuscript-template">
+<ol class="breadcrumb">
+  <li><a href="/">Home</a></li>
+  <li><a href="/manuscripts/">Manuscripts</a></li>
+  <li><a href="<%= manuscript.url %>"><%= manuscript.name %></a></li>
+</ol>
+<h1><%= manuscript.name %></h1>
+<div class="row">
+    <div class="col-md-9">
+        <div id="diva-wrapper"></div>
+    </div>
+    <div class="col-md-3">
+        <h3>Chants</h3>
+        <div class="panel-group" id="accordion">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+                        Collapsible Group Item #1
+                        </a>
+                    </h4>
+                </div>
+                <div id="collapseOne" class="panel-collapse collapse in">
+                    <div class="panel-body">
+                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
+                        Collapsible Group Item #2
+                        </a>
+                    </h4>
+        </div>
+        <div id="collapseTwo" class="panel-collapse collapse">
+        <div class="panel-body">
+        Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+        </div>
+        </div>
+        </div>
+        <div class="panel panel-default">
+        <div class="panel-heading">
+        <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree">
+        Collapsible Group Item #3
+        </a>
+        </h4>
+        </div>
+        <div id="collapseThree" class="panel-collapse collapse">
+        <div class="panel-body">
+        Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+        </div>
+        </div>
+        </div>
+        </div>
+
+        <hr/>
+
+        <h3>Manuscript Details</h3>
+        <h4>Siglum</h4>
+        <p><%= manuscript.siglum %></p>
+        <h4>Date</h4>
+        <p><%= manuscript.date %></p>
+        <h4>Provenance</h4>
+        <p><%= manuscript.provenance %></p>
+        <h4>Description</h4>
+        <p><%= manuscript.description %></p>
+    </div>
+</div>
+</script>
+
     <!--Load scripts last-->
     <script src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script>
     <script src="/static/js/underscore.js"></script>
