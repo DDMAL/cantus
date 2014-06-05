@@ -499,7 +499,7 @@
         newSearch: function()
         {
             // Grab the new search query
-            var newQuery = $('#search-input').val();
+            var newQuery = encodeURIComponent($('#search-input').val());
 
             if (newQuery !== this.query) {
                 this.query = newQuery;
