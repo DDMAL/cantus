@@ -4,6 +4,11 @@
     const iipImageServerUrl = "http://localhost:8001/";
     const divaImageDirectory = "/Users/afogarty/Documents/manuscript-images/processed/";
 
+    // Global Event Handler for global events
+    var globalEventHandler = {};
+    _.extend(globalEventHandler, Backbone.Events);
+
+
     /*
     Models
      */
@@ -310,15 +315,22 @@
 
     var DivaView = CantusAbstractView.extend
     ({
+        currentFolioIndex: 0,
+
         initialize: function(options)
         {
 //            console.log("DivaView initialized.");
 //            console.log("Diva Siglum: " + options.siglum);
+            _.bindAll(this, 'render', 'storeFolioIndex');
             this.siglum = options.siglum;
         },
 
         render: function()
         {
+            // It's kind of hacky to doubly-bind the name like this, but I'm
+            // not aware of any other way to access storeFolioIndex() from the
+            // anonymous function below.
+            storeFolioIndex = this.storeFolioIndex;
             siglum = this.siglum;
 //            console.log(siglum);
 //            console.log("Rendering Diva View");
@@ -338,13 +350,11 @@
                     {
                         // This is the page number
                         console.log(dv.getState()["p"]);
-
-                        // This is the photograph file name
-                        // console.log("Just scrolled to: "+ dv.getState()["i"]);
+                        storeFolioIndex(dv.getState()["p"]);
                     },
                     onJump: function ()
                     {
-//                        console.log("Just jumped to: " );
+                        storeFolioIndex(dv.getState()["p"]);
                     },
                     onDocumentLoaded: function ()
                     {
@@ -354,9 +364,18 @@
                 var dv = $("#diva-wrapper").data("diva");
 //                var dv = $(this.el).data("diva");
             });
-
 //            console.log("Done rendering Diva View");
             return this.trigger('render', this);
+        },
+
+        storeFolioIndex: function(index)
+        {
+            if (index != this.currentFolioIndex)
+            {
+                console.log("TRIGGERING MANUSCRIPTCHANGEFOLIO");
+                this.currentFolioIndex = index;
+                globalEventHandler.trigger("manuscriptChangeFolio", index);
+            }
         }
     });
 
@@ -371,7 +390,7 @@
             this.template= _.template($('#folio-template').html());
 
             console.log("Initializing Folio: " + options.url);
-            this.model = new Folio(siteUrl + "folio/" + options.url + "/");
+            this.model = new Folio(options.url);
             this.model.fetch();
 
             console.log("New Folio model:");
@@ -679,7 +698,6 @@
         id: null,
         manuscript: null,
         folioSet: null,
-        activeFolioNumber: null,
 
         // Subviews
         headerView: null,
@@ -700,15 +718,25 @@
             console.log("Siglum Slug: " + this.manuscript.get("siglum_slug"));
             console.log(this.manuscript.get("siglum_slug"));
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
-            this.folioView = new FolioView({url: 551});
+            this.divaView.on("manuscriptChangeFolio", console.log("test"));
+            this.folioView = new FolioView({url: siteUrl + "folio/" + 551 + "/"});
 
             // Render every time the model changes...
             this.listenTo(this.manuscript, 'sync', this.afterFetch);
+            // Switch page when necessary
+//            this.listenTo(this.divaView, "manuscriptChangeFolio", this.setFolio());
+            globalEventHandler.on("manuscriptChangeFolio", this.setFolio);
         },
 
-        setFolio: function()
+        setFolio: function(index)
         {
-
+            this.activeFolioIndex = index;
+            console.log("setFolio to " + this.activeFolioIndex);
+            // Get the proper url based on the index
+            console.log(this.manuscript);
+            var newUrl = this.manuscript.toJSON().folio_set[this.activeFolioIndex];
+            // Rebuild the folio View
+            this.folioView = new FolioView({url: newUrl});
         },
 
         getData: function()
@@ -721,6 +749,7 @@
         {
             console.log("after manuscript fetch...");
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
+            this.divaView.on("manuscriptChangeFolio", console.log("test"));
             this.render();
         },
 
