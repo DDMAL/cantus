@@ -130,6 +130,7 @@
     /*
     Collections
      */
+
     var CantusAbstractCollection = Backbone.Collection.extend
     ({
         initialize: function(url)
@@ -162,7 +163,7 @@
 
 
     /*
-    Views
+    Component Views
     */
 
     var CantusAbstractView = Backbone.View.extend
@@ -176,6 +177,90 @@
         assign : function (view, selector) {
             view.setElement(selector).render();
 //            view.setElement(this.$(selector)).render();
+        }
+    });
+
+    var ChantCollectionView = CantusAbstractView.extend
+    ({
+        initialize: function(options)
+        {
+            _.bindAll(this, 'render', 'update');
+            this.template= _.template($('#chant-collection-template').html());
+            // If a set of chants is supplied, use it!
+            if (options.collection)
+            {
+                this.collection = new ChantCollection(options.collection);
+            }
+            else if (options.url)
+            {
+                this.collection = new ChantCollection(options.url);
+            }
+        },
+
+        update: function()
+        {
+            this.collection.fetch();
+        },
+
+        render: function()
+        {
+            // Render out the template
+            $(this.el).html(this.template(this.model.toJSON()));
+
+            return this.trigger('render', this);
+        }
+    });
+
+    var DivaView = CantusAbstractView.extend
+    ({
+        initialize: function(options)
+        {
+            console.log("DivaView initialized.");
+            console.log("Diva Siglum: " + options.siglum);
+            this.siglum = options.siglum;
+        },
+
+        render: function()
+        {
+            siglum = this.siglum;
+            console.log(siglum);
+            console.log("Rendering Diva View");
+            $(document).ready(function() {
+                var dv;
+                $("#diva-wrapper").diva({
+                // $(this.el).diva({
+                    enableAutoTitle: false,
+                    enableAutoWidth: true,
+                    enableAutoHeight: true,
+                    enableFilename: false,
+                    fixedHeightGrid: false,
+                    iipServerURL: "http://localhost:8001/fcgi-bin/iipserver.fcgi",
+                    objectData: "/static/" + siglum + ".json",
+                    imageDir: "/Users/afogarty/Documents/manuscript-images/processed/"
+                        + siglum + "/",
+                    onScroll: function ()
+                    {
+                        // This is the page number
+                        console.log(dv.getState()["p"]);
+
+                        // This is the photograph file name
+                        // console.log("Just scrolled to: "+ dv.getState()["i"]);
+                    },
+                    onJump: function ()
+                    {
+                        console.log("Just jumped to: " );
+                    },
+                    onDocumentLoaded: function ()
+                    {
+                        console.log("Document loaded" );
+                    }
+                });
+                var dv = $("#diva-wrapper").data("diva");
+//                var dv = $(this.el).data("diva");
+            });
+
+            console.log("Done rendering Diva View");
+            return this.trigger('render', this);
         }
     });
 
@@ -226,21 +311,88 @@
         }
     });
 
-    var ChantCollectionView = CantusAbstractView.extend
+    var HeaderView = CantusAbstractView.extend
+    ({
+        // Subviews
+        topMenuView: null,
+
+        initialize: function(options)
+        {
+            _.bindAll(this, 'render');
+            this.template= _.template($('#header-template').html());
+
+            // Create the TopMenuView with all of its options
+            this.topMenuView = new TopMenuView(
+                {
+                    menuItems: [
+                        {
+                            name: "Home",
+                            url: "/",
+                            active: false
+                        },
+                        {
+                            name: "Manuscripts",
+                            url: "/manuscripts/",
+                            active: false
+                        },
+                        {
+                            name: "Search",
+                            url: "/search/",
+                            active: false
+                        }
+                    ]
+                }
+            )
+
+            console.log("HeaderView constructed.");
+        },
+
+        render: function()
+        {
+            $(this.el).html(this.template());
+            console.log("HeaderView rendered.");
+
+            // Render subviews
+            this.assign(this.topMenuView, '#top-menu');
+
+            return this.trigger('render', this);
+        }
+    });
+
+    var TopMenuView = CantusAbstractView.extend
     ({
         initialize: function(options)
         {
+            _.bindAll(this, 'render');
+            this.template= _.template($('#top-menu-template').html());
+
+            // Menu list items provided
+            this.items = options.menuItems;
+        },
+
+        render: function()
+        {
+            console.log("Rendering top menu.");
+            console.log(this.items);
+            $(this.el).html(this.template({items: this.items}));
+            return this.trigger('render', this);
+        }
+    })
+
+    var ManuscriptCollectionView = CantusAbstractView.extend
+    ({
+        template: null,
+        collection: null,
+
+        initialize: function(options)
+        {
             _.bindAll(this, 'render', 'update');
-            this.template= _.template($('#chant-collection-template').html());
-            // If a set of chants is supplied, use it!
-            if (options.collection)
-            {
-                this.collection = new ChantCollection(options.collection);
-            }
-            else if (options.url)
-            {
-                this.collection = new ChantCollection(options.url);
-            }
+            this.template= _.template($('#manuscript-collection-template').html());
+
+            this.collection = new ManuscriptCollection(options.url);
+            this.collection.fetch();
+
+            this.listenTo(this.collection, 'sync', this.render);
         },
 
         update: function()
@@ -250,13 +402,46 @@
 
         render: function()
         {
-            // Render out the template
-            $(this.el).html(this.template(this.model.toJSON()));
-
+            $(this.el).html(this.template({
+                manuscripts: this.collection.toJSON()
+            }));
             return this.trigger('render', this);
         }
-    })
+    });
 
+
+    /*
+    Page Views
+     */
+
+    var IndexPageView = CantusAbstractView.extend
+    ({
+        el: $('#view-goes-here'),
+
+        // Subviews
+        headerView: null,
+
+        initialize: function()
+        {
+            _.bindAll(this, 'render');
+            this.template= _.template($('#index-template').html());
+
+            // Initialize the subviews
+            this.headerView = new HeaderView();
+        },
+
+        render: function()
+        {
+            console.log("About to render IndexView...");
+//            console.log(this.collection.toJSON());
+            $(this.el).html(this.template());
+            // Render subviews
+            this.assign(this.headerView, '.header');
+
+            console.log("IndexView template rendered...");
+            return this.trigger('render', this);
+        }
+    });
 
     var ManuscriptIndividualPageView = CantusAbstractView.extend
     ({
@@ -324,168 +509,6 @@
             console.log("Rendering done");
             return this.trigger('render', this);
         }
-
-//        /**
-//         * Assign the active folio to be displayed.
-//         * @param url
-//         */
-//        setActiveFolio: function(url)
-//        {
-//            this.activeFolio = new Folio(url);
-//            this.activeFolio.fetch();
-//        }
-    });
-
-
-    var DivaView = CantusAbstractView.extend
-    ({
-        initialize: function(options)
-        {
-            console.log("DivaView initialized.");
-            console.log("Diva Siglum: " + options.siglum);
-            this.siglum = options.siglum;
-        },
-
-        render: function()
-        {
-            siglum = this.siglum;
-            console.log(siglum);
-            console.log("Rendering Diva View");
-            $(document).ready(function() {
-                var dv;
-                $("#diva-wrapper").diva({
-                // $(this.el).diva({
-                    enableAutoTitle: false,
-                    enableAutoWidth: true,
-                    enableAutoHeight: true,
-                    enableFilename: false,
-                    fixedHeightGrid: false,
-                    iipServerURL: "http://localhost:8001/fcgi-bin/iipserver.fcgi",
-                    objectData: "/static/" + siglum + ".json",
-                    imageDir: "/Users/afogarty/Documents/manuscript-images/processed/"
-                        + siglum + "/",
-                    onScroll: function ()
-                    {
-                        // This is the page number
-                        console.log(dv.getState()["p"]);
-
-                        // This is the photograph file name
-                        // console.log("Just scrolled to: "+ dv.getState()["i"]);
-                    },
-                    onJump: function ()
-                    {
-                        console.log("Just jumped to: " );
-                    },
-                    onDocumentLoaded: function ()
-                    {
-                        console.log("Document loaded" );
-                    }
-                });
-                var dv = $("#diva-wrapper").data("diva");
-//                var dv = $(this.el).data("diva");
-            });
-
-            console.log("Done rendering Diva View");
-            return this.trigger('render', this);
-        }
-    });
-
-    var TopMenuView = CantusAbstractView.extend
-    ({
-        initialize: function(options)
-        {
-            _.bindAll(this, 'render');
-            this.template= _.template($('#top-menu-template').html());
-
-            // Menu list items provided
-            this.items = options.menuItems;
-        },
-
-        render: function()
-        {
-            console.log("Rendering top menu.");
-            console.log(this.items);
-            $(this.el).html(this.template({items: this.items}));
-            return this.trigger('render', this);
-        }
-    })
-
-    var HeaderView = CantusAbstractView.extend
-    ({
-        // Subviews
-        topMenuView: null,
-
-        initialize: function(options)
-        {
-            _.bindAll(this, 'render');
-            this.template= _.template($('#header-template').html());
-
-            // Create the TopMenuView with all of its options
-            this.topMenuView = new TopMenuView(
-                {
-                    menuItems: [
-                        {
-                            name: "Home",
-                            url: "/",
-                            active: false
-                        },
-                        {
-                            name: "Manuscripts",
-                            url: "/manuscripts/",
-                            active: false
-                        },
-                        {
-                            name: "Search",
-                            url: "#",
-                            active: false
-                        }
-                    ]
-                }
-            )
-
-            console.log("HeaderView constructed.");
-        },
-
-        render: function()
-        {
-            $(this.el).html(this.template());
-            console.log("HeaderView rendered.");
-
-            // Render subviews
-            this.assign(this.topMenuView, '#top-menu');
-
-            return this.trigger('render', this);
-        }
-    });
-
-    var ManuscriptCollectionView = CantusAbstractView.extend
-    ({
-        template: null,
-        collection: null,
-
-        initialize: function(options)
-        {
-            _.bindAll(this, 'render', 'update');
-            this.template= _.template($('#manuscript-collection-template').html());
-
-            this.collection = new ManuscriptCollection(options.url);
-            this.collection.fetch();
-
-            this.listenTo(this.collection, 'sync', this.render);
-        },
-
-        update: function()
-        {
-            this.collection.fetch();
-        },
-
-        render: function()
-        {
-            $(this.el).html(this.template({
-                manuscripts: this.collection.toJSON()
-            }));
-            return this.trigger('render', this);
-        }
     });
 
     var ManuscriptsPageView = CantusAbstractView.extend
@@ -528,12 +551,12 @@
         }
     });
 
-    var IndexPageView = CantusAbstractView.extend
+    var SearchPageView = CantusAbstractView.extend
     ({
         el: $('#view-goes-here'),
 
         // Subviews
-        headerView: null,
+        searchView: null,
 
         initialize: function()
         {
@@ -566,8 +589,10 @@
     ({
         routes: {
             "" : "index",
-            "manuscript/:query/": "manuscript",
+            "manuscript/:query/": "manuscriptSingle",
             "manuscripts/": "manuscripts",
+            "search/": "search",
+            "search/?q=:query": "search",
             '*path': "notFound"
         },
 
@@ -588,7 +613,7 @@
             manuscripts.update();
         },
 
-        manuscript: function(query)
+        manuscriptSingle: function(query)
         {
             console.log("Manuscript route.");
             var manuscript = new ManuscriptIndividualPageView({ id: query });
@@ -596,6 +621,13 @@
             manuscript.render();
             // Fetch the data
             manuscript.getData();
+        },
+
+        search: function(query)
+        {
+            console.log("Search route.");
+            var index = new IndexPageView();
+            index.render();
         },
 
         notFound: function()
