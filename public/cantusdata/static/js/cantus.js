@@ -2,6 +2,7 @@
 
     const siteUrl = "http://localhost:8000/";
     const iipImageServerUrl = "http://localhost:8001/";
+    const divaImageDirectory = "/Users/afogarty/Documents/manuscript-images/processed/";
 
     /*
     Models
@@ -290,8 +291,7 @@
                     fixedHeightGrid: false,
                     iipServerURL: iipImageServerUrl + "fcgi-bin/iipserver.fcgi",
                     objectData: "/static/" + siglum + ".json",
-                    imageDir: "/Users/afogarty/Documents/manuscript-images/processed/"
-                        + siglum + "/",
+                    imageDir: divaImageDirectory + siglum + "/",
                     onScroll: function ()
                     {
                         // This is the page number
