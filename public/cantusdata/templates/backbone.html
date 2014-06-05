@@ -17,15 +17,18 @@
     <div class="cantus-container">
         <div class="header"></div>
         <script type="text/template" id="header-template">
-        <ul class="nav nav-pills pull-right">
-        <li class="active"><a href="/">Home</a></li>
-        <li><a href="/manuscripts/">Manuscripts</a></li>
-        <li><a href="#">Search</a></li>
+        <ul id="top-menu" class="nav nav-pills pull-right">
         </ul>
         <h3 class="text-muted">Cantus Ultimus</h3>
         </div>
         </script>
         <hr/>
+
+        <script type="text/template" id="top-menu-template">
+        <% _.forEach(items, function(item) { %>
+            <li <% if (item.active) { %> class="active" <% } %>><a href="<%= item.url %>"><%= item.name %></a></li>
+        <% }); %>
+        </script>
 
         <div class="row content">
             <!-- Templates -->

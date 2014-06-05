@@ -390,12 +390,59 @@
         }
     });
 
+    var TopMenuView = CantusAbstractView.extend
+    ({
+        initialize: function(options)
+        {
+            _.bindAll(this, 'render');
+            this.template= _.template($('#top-menu-template').html());
+
+            // Menu list items provided
+            this.items = options.menuItems;
+        },
+
+        render: function()
+        {
+            console.log("Rendering top menu.");
+            console.log(this.items);
+            $(this.el).html(this.template({items: this.items}));
+            return this.trigger('render', this);
+        }
+    })
+
     var HeaderView = CantusAbstractView.extend
     ({
-        initialize: function(title)
+        // Subviews
+        topMenuView: null,
+
+        initialize: function(options)
         {
-            this.title = title;
+            _.bindAll(this, 'render');
             this.template= _.template($('#header-template').html());
+
+            // Create the TopMenuView with all of its options
+            this.topMenuView = new TopMenuView(
+                {
+                    menuItems: [
+                        {
+                            name: "Home",
+                            url: "/",
+                            active: false
+                        },
+                        {
+                            name: "Manuscripts",
+                            url: "/manuscripts/",
+                            active: false
+                        },
+                        {
+                            name: "Search",
+                            url: "#",
+                            active: false
+                        }
+                    ]
+                }
+            )
+
             console.log("HeaderView constructed.");
         },
 
@@ -403,6 +450,10 @@
         {
             $(this.el).html(this.template());
             console.log("HeaderView rendered.");
+
+            // Render subviews
+            this.assign(this.topMenuView, '#top-menu');
+
             return this.trigger('render', this);
         }
     });
