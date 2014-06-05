@@ -1,5 +1,8 @@
 (function($){
 
+    const siteUrl = "http://localhost:8000/";
+    const iipImageServerUrl = "http://localhost:8001/";
+
     /*
     Models
      */
@@ -118,7 +121,7 @@
         {
             console.log("Constructing search result for query:");
             console.log(query);
-            this.url = "http://localhost:8000/search/?q=" + query;
+            this.url = siteUrl + "search/?q=" + query;
             console.log(this.url);
         },
 
@@ -285,7 +288,7 @@
                     enableAutoHeight: true,
                     enableFilename: false,
                     fixedHeightGrid: false,
-                    iipServerURL: "http://localhost:8001/fcgi-bin/iipserver.fcgi",
+                    iipServerURL: iipImageServerUrl + "fcgi-bin/iipserver.fcgi",
                     objectData: "/static/" + siglum + ".json",
                     imageDir: "/Users/afogarty/Documents/manuscript-images/processed/"
                         + siglum + "/",
@@ -517,7 +520,7 @@
             // Only update every 1 second
             console.log(new Date().getTime());
             console.log(this.lastSearchTime);
-            if ((new Date().getTime() - this.lastSearchTime) > 1000) {
+            if ((new Date().getTime() - this.lastSearchTime) > 500) {
                 // It's been a second, so do the search
                 this.newSearch();
             }
@@ -642,7 +645,7 @@
 
             console.log("Creating manuscript with id=" + this.id);
             this.manuscript = new Manuscript(
-                "http://localhost:8000/manuscript/" + this.id + "/");
+                siteUrl + "manuscript/" + this.id + "/");
 
             // Render every time the model changes...
             this.listenTo(this.manuscript, 'sync', this.afterFetch);
@@ -707,7 +710,7 @@
             //Subviews
             this.headerView = new HeaderView();
             this.manuscriptCollectionView = new ManuscriptCollectionView(
-                {url: "http://localhost:8000/manuscripts/"});
+                {url: siteUrl + "manuscripts/"});
 
             // Listen for changes
             this.listenTo(this.manuscriptCollectionView.collection, 'sync', this.afterFetch);
