@@ -87,9 +87,9 @@
 <h3>Results</h3>
 <ul>
 <% _.forEach(results, function(item) { %>
-    <% if (item.type == "cantusdata_manuscript") { %>
-    <li><p><a href="/manuscript/<%= item.item_id %>" ><%= item.Name %></a></p></li>
-    <% } %>
+{#    <% if (item.type == "cantusdata_manuscript") { %>#}
+    <li><p><a href="<%= item.url %>" ><%= item.name %></a></p></li>
+{#    <% } %>#}
 <% }); %>
 </ul>
 </script>

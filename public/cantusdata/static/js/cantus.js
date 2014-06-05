@@ -123,6 +123,50 @@
         },
 
         /**
+         * Formats the data to be printed in a search result list.
+         */
+        getFormattedData: function()
+        {
+            var output = [];
+
+            _.each(this.toJSON().results, function(current)
+            {
+                var newElement = {};
+                // Remove "cantusdata_" from the type string
+                newElement.model = current.type.split("_")[1];
+                // Build the url
+                newElement.url = "/" + newElement.model
+                    + "/" + current.item_id + "/";
+                newElement.name = current.Name;
+
+                // Figure out what the name is based on the model in question
+                switch(newElement.model)
+                {
+                    case "manuscript":
+                        newElement.name = current.Name;
+                        break;
+
+                    case "chant":
+                        newElement.name = current.Incipit;
+                        break;
+
+                    case "concordance":
+                        newElement.name = current.Name;
+                        break;
+
+                    case "folio":
+                        newElement.name = current.Name;
+                        break;
+                }
+
+                output.push(newElement);
+            });
+            console.log("search output:");
+            console.log(output);
+            return output;
+        },
+
+        /**
          * An empty search is empty.
          */
         defaults: function()
@@ -426,7 +470,8 @@
         events: {
             // This should call newSearch when the button is clicked
             "click #search-button" : "newSearch",
-            "change #search-input" : "newSearch"
+            "change #search-input" : "newSearch",
+            "input #search-input" : "autoNewSearch"
         },
 
         initialize: function(options)
@@ -440,6 +485,10 @@
             } else {
                 this.query = "";
             }
+
+            //Date to use for checking timestamps
+            this.lastSearchTime = new Date().getTime();
+
             console.log("TEST:::: " + this.query);
             this.searchResultView = new SearchResultView({query: this.query});
         },
@@ -458,6 +507,19 @@
                 this.searchResultView.model.fetch();
 
                 app.navigate("/search/?q=" + this.query);
+
+                this.lastSearchTime = new Date().getTime();
+            }
+        },
+
+        autoNewSearch: function()
+        {
+            // Only update every 1 second
+            console.log(new Date().getTime());
+            console.log(this.lastSearchTime);
+            if ((new Date().getTime() - this.lastSearchTime) > 1000) {
+                // It's been a second, so do the search
+                this.newSearch();
             }
         },
 
@@ -502,7 +564,7 @@
                 // Only render if the model is defined
                 console.log("Rendering search result view.");
                 console.log(this.model.toJSON());
-                $(this.el).html(this.template(this.model.toJSON()));
+                $(this.el).html(this.template({results: this.model.getFormattedData()}));
             }
             else
             {
@@ -718,7 +780,7 @@
             "manuscript/:query/": "manuscriptSingle",
             "manuscripts/": "manuscripts",
             "search/": "search",
-            "search/?q=:query": "search",
+            "search/?q=(:query)": "search",
             '*path': "notFound"
         },
 
