@@ -440,7 +440,7 @@
             } else {
                 this.query = "";
             }
-
+            console.log("TEST:::: " + this.query);
             this.searchResultView = new SearchResultView({query: this.query});
         },
 
@@ -456,12 +456,14 @@
                 this.searchResultView.model.setQuery(this.query);
                 // This should automatically re-render the results... I think...
                 this.searchResultView.model.fetch();
+
+                app.navigate("/search/?q=" + this.query);
             }
         },
 
         render: function()
         {
-            $(this.el).html(this.template());
+            $(this.el).html(this.template({query: this.query}));
 
             // Render subviews
             this.assign(this.searchResultView, '#search-result');
@@ -760,7 +762,7 @@
         }
     });
 
-    var route = new Workspace();
+    var app = new Workspace();
 
     // This gets the router working
     Backbone.history.start({ pushState: true });

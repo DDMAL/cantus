@@ -65,13 +65,18 @@
 </script>
 
 <script type="text/template" id="search-page-template">
+<ol class="breadcrumb">
+    <li><a href="/">Home</a></li>
+    <li><a href="/search/">Search</a></li>
+</ol>
+<h1>Search</h1>
 <div id="search"></div>
 </script>
 
 <script type="text/template" id="search-template">
 {#<form role="search">#}
   <div class="form-group">
-    <input type="text" id="search-input" class="form-control" placeholder="Search">
+    <input type="text" id="search-input" class="form-control" placeholder="Search" value="<%= query %>">
   </div>
   <button type="submit" id="search-button" class="btn btn-default">Submit</button>
 {#</form>#}
@@ -79,7 +84,7 @@
 </script>
 
 <script type="text/template" id="search-result-template">
-<h2>Search Results</h2>
+<h3>Results</h3>
 <ul>
 <% _.forEach(results, function(item) { %>
     <% if (item.type == "cantusdata_manuscript") { %>
