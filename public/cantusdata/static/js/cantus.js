@@ -34,7 +34,7 @@
                 cantus_id: "the cantus id",
                 feast: "the feast",
                 office: "the office",
-                genree: "the genre",
+                genre: "the genre",
                 lit_position: "the lit position",
                 mode: "the mode",
                 differentia: "the differentia",
@@ -316,6 +316,7 @@
     var DivaView = CantusAbstractView.extend
     ({
         currentFolioIndex: 0,
+        lastFolioChangeTime: 0,
 
         initialize: function(options)
         {
@@ -372,8 +373,12 @@
             if (index != this.currentFolioIndex)
             {
                 console.log("TRIGGERING MANUSCRIPTCHANGEFOLIO");
-                this.currentFolioIndex = index;
-                globalEventHandler.trigger("manuscriptChangeFolio", index);
+                if ((new Date().getTime() - this.lastFolioChangeTime) > 1000)
+                {
+                    this.currentFolioIndex = index;
+                    this.lastFolioChangeTime = new Date().getTime();
+                    globalEventHandler.trigger("manuscriptChangeFolio", index);
+                }
             }
         }
     });
