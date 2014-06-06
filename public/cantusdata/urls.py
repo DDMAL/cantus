@@ -8,6 +8,7 @@ from cantusdata.views.chant import ChantList, ChantDetail
 from cantusdata.views.folio import FolioList, FolioDetail
 from cantusdata.views.concordance import ConcordanceList, ConcordanceDetail
 from cantusdata.views.search import SearchView
+from cantusdata.views.folio_chant_set import FolioChantSetView
 
 
 urlpatterns = []
@@ -32,7 +33,9 @@ urlpatterns += format_suffix_patterns(
     url(r'^concordances/$', ConcordanceList.as_view(), name="concordance-list"),
     url(r'^concordance/(?P<pk>[0-9]+)/$', ConcordanceDetail.as_view(),
         name="concordance-detail"),
-
+    # Query chants by folio
+    url(r'^folio-chant-set/$', FolioChantSetView.as_view(), name="folio-chant-set-view"),
+    # Search
     url(r'^search/$', SearchView.as_view(), name="search-view"),
     url(r'^admin/', include(admin.site.urls)),
     )
