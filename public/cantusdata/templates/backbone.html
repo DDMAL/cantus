@@ -79,16 +79,36 @@
         </div>
         <div id="collapse-<%= index %>" class="panel-collapse collapse">
             <div class="panel-body">
+            <% if (chant.marginalia) { %>
             <p><b>Marginalia:</b> <%= chant.marginalia %></p>
+            <% } %>
+            <% if (chant.sequence) { %>
             <p><b>Sequence: </b> <%= chant.sequence %></p>
+            <% } %>
+            <% if (chant.feast) { %>
             <p><b>Feast: </b> <%= chant.feast %></p>
+            <% } %>
+            <% if (chant.office) { %>
             <p><b>Office: </b> <%= chant.office %></p>
+            <% } %>
+            <% if (chant.genre) { %>
             <p><b>Genre: </b> <%= chant.genre %></p>
+            <% } %>
+            <% if (chant.lit_position) { %>
             <p><b>Lit Position: </b> <%= chant.lit_position %></p>
+            <% } %>
+            <% if (chant.mode) { %>
             <p><b>Mode: </b> <%= chant.mode %></p>
+            <% } %>
+            <% if (chant.differentia) { %>
             <p><b>Differentia: </b> <%= chant.differentia %></p>
+            <% } %>
+            <% if (chant.finalis) { %>
             <p><b>Finalis: </b> <%= chant.finalis %></p>
+            <% } %>
+            <% if (chant.volpiano) { %>
             <p><b>Volpiano: </b> <%= chant.volpiano %></p>
+            <% } %>
             <hr/>
             <h5>Full Text</h5>
             <%= chant.full_text %>

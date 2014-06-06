@@ -74,7 +74,7 @@
                 chant_count: 0,
                 chant_set: []
             }
-        },
+        }
     });
 
     var Manuscript = CantusAbstractModel.extend
