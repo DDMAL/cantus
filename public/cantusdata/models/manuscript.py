@@ -70,11 +70,11 @@ def solr_index(sender, instance, created, **kwargs):
         'type': 'cantusdata_manuscript',
         'id': str(uuid.uuid4()),
         'item_id': manuscript.id,
-        'Name': manuscript.name,
-        'Siglum': manuscript.siglum,
-        'Date': manuscript.date,
-        'Provenance': manuscript.provenance,
-        'Description': manuscript.description
+        'name': manuscript.name,
+        'siglum': manuscript.siglum,
+        'date': manuscript.date,
+        'provenance': manuscript.provenance,
+        'description': manuscript.description
     }
     solrconn.add(**d)
     solrconn.commit()

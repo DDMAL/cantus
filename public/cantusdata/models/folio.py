@@ -11,6 +11,7 @@ class Folio(models.Model):
     """
     class Meta:
         app_label = "cantusdata"
+        ordering = ['number']
 
     number = models.CharField(max_length=50, blank=True, null=True)
     manuscript = models.ForeignKey("Manuscript")

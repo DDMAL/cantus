@@ -110,35 +110,39 @@
     <field name="type" type="string" indexed="true" stored="true" required="true" multiValued="false" />
     <field name="item_id" type="string" indexed="true" stored="true" required="true" multiValued="false" />
 
-    <field name="Name" type="text_general" indexed="true" stored="true"/>
-    <field name="Siglum" type="text_general" indexed="true" stored="true"/>
-    <field name="Date" type="string" indexed="true" stored="true"/>
-    <field name="Provenance" type="text_general" indexed="true" stored="true"/>
-    <field name="Description" type="text_general" indexed="true" stored="true"/>
+    <field name="name" type="text_general" indexed="true" stored="true"/>
+    <field name="siglum" type="text_general" indexed="true" stored="true"/>
+    <field name="date" type="string" indexed="true" stored="true"/>
+    <field name="provenance" type="text_general" indexed="true" stored="true"/>
+    <field name="description" type="text_general" indexed="true" stored="true"/>
 
-    <field name="Marg" type="text_general" indexed="true" stored="true"/>
-    <field name="Folio" type="text_general" indexed="true" stored="true"/>
-    <field name="Sequence" type="int" indexed="true" stored="true" />
-    <field name="CantusID" type="text_general" indexed="true" stored="true"/>
+    <field name="manuscript" type="text_general" indexed="true" stored="true"/>
 
-    <field name="Feast" type="text_general" indexed="true" stored="true"/>
-    <field name="FeastDate" type="text_general" indexed="true" stored="true" multiValued="false" />
-    <field name="FeastCode" type="text_general" indexed="true" stored="true" multiValued="false" />
-    <field name="FeastExplanation" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="marginalia" type="text_general" indexed="true" stored="true"/>
+    <field name="folio" type="text_general" indexed="true" stored="true"/>
+    <field name="sequence" type="int" indexed="true" stored="true" />
+    <field name="cantus_id" type="text_general" indexed="true" stored="true"/>
+
+    <field name="feast" type="text_general" indexed="true" stored="true"/>
+    <field name="feast_date" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="feast_code" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="feast_explanation" type="text_general" indexed="true" stored="true" multiValued="false" />
 
 
-    <field name="Office" type="text_general" indexed="true" stored="true" multiValued="false" />
-    <field name="Genre" type="text_general" indexed="true" stored="true" multiValued="false" />
-    <field name="Position" type="text_general" indexed="true" stored="true" multiValued="false" />
-    <field name="Mode" type="text_general" indexed="true" stored="true" multiValued="false" />
-    <field name="Diff" type="text_general" indexed="true" stored="true" multiValued="false" />
-    <field name="Finalis" type="text_general" indexed="true" stored="true" multiValued="false" />
-    <field name="Incipit" type="text_general" indexed="true" stored="true" multiValued="false" />
-    <field name="FullText" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="office" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="genre" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="position" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="mode" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="differentia" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="finalis" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="incipit" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="full_text" type="text_general" indexed="true" stored="true" multiValued="false" />
 
 
      <!-- Fields related to concordances  -->
     <field name="concordance_citation" type="text_general" indexed="true" stored="true" />
+    <field name="concordances" type="text_general" indexed="true" stored="true" multiValued="true" />
+
 
      <!-- <field name="Volpiano" type="text_general" indexed="true" stored="true" multiValued="false" /> -->
 
@@ -275,13 +279,13 @@
         is added to the index.  It's used either to index the same field differently,
         or to add multiple fields to the same field for easier/faster searching.  -->
 
-    <copyField source="Name" dest="text" />
-    <copyField source="Siglum" dest="text" />
-    <copyField source="Date" dest="text" />
-    <copyField source="Provenance" dest="text" />
-    <copyField source="Marg" dest="text" />
-    <copyField source="Incipit" dest="text" />
-    <copyField source="Folio" dest="text" />
+    <copyField source="name" dest="text" />
+    <copyField source="siglum" dest="text" />
+    <copyField source="date" dest="text" />
+    <copyField source="provenance" dest="text" />
+    <copyField source="marginalia" dest="text" />
+    <copyField source="incipit" dest="text" />
+    <copyField source="folio" dest="text" />
 
 	
    <!-- Above, multiple source fields are copied to the [text] field. 

@@ -1,6 +1,7 @@
 from django.db import models
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
+from cantusdata.models.concordance import Concordance
 
 
 class Chant(models.Model):
@@ -13,6 +14,7 @@ class Chant(models.Model):
     """
     class Meta:
         app_label = "cantusdata"
+        ordering = ['sequence']
 
     marginalia = models.CharField(max_length=255, blank=True, null=True)
     folio = models.ForeignKey("cantusdata.Folio", blank=True, null=True)
@@ -41,6 +43,12 @@ class Chant(models.Model):
     def __unicode__(self):
         return u"{0} - {1}".format(self.cantus_id, self.incipit)
 
+    @property
+    def concordance_citation_list(self):
+        output = []
+        for concordance in self.concordances.all():
+            output.append(concordance.__unicode__())
+        return output
 
 @receiver(post_save, sender=Chant)
 def solr_index(sender, instance, created, **kwargs):
@@ -59,20 +67,21 @@ def solr_index(sender, instance, created, **kwargs):
         'type': 'cantusdata_chant',
         'id': str(uuid.uuid4()),
         'item_id': chant.id,
-        'Marg': chant.marginalia,
-        'Folio': chant.folio.number,
-        'Sequence': chant.sequence,
-        'CantusID': chant.cantus_id,
-        'Feast': chant.feast,
-        'Office': chant.office,
-        'Genre': chant.genre,
-        'Position': chant.lit_position,
-        'Mode': chant.mode,
-        'Diff': chant.differentia,
-        'Finalis': chant.finalis,
-        'Incipit': chant.incipit,
-        'FullText': chant.full_text,
-        # 'Concordances': chant.concordances
+        'marginalia': chant.marginalia,
+        'manuscript': chant.manuscript.siglum,
+        'folio': chant.folio.number,
+        'sequence': chant.sequence,
+        'cantus_id': chant.cantus_id,
+        'feast': chant.feast,
+        'office': chant.office,
+        'genre': chant.genre,
+        'position': chant.lit_position,
+        'mode': chant.mode,
+        'differentia': chant.differentia,
+        'finalis': chant.finalis,
+        'incipit': chant.incipit,
+        'full_text': chant.full_text,
+        'concordances': chant.concordance_citation_list
     }
     solrconn.add(**d)
     solrconn.commit()
