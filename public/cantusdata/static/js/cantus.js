@@ -126,10 +126,10 @@
 
         setQuery: function(query)
         {
-            console.log("Constructing search result for query:");
-            console.log(query);
+//            console.log("Constructing search result for query:");
+//            console.log(query);
             this.url = siteUrl + "search/?q=" + query;
-            console.log(this.url);
+//            console.log(this.url);
         },
 
         /**
@@ -171,8 +171,8 @@
 
                 output.push(newElement);
             });
-            console.log("search output:");
-            console.log(output);
+//            console.log("search output:");
+//            console.log(output);
             return output;
         },
 
@@ -197,8 +197,37 @@
         initialize: function(url)
         {
             this.url = url;
-            console.log("Collection URL: " + this.url);
-            console.log(this.url);
+//            console.log("Collection URL: " + this.url);
+//            console.log(this.url);
+        },
+
+        addUrlList: function(list)
+        {
+            var newModels = [];
+
+            for (var i = 0; i < list.length; i++)
+            {
+                newModels.push(new this.model(list[i]));
+            }
+
+            // Gotta fetch 'em all!
+            for (var j = 0; j < newModels.length; j++)
+            {
+                // Send out an alert once the last one has been fetched
+                theCollection = this;
+                if (j === (newModels.length - 1)) {
+                   newModels[j].fetch({
+                       success: function() {
+//                           console.log("Triggered addedUrlList");
+                           theCollection.trigger("addedUrlList");
+                       }
+                   });
+                } else {
+                    newModels[j].fetch();
+                }
+            }
+
+            this.push(newModels);
         },
 
         defaults: function()
@@ -209,34 +238,7 @@
 
     var ChantCollection = CantusAbstractCollection.extend
     ({
-        model: Chant,
-
-        /**
-         * Add a list of chants from URLs.
-         */
-        addChantUrlList: function(list)
-        {
-            console.log("AddChantUrlList:");
-            console.log(list);
-
-            var newModels = [];
-
-            for (var i = 0; i < list.length; i++)
-            {
-                newModels.push(new Chant(list[i]));
-            }
-
-            // Gotta fetch 'em all!
-            for (var j = 0; j < newModels.length; j++)
-            {
-                newModels[j].fetch();
-            }
-
-            console.log("NEW CHANT MODELS:");
-            console.log(newModels);
-
-            this.push(newModels);
-        }
+        model: Chant
     });
 
     var ConcordanceCollection = CantusAbstractCollection.extend
@@ -295,13 +297,13 @@
             }
 
             // This might have to render several times...
-            this.listenTo(this.collection, 'change', this.render);
+            this.listenTo(this.collection, 'addedUrlList', this.render);
         },
 
         render: function()
         {
-            console.log("ChantCollectionView RENDER METHOD");
-            console.log(this.collection.toJSON());
+//            console.log("ChantCollectionView RENDER METHOD");
+//            console.log(this.collection.toJSON());
             // Render out the template
             $(this.el).html(this.template(
                 {
@@ -372,13 +374,14 @@
         {
             if (index != this.currentFolioIndex)
             {
-                console.log("TRIGGERING MANUSCRIPTCHANGEFOLIO");
-                if ((new Date().getTime() - this.lastFolioChangeTime) > 1000)
-                {
+//                console.log("TRIGGERING MANUSCRIPTCHANGEFOLIO");
+//                if ((new Date().getTime() - this.lastFolioChangeTime) > 1000)
+//                {
+
                     this.currentFolioIndex = index;
                     this.lastFolioChangeTime = new Date().getTime();
                     globalEventHandler.trigger("manuscriptChangeFolio", index);
-                }
+//                }
             }
         }
     });
@@ -393,12 +396,12 @@
             _.bindAll(this, 'render', 'afterFetch', 'assignChants');
             this.template= _.template($('#folio-template').html());
 
-            console.log("Initializing Folio: " + options.url);
+//            console.log("Initializing Folio: " + options.url);
             this.model = new Folio(options.url);
             this.model.fetch();
 
-            console.log("New Folio model:");
-            console.log(this.model.toJSON());
+//            console.log("New Folio model:");
+//            console.log(this.model.toJSON());
 
             // Assign the chant list and render when necessary
             this.listenTo(this.model, 'sync', this.afterFetch);
@@ -415,13 +418,13 @@
          */
         assignChants: function()
         {
-            console.log("assignChants");
+//            console.log("assignChants");
 //            console.log(this.model.toJSON().chant_set);
-            this.chantCollectionView = new ChantCollectionView()
+            this.chantCollectionView = new ChantCollectionView();
 
             // Add all of the chants
-            this.chantCollectionView.collection.addChantUrlList(this.model.toJSON().chant_set);
-            console.log(this.chantCollectionView.collection);
+            this.chantCollectionView.collection.addUrlList(this.model.toJSON().chant_set);
+//            console.log(this.chantCollectionView.collection);
 
             this.render();
         },
@@ -431,7 +434,7 @@
             $(this.el).html(this.template(this.model.toJSON()));
 
             if (this.chantCollectionView !== null) {
-                console.log("Rendering ChantCollectionView");
+//                console.log("Rendering ChantCollectionView");
                 this.assign(this.chantCollectionView, '#chant-list');
             }
 
@@ -472,13 +475,13 @@
                 }
             )
 
-            console.log("HeaderView constructed.");
+//            console.log("HeaderView constructed.");
         },
 
         render: function()
         {
             $(this.el).html(this.template());
-            console.log("HeaderView rendered.");
+//            console.log("HeaderView rendered.");
 
             // Render subviews
             this.assign(this.topMenuView, '#top-menu');
@@ -500,8 +503,8 @@
 
         render: function()
         {
-            console.log("Rendering top menu.");
-            console.log(this.items);
+//            console.log("Rendering top menu.");
+//            console.log(this.items);
             $(this.el).html(this.template({items: this.items}));
             return this.trigger('render', this);
         }
@@ -566,7 +569,7 @@
             //Date to use for checking timestamps
             this.lastSearchTime = new Date().getTime();
 
-            console.log("TEST:::: " + this.query);
+//            console.log("TEST:::: " + this.query);
             this.searchResultView = new SearchResultView({query: this.query});
         },
 
@@ -577,7 +580,7 @@
 
             if (newQuery !== this.query) {
                 this.query = newQuery;
-                console.log("NewQuery = " + this.query);
+//                console.log("NewQuery = " + this.query);
                 // Set the new query and fetch it!
                 this.searchResultView.model.setQuery(this.query);
                 // This should automatically re-render the results... I think...
@@ -592,8 +595,8 @@
         autoNewSearch: function()
         {
             // Only update every 1 second
-            console.log(new Date().getTime());
-            console.log(this.lastSearchTime);
+//            console.log(new Date().getTime());
+//            console.log(this.lastSearchTime);
             if ((new Date().getTime() - this.lastSearchTime) > 100) {
                 // It's been a second, so do the search
                 this.newSearch();
@@ -618,7 +621,7 @@
             _.bindAll(this, 'render');
             this.template= _.template($('#search-result-template').html());
 
-            console.log("Constructing search results for q=" + options.query);
+//            console.log("Constructing search results for q=" + options.query);
 
             if (options.query !== undefined)
             {
@@ -640,7 +643,7 @@
             {
                 // Only render if the model is defined
                 console.log("Rendering search result view.");
-                console.log(this.model.toJSON());
+//                console.log(this.model.toJSON());
                 $(this.el).html(this.template({results: this.model.getFormattedData()}));
             }
             else
@@ -678,13 +681,13 @@
 
         render: function()
         {
-            console.log("About to render IndexView...");
+//            console.log("About to render IndexView...");
 //            console.log(this.collection.toJSON());
             $(this.el).html(this.template());
             // Render subviews
             this.assign(this.headerView, '.header');
 
-            console.log("IndexView template rendered...");
+//            console.log("IndexView template rendered...");
             return this.trigger('render', this);
         }
     });
@@ -713,18 +716,17 @@
             _.bindAll(this, 'render', 'afterFetch', 'updateFolio');
             this.template= _.template($('#manuscript-template').html());
 
-            console.log("Creating manuscript with id=" + this.id);
+//            console.log("Creating manuscript with id=" + this.id);
             this.manuscript = new Manuscript(
                 siteUrl + "manuscript/" + this.id + "/");
-            console.log("TEST MANUSCRIPT INITIALIZATION:");
-            console.log(this.manuscript);
+//            console.log("TEST MANUSCRIPT INITIALIZATION:");
+//            console.log(this.manuscript);
 
             // Build the subviews
             this.headerView = new HeaderView();
-            console.log("Siglum Slug: " + this.manuscript.get("siglum_slug"));
-            console.log(this.manuscript.get("siglum_slug"));
+//            console.log("Siglum Slug: " + this.manuscript.get("siglum_slug"));
+//            console.log(this.manuscript.get("siglum_slug"));
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
-            this.divaView.on("manuscriptChangeFolio", console.log("test"));
             this.folioView = new FolioView({url: siteUrl + "folio/" + 551 + "/"});
 
             // Render every time the model changes...
@@ -737,31 +739,32 @@
         {
             // Grab the new page index from the diva view
             this.activeFolioIndex = this.divaView.currentFolioIndex;
-            console.log("setFolio to " + this.activeFolioIndex);
-            console.log(this.manuscript.toJSON());
+//            console.log("setFolio to " + this.activeFolioIndex);
+//            console.log(this.manuscript.toJSON());
             // Get the proper url based on the index
             var newUrl = this.manuscript.toJSON().folio_set[this.activeFolioIndex];
             // Rebuild the folio View
             this.folioView = new FolioView({url: newUrl});
+            // Render it
+            this.renderFolioView();
         },
 
         getData: function()
         {
             this.manuscript.fetch();
-            console.log("HomePageView data fetched.");
+//            console.log("HomePageView data fetched.");
         },
 
         afterFetch: function()
         {
-            console.log("after manuscript fetch...");
+//            console.log("after manuscript fetch...");
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
-            this.divaView.on("manuscriptChangeFolio", console.log("test"));
             this.render();
         },
 
         render: function()
         {
-            console.log("Rendering");
+//            console.log("Rendering");
             $(this.el).html(this.template({
                 manuscript: this.manuscript.toJSON()
             }));
@@ -772,10 +775,17 @@
             if (this.divaView !== undefined) {
                 this.assign(this.divaView, '#diva-wrapper');
             }
-            this.assign(this.folioView, '#folio');
+            this.renderFolioView();
 
-            console.log("Rendering done");
+//            console.log("Rendering done");
             return this.trigger('render', this);
+        },
+
+        renderFolioView: function()
+        {
+            if (this.divaView !== undefined) {
+                this.assign(this.folioView, '#folio');
+            }
         }
     });
 
@@ -813,13 +823,13 @@
 
         render: function()
         {
-            console.log("About to render ManuscriptCollectionViewtemplate...");
+//            console.log("About to render ManuscriptCollectionViewtemplate...");
             $(this.el).html(this.template());
 
             this.assign(this.headerView, '.header');
             this.assign(this.manuscriptCollectionView, '.manuscript-list');
 
-            console.log("ManuscriptCollectionView template rendered...");
+//            console.log("ManuscriptCollectionView template rendered...");
             return this.trigger('render', this);
         }
     });
@@ -849,14 +859,14 @@
 
         render: function()
         {
-            console.log("About to render SearchPageView...");
+//            console.log("About to render SearchPageView...");
             $(this.el).html(this.template());
 
             // Render subviews
             this.assign(this.headerView, '.header');
             this.assign(this.searchView, '#search');
 
-            console.log("SearchPageView template rendered...");
+//            console.log("SearchPageView template rendered...");
             return this.trigger('render', this);
         }
     });
@@ -879,14 +889,14 @@
 
         index: function()
         {
-            console.log("Index route.");
+//            console.log("Index route.");
             var index = new IndexPageView();
             index.render();
         },
 
         manuscripts: function()
         {
-            console.log("Manuscripts route.");
+//            console.log("Manuscripts route.");
             var manuscripts = new ManuscriptsPageView();
             // Render initial templates
             manuscripts.render();
@@ -896,7 +906,7 @@
 
         manuscriptSingle: function(query)
         {
-            console.log("Manuscript route.");
+//            console.log("Manuscript route.");
             var manuscript = new ManuscriptIndividualPageView({ id: query });
             // Render initial templates
             manuscript.render();
@@ -906,7 +916,7 @@
 
         search: function(query)
         {
-            console.log("Search route.");
+//            console.log("Search route.");
             var search = new SearchPageView({query: query});
             search.render();
         },
