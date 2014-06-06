@@ -349,7 +349,6 @@
                     onScroll: function ()
                     {
                         // This is the page number
-                        console.log(dv.getState()["p"]);
                         storeFolioIndex(dv.getState()["p"]);
                     },
                     onJump: function ()
@@ -706,12 +705,14 @@
 
         initialize: function(options)
         {
-            _.bindAll(this, 'render', 'afterFetch');
+            _.bindAll(this, 'render', 'afterFetch', 'updateFolio');
             this.template= _.template($('#manuscript-template').html());
 
             console.log("Creating manuscript with id=" + this.id);
             this.manuscript = new Manuscript(
                 siteUrl + "manuscript/" + this.id + "/");
+            console.log("TEST MANUSCRIPT INITIALIZATION:");
+            console.log(this.manuscript);
 
             // Build the subviews
             this.headerView = new HeaderView();
@@ -724,16 +725,16 @@
             // Render every time the model changes...
             this.listenTo(this.manuscript, 'sync', this.afterFetch);
             // Switch page when necessary
-//            this.listenTo(this.divaView, "manuscriptChangeFolio", this.setFolio());
-            globalEventHandler.on("manuscriptChangeFolio", this.setFolio);
+            this.listenTo(globalEventHandler, "manuscriptChangeFolio", this.updateFolio);
         },
 
-        setFolio: function(index)
+        updateFolio: function()
         {
-            this.activeFolioIndex = index;
+            // Grab the new page index from the diva view
+            this.activeFolioIndex = this.divaView.currentFolioIndex;
             console.log("setFolio to " + this.activeFolioIndex);
+            console.log(this.manuscript.toJSON());
             // Get the proper url based on the index
-            console.log(this.manuscript);
             var newUrl = this.manuscript.toJSON().folio_set[this.activeFolioIndex];
             // Rebuild the folio View
             this.folioView = new FolioView({url: newUrl});
