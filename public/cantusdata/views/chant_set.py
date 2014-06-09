@@ -18,5 +18,23 @@ class FolioChantSetView(APIView):
         # Connect to Solr
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
         # Query
-        result = solrconn.query(composed_request, sort="sequence asc")
+        result = solrconn.query(composed_request, sort="sequence asc",
+                                rows=100)
+        return Response(result)
+
+
+class ManuscriptChantSetView(APIView):
+    serializer_class = SearchSerializer
+    renderer_classes = (JSONRenderer, JSONPRenderer)
+
+    def get(self, request, *args, **kwargs):
+        manuscript_id = kwargs['pk']
+        if kwargs['start']:
+            start = kwargs['start']
+        else:
+            start = 0
+        composed_request = u'type:"cantusdata_chant" AND manuscript_id:{0}'.format(manuscript_id)
+        solrconn = solr.SolrConnection(settings.SOLR_SERVER)
+        result = solrconn.query(composed_request, sort="sequence asc",
+                                start=start, rows=100)
         return Response(result)
