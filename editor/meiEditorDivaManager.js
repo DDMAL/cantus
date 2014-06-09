@@ -179,10 +179,14 @@
                 {
                     var linkedCount = 0;
                     //for each ordered page
-                    for(curMeiIndex in meiEditorSettings.pageData)
+                    for(curMei in meiEditorSettings.pageData)
                     {
-                        //get the extension
-                        var meiExtLength = curMeiIndex.split(".")[1].length + 1;
+                        //get the extension; if one doesn't exist, skip this file.
+                        if(typeof(curMei.split(".")[1]) == "undefined")
+                        {
+                            continue;
+                        }
+                        var meiExtLength = curMei.split(".")[1].length + 1;
 
                         //for each diva image
                         for(curDivaIndex in meiEditorSettings.divaPageList)
@@ -201,7 +205,7 @@
                             }
                         }
                     }
-                    meiEditor.localLog("Linked", linkedCount, "of", meiEditorSettings.pageData.length, "total MEI files.");
+                    meiEditor.localLog("Linked " + linkedCount + " of " + Object.keys(meiEditorSettings.pageData).length + " total MEI files.");
                 }
 
                 meiEditor.updateUnlinked = function()
@@ -299,13 +303,22 @@
                 });
 
                 //when the page changes, make the editor reflect that
-                Events.subscribe("VisiblePageDidChange", function(pageNumber, fileName)
+                diva.Events.subscribe("VisiblePageDidChange", function(pageNumber, fileName)
                 {
                     //if they're linked, change them
                     if(fileName in meiEditorSettings.divaImagesToMeiFiles)
                     {
-                        activeFileName = meiEditorSettings.divaImagesToMeiFiles[fileName];
-                        meiEditor.changeActivePage(activeFileName);
+                        var activeFileName = meiEditorSettings.divaImagesToMeiFiles[fileName];
+                        var tabArr = $("#pagesList > li > a");
+                        for(curTabIndex in tabArr)
+                        {
+                            var curTab = tabArr[curTabIndex];
+                            if($(curTab).text() == activeFileName)
+                            {
+                                $("#openPages").tabs("option", "active", curTabIndex);
+                                return;
+                            }
+                        }
                     }
                 });
 
