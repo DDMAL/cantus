@@ -39,3 +39,39 @@ def auto_count_chants(chant):
     if folio:
         folio.chant_count = len(Chant.objects.filter(folio=folio))
         folio.save()
+
+
+@receiver(post_save, sender=Folio)
+def solr_index(sender, instance, created, **kwargs):
+    import uuid
+    from django.conf import settings
+    import solr
+
+    solrconn = solr.SolrConnection(settings.SOLR_SERVER)
+    record = solrconn.query("type:cantusdata_folio item_id:{0}"
+                            .format(instance.id), q_op="AND")
+    if record:
+        solrconn.delete(record.results[0]['id'])
+
+    folio = instance
+    d = {
+        'type': 'cantusdata_folio',
+        'id': str(uuid.uuid4()),
+        'number': folio.number,
+        'item_id': folio.id,
+        'manuscript_id': folio.manuscript.id,
+    }
+    solrconn.add(**d)
+    solrconn.commit()
+
+
+@receiver(post_delete, sender=Folio)
+def solr_delete(sender, instance, **kwargs):
+    from django.conf import settings
+    import solr
+    solrconn = solr.SolrConnection(settings.SOLR_SERVER)
+    record = solrconn.query("type:cantusdata_folio item_id:{0}"
+                            .format(instance.id), q_op="AND")
+    if record:
+        solrconn.delete(record.results[0]['id'])
+        solrconn.commit()
