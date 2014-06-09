@@ -29,7 +29,7 @@ class ManuscriptChantSetView(APIView):
 
     def get(self, request, *args, **kwargs):
         manuscript_id = kwargs['pk']
-        if kwargs['start']:
+        if 'start' in kwargs:
             start = kwargs['start']
         else:
             start = 0
