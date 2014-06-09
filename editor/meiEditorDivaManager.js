@@ -12,6 +12,7 @@
                 "Unlink files from Diva images...": "file-unlink-dropdown",
                 "Auto-link files by filename": "auto-link-dropdown",
                 "Update Diva": "update-diva-dropdown",
+                "Help...": "diva-help-dropdown",
             },
             init: function(meiEditor, meiEditorSettings)
             {
@@ -22,21 +23,30 @@
                     neumeObjects: {}
                 });
 
-                $("#file-link-dropdown").on('click', function(){
+                $("#file-link-dropdown").on('click', function()
+                {
                     $('#fileLinkModal').modal();
                 });
 
-                $("#file-unlink-dropdown").on('click', function(){
+                $("#file-unlink-dropdown").on('click', function()
+                {
                     $('#fileUnlinkModal').modal();
                 });
 
-                $("#auto-link-dropdown").on('click', function(){
+                $("#auto-link-dropdown").on('click', function()
+                {
                     meiEditor.autoLinkFiles();
                 });
 
-                $("#update-diva-dropdown").on('click', function(){
+                $("#update-diva-dropdown").on('click', function()
+                {
                     meiEditor.createHighlights();
-                })
+                });
+
+                $("#diva-help-dropdown").on('click', function()
+                {
+                    $("#divaHelpModal").modal();
+                });
 
                 meiEditor.createModal("fileLinkModal", false, 
                     "<span class='modalSubLeft'>"
@@ -59,6 +69,15 @@
                     + "<select id='selectUnlink'></select><br>"
                     + "<button id='unlink-files'>Unlink selected files</button>"
                     + "</div>"
+                    );
+
+                meiEditor.createModal("divaHelpModal", false,
+                    "<h2>Help</h2>"
+                    + "<li>To get highlights from a file to show up in the Diva pane, click 'Link files to Diva images...' from the dropdown menu and select the files you want to link.</li>"
+                    + "<br><li>'Auto-link files by filename' will automatically strip file extensions and try to match files so that '001.mei' and '001.tiff' become linked.</li>"
+                    + "<br><li>Changes you make to the MEI document will not automatically transfer over; click 'Update Diva' to reload the highlighted objects in the image viewer.</li>"
+                    + "<br><li>Clicking on a box then clicking on another will unselect the first one; to select multiple, hold shift and drag to select everything within a box or hold shift and click multiple.</li>"
+                    + "<br><li>Press the 'delete' key on your keyboard to delete all selected highlights and the MEI lines associated with them.</li>"
                     );
 
                 //the div that pops up when highlights are hovered over
@@ -90,8 +109,12 @@
                                 'display': 'block',
                                 'vertical-align': 'middle',
                             });
-                            //change the color of the hovered div
-                            $("#"+currentTarget).css('background-color', 'rgba(255, 255, 255, 0.05)');
+
+                            //if this isn't selected, change the color 
+                            if(!$("#" + currentTarget).hasClass('selectedHover'))
+                            {
+                                $("#"+currentTarget).css('background-color', 'rgba(255, 255, 255, 0.05)');
+                            }
 
                             $(document).on('mousemove', function(e) //have it follow the mouse
                             {
@@ -107,18 +130,77 @@
                             $("#hover-div").css('display', 'none'); //hides the div
                             $("#hover-div").html("");
 
-                            $("#"+currentTarget).css('background-color', 'rgba(255, 0, 0, 0.2)'); //color is normal again
+                            //if this isn't selected, change the color back to normal
+                            if(!$("#" + currentTarget).hasClass('selectedHover'))
+                            {
+                                $("#" + currentTarget).css('background-color', 'rgba(255, 0, 0, 0.2)');
+                            }
                         });
                         $(".overlay-box").click(function(e)
                         {
+                            //if this is the first click, find the <neume> object, else find the next occurence
+                            var searchNeedle = "";
+                            var target = $(e.target);
+                            if(target.hasClass('selectedHover'))
+                            {
+                                searchNeedle = e.target.id;
+                            } 
+                            else 
+                            {
+                                searchNeedle = new RegExp("<neume.*" + e.target.id, "g");
+                                //add class and change the background color
+                                $(e.target).addClass('selectedHover');
+                                $(e.target).css('background-color', 'background-color:rgba(0, 255, 0, 0.2)');
+                            }
+                            
+                            //bujild search
                             var pageTitle = meiEditor.getActivePanel().text();
-                            var searchNeedle = new RegExp("<neume.*" + e.target.id, "g");
                             var testSearch = meiEditorSettings.pageData[pageTitle].find(searchNeedle, 
                             {
                                 wrap: true,
                                 range: null,
                             });
-                            console.log(testSearch);
+
+                            //don't send to children
+                            e.stopPropagation();
+
+                            //add delete listener
+                            $(document).on('keyup', function(e)
+                            {
+                                if(e.keyCode == 46) //delete, as backspace triggers a history.back event
+                                {
+                                    e.preventDefault();
+                                    //remove the highlight object and the reference from the neumeObjects array
+                                    var curItemIndex = $(".selectedHover").length;
+                                    while(curItemIndex--)
+                                    {
+                                        var curItem = $(".selectedHover")[curItemIndex];    
+                                        var itemID = $(curItem).attr('id');
+                                        
+                                        //remove item from display, remove from neumeObjects
+                                        $(curItem).remove();
+                                        delete meiEditorSettings.neumeObjects[itemID];
+
+                                        //perform a new search to grab all occurences of the id and to delete both lines
+                                        var uuidSearch = meiEditorSettings.pageData[pageTitle].findAll(itemID, 
+                                        {
+                                            wrap: true,
+                                            range: null,
+                                        });
+
+                                        //this may not be the right way to do it, but "findAll" returns how many it found, and there doesn't seem to be a clear way to select everything at once. This accurately deletes all instances, however.
+                                        while(uuidSearch)
+                                        {
+                                            meiEditorSettings.pageData[pageTitle].removeLines();
+                                            uuidSearch = meiEditorSettings.pageData[pageTitle].findAll(itemID, 
+                                            {
+                                                wrap: true,
+                                                range: null,
+                                            });
+                                        }
+                                    }                                
+                                }
+                            });
                         });
                     };
 
@@ -200,6 +282,7 @@
                         }
                     }
                     meiEditor.localLog("Linked " + linkedArr.length + " of " + Object.keys(meiEditorSettings.pageData).length + " total MEI files. (" + linkedArr.join(', ') + ")");
+                    meiEditor.createHighlights();
                 }
 
                 /* 
@@ -225,6 +308,9 @@
                     //byebye
                     $(selectedMei).remove();
                     $(selectedImage).remove();
+
+                    //because one line of code helps prevent one pound of laziness
+                    meiEditor.createHighlights();
                 }
 
                 $.ajax( //this grabs the json file to get an meiEditor-local list of the image filepaths
@@ -271,7 +357,8 @@
 
 
                 //when "Link selected files" is clicked
-                $("#link-files").on('click', function(){
+                $("#link-files").on('click', function()
+                {
                     //grab the IDs/stripped IDs of the linked files
                     var selectedMEI = $('#selectfile-link').find(':selected');
                     var selectedImage = $('#selectdiva-link').find(':selected');
@@ -290,7 +377,8 @@
                     meiEditor.linkMeiToDiva(selectedMEI, selectedImage);
                 });
 
-                $("#unlink-files").on('click', function(){
+                $("#unlink-files").on('click', function()
+                {
                     var selectedPair = $('#selectUnlink').find(':selected');
                     var fileArr = selectedPair.text().split(' and ');
 
@@ -305,6 +393,22 @@
                     //reload highlights
                     meiEditor.createHighlights();
 
+                });
+
+                $("#diva-wrapper").on('click', function(e)
+                {
+                    if($(e.target).hasClass('overlay-box'))
+                    {
+                        if($(e.shiftKey))
+                        {
+                            console.log('awfully shifty');
+                        }
+                        else
+                        {
+                            //I love it when jQuery functions make stuff this easy
+                            $(".selectedHover").toggleClass("selectedHover");
+                        }
+                    }
                 });
 
                 return true;
