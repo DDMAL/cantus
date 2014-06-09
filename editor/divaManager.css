@@ -32,3 +32,19 @@
     display:none;
 	width:auto;
 }
+.overlay-box{
+    border: thin black solid;
+    position: absolute;
+    cursor: default;
+}
+#drag-div{
+    border: thin black solid;
+    position: absolute;
+    cursor: default;
+    background-color:rgba(255, 0, 0, 0.1);
+    z-index:1004;
+}
+#cover-div{
+	position:fixed;
+	z-index:1003;
+}

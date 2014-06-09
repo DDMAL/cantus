@@ -151,7 +151,7 @@
                             //if this is the first click, find the <neume> object, else find the next occurence
                             var searchNeedle = "";
                             var target = $(e.target);
-                            console.log($(e.target));
+
                             if(target.hasClass('selectedHover'))
                             {
                                 searchNeedle = e.target.id;
@@ -161,7 +161,7 @@
                                 searchNeedle = new RegExp("<neume.*" + e.target.id, "g");
                                 //add class and change the background color
                                 $(e.target).addClass('selectedHover');
-                                $(e.target).css('background-color', 'background-color:rgba(0, 255, 0, 0.2)');
+                                $(e.target).css('background-color', 'background-color:rgba(0, 255, 0, 0.1)');
                             }
                             
                             //bujild search
@@ -406,6 +406,89 @@
                         }                                
                     }
                 });
+
+                $(document).on('keydown', function(e)
+                {
+                    if(e.shiftKey)
+                    {
+                        $(document).on('keyup', function(e)
+                        {
+                            if(!e.shiftKey)
+                            {
+                                $("#cover-div").remove();
+                            }
+                        });
+
+                        //if user is holding shift, append a div on top of everything that covers diva-wrapper (and thus negates its click/drag binding)
+                        $("#topbar").append('<div id="cover-div"></div>')
+                        $("#cover-div").height(window.innerHeight);
+                        $("#cover-div").width(window.innerWidth);
+                        $("#cover-div").offset({'top': 0, 'left': 0});
+
+                        //when you click on that div
+                        $("#cover-div").on('mousedown', function(e)
+                        {
+                            e.preventDefault();
+
+                            //append the div that will resize as you drag
+                            $("#topbar").append('<div id="drag-div"></div>');
+                            $("#drag-div").offset({'top': e.pageY, 'left':e.pageX})
+
+                            //as you drag, resize it - only moves to bottom right
+                            $(document).on('mousemove', function(ev)
+                            {
+                                var dragLeft = $("#drag-div").offset().left;
+                                var dragTop = $("#drag-div").offset().top;
+                                $("#drag-div").width(ev.pageX - dragLeft);
+                                $("#drag-div").height(ev.pageY - dragTop);
+                            });
+
+                            //when you let go of the mouse
+                            $(document).on('mouseup', function(eve){
+                                $(document).unbind('mousemove');
+                                $(document).unbind('mouseup');
+
+
+                                //there's gotta be something simpler than this, but I can't find it for the life of me.
+                                //get the four sides
+                                var boxLeft = $("#drag-div").offset().left;
+                                var boxRight = boxLeft + $("#drag-div").width();
+                                var boxTop = $("#drag-div").offset().top;
+                                var boxBottom = boxTop + $("#drag-div").height();
+
+                                //for each overlay-box
+                                var curBoxIndex = $(".overlay-box").length;
+                                while(curBoxIndex--)
+                                {
+                                    var curBox = $(".overlay-box")[curBoxIndex];
+
+                                    //see if any part of the box is inside (not the entire box)
+                                    var curLeft = $(curBox).offset().left;
+                                    var curRight = curLeft + $(curBox).width();
+                                    var curTop = $(curBox).offset().top;
+                                    var curBottom = curTop + $(curBox).height();
+                                    if(curRight < boxLeft)
+                                        continue
+                                    else if(curLeft > boxRight)
+                                        continue
+                                    else if(curBottom < boxTop)
+                                        continue
+                                    else if(curTop > boxBottom)
+                                        continue
+                
+                                    //if we're still here, select it
+                                    $(curBox).addClass('selectedHover');
+                                    $(curBox).css('background-color', 'background-color:rgba(0, 255, 0, 0.2)');
+                                }
+
+                                //remove the resizing div
+                                $("#drag-div").remove();
+                            });
+                            e.stopPropagation();
+                        });
+                    }
+                });
+
 
                 return true;
             }
