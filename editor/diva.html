@@ -28,6 +28,8 @@
         <script src="meix.js/js/meilint.js"></script>
         <script src="meix.js/js/plugins/meiEditorFileUpload.js"></script>
         <script src="meix.js/js/plugins/meiEditorXMLValidator.js"></script>
+
+        <script src="meiEditorDivaManager.js"></script>
         <script>
         /*
         <script src="meiEditorDivaManager.js">
@@ -51,7 +53,12 @@
             });
 
             divaInstance = $('#diva-wrapper').data('diva');
-            meiEditor = $("#mei-editor").AceMeiEditor({'validatorLink': 'meix.js/validation/', 'divaInstance': divaInstance, 'jsonFileLocation': jsonFile});
+            meiEditor = $("#mei-editor").AceMeiEditor({
+                'validatorLink': 'meix.js/validation/', 
+                'xmllintLoc': 'meix.js/js/xmllint.js',
+                'divaInstance': divaInstance, 
+                'jsonFileLocation': jsonFile
+            });
 
             //little graphics things
 
