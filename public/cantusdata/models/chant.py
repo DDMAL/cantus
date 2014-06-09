@@ -48,6 +48,7 @@ class Chant(models.Model):
         output = []
         for concordance in self.concordances.all():
             output.append(concordance.__unicode__())
+        output.sort()
         return output
 
 @receiver(post_save, sender=Chant)
@@ -69,7 +70,9 @@ def solr_index(sender, instance, created, **kwargs):
         'item_id': chant.id,
         'marginalia': chant.marginalia,
         'manuscript': chant.manuscript.siglum,
+        'manuscript_id': chant.manuscript.id,
         'folio': chant.folio.number,
+        'folio_id': chant.folio.id,
         'sequence': chant.sequence,
         'cantus_id': chant.cantus_id,
         'feast': chant.feast,

@@ -8,7 +8,8 @@ from cantusdata.views.chant import ChantList, ChantDetail
 from cantusdata.views.folio import FolioList, FolioDetail
 from cantusdata.views.concordance import ConcordanceList, ConcordanceDetail
 from cantusdata.views.search import SearchView
-from cantusdata.views.folio_chant_set import FolioChantSetView
+from cantusdata.views.chant_set import FolioChantSetView, ManuscriptChantSetView
+from cantusdata.views.folio_set import ManuscriptFolioSetView
 
 
 urlpatterns = []
@@ -33,8 +34,28 @@ urlpatterns += format_suffix_patterns(
     url(r'^concordances/$', ConcordanceList.as_view(), name="concordance-list"),
     url(r'^concordance/(?P<pk>[0-9]+)/$', ConcordanceDetail.as_view(),
         name="concordance-detail"),
+
+    #######################
+    # Direct Solr queries #
+    #######################
+
     # Query chants by folio
-    url(r'^folio-chant-set/$', FolioChantSetView.as_view(), name="folio-chant-set-view"),
+    url(r'^chant-set/folio/(?P<pk>[0-9]+)/$',
+        FolioChantSetView.as_view(), name="folio-chant-set-view"),
+    # Query chants by manuscript
+    url(r'^chant-set/manuscript/(?P<pk>[0-9]+)/$',
+        ManuscriptChantSetView.as_view(),
+        name="manuscript-chant-set-view"),
+    url(r'^chant-set/manuscript/(?P<pk>[0-9]+)/page-(?P<start>[0-9]+)/$',
+        ManuscriptChantSetView.as_view(),
+        name="manuscript-chant-set-view-page"),
+    # Query Folios by manuscript
+    url(r'^folio-set/manuscript/(?P<pk>[0-9]+)/$',
+        ManuscriptFolioSetView.as_view(),
+        name="manuscript-folio-set-view"),
+    url(r'^folio-set/manuscript/(?P<pk>[0-9]+)/(?P<number>[0-9]+)/$',
+        ManuscriptFolioSetView.as_view(),
+        name="manuscript-folio-set-view-index"),
     # Search
     url(r'^search/$', SearchView.as_view(), name="search-view"),
     url(r'^admin/', include(admin.site.urls)),

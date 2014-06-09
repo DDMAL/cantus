@@ -6,5 +6,6 @@ class FolioSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Folio
 
-    chant_set = serializers.HyperlinkedRelatedField(many=True, read_only=True,
-                                                 view_name="chant-detail")
+    id = serializers.Field()
+    #chant_set = serializers.HyperlinkedRelatedField(many=True, read_only=True,
+    #                                            view_name="chant-detail")

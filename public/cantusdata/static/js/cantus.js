@@ -25,43 +25,43 @@
 
     var Chant = CantusAbstractModel.extend
     ({
-        defaults: function()
-        {
-            return {
-                marginalia: "the marginalia",
-                folio: "the folio",
-                sequence:"the sequence",
-                cantus_id: "the cantus id",
-                feast: "the feast",
-                office: "the office",
-                genre: "the genre",
-                lit_position: "the lit position",
-                mode: "the mode",
-                differentia: "the differentia",
-                finalis: "the finalis",
-                incipit: "the incipit",
-                full_text: "Quite a nice chant!",
-                concordances: [],
-                volpiano: "the volpiano",
-                manuscript: "the manuscript"
-            }
-        }
+//        defaults: function()
+//        {
+//            return {
+//                marginalia: "the marginalia",
+//                folio: "the folio",
+//                sequence:"the sequence",
+//                cantus_id: "the cantus id",
+//                feast: "the feast",
+//                office: "the office",
+//                genre: "the genre",
+//                lit_position: "the lit position",
+//                mode: "the mode",
+//                differentia: "the differentia",
+//                finalis: "the finalis",
+//                incipit: "the incipit",
+//                full_text: "Quite a nice chant!",
+//                concordances: [],
+//                volpiano: "the volpiano",
+//                manuscript: "the manuscript"
+//            }
+//        }
     });
 
     var Concordance = CantusAbstractModel.extend
     ({
-        defaults: function()
-        {
-            return {
-                letter_code: "ZZZ",
-                institution_city: "Montreal",
-                instutition_name: "DDMAL",
-                library_manuscript_name: "No Name",
-                date: "Right now",
-                location: "Montreal",
-                rism_code: "ABC1234"
-            }
-        }
+//        defaults: function()
+//        {
+//            return {
+//                letter_code: "ZZZ",
+//                institution_city: "Montreal",
+//                instutition_name: "DDMAL",
+//                library_manuscript_name: "No Name",
+//                date: "Right now",
+//                location: "Montreal",
+//                rism_code: "ABC1234"
+//            }
+//        }
     });
 
     var Folio = CantusAbstractModel.extend
@@ -89,9 +89,7 @@
                 date: "Tomorrow",
                 provenance: "Test provenance",
                 description: "This is a nice manuscript...",
-                chant_count: 5,
-                folio_set: [],
-                chant_set: []
+                chant_count: 5
             };
         },
 
@@ -126,10 +124,7 @@
 
         setQuery: function(query)
         {
-//            console.log("Constructing search result for query:");
-//            console.log(query);
             this.url = siteUrl + "search/?q=" + query;
-//            console.log(this.url);
         },
 
         /**
@@ -168,11 +163,8 @@
                         newElement.name = current.Name;
                         break;
                 }
-
                 output.push(newElement);
             });
-//            console.log("search output:");
-//            console.log(output);
             return output;
         },
 
@@ -197,37 +189,6 @@
         initialize: function(url)
         {
             this.url = url;
-//            console.log("Collection URL: " + this.url);
-//            console.log(this.url);
-        },
-
-        addUrlList: function(list)
-        {
-            var newModels = [];
-
-            for (var i = 0; i < list.length; i++)
-            {
-                newModels.push(new this.model(list[i]));
-            }
-
-            // Gotta fetch 'em all!
-            for (var j = 0; j < newModels.length; j++)
-            {
-                // Send out an alert once the last one has been fetched
-                theCollection = this;
-                if (j === (newModels.length - 1)) {
-                   newModels[j].fetch({
-                       success: function() {
-//                           console.log("Triggered addedUrlList");
-                           theCollection.trigger("addedUrlList");
-                       }
-                   });
-                } else {
-                    newModels[j].fetch();
-                }
-            }
-
-            this.push(newModels);
         },
 
         defaults: function()
@@ -281,36 +242,37 @@
         {
             _.bindAll(this, 'render');
             this.template= _.template($('#chant-collection-template').html());
-            // If a set of chants is supplied, use it!
-            if (options !== undefined)
-            {
-                if (options.collection !== undefined)
-                {
-                    this.collection = new ChantCollection(options.collection);
-                }
-                else if (options.url !== undefined)
-                {
-                    this.collection = new ChantCollection(options.url);
-                }
-            } else {
-                this.collection = new ChantCollection();
-            }
-
-            // This might have to render several times...
-            this.listenTo(this.collection, 'addedUrlList', this.render);
+            this.collection = new ChantCollection(options.url);
+            this.collection.fetch();
+            // TODO: Figure out why this is still rendering multiple times
+            this.listenTo(this.collection, 'sync', this.render);
         },
 
+        /**
+         * Set the URL of the collection and fetch the data.
+         *
+         * @param url
+         */
+        setUrl: function(url)
+        {
+            this.collection.url = url;
+            this.collection.fetch();
+        },
+
+        /**
+         * Render the collection.
+         *
+         * @returns {*}
+         */
         render: function()
         {
-//            console.log("ChantCollectionView RENDER METHOD");
-//            console.log(this.collection.toJSON());
+            console.log("Rendering Chant Collection.");
             // Render out the template
             $(this.el).html(this.template(
                 {
                     chants: this.collection.toJSON()
                 }
             ));
-
             return this.trigger('render', this);
         }
     });
@@ -318,12 +280,9 @@
     var DivaView = CantusAbstractView.extend
     ({
         currentFolioIndex: 0,
-        lastFolioChangeTime: 0,
 
         initialize: function(options)
         {
-//            console.log("DivaView initialized.");
-//            console.log("Diva Siglum: " + options.siglum);
             _.bindAll(this, 'render', 'storeFolioIndex');
             this.siglum = options.siglum;
         },
@@ -335,8 +294,6 @@
             // anonymous function below.
             storeFolioIndex = this.storeFolioIndex;
             siglum = this.siglum;
-//            console.log(siglum);
-//            console.log("Rendering Diva View");
             $(document).ready(function() {
                 var dv;
                 $("#diva-wrapper").diva({
@@ -348,40 +305,21 @@
                     fixedHeightGrid: false,
                     iipServerURL: iipImageServerUrl + "fcgi-bin/iipserver.fcgi",
                     objectData: "/static/" + siglum + ".json",
-                    imageDir: divaImageDirectory + siglum + "/",
-                    onScroll: function ()
-                    {
-                        // This is the page number
-                        storeFolioIndex(dv.getState()["p"]);
-                    },
-                    onJump: function ()
-                    {
-                        storeFolioIndex(dv.getState()["p"]);
-                    },
-                    onDocumentLoaded: function ()
-                    {
-//                        console.log("Document loaded" );
-                    }
+                    imageDir: divaImageDirectory + siglum
                 });
                 var dv = $("#diva-wrapper").data("diva");
-//                var dv = $(this.el).data("diva");
+
+                diva.Events.subscribe("PageDidLoad", storeFolioIndex);
             });
-//            console.log("Done rendering Diva View");
             return this.trigger('render', this);
         },
 
-        storeFolioIndex: function(index)
+        storeFolioIndex: function(index, fileName)
         {
             if (index != this.currentFolioIndex)
             {
-//                console.log("TRIGGERING MANUSCRIPTCHANGEFOLIO");
-//                if ((new Date().getTime() - this.lastFolioChangeTime) > 1000)
-//                {
-
-                    this.currentFolioIndex = index;
-                    this.lastFolioChangeTime = new Date().getTime();
-                    globalEventHandler.trigger("manuscriptChangeFolio", index);
-//                }
+                this.currentFolioIndex = index;
+                globalEventHandler.trigger("manuscriptChangeFolio");
             }
         }
     });
@@ -395,16 +333,16 @@
         {
             _.bindAll(this, 'render', 'afterFetch', 'assignChants');
             this.template= _.template($('#folio-template').html());
-
-//            console.log("Initializing Folio: " + options.url);
             this.model = new Folio(options.url);
             this.model.fetch();
-
-//            console.log("New Folio model:");
-//            console.log(this.model.toJSON());
-
             // Assign the chant list and render when necessary
-            this.listenTo(this.model, 'sync', this.afterFetch);
+            this.listenTo(this.model, 'change', this.afterFetch);
+            this.chantCollectionView = new ChantCollectionView({url: "#"});
+        },
+
+        update: function()
+        {
+            this.model.fetch();
         },
 
         afterFetch: function()
@@ -418,15 +356,13 @@
          */
         assignChants: function()
         {
-//            console.log("assignChants");
-//            console.log(this.model.toJSON().chant_set);
-            this.chantCollectionView = new ChantCollectionView();
-
-            // Add all of the chants
-            this.chantCollectionView.collection.addUrlList(this.model.toJSON().chant_set);
-//            console.log(this.chantCollectionView.collection);
-
-            this.render();
+            // We are going to query this data from SOLR because it's faster.
+            // So we need the manuscript siglum and folio name.
+            var folio_id = this.model.toJSON().id;
+            // Compose the url
+            var composedUrl = siteUrl + "chant-set/folio/" + folio_id + "/";
+            // Build a new view with the new data
+            this.chantCollectionView.setUrl(composedUrl);
         },
 
         render: function()
@@ -434,7 +370,6 @@
             $(this.el).html(this.template(this.model.toJSON()));
 
             if (this.chantCollectionView !== null) {
-//                console.log("Rendering ChantCollectionView");
                 this.assign(this.chantCollectionView, '#chant-list');
             }
 
@@ -474,18 +409,13 @@
                     ]
                 }
             )
-
-//            console.log("HeaderView constructed.");
         },
 
         render: function()
         {
             $(this.el).html(this.template());
-//            console.log("HeaderView rendered.");
-
             // Render subviews
             this.assign(this.topMenuView, '#top-menu');
-
             return this.trigger('render', this);
         }
     });
@@ -503,8 +433,6 @@
 
         render: function()
         {
-//            console.log("Rendering top menu.");
-//            console.log(this.items);
             $(this.el).html(this.template({items: this.items}));
             return this.trigger('render', this);
         }
@@ -594,11 +522,7 @@
 
         autoNewSearch: function()
         {
-            // Only update every 1 second
-//            console.log(new Date().getTime());
-//            console.log(this.lastSearchTime);
             if ((new Date().getTime() - this.lastSearchTime) > 100) {
-                // It's been a second, so do the search
                 this.newSearch();
             }
         },
@@ -642,13 +566,12 @@
             if (this.model !== undefined)
             {
                 // Only render if the model is defined
-                console.log("Rendering search result view.");
-//                console.log(this.model.toJSON());
+//                console.log("Rendering search result view.");
                 $(this.el).html(this.template({results: this.model.getFormattedData()}));
             }
             else
             {
-                console.log("No search result defined, so not rendering.");
+//                console.log("No search result defined, so not rendering.");
             }
             return this.trigger('render', this);
         }
@@ -681,13 +604,9 @@
 
         render: function()
         {
-//            console.log("About to render IndexView...");
-//            console.log(this.collection.toJSON());
             $(this.el).html(this.template());
             // Render subviews
             this.assign(this.headerView, '.header');
-
-//            console.log("IndexView template rendered...");
             return this.trigger('render', this);
         }
     });
@@ -715,20 +634,13 @@
         {
             _.bindAll(this, 'render', 'afterFetch', 'updateFolio');
             this.template= _.template($('#manuscript-template').html());
-
-//            console.log("Creating manuscript with id=" + this.id);
             this.manuscript = new Manuscript(
                 siteUrl + "manuscript/" + this.id + "/");
-//            console.log("TEST MANUSCRIPT INITIALIZATION:");
-//            console.log(this.manuscript);
-
             // Build the subviews
             this.headerView = new HeaderView();
-//            console.log("Siglum Slug: " + this.manuscript.get("siglum_slug"));
-//            console.log(this.manuscript.get("siglum_slug"));
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
-            this.folioView = new FolioView({url: siteUrl + "folio/" + 551 + "/"});
-
+            // TODO: Have the FolioView initialized at the first folio of the book
+            this.folioView = new FolioView({url: siteUrl + "folio/" + 1 + "/"});
             // Render every time the model changes...
             this.listenTo(this.manuscript, 'sync', this.afterFetch);
             // Switch page when necessary
@@ -739,12 +651,11 @@
         {
             // Grab the new page index from the diva view
             this.activeFolioIndex = this.divaView.currentFolioIndex;
-//            console.log("setFolio to " + this.activeFolioIndex);
-//            console.log(this.manuscript.toJSON());
             // Get the proper url based on the index
             var newUrl = this.manuscript.toJSON().folio_set[this.activeFolioIndex];
             // Rebuild the folio View
-            this.folioView = new FolioView({url: newUrl});
+            this.folioView.model.url = newUrl;
+            this.folioView.update();
             // Render it
             this.renderFolioView();
         },
@@ -752,32 +663,28 @@
         getData: function()
         {
             this.manuscript.fetch();
-//            console.log("HomePageView data fetched.");
         },
 
         afterFetch: function()
         {
-//            console.log("after manuscript fetch...");
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
             this.render();
         },
 
         render: function()
         {
-//            console.log("Rendering");
             $(this.el).html(this.template({
                 manuscript: this.manuscript.toJSON()
             }));
 
             // Render subviews
-            this.assign(this.headerView,        '.header');
+            this.assign(this.headerView, '.header');
 
             if (this.divaView !== undefined) {
                 this.assign(this.divaView, '#diva-wrapper');
             }
             this.renderFolioView();
 
-//            console.log("Rendering done");
             return this.trigger('render', this);
         },
 
@@ -823,13 +730,11 @@
 
         render: function()
         {
-//            console.log("About to render ManuscriptCollectionViewtemplate...");
             $(this.el).html(this.template());
 
             this.assign(this.headerView, '.header');
             this.assign(this.manuscriptCollectionView, '.manuscript-list');
 
-//            console.log("ManuscriptCollectionView template rendered...");
             return this.trigger('render', this);
         }
     });
@@ -859,14 +764,10 @@
 
         render: function()
         {
-//            console.log("About to render SearchPageView...");
             $(this.el).html(this.template());
-
             // Render subviews
             this.assign(this.headerView, '.header');
             this.assign(this.searchView, '#search');
-
-//            console.log("SearchPageView template rendered...");
             return this.trigger('render', this);
         }
     });
@@ -889,14 +790,12 @@
 
         index: function()
         {
-//            console.log("Index route.");
             var index = new IndexPageView();
             index.render();
         },
 
         manuscripts: function()
         {
-//            console.log("Manuscripts route.");
             var manuscripts = new ManuscriptsPageView();
             // Render initial templates
             manuscripts.render();
@@ -906,7 +805,6 @@
 
         manuscriptSingle: function(query)
         {
-//            console.log("Manuscript route.");
             var manuscript = new ManuscriptIndividualPageView({ id: query });
             // Render initial templates
             manuscript.render();
@@ -916,7 +814,6 @@
 
         search: function(query)
         {
-//            console.log("Search route.");
             var search = new SearchPageView({query: query});
             search.render();
         },
