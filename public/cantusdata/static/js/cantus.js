@@ -124,10 +124,7 @@
 
         setQuery: function(query)
         {
-//            console.log("Constructing search result for query:");
-//            console.log(query);
             this.url = siteUrl + "search/?q=" + query;
-//            console.log(this.url);
         },
 
         /**
@@ -166,11 +163,8 @@
                         newElement.name = current.Name;
                         break;
                 }
-
                 output.push(newElement);
             });
-//            console.log("search output:");
-//            console.log(output);
             return output;
         },
 
@@ -195,38 +189,7 @@
         initialize: function(url)
         {
             this.url = url;
-//            console.log("Collection URL: " + this.url);
-//            console.log(this.url);
         },
-
-//        addUrlList: function(list)
-//        {
-//            var newModels = [];
-//
-//            for (var i = 0; i < list.length; i++)
-//            {
-//                newModels.push(new this.model(list[i]));
-//            }
-//
-//            // Gotta fetch 'em all!
-//            for (var j = 0; j < newModels.length; j++)
-//            {
-//                // Send out an alert once the last one has been fetched
-//                theCollection = this;
-//                if (j === (newModels.length - 1)) {
-//                   newModels[j].fetch({
-//                       success: function() {
-////                           console.log("Triggered addedUrlList");
-//                           theCollection.trigger("addedUrlList");
-//                       }
-//                   });
-//                } else {
-//                    newModels[j].fetch();
-//                }
-//            }
-//
-//            this.push(newModels);
-//        },
 
         defaults: function()
         {
@@ -279,33 +242,31 @@
         {
             _.bindAll(this, 'render');
             this.template= _.template($('#chant-collection-template').html());
-            // If a set of chants is supplied, use it!
-//            if (options !== undefined)
-//            {
-//                if (options.collection !== undefined)
-//                {
-//                    this.collection = new ChantCollection(options.collection);
-//                }
-//                else if (options.url !== undefined)
-//                {
-//                    this.collection = new ChantCollection(options.url);
-//                }
-//            } else {
-//                this.collection = new ChantCollection();
-//            }
-//            this.collection = new ChantCollection("http://localhost:8000/chant-set/folio/006/");
-
             this.collection = new ChantCollection(options.url);
-
-//            console.log(this.collection.toJSON())
             this.collection.fetch();
-
-            // This might have to render several times...
+            // TODO: Figure out why this is still rendering multiple times
             this.listenTo(this.collection, 'sync', this.render);
         },
 
+        /**
+         * Set the URL of the collection and fetch the data.
+         *
+         * @param url
+         */
+        setUrl: function(url)
+        {
+            this.collection.url = url;
+            this.collection.fetch();
+        },
+
+        /**
+         * Render the collection.
+         *
+         * @returns {*}
+         */
         render: function()
         {
+            console.log("Rendering Chant Collection.");
             // Render out the template
             $(this.el).html(this.template(
                 {
@@ -357,7 +318,6 @@
         {
             if (index != this.currentFolioIndex)
             {
-//                console.log("TEST");
                 this.currentFolioIndex = index;
                 globalEventHandler.trigger("manuscriptChangeFolio");
             }
@@ -373,16 +333,16 @@
         {
             _.bindAll(this, 'render', 'afterFetch', 'assignChants');
             this.template= _.template($('#folio-template').html());
-
-//            console.log("Initializing Folio: " + options.url);
             this.model = new Folio(options.url);
             this.model.fetch();
-
-//            console.log("New Folio model:");
-//            console.log(this.model.toJSON());
-
             // Assign the chant list and render when necessary
-            this.listenTo(this.model, 'sync', this.afterFetch);
+            this.listenTo(this.model, 'change', this.afterFetch);
+            this.chantCollectionView = new ChantCollectionView({url: "#"});
+        },
+
+        update: function()
+        {
+            this.model.fetch();
         },
 
         afterFetch: function()
@@ -399,14 +359,10 @@
             // We are going to query this data from SOLR because it's faster.
             // So we need the manuscript siglum and folio name.
             var folio_id = this.model.toJSON().id;
-//            console.log("CRITICAL SECTION");
-//            console.log(this.model.toJSON());
-//            console.log(folio_id);
             // Compose the url
             var composedUrl = siteUrl + "chant-set/folio/" + folio_id + "/";
-//            console.log(composedUrl);
             // Build a new view with the new data
-            this.chantCollectionView = new ChantCollectionView({url: composedUrl});
+            this.chantCollectionView.setUrl(composedUrl);
         },
 
         render: function()
@@ -458,11 +414,8 @@
         render: function()
         {
             $(this.el).html(this.template());
-//            console.log("HeaderView rendered.");
-
             // Render subviews
             this.assign(this.topMenuView, '#top-menu');
-
             return this.trigger('render', this);
         }
     });
@@ -651,13 +604,9 @@
 
         render: function()
         {
-//            console.log("About to render IndexView...");
-//            console.log(this.collection.toJSON());
             $(this.el).html(this.template());
             // Render subviews
             this.assign(this.headerView, '.header');
-
-//            console.log("IndexView template rendered...");
             return this.trigger('render', this);
         }
     });
@@ -685,15 +634,13 @@
         {
             _.bindAll(this, 'render', 'afterFetch', 'updateFolio');
             this.template= _.template($('#manuscript-template').html());
-
             this.manuscript = new Manuscript(
                 siteUrl + "manuscript/" + this.id + "/");
-
             // Build the subviews
             this.headerView = new HeaderView();
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
+            // TODO: Have the FolioView initialized at the first folio of the book
             this.folioView = new FolioView({url: siteUrl + "folio/" + 1 + "/"});
-
             // Render every time the model changes...
             this.listenTo(this.manuscript, 'sync', this.afterFetch);
             // Switch page when necessary
@@ -704,13 +651,11 @@
         {
             // Grab the new page index from the diva view
             this.activeFolioIndex = this.divaView.currentFolioIndex;
-//            console.log("New active folio index: " + this.activeFolioIndex);
             // Get the proper url based on the index
             var newUrl = this.manuscript.toJSON().folio_set[this.activeFolioIndex];
-//            console.log(this.manuscript.toJSON());
-//            console.log(newUrl);
             // Rebuild the folio View
-            this.folioView = new FolioView({url: newUrl});
+            this.folioView.model.url = newUrl;
+            this.folioView.update();
             // Render it
             this.renderFolioView();
         },
