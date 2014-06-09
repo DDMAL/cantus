@@ -11,24 +11,15 @@ class FolioChantSetView(APIView):
     renderer_classes = (JSONRenderer, JSONPRenderer)
 
     def get(self, request, *args, **kwargs):
-        querydict = request.GET
-        if not querydict:
-            return Response([])
-
-        print request.GET
-        manuscript = request.GET.get(u"manuscript")
-        folio = request.GET.get(u"folio")
-
-
-
+        folio_id = kwargs['pk']
         # We want to get all chants of a particular folio of a particular
         # manuscript.  It is fastest to pull these from Solr!
-        composed_request = u'type:"cantusdata_chant" AND manuscript:"{0}" AND folio:"{1}"'.format(manuscript, folio)
+        composed_request = u'type:"cantusdata_chant" AND folio_id:{0}'.format(folio_id)
 
         # Connect to Solr
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
         # Query
-        result = solrconn.query(composed_request)
+        result = solrconn.query(composed_request, sort="sequence asc")
 
 
         # search_results = s.search(q=u'type:"cantusdata_chant')

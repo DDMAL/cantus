@@ -34,7 +34,7 @@ urlpatterns += format_suffix_patterns(
     url(r'^concordance/(?P<pk>[0-9]+)/$', ConcordanceDetail.as_view(),
         name="concordance-detail"),
     # Query chants by folio
-    url(r'^folio-chant-set/$', FolioChantSetView.as_view(), name="folio-chant-set-view"),
+    url(r'^chant-set/folio/(?P<pk>[0-9]+)/$', FolioChantSetView.as_view(), name="folio-chant-set-view"),
     # Search
     url(r'^search/$', SearchView.as_view(), name="search-view"),
     url(r'^admin/', include(admin.site.urls)),
