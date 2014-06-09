@@ -8,7 +8,7 @@ from cantusdata.views.chant import ChantList, ChantDetail
 from cantusdata.views.folio import FolioList, FolioDetail
 from cantusdata.views.concordance import ConcordanceList, ConcordanceDetail
 from cantusdata.views.search import SearchView
-from cantusdata.views.folio_chant_set import FolioChantSetView
+from cantusdata.views.chant_set import FolioChantSetView
 
 
 urlpatterns = []
