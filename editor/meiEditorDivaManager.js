@@ -124,7 +124,8 @@
                                     'left': e.pageX + 10,
                                 });
                             });
-                        }, function(e){
+                        }, function(e)
+                        {
                             currentTarget = e.target.id;
                             $(document).unbind('mousemove'); //stops moving the div
                             $("#hover-div").css('display', 'none'); //hides the div
@@ -136,6 +137,7 @@
                                 $("#" + currentTarget).css('background-color', 'rgba(255, 0, 0, 0.2)');
                             }
                         });
+
                         $(".overlay-box").click(function(e)
                         {
                             e.preventDefault();
@@ -279,9 +281,6 @@
                     //byebye
                     $(selectedMei).remove();
                     $(selectedImage).remove();
-
-                    //because one line of code helps prevent one pound of laziness
-                    meiEditor.createHighlights();
                 }
 
                 $.ajax( //this grabs the json file to get an meiEditor-local list of the image filepaths
@@ -346,6 +345,9 @@
                     }
 
                     meiEditor.linkMeiToDiva(selectedMEI, selectedImage);
+
+                    //because one line of code helps prevent one pound of laziness; this is here so that autoLink doesn't call it
+                    meiEditor.createHighlights();
                 });
 
                 $("#unlink-files").on('click', function()
