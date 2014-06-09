@@ -111,11 +111,14 @@
                         });
                         $(".overlay-box").click(function(e)
                         {
-                            testSearch = meiEditorSettings.editor.find(e.target.id, 
+                            var pageTitle = meiEditor.getActivePanel().text();
+                            var searchNeedle = new RegExp("<neume.*" + e.target.id, "g");
+                            var testSearch = meiEditorSettings.pageData[pageTitle].find(searchNeedle, 
                             {
                                 wrap: true,
                                 range: null,
                             });
+                            console.log(testSearch);
                         });
                     };
 
