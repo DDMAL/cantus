@@ -138,9 +138,18 @@
                         });
                         $(".overlay-box").click(function(e)
                         {
+                            e.preventDefault();
+                            //if shift key is not down, turn off all other .selectedHover items
+                            if(!e.shiftKey)
+                            {
+                                $(".selectedHover").css('background-color', 'rgba(255, 0, 0, 0.2)');
+                                $(".selectedHover").toggleClass("selectedHover");
+                            }
+
                             //if this is the first click, find the <neume> object, else find the next occurence
                             var searchNeedle = "";
                             var target = $(e.target);
+                            console.log($(e.target));
                             if(target.hasClass('selectedHover'))
                             {
                                 searchNeedle = e.target.id;
@@ -163,44 +172,6 @@
 
                             //don't send to children
                             e.stopPropagation();
-
-                            //add delete listener
-                            $(document).on('keyup', function(e)
-                            {
-                                if(e.keyCode == 46) //delete, as backspace triggers a history.back event
-                                {
-                                    e.preventDefault();
-                                    //remove the highlight object and the reference from the neumeObjects array
-                                    var curItemIndex = $(".selectedHover").length;
-                                    while(curItemIndex--)
-                                    {
-                                        var curItem = $(".selectedHover")[curItemIndex];    
-                                        var itemID = $(curItem).attr('id');
-                                        
-                                        //remove item from display, remove from neumeObjects
-                                        $(curItem).remove();
-                                        delete meiEditorSettings.neumeObjects[itemID];
-
-                                        //perform a new search to grab all occurences of the id and to delete both lines
-                                        var uuidSearch = meiEditorSettings.pageData[pageTitle].findAll(itemID, 
-                                        {
-                                            wrap: true,
-                                            range: null,
-                                        });
-
-                                        //this may not be the right way to do it, but "findAll" returns how many it found, and there doesn't seem to be a clear way to select everything at once. This accurately deletes all instances, however.
-                                        while(uuidSearch)
-                                        {
-                                            meiEditorSettings.pageData[pageTitle].removeLines();
-                                            uuidSearch = meiEditorSettings.pageData[pageTitle].findAll(itemID, 
-                                            {
-                                                wrap: true,
-                                                range: null,
-                                            });
-                                        }
-                                    }                                
-                                }
-                            });
                         });
                     };
 
@@ -395,19 +366,42 @@
 
                 });
 
-                $("#diva-wrapper").on('click', function(e)
+                //delete listener for selected overlay-boxes
+                $(document).on('keyup', function(e)
                 {
-                    if($(e.target).hasClass('overlay-box'))
+                    if(e.keyCode == 46) //delete, as backspace triggers a history.back event
                     {
-                        if($(e.shiftKey))
+                        e.preventDefault();
+                        //remove the highlight object and the reference from the neumeObjects array
+                        var curItemIndex = $(".selectedHover").length;
+                        while(curItemIndex--)
                         {
-                            console.log('awfully shifty');
-                        }
-                        else
-                        {
-                            //I love it when jQuery functions make stuff this easy
-                            $(".selectedHover").toggleClass("selectedHover");
-                        }
+                            var curItem = $(".selectedHover")[curItemIndex];    
+                            var itemID = $(curItem).attr('id');
+                            
+                            //remove item from display, remove from neumeObjects
+                            $(curItem).remove();
+                            delete meiEditorSettings.neumeObjects[itemID];
+
+                            //perform a new search to grab all occurences of the id and to delete both lines
+                            var pageTitle = meiEditor.getActivePanel().text();
+                            var uuidSearch = meiEditorSettings.pageData[pageTitle].findAll(itemID, 
+                            {
+                                wrap: true,
+                                range: null,
+                            });
+
+                            //this may not be the right way to do it, but "findAll" returns how many it found, and there doesn't seem to be a clear way to select everything at once. This accurately deletes all instances, however.
+                            while(uuidSearch)
+                            {
+                                meiEditorSettings.pageData[pageTitle].removeLines();
+                                uuidSearch = meiEditorSettings.pageData[pageTitle].findAll(itemID, 
+                                {
+                                    wrap: true,
+                                    range: null,
+                                });
+                            }
+                        }                                
                     }
                 });
 
