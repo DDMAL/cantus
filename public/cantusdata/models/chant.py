@@ -70,6 +70,7 @@ def solr_index(sender, instance, created, **kwargs):
         'marginalia': chant.marginalia,
         'manuscript': chant.manuscript.siglum,
         'folio': chant.folio.number,
+        'folio_id': chant.folio.id,
         'sequence': chant.sequence,
         'cantus_id': chant.cantus_id,
         'feast': chant.feast,
