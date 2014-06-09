@@ -48,6 +48,7 @@ class Chant(models.Model):
         output = []
         for concordance in self.concordances.all():
             output.append(concordance.__unicode__())
+        output.sort()
         return output
 
 @receiver(post_save, sender=Chant)
