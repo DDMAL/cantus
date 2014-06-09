@@ -14,12 +14,15 @@ class ManuscriptFolioSetView(APIView):
 
         manuscript_id = kwargs['pk']
 
-        composed_request = u'type:"cantusdata_folio" AND manuscript_id:{0}'.format(manuscript_id)
+        composed_request = u'type:"cantusdata_folio" AND manuscript_id:{0}'\
+            .format(manuscript_id)
 
         if 'number' in kwargs:
             folio_number = kwargs['number']
             print folio_number
-            composed_request = u'type:"cantusdata_folio" AND number:{0}'.format(folio_number)
+            composed_request =\
+                u'type:"cantusdata_folio" AND manuscript_id:{0} AND number:{1}'\
+                .format(manuscript_id, folio_number)
 
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
         result = solrconn.query(composed_request, sort="number asc",
