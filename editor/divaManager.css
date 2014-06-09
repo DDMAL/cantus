@@ -1,10 +1,28 @@
-#modalSubLeft{
+.modalSubLeft{
+	text-align:center;
 	float:left;
-	width:40%;
+	width:50%;
 	display:inline-block;
 }
-#modalSubRight{
+.modalSubRight{
+	text-align:center;
 	float:right;
-	width:40%;
+	width:50%;
 	display:inline-block;
+}
+#clear{
+	clear:both;
+}
+.centeredAccept{
+	text-align:center;
+	width:100%;
+}
+#link-files{
+	margin-top:10px;
+}
+#unlink-files{
+	margin-top:10px;
+}
+#unlink-wrapper{
+	text-align:center;
 }

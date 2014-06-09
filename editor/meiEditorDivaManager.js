@@ -39,20 +39,26 @@
                 })
 
                 meiEditor.createModal("fileLinkModal", false, 
-                    "<div class='modalSubLeft'>"
+                    "<span class='modalSubLeft'>"
+                    + "Select an MEI file:<br>"
                     + meiEditor.createSelect("file-link", meiEditorSettings.pageData)
-                    + "</div>"
-                    + "<div class='modalSubRight'>"
+                    + "</span>"
+                    + "<span class='modalSubRight'>"
+                    + "Select a Diva image:<br>"
                     + meiEditor.createSelect("diva-link", meiEditorSettings.divaPageList, true)
-                    + "</div>"
+                    + "</span>"
                     + "<div class='clear'></div>"
+                    + "<div class='centeredAccept'>"
                     + "<button id='link-files'>Link selected files</button>"
+                    + "</div>"
                     );
 
                 meiEditor.createModal("fileUnlinkModal", false, 
-                    "Unlink the selected files:<br>"
-                    + "<select id='selectUnlink'></select>"
+                    "<div id='unlink-wrapper'>"
+                    + "Unlink an MEI file from a Diva file:<br>"
+                    + "<select id='selectUnlink'></select><br>"
                     + "<button id='unlink-files'>Unlink selected files</button>"
+                    + "</div>"
                     );
 
                 //the div that pops up when highlights are hovered over
@@ -158,7 +164,7 @@
 
                 meiEditor.autoLinkFiles = function()
                 {
-                    var linkedCount = 0;
+                    var linkedArr = [];
                     //for each ordered page
                     for(curMei in meiEditorSettings.pageData)
                     {
@@ -179,15 +185,18 @@
                             //if the two filenames are equal
                             if(curMei.slice(0, -(meiExtLength)) == curDivaFile.slice(0, -(divaExtLength)))
                             {
+                                //grab the option elements that we eventually need to hide by searching for the filename in the parent select object
+                                var meiOption = $("#selectfile-link").find(':contains("' + curMei + '")');
+                                var imageOption = $("#selectdiva-link").find(':contains("' + curDivaFile + '")')
+
                                 //link 'em, and we found it so break
-                                meiEditor.linkMeiToDiva(curMei, curDivaFile);
-                                //broken: need to get <option> objects
-                                linkedCount += 1;
+                                meiEditor.linkMeiToDiva(meiOption, imageOption);
+                                linkedArr.push(curMei);
                                 break;
                             }
                         }
                     }
-                    meiEditor.localLog("Linked " + linkedCount + " of " + Object.keys(meiEditorSettings.pageData).length + " total MEI files.");
+                    meiEditor.localLog("Linked " + linkedArr.length + " of " + Object.keys(meiEditorSettings.pageData).length + " total MEI files. (" + linkedArr.join(', ') + ")");
                 }
 
                 /* 
@@ -198,6 +207,7 @@
                 
                 meiEditor.linkMeiToDiva = function(selectedMei, selectedImage)
                 {
+                    //prep variables
                     var selectedMeiText = selectedMei.text();
                     var selectedImageText = selectedImage.text();
                     var selectedStrippedMEI = selectedMeiText.replace(/\W+/g, "");
@@ -206,8 +216,10 @@
                     //make the link
                     meiEditorSettings.divaImagesToMeiFiles[selectedImageText] = selectedMeiText;
 
+                    //make the option object
                     $("#selectUnlink").append("<option>" + selectedMeiText + " and " + selectedImageText + "</option>");
 
+                    //byebye
                     $(selectedMei).remove();
                     $(selectedImage).remove();
                 }
@@ -279,6 +291,7 @@
                     var selectedPair = $('#selectUnlink').find(':selected');
                     var fileArr = selectedPair.text().split(' and ');
 
+                    //change the data/DOM
                     delete meiEditorSettings.divaImagesToMeiFiles[fileArr[1]];
                     $("#selectfile-link").append("<option name='" + fileArr[0] + "'>" + fileArr[0] + "</option>");
                     $("#selectdiva-link").append("<option name='" + fileArr[1] + "'>" + fileArr[1] + "</option>");
