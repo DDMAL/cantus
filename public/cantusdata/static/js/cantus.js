@@ -293,10 +293,9 @@
             // It's kind of hacky to doubly-bind the name like this, but I'm
             // not aware of any other way to access storeFolioIndex() from the
             // anonymous function below.
-            storeFolioIndex = this.storeFolioIndex;
-            siglum = this.siglum;
+            var storeFolioIndex = this.storeFolioIndex;
+            var siglum = this.siglum;
             $(document).ready(function() {
-                var dv;
                 $("#diva-wrapper").diva({
                 // $(this.el).diva({
                     enableAutoTitle: false,
@@ -375,13 +374,14 @@
 
             // We need to handle the data differently depending on whether
             // we're getting the information from Django or Solr.
+            var folio_id;
             if (this.model.toJSON().item_id)
             {
-                var folio_id = this.model.toJSON().item_id;
+                folio_id = this.model.toJSON().item_id;
             }
             else
             {
-               var folio_id = this.model.toJSON().id;
+               folio_id = this.model.toJSON().id;
             }
 
             console.log("TEEEEEEEEEEEST: " + folio_id);
@@ -422,7 +422,7 @@
         // Subviews
         topMenuView: null,
 
-        initialize: function(options)
+        initialize: function()
         {
             _.bindAll(this, 'render');
             this.template= _.template($('#header-template').html());
@@ -476,7 +476,7 @@
             $(this.el).html(this.template({items: this.items}));
             return this.trigger('render', this);
         }
-    })
+    });
 
     var ManuscriptCollectionView = CantusAbstractView.extend
     ({
@@ -615,7 +615,7 @@
             }
             return this.trigger('render', this);
         }
-    })
+    });
 
     /*
     Page Views
@@ -636,8 +636,7 @@
         initialize: function()
         {
             _.bindAll(this, 'render');
-            this.template= _.template($('#index-template').html());
-
+            this.template = _.template($('#index-template').html());
             // Initialize the subviews
             this.headerView = new HeaderView();
         },
@@ -671,7 +670,7 @@
         divaView: null,
         folioView: null,
 
-        initialize: function(options)
+        initialize: function()
         {
             _.bindAll(this, 'render', 'afterFetch', 'updateFolio');
             this.template= _.template($('#manuscript-template').html());
