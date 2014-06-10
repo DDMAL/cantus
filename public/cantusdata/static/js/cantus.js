@@ -280,6 +280,7 @@
     var DivaView = CantusAbstractView.extend
     ({
         currentFolioIndex: 0,
+        currentFolioName: 0,
 
         initialize: function(options)
         {
@@ -307,18 +308,22 @@
                     objectData: "/static/" + siglum + ".json",
                     imageDir: divaImageDirectory + siglum
                 });
-                var dv = $("#diva-wrapper").data("diva");
-
-                diva.Events.subscribe("PageDidLoad", storeFolioIndex);
+                diva.Events.subscribe("VisiblePageDidChange", storeFolioIndex);
             });
             return this.trigger('render', this);
         },
 
+//        currentPage: null,
+
         storeFolioIndex: function(index, fileName)
         {
+            console.log("PAGEDIDLOAD " + fileName);
             if (index != this.currentFolioIndex)
             {
+                console.log("INDEX " + index);
+//                console.log("GETCURRENT " + )
                 this.currentFolioIndex = index;
+                this.currentFolioName = fileName;
                 globalEventHandler.trigger("manuscriptChangeFolio");
             }
         }
@@ -336,7 +341,7 @@
             this.model = new Folio(options.url);
             this.model.fetch();
             // Assign the chant list and render when necessary
-            this.listenTo(this.model, 'change', this.afterFetch);
+            this.listenTo(this.model, 'sync', this.afterFetch);
             this.chantCollectionView = new ChantCollectionView({url: "#"});
         },
 
@@ -358,9 +363,22 @@
         {
             // We are going to query this data from SOLR because it's faster.
             // So we need the manuscript siglum and folio name.
-            var folio_id = this.model.toJSON().id;
+
+            // We need to handle the data differently depending on whether
+            // we're getting the information from Django or Solr.
+            if (this.model.toJSON().item_id)
+            {
+                var folio_id = this.model.toJSON().item_id;
+            }
+            else
+            {
+               var folio_id = this.model.toJSON().id;
+            }
+
+            console.log("TEEEEEEEEEEEST: " + folio_id);
             // Compose the url
             var composedUrl = siteUrl + "chant-set/folio/" + folio_id + "/";
+            console.log("composedUrl: " + composedUrl);
             // Build a new view with the new data
             this.chantCollectionView.setUrl(composedUrl);
         },
@@ -623,7 +641,8 @@
 
         id: null,
         manuscript: null,
-        folioSet: null,
+        folioCollection: null,
+        folioHashSet: null,
 
         // Subviews
         headerView: null,
@@ -636,13 +655,16 @@
             this.template= _.template($('#manuscript-template').html());
             this.manuscript = new Manuscript(
                 siteUrl + "manuscript/" + this.id + "/");
+            this.folioHashSet = [];
             // Build the subviews
             this.headerView = new HeaderView();
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
+
             // TODO: Have the FolioView initialized at the first folio of the book
             this.folioView = new FolioView({url: siteUrl + "folio/" + 1 + "/"});
+
             // Render every time the model changes...
-            this.listenTo(this.manuscript, 'sync', this.afterFetch);
+            this.listenTo(this.manuscript, 'change', this.afterFetch);
             // Switch page when necessary
             this.listenTo(globalEventHandler, "manuscriptChangeFolio", this.updateFolio);
         },
@@ -651,8 +673,21 @@
         {
             // Grab the new page index from the diva view
             this.activeFolioIndex = this.divaView.currentFolioIndex;
-            // Get the proper url based on the index
-            var newUrl = this.manuscript.toJSON().folio_set[this.activeFolioIndex];
+            this.activeFolioName = this.divaView.currentFolioName;
+
+            // Pull out the folio number from the Diva view
+            var splitFolioName = this.activeFolioName.split('.')[0].split('_');
+            // Grab the finalmost element before
+            var folioNumber = splitFolioName[splitFolioName.length - 1];
+            console.log("folioNumber: " + folioNumber);
+            console.log(this.manuscript.toJSON());
+            // Query the folio set at that specific manuscript number
+            newUrl =  siteUrl + "folio-set/manuscript/"
+                      + this.manuscript.toJSON().id + "/"
+                      + folioNumber + "/";
+
+            console.log("newUrl = " + newUrl);
+
             // Rebuild the folio View
             this.folioView.model.url = newUrl;
             this.folioView.update();
@@ -667,6 +702,7 @@
 
         afterFetch: function()
         {
+            hashSet = this.folioHashSet;
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
             this.render();
         },
