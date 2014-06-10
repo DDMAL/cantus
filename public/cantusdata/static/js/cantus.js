@@ -91,24 +91,6 @@
                 description: "This is a nice manuscript...",
                 chant_count: 5
             };
-        },
-
-        /**
-         * Turn the folio set into a collection
-         */
-        getFolioCollection: function() {
-            var output = ConcordanceCollection();
-            output.reset(this.folio_set);
-            return output;
-        },
-
-        /**
-         * Turn the folio set into a collection
-         */
-        getChantCollection: function() {
-            var output = ChantCollection();
-            output.reset(this.chant_set);
-            return output;
         }
     });
 
@@ -139,9 +121,6 @@
                 var newElement = {};
                 // Remove "cantusdata_" from the type string
                 newElement.model = current.type.split("_")[1];
-                // Build the url
-                newElement.url = "/" + newElement.model
-                    + "/" + current.item_id + "/";
                 newElement.name = current.Name;
 
                 // Figure out what the name is based on the model in question
@@ -149,18 +128,31 @@
                 {
                     case "manuscript":
                         newElement.name = current.name;
+                        // Build the url
+                        newElement.url = "/" + newElement.model
+                            + "/" + current.item_id + "/";
                         break;
 
                     case "chant":
                         newElement.name = current.incipit;
+                        // Build the url
+                        // TODO: Have this work with non-numbered folios
+                        newElement.url = "/manuscript/" + current.manuscript_id
+                            + "/#p2=" + current.folio;
                         break;
 
                     case "concordance":
                         newElement.name = current.name;
+                        // Build the url
+                        newElement.url = "/" + newElement.model
+                            + "/" + current.item_id + "/";
                         break;
 
                     case "folio":
                         newElement.name = current.name;
+                        // Build the url
+                        newElement.url = "/" + newElement.model
+                            + "/" + current.item_id + "/";
                         break;
                 }
                 output.push(newElement);
@@ -526,18 +518,14 @@
         {
             _.bindAll(this, 'render');
             this.template= _.template($('#search-template').html());
-
             // If not supplied, the query is blank
             if (options !== undefined && options.query !== undefined) {
                 this.query = options.query;
             } else {
                 this.query = "";
             }
-
             //Date to use for checking timestamps
             this.lastSearchTime = new Date().getTime();
-
-//            console.log("TEST:::: " + this.query);
             this.searchResultView = new SearchResultView({query: this.query});
         },
 
@@ -545,17 +533,13 @@
         {
             // Grab the new search query
             var newQuery = encodeURIComponent($('#search-input').val());
-
             if (newQuery !== this.query) {
                 this.query = newQuery;
-//                console.log("NewQuery = " + this.query);
                 // Set the new query and fetch it!
                 this.searchResultView.model.setQuery(this.query);
                 // This should automatically re-render the results... I think...
                 this.searchResultView.model.fetch();
-
                 app.navigate("/search/?q=" + this.query);
-
                 this.lastSearchTime = new Date().getTime();
             }
         },
@@ -570,10 +554,8 @@
         render: function()
         {
             $(this.el).html(this.template({query: this.query}));
-
             // Render subviews
             this.assign(this.searchResultView, '#search-result');
-
             return this.trigger('render', this);
         }
     });
@@ -583,9 +565,7 @@
         initialize: function(options)
         {
             _.bindAll(this, 'render');
-            this.template= _.template($('#search-result-template').html());
-
-//            console.log("Constructing search results for q=" + options.query);
+            this.template = _.template($('#search-result-template').html());
 
             if (options.query !== undefined)
             {
@@ -603,15 +583,10 @@
 
         render: function()
         {
+            // Only render if the model is defined
             if (this.model !== undefined)
             {
-                // Only render if the model is defined
-//                console.log("Rendering search result view.");
                 $(this.el).html(this.template({results: this.model.getFormattedData()}));
-            }
-            else
-            {
-//                console.log("No search result defined, so not rendering.");
             }
             return this.trigger('render', this);
         }
@@ -694,7 +669,7 @@
         updateFolio: function()
         {
             // Grab the new page index from the diva view
-            this.activeFolioIndex = this.divaView.currentFolioIndex;
+//            this.activeFolioIndex = this.divaView.currentFolioIndex;
             this.activeFolioName = this.divaView.currentFolioName;
 
             // Pull out the folio number from the Diva view
@@ -772,12 +747,10 @@
         {
             _.bindAll(this, 'render', 'update');
             this.template= _.template($('#manuscripts-page-template').html());
-
             //Subviews
             this.headerView = new HeaderView();
             this.manuscriptCollectionView = new ManuscriptCollectionView(
                 {url: siteUrl + "manuscripts/"});
-
             // Listen for changes
             this.listenTo(this.manuscriptCollectionView.collection, 'sync', this.afterFetch);
         },
@@ -790,10 +763,8 @@
         render: function()
         {
             $(this.el).html(this.template());
-
             this.assign(this.headerView, '.header');
             this.assign(this.manuscriptCollectionView, '.manuscript-list');
-
             return this.trigger('render', this);
         }
     });
@@ -815,7 +786,6 @@
         {
             _.bindAll(this, 'render');
             this.template= _.template($('#search-page-template').html());
-
             // Initialize the subviews
             this.headerView = new HeaderView();
             this.searchView = new SearchView({query: options.query});
