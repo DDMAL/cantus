@@ -668,9 +668,10 @@
 
         updateFolio: function()
         {
-            // Grab the new page index from the diva view
-//            this.activeFolioIndex = this.divaView.currentFolioIndex;
             this.activeFolioName = this.divaView.currentFolioName;
+
+            // Grab the new page index from the diva view
+//            this.setUrlFolioIndex(this.divaView.currentFolioIndex);
 
             // Pull out the folio number from the Diva view
             var splitFolioName = this.activeFolioName.split('.')[0].split('_');
@@ -692,6 +693,15 @@
             // Render it
             this.renderFolioView();
         },
+
+//        /**
+//         * Sets the url to the page index
+//         * @param index
+//         */
+//        setUrlFolioIndex: function(index)
+//        {
+//            app.navigate("#p2=" + index, {trigger: false, replace: true});
+//        },
 
         getData: function()
         {
@@ -835,8 +845,6 @@
         manuscriptSingle: function(query)
         {
             var manuscript = new ManuscriptIndividualPageView({ id: query });
-            // Render initial templates
-            manuscript.render();
             // Fetch the data
             manuscript.getData();
         },
