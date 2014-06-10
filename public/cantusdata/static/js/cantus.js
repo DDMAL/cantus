@@ -331,12 +331,21 @@
 
     var FolioView = CantusAbstractView.extend
     ({
+        /**
+         * customNumber is the folio number that we actually render.
+         */
+        customNumber: 0,
+
         // Subviews
         chantCollectionView: null,
 
         initialize: function(options)
         {
             _.bindAll(this, 'render', 'afterFetch', 'assignChants');
+
+            // This needs to be set by default
+            this.setCustomNumber(0);
+
             this.template= _.template($('#folio-template').html());
             this.model = new Folio(options.url);
             this.model.fetch();
@@ -383,9 +392,22 @@
             this.chantCollectionView.setUrl(composedUrl);
         },
 
+        /**
+         * Set the parameter that overrides the number that's rendered to the
+         * screen.
+         *
+         * @param number
+         */
+        setCustomNumber: function(number)
+        {
+            this.customNumber = number;
+        },
+
         render: function()
         {
-            $(this.el).html(this.template(this.model.toJSON()));
+            $(this.el).html(this.template(
+                {number: this.customNumber, model: this.model.toJSON()}
+            ));
 
             if (this.chantCollectionView !== null) {
                 this.assign(this.chantCollectionView, '#chant-list');
@@ -662,6 +684,7 @@
 
             // TODO: Have the FolioView initialized at the first folio of the book
             this.folioView = new FolioView({url: "#"});
+            this.folioView.setCustomNumber(0);
 
             // Render every time the model changes...
             this.listenTo(this.manuscript, 'change', this.afterFetch);
@@ -690,6 +713,7 @@
 
             // Rebuild the folio View
             this.folioView.model.url = newUrl;
+            this.folioView.setCustomNumber(folioNumber);
             this.folioView.update();
             // Render it
             this.renderFolioView();
