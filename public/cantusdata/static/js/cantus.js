@@ -66,15 +66,15 @@
 
     var Folio = CantusAbstractModel.extend
     ({
-        defaults: function()
-        {
-            return {
-                number: "000",
-                manuscript: null,
-                chant_count: 0,
-                chant_set: []
-            }
-        }
+//        defaults: function()
+//        {
+//            return {
+//                number: "000",
+//                manuscript: null,
+//                chant_count: 0,
+//                chant_set: []
+//            }
+//        }
     });
 
     var Manuscript = CantusAbstractModel.extend
@@ -180,7 +180,9 @@
     ({
         initialize: function(url)
         {
-            this.url = url;
+            if (url) {
+                this.url = url;
+            }
         },
 
         defaults: function()
@@ -234,8 +236,12 @@
         {
             _.bindAll(this, 'render');
             this.template= _.template($('#chant-collection-template').html());
-            this.collection = new ChantCollection(options.url);
-            this.collection.fetch();
+            if (options && options.url) {
+                this.collection = new ChantCollection(options.url);
+                this.collection.fetch();
+            } else {
+                this.collection = new ChantCollection();
+            }
             // TODO: Figure out why this is still rendering multiple times
             this.listenTo(this.collection, 'sync', this.render);
         },
@@ -266,6 +272,22 @@
                 }
             ));
             return this.trigger('render', this);
+        },
+
+        /**
+         * Clear-out the collection.
+         *
+         * @returns {*}
+         */
+        deRender: function()
+        {
+            console.log("De-rendering chant collection.")
+            $(this.el).html(this.template(
+                {
+                    chants: []
+                }
+            ));
+            return this.trigger('render', this);
         }
     });
 
@@ -274,9 +296,11 @@
         currentFolioIndex: 0,
         currentFolioName: 0,
 
+        timer: null,
+
         initialize: function(options)
         {
-            _.bindAll(this, 'render', 'storeFolioIndex');
+            _.bindAll(this, 'render', 'storeFolioIndex', 'triggerChange');
             this.siglum = options.siglum;
         },
 
@@ -286,6 +310,7 @@
             // not aware of any other way to access storeFolioIndex() from the
             // anonymous function below.
             var storeFolioIndex = this.storeFolioIndex;
+//            var folioChangeTimer = this.folioChangeTimer;
             var siglum = this.siglum;
             $(document).ready(function() {
                 $("#diva-wrapper").diva({
@@ -299,12 +324,11 @@
                     objectData: "/static/" + siglum + ".json",
                     imageDir: divaImageDirectory + siglum
                 });
+                // TODO: Get scrolling pages to not continuously query
                 diva.Events.subscribe("VisiblePageDidChange", storeFolioIndex);
             });
             return this.trigger('render', this);
         },
-
-//        currentPage: null,
 
         storeFolioIndex: function(index, fileName)
         {
@@ -312,12 +336,25 @@
             if (index != this.currentFolioIndex)
             {
                 console.log("INDEX " + index);
-//                console.log("GETCURRENT " + )
                 this.currentFolioIndex = index;
                 this.currentFolioName = fileName;
-                globalEventHandler.trigger("manuscriptChangeFolio");
+
+                if (this.timer !== null)
+                {
+                    console.log("Clearing timer.");
+                    window.clearTimeout(this.timer);
+                }
+
+                this.timer = window.setTimeout(this.triggerChange, 250);
             }
+        },
+
+        triggerChange: function()
+        {
+            globalEventHandler.trigger("manuscriptChangeFolio");
         }
+
+
     });
 
     var FolioView = CantusAbstractView.extend
@@ -333,16 +370,26 @@
         initialize: function(options)
         {
             _.bindAll(this, 'render', 'afterFetch', 'assignChants');
+            this.template= _.template($('#folio-template').html());
 
-            // This needs to be set by default
+            // This needs to be set by default.
             this.setCustomNumber(0);
 
-            this.template= _.template($('#folio-template').html());
-            this.model = new Folio(options.url);
-            this.model.fetch();
+            // This can handle situations where the first folio
+            // doesn't have a url but subsequent ones do.
+            if (options && options.url)
+            {
+                this.model = new Folio(options.url);
+                this.model.fetch();
+            }
+            else
+            {
+                this.model = new Folio();
+            }
+
             // Assign the chant list and render when necessary
             this.listenTo(this.model, 'sync', this.afterFetch);
-            this.chantCollectionView = new ChantCollectionView({url: "#"});
+            this.chantCollectionView = new ChantCollectionView();
         },
 
         update: function()
@@ -352,8 +399,14 @@
 
         afterFetch: function()
         {
-            this.assignChants();
-            this.render();
+            console.log("HERE IS THE TEST:");
+            console.log(this.model.toJSON());
+            if (jQuery.isEmptyObject(this.model.toJSON())) {
+                this.chantCollectionView.deRender();
+            } else {
+                this.assignChants();
+                this.render();
+            }
         },
 
         /**
@@ -400,12 +453,16 @@
             $(this.el).html(this.template(
                 {number: this.customNumber, model: this.model.toJSON()}
             ));
+            this.renderChantCollectionView();
 
+            return this.trigger('render', this);
+        },
+
+        renderChantCollectionView: function()
+        {
             if (this.chantCollectionView !== null) {
                 this.assign(this.chantCollectionView, '#chant-list');
             }
-
-            return this.trigger('render', this);
         }
     });
 
@@ -657,7 +714,7 @@
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
 
             // TODO: Have the FolioView initialized at the first folio of the book
-            this.folioView = new FolioView({url: "#"});
+            this.folioView = new FolioView();
             this.folioView.setCustomNumber(0);
 
             // Render every time the model changes...
@@ -693,15 +750,6 @@
             // Render it
             this.renderFolioView();
         },
-
-//        /**
-//         * Sets the url to the page index
-//         * @param index
-//         */
-//        setUrlFolioIndex: function(index)
-//        {
-//            app.navigate("#p2=" + index, {trigger: false, replace: true});
-//        },
 
         getData: function()
         {
