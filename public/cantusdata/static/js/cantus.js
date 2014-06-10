@@ -148,19 +148,19 @@
                 switch(newElement.model)
                 {
                     case "manuscript":
-                        newElement.name = current.Name;
+                        newElement.name = current.name;
                         break;
 
                     case "chant":
-                        newElement.name = current.Incipit;
+                        newElement.name = current.incipit;
                         break;
 
                     case "concordance":
-                        newElement.name = current.Name;
+                        newElement.name = current.name;
                         break;
 
                     case "folio":
-                        newElement.name = current.Name;
+                        newElement.name = current.name;
                         break;
                 }
                 output.push(newElement);
@@ -661,7 +661,7 @@
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
 
             // TODO: Have the FolioView initialized at the first folio of the book
-            this.folioView = new FolioView({url: siteUrl + "folio/" + 1 + "/"});
+            this.folioView = new FolioView({url: "#"});
 
             // Render every time the model changes...
             this.listenTo(this.manuscript, 'change', this.afterFetch);
