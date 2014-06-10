@@ -53,7 +53,7 @@ urlpatterns += format_suffix_patterns(
     url(r'^folio-set/manuscript/(?P<pk>[0-9]+)/$',
         ManuscriptFolioSetView.as_view(),
         name="manuscript-folio-set-view"),
-    url(r'^folio-set/manuscript/(?P<pk>[0-9]+)/(?P<number>[0-9]+)/$',
+    url(r'^folio-set/manuscript/(?P<pk>[0-9]+)/(?P<number>[a-zA-Z0-9]+)/$',
         ManuscriptFolioSetView.as_view(),
         name="manuscript-folio-set-view-index"),
     # Search
