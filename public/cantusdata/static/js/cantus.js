@@ -226,7 +226,10 @@
          */
         assign : function (view, selector) {
             view.setElement(selector).render();
-//            view.setElement(this.$(selector)).render();
+        },
+
+        unAssign : function (view, selector) {
+            $(selector).empty();
         }
     });
 
@@ -274,20 +277,9 @@
             return this.trigger('render', this);
         },
 
-        /**
-         * Clear-out the collection.
-         *
-         * @returns {*}
-         */
-        deRender: function()
+        resetCollection: function()
         {
-            console.log("De-rendering chant collection.")
-            $(this.el).html(this.template(
-                {
-                    chants: []
-                }
-            ));
-            return this.trigger('render', this);
+            this.collection.reset();
         }
     });
 
@@ -310,11 +302,9 @@
             // not aware of any other way to access storeFolioIndex() from the
             // anonymous function below.
             var storeFolioIndex = this.storeFolioIndex;
-//            var folioChangeTimer = this.folioChangeTimer;
             var siglum = this.siglum;
             $(document).ready(function() {
                 $("#diva-wrapper").diva({
-                // $(this.el).diva({
                     enableAutoTitle: false,
                     enableAutoWidth: true,
                     enableAutoHeight: true,
@@ -331,16 +321,13 @@
 
         storeFolioIndex: function(index, fileName)
         {
-            console.log("PAGEDIDLOAD " + fileName);
             if (index != this.currentFolioIndex)
             {
-                console.log("INDEX " + index);
                 this.currentFolioIndex = index;
                 this.currentFolioName = fileName;
 
                 if (this.timer !== null)
                 {
-                    console.log("Clearing timer.");
                     window.clearTimeout(this.timer);
                 }
 
@@ -378,18 +365,33 @@
             // doesn't have a url but subsequent ones do.
             if (options && options.url)
             {
-                this.model = new Folio(options.url);
-                this.model.fetch();
+                this.setUrl(options.url);
             }
             else
             {
                 this.model = new Folio();
+                this.listenTo(this.model, 'sync', this.afterFetch);
             }
-
-            // Assign the chant list and render when necessary
-            this.listenTo(this.model, 'sync', this.afterFetch);
             this.chantCollectionView = new ChantCollectionView();
         },
+
+        setUrl: function(url)
+        {
+            this.model = new Folio(url);
+            this.listenTo(this.model, 'sync', this.afterFetch);
+        },
+
+        /**
+         * Set the parameter that overrides the number that's rendered to the
+         * screen.
+         *
+         * @param number
+         */
+        setCustomNumber: function(number)
+        {
+            this.customNumber = number;
+        },
+
 
         update: function()
         {
@@ -398,10 +400,9 @@
 
         afterFetch: function()
         {
-            console.log("HERE IS THE TEST:");
-            console.log(this.model.toJSON());
             if (jQuery.isEmptyObject(this.model.toJSON())) {
-                this.chantCollectionView.deRender();
+                console.log("Unassigning chant list.");
+                this.unAssign('#chant-list');
             } else {
                 this.assignChants();
                 this.render();
@@ -428,23 +429,21 @@
                folio_id = this.model.toJSON().id;
             }
 
-            console.log("TEEEEEEEEEEEST: " + folio_id);
-            // Compose the url
-            var composedUrl = siteUrl + "chant-set/folio/" + folio_id + "/";
-            console.log("composedUrl: " + composedUrl);
-            // Build a new view with the new data
-            this.chantCollectionView.setUrl(composedUrl);
-        },
+//            console.log("item_id: " + this.model.toJSON().item_id);
+//            console.log("id: " + this.model.toJSON().id);
+//            console.log("folio_id: " + folio_id);
 
-        /**
-         * Set the parameter that overrides the number that's rendered to the
-         * screen.
-         *
-         * @param number
-         */
-        setCustomNumber: function(number)
-        {
-            this.customNumber = number;
+            if (folio_id !== undefined)
+            {
+                // Compose the url
+                var composedUrl = siteUrl + "chant-set/folio/" + folio_id + "/";
+                // Build a new view with the new data
+                this.chantCollectionView.setUrl(composedUrl);
+            }
+            else
+            {
+                this.chantCollectionView.resetCollection();
+            }
         },
 
         render: function()
@@ -566,8 +565,8 @@
 
         events: {
             // This should call newSearch when the button is clicked
-//            "click #search-button" : "newSearch",
-//            "change #search-input" : "newSearch",
+            "click #search-button" : "newSearch",
+            "change #search-input" : "newSearch",
             "input #search-input" : "autoNewSearch"
         },
 
@@ -582,7 +581,6 @@
                 this.query = "";
             }
             //Date to use for checking timestamps
-//            this.lastSearchTime = new Date().getTime();
             this.searchResultView = new SearchResultView({query: this.query});
         },
 
@@ -728,29 +726,20 @@
         updateFolio: function()
         {
             this.activeFolioName = this.divaView.currentFolioName;
-
-            // Grab the new page index from the diva view
-//            this.setUrlFolioIndex(this.divaView.currentFolioIndex);
-
             // Pull out the folio number from the Diva view
             var splitFolioName = this.activeFolioName.split('.')[0].split('_');
             // Grab the finalmost element before
             var folioNumber = splitFolioName[splitFolioName.length - 1];
-            console.log("folioNumber: " + folioNumber);
-            console.log(this.manuscript.toJSON());
             // Query the folio set at that specific manuscript number
             newUrl =  siteUrl + "folio-set/manuscript/"
                       + this.manuscript.toJSON().id + "/"
                       + folioNumber + "/";
-
-            console.log("newUrl = " + newUrl);
-
+            console.log("Old url: " + this.folioView.model.url);
+            console.log("New url: " + newUrl);
             // Rebuild the folio View
-            this.folioView.model.url = newUrl;
+            this.folioView.setUrl(newUrl);
             this.folioView.setCustomNumber(folioNumber);
             this.folioView.update();
-            // Render it
-            this.renderFolioView();
         },
 
         getData: function()
