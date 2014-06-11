@@ -157,8 +157,7 @@
                             if(!$(e.target).hasClass('selectedHover'))
                             {
                                 //if this is the first click, find the <neume> object
-                                var searchNeedle = "";
-                                searchNeedle = new RegExp("<neume.*" + e.target.id, "g");
+                                var searchNeedle = new RegExp("<neume.*" + e.target.id, "g");
 
                                 var pageTitle = meiEditor.getActivePanel().text();
                                 var testSearch = meiEditorSettings.pageData[pageTitle].find(searchNeedle, 
@@ -176,6 +175,7 @@
                         });
                     };
 
+                    meiEditorSettings.neumeObjects = {};
                     var x2js = new X2JS(); //from xml2json.js
                     meiEditorSettings.divaInstance.resetHighlights();
                     for(curKey in meiEditorSettings.divaImagesToMeiFiles)
@@ -230,7 +230,6 @@
 
                 meiEditor.deselectHighlight = function(divToDeselect)
                 {
-                    console.log(divToDeselect);
                     $(divToDeselect).css('background-color', 'rgba(255, 0, 0, 0.2)');
                     $(divToDeselect).toggleClass("selectedHover");
 
@@ -344,7 +343,7 @@
                     $("#selectfile-link").append("<option name='" + fileName + "'>" + fileName + "</option>");
                 });
 
-                meiEditor.events.subscribe("PageChanged", meiEditor.createHighlights);
+                meiEditor.events.subscribe("PageEdited", meiEditor.createHighlights);
 
 
                 //when "Link selected files" is clicked
@@ -395,7 +394,9 @@
                     if(e.keyCode == 46) //delete, as backspace triggers a history.back event
                     {
                         e.preventDefault();
+
                         //remove the highlight object and the reference from the neumeObjects array
+                        var saveObject = [];
                         var curItemIndex = $(".selectedHover").length;
                         while(curItemIndex--)
                         {
@@ -406,7 +407,6 @@
                             $(curItem).remove();
                             delete meiEditorSettings.neumeObjects[itemID]; */
 
-                            var saveObject = [];
 
                             //perform a new search to grab all occurences of the id and to delete both lines
                             var pageTitle = meiEditor.getActivePanel().text();
@@ -432,9 +432,10 @@
                             }
                             
                             //meiEditorSettings.undoManager.save('deletion', saveObject); do need a separate one here so I can call createhighlights
-                            meiEditor.createHighlights();
-                            meiEditor.localLog("Deleted a highlight.");
-                        }                                
+
+                        }
+                        meiEditor.createHighlights();
+                        meiEditor.localLog("Deleted a highlight.");                                
                     }
                 });
 
@@ -518,21 +519,7 @@
                             e.stopPropagation();
                         });
                     }
-                    else if (e.ctrlKey)
-                    {
-                        if (e.keyCode == 90)
-                        {
-                            var retVal = meiEditorSettings.undoManager.undo();
-                            meiEditor.localLog((retVal ? "Undo successful." : "Nothing to undo."));
-                        }
-                        else if (e.keyCode == 89)
-                        {
-                            var retVal = meiEditorSettings.undoManager.redo();
-                            meiEditor.localLog((retVal ? "Redo successful." : "Nothing to redo."));
-                        }
-                    }
                 });
-
 
                 return true;
             }
