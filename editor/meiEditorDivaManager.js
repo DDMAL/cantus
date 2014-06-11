@@ -279,6 +279,22 @@
                     meiEditor.createHighlights();
                 }
 
+                /*
+                    Determines if a mei file is linked to an image.
+                    @param meiFile the mei file to check
+                */
+                meiEditor.meiIsLinked = function(meiFile)
+                {
+                    for(curDivaFile in meiEditorSettings.divaImagesToMeiFiles)
+                    {
+                        if(meiFile == meiEditorSettings.divaImagesToMeiFiles[curDivaFile])
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
                 /* 
                     Function that links an mei file to a diva image.
                     @param selectedMEI The MEI page to link
@@ -302,6 +318,30 @@
                     //byebye
                     $(selectedMei).remove();
                     $(selectedImage).remove();
+                }
+                /*
+                    This is a separate function as it's used in two locations.
+                */
+                meiEditor.reapplyEditorClickListener = function()
+                {
+                    $(".aceEditorPane").on('click', function()
+                    {
+                        var activeTab = meiEditor.getActivePanel().text();
+                        if(meiEditor.meiIsLinked(activeTab))
+                        {
+                            var row = meiEditorSettings.pageData[activeTab].getCursorPosition().row;
+                            var rowText = meiEditorSettings.pageData[activeTab].session.doc.getLine(row);
+                            var matchArr = rowText.match(/m-[(0-9|a-f)]{8}(-[(0-9|a-f)]{4}){3}-[(0-9|a-f)]{12}/g);
+                            var curMatch = matchArr.length;
+                            while(curMatch--)
+                            {
+                                if($("#"+matchArr[curMatch]).length)
+                                {
+                                    $("#"+matchArr[curMatch]).trigger('click');
+                                }
+                            }
+                        }
+                    });
                 }
 
                 $.ajax( //this grabs the json file to get an meiEditor-local list of the image filepaths
@@ -344,10 +384,13 @@
                 meiEditor.events.subscribe("NewFile", function(a, fileName)
                 {
                     $("#selectfile-link").append("<option name='" + fileName + "'>" + fileName + "</option>");
+                    meiEditor.reapplyEditorClickListener();
                 });
 
                 meiEditor.events.subscribe("PageEdited", meiEditor.createHighlights);
 
+                //to get default pages
+                meiEditor.reapplyEditorClickListener();
 
                 //when "Link selected files" is clicked
                 $("#link-files").on('click', function()
