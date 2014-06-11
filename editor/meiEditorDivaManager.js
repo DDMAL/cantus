@@ -22,6 +22,7 @@
                     divaPageList: [], //list of active pages in Diva
                     divaImagesToMeiFiles: {}, //keeps track of linked files
                     neumeObjects: {}, //keeps track of neume objects
+                    curOverlayBox: "",
                 });
 
                 $("#file-link-dropdown").on('click', function()
@@ -456,6 +457,50 @@
                         $("#cover-div").height($("#diva-wrapper").height());
                         $("#cover-div").width($("#diva-wrapper").width());
                         $("#cover-div").offset({'top': 0, 'left': $("#diva-wrapper").offset().left});
+
+                        $("#cover-div").on('mousemove', function(e)
+                        {
+                            //if hoverdiv currently exists
+                            if(!($("#hover-div").css('display') == "none"))
+                            {
+                                var curOverlay = meiEditorSettings.curOverlayBox;
+                                var outsideCheck = false;
+                                //if it's outside, trigger mouseleave
+                                if(e.pageX < curOverlay.offset().left)
+                                    curOverlay.trigger('mouseleave');
+                                else if(e.pageX > (curOverlay.offset().left + curOverlay.width()))
+                                    curOverlay.trigger('mouseleave');
+                                else if(e.pageY < curOverlay.offset().top)
+                                    curOverlay.trigger('mouseleave');
+                                else if(e.pageY > (curOverlay.offset().top + curOverlay.height()))
+                                    curOverlay.trigger('mouseleave');
+                            }
+                            else 
+                            {
+                                //for each overlaybox
+                                var curBoxIndex = $(".overlay-box").length;
+                                while(curBoxIndex--)
+                                {
+                                    //if the mouse is inside
+                                    var curOverlay = $($(".overlay-box")[curBoxIndex]);
+                                    if(e.pageX < curOverlay.offset().left)
+                                        continue;
+                                    if(e.pageX > (curOverlay.offset().left + curOverlay.width()))
+                                        continue;
+                                    if(e.pageY < curOverlay.offset().top)
+                                        continue;
+                                    if(e.pageY > (curOverlay.offset().top + curOverlay.height()))
+                                        continue;
+
+                                    //trigger
+                                    meiEditorSettings.curOverlayBox = curOverlay; //save time turning off
+                                    curOverlay.trigger('mouseenter');
+
+                                    //can only happen once, so let's save ourselves some time
+                                    break;
+                                }
+                            }
+                        });
 
                         //when you click on that div
                         $("#cover-div").on('mousedown', function(e)
