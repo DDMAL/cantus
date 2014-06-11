@@ -570,6 +570,174 @@
         }
     });
 
+    /**
+     * Draw a modal box containing a particular view.
+     * This view follows the visitor design pattern.
+     *
+     * @type {*|void}
+     */
+    var ModalView = CantusAbstractView.extend
+    ({
+        title: null,
+        visitorView: null,
+
+        initialize: function(options)
+        {
+            _.bindAll(this, 'render');
+            this.template = _.template($('#modal-template').html());
+
+            this.title = options.title;
+            this.visitorView = options.view;
+        },
+
+        render: function()
+        {
+            console.log("Rendering Modal View.");
+            // Render out the modal template
+            if (this.visitorView !== null)
+            {
+                $(this.el).html(this.template({title: this.title}));
+            }
+            // Render out the visitor
+            this.assign(this.visitorView, '.modal-body');
+
+            return this.trigger('render', this);
+        }
+    });
+
+    /**
+     * A simple paginator that fires events when it changes page.
+     * Page indexes start at 1.
+     *
+     * @type {*|void}
+     */
+    var PaginationView = CantusAbstractView.extend
+    ({
+        name: null,
+        elementCount: 1,
+        pageCount: 1,
+        currentPage: 1,
+        pageSize: 10,
+
+        events: {},
+
+        initialize: function(options)
+        {
+            _.bindAll(this, 'render', 'setPage', 'increment', 'decrement', 'render');
+            this.template = _.template($('#pagination-template').html());
+
+            this.name = options.name;
+
+            // Set the size and the current
+            this.elementCount = options.elementCount;
+            this.pageSize = options.pageSize;
+
+            // Calculate number of pages
+            this.pageCount = Math.floor(this.elementCount / this.pageSize);
+            if (this.elementCount % this.pageSize !== 0)
+            {
+                this.pageCount++;
+            }
+
+            // Page must be set after pagecount exists
+            this.setPage(options.currentPage);
+
+            // Register the click events
+            this.registerEvents();
+
+            console.log("elementCount: " + this.elementCount);
+            console.log("pageSize: " + this.pageSize);
+            console.log("pageCount: " + this.pageCount);
+            console.log("currentPage: " + this.currentPage);
+        },
+
+        registerEvents: function()
+        {
+            // Reset the events
+            this.events = {};
+            // Forwards and backwards
+            this.events["click #" + this.name + "-page-back"] = "decrement";
+            this.events["click #" + this.name + "-page-forward"] = "increment";
+            // Add the page clickers
+            for (var i = 1; i <= this.pageCount; i++)
+            {
+                this.events["click #" + this.name + "-page-" + i] = "buttonClick";
+            }
+        },
+
+        /**
+         * Get the current paginator page.
+         *
+         * @returns {number}
+         */
+        getPage: function()
+        {
+            return this.currentPage;
+        },
+
+        /**
+         * Set the page and render.
+         *
+         * @param page integer
+         */
+        setPage: function(page)
+        {
+            console.log("Setting page to " + page);
+            console.log(page);
+            if (page < 1)
+            {
+                this.currentPage = 1;
+            }
+            else if (page > this.pageCount)
+            {
+                this.currentPage = this.pageCount;
+            }
+            else
+            {
+                this.currentPage = page;
+            }
+            this.render();
+            this.trigger("change");
+        },
+
+        increment: function()
+        {
+            this.setPage(this.currentPage + 1);
+        },
+
+        decrement: function()
+        {
+            this.setPage(this.currentPage - 1);
+        },
+
+        /**
+         * This function gets called when you click on one of the numbered
+         * paginator buttons.
+         *
+         * @param query
+         */
+        buttonClick: function(query)
+        {
+            var buttonId = query.target.id;
+            var newPage = parseInt(buttonId.split("page-")[1]);
+            this.setPage(newPage);
+        },
+
+
+        render: function()
+        {
+            console.log("Rendering pagination view");
+            $(this.el).html(this.template(
+                {
+                    name: this.name,
+                    currentPage: this.currentPage,
+                    pageCount: this.pageCount
+                }
+            ));
+            return this.trigger('render', this);
+        }
+    });
+
     var SearchView = CantusAbstractView.extend
     ({
         query: null,
@@ -609,7 +777,7 @@
                 this.searchResultView.model.setQuery(this.query);
                 // This should automatically re-render the results... I think...
                 this.searchResultView.model.fetch();
-//                app.navigate("/search/?q=" + this.query);
+                app.navigate("/search/?q=" + this.query);
             }
         },
 
@@ -632,50 +800,21 @@
         }
     });
 
-    /**
-     * Draw a modal box containing a particular view.
-     * This view follows the visitor design pattern.
-     *
-     * @type {*|void}
-     */
-    var ModalView = CantusAbstractView.extend
-    ({
-        title: null,
-        visitorView: null,
-
-        initialize: function(options)
-        {
-            _.bindAll(this, 'render');
-            this.template = _.template($('#modal-template').html());
-
-            this.title = options.title;
-            this.visitorView = options.view;
-        },
-
-        render: function()
-        {
-            console.log("Rendering Modal View.");
-            // Render out the modal template
-            if (this.visitorView !== null)
-            {
-                $(this.el).html(this.template({title: this.title}));
-            }
-            // Render out the visitor
-            this.assign(this.visitorView, '.modal-body');
-
-            return this.trigger('render', this);
-        }
-    });
-
     var SearchResultView = CantusAbstractView.extend
     ({
+        pageSize: 10,
+        currentPage: null,
+        paginationView: null,
+        query: null,
+
         initialize: function(options)
         {
-            _.bindAll(this, 'render');
+            _.bindAll(this, 'render', 'afterFetch', 'updatePage');
             this.template = _.template($('#search-result-template').html());
 
             if (options.query !== undefined)
             {
+                this.query = options.query;
                 this.model = new SearchResult(options.query);
             }
             else
@@ -683,9 +822,43 @@
                 this.model = new SearchResult();
             }
 
+            // Create the pagination
+            this.currentPage = 1;
+            // Create the paginator
+            this.paginationView = new PaginationView(
+                {
+                    name: "search",
+                    currentPage: this.currentPage,
+                    elementCount: 31,
+                    pageSize: this.pageSize
+                }
+            );
+
             // Query the search result
             this.model.fetch();
             this.listenTo(this.model, 'sync', this.render);
+
+            // Change the page with the paginator
+            this.listenTo(this.paginationView, 'change', this.updatePage);
+        },
+
+        afterFetch: function()
+        {
+            // Render
+            this.render();
+        },
+
+        /**
+         * Grab the page number from the paginator
+         */
+        updatePage: function()
+        {
+            // Grab the page
+            this.currentPage = this.paginationView.getPage();
+            // Rebuild the model with a modified query
+            this.model.setQuery(this.query + "&start="
+                + (this.pageSize * (this.currentPage - 1)));
+            this.model.fetch();
         },
 
         render: function()
@@ -696,6 +869,10 @@
             {
                 $(this.el).html(this.template({results: this.model.getFormattedData()}));
             }
+//            if (this.paginationView !== null)
+//            {
+                this.assign(this.paginationView, '#search-pagination');
+//            }
             return this.trigger('render', this);
         }
     });
