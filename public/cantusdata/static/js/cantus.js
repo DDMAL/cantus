@@ -226,7 +226,10 @@
          */
         assign : function (view, selector) {
             view.setElement(selector).render();
-//            view.setElement(this.$(selector)).render();
+        },
+
+        unAssign : function (view, selector) {
+            $(selector).empty();
         }
     });
 
@@ -235,7 +238,7 @@
         initialize: function(options)
         {
             _.bindAll(this, 'render');
-            this.template= _.template($('#chant-collection-template').html());
+            this.template = _.template($('#chant-collection-template').html());
             if (options && options.url) {
                 this.collection = new ChantCollection(options.url);
                 this.collection.fetch();
@@ -264,7 +267,7 @@
          */
         render: function()
         {
-            console.log("Rendering Chant Collection.");
+            console.log("Rendering Chant Collection View.");
             // Render out the template
             $(this.el).html(this.template(
                 {
@@ -274,20 +277,9 @@
             return this.trigger('render', this);
         },
 
-        /**
-         * Clear-out the collection.
-         *
-         * @returns {*}
-         */
-        deRender: function()
+        resetCollection: function()
         {
-            console.log("De-rendering chant collection.")
-            $(this.el).html(this.template(
-                {
-                    chants: []
-                }
-            ));
-            return this.trigger('render', this);
+            this.collection.reset();
         }
     });
 
@@ -306,15 +298,14 @@
 
         render: function()
         {
+            console.log("Rendering Diva View.");
             // It's kind of hacky to doubly-bind the name like this, but I'm
             // not aware of any other way to access storeFolioIndex() from the
             // anonymous function below.
             var storeFolioIndex = this.storeFolioIndex;
-//            var folioChangeTimer = this.folioChangeTimer;
             var siglum = this.siglum;
             $(document).ready(function() {
                 $("#diva-wrapper").diva({
-                // $(this.el).diva({
                     enableAutoTitle: false,
                     enableAutoWidth: true,
                     enableAutoHeight: true,
@@ -331,16 +322,13 @@
 
         storeFolioIndex: function(index, fileName)
         {
-            console.log("PAGEDIDLOAD " + fileName);
             if (index != this.currentFolioIndex)
             {
-                console.log("INDEX " + index);
                 this.currentFolioIndex = index;
                 this.currentFolioName = fileName;
 
                 if (this.timer !== null)
                 {
-                    console.log("Clearing timer.");
                     window.clearTimeout(this.timer);
                 }
 
@@ -378,18 +366,33 @@
             // doesn't have a url but subsequent ones do.
             if (options && options.url)
             {
-                this.model = new Folio(options.url);
-                this.model.fetch();
+                this.setUrl(options.url);
             }
             else
             {
                 this.model = new Folio();
+                this.listenTo(this.model, 'sync', this.afterFetch);
             }
-
-            // Assign the chant list and render when necessary
-            this.listenTo(this.model, 'sync', this.afterFetch);
             this.chantCollectionView = new ChantCollectionView();
         },
+
+        setUrl: function(url)
+        {
+            this.model = new Folio(url);
+            this.listenTo(this.model, 'sync', this.afterFetch);
+        },
+
+        /**
+         * Set the parameter that overrides the number that's rendered to the
+         * screen.
+         *
+         * @param number
+         */
+        setCustomNumber: function(number)
+        {
+            this.customNumber = number;
+        },
+
 
         update: function()
         {
@@ -398,10 +401,9 @@
 
         afterFetch: function()
         {
-            console.log("HERE IS THE TEST:");
-            console.log(this.model.toJSON());
             if (jQuery.isEmptyObject(this.model.toJSON())) {
-                this.chantCollectionView.deRender();
+                console.log("Unassigning chant list.");
+                this.unAssign('#chant-list');
             } else {
                 this.assignChants();
                 this.render();
@@ -428,27 +430,26 @@
                folio_id = this.model.toJSON().id;
             }
 
-            console.log("TEEEEEEEEEEEST: " + folio_id);
-            // Compose the url
-            var composedUrl = siteUrl + "chant-set/folio/" + folio_id + "/";
-            console.log("composedUrl: " + composedUrl);
-            // Build a new view with the new data
-            this.chantCollectionView.setUrl(composedUrl);
-        },
+//            console.log("item_id: " + this.model.toJSON().item_id);
+//            console.log("id: " + this.model.toJSON().id);
+//            console.log("folio_id: " + folio_id);
 
-        /**
-         * Set the parameter that overrides the number that's rendered to the
-         * screen.
-         *
-         * @param number
-         */
-        setCustomNumber: function(number)
-        {
-            this.customNumber = number;
+            if (folio_id !== undefined)
+            {
+                // Compose the url
+                var composedUrl = siteUrl + "chant-set/folio/" + folio_id + "/";
+                // Build a new view with the new data
+                this.chantCollectionView.setUrl(composedUrl);
+            }
+            else
+            {
+                this.chantCollectionView.resetCollection();
+            }
         },
 
         render: function()
         {
+            console.log("Rendering Folio View.");
             $(this.el).html(this.template(
                 {number: this.customNumber, model: this.model.toJSON()}
             ));
@@ -469,11 +470,19 @@
     ({
         // Subviews
         topMenuView: null,
+        searchView: null,
+        searchModalView: null,
+
 
         initialize: function()
         {
             _.bindAll(this, 'render');
             this.template= _.template($('#header-template').html());
+
+            // The search view that we will shove into the modal box
+            this.searchView = new SearchView();
+            // The modal box for the search pop-up
+            this.searchModalView = new ModalView({title: "Search", view: this.searchView});
 
             // Create the TopMenuView with all of its options
             this.topMenuView = new TopMenuView(
@@ -491,7 +500,8 @@
                         },
                         {
                             name: "Search",
-                            url: "/search/",
+                            tags: 'data-toggle="modal" data-target="#myModal"',
+                            url: "#",
                             active: false
                         }
                     ]
@@ -501,9 +511,11 @@
 
         render: function()
         {
+            console.log("Rendering Header View.");
             $(this.el).html(this.template());
             // Render subviews
             this.assign(this.topMenuView, '#top-menu');
+            this.assign(this.searchModalView, '#search-modal');
             return this.trigger('render', this);
         }
     });
@@ -521,6 +533,7 @@
 
         render: function()
         {
+            console.log("Rendering Top Menu View.");
             $(this.el).html(this.template({items: this.items}));
             return this.trigger('render', this);
         }
@@ -549,9 +562,178 @@
 
         render: function()
         {
+            console.log("Rendering Manuscript Collection View.");
             $(this.el).html(this.template({
                 manuscripts: this.collection.toJSON()
             }));
+            return this.trigger('render', this);
+        }
+    });
+
+    /**
+     * Draw a modal box containing a particular view.
+     * This view follows the visitor design pattern.
+     *
+     * @type {*|void}
+     */
+    var ModalView = CantusAbstractView.extend
+    ({
+        title: null,
+        visitorView: null,
+
+        initialize: function(options)
+        {
+            _.bindAll(this, 'render');
+            this.template = _.template($('#modal-template').html());
+
+            this.title = options.title;
+            this.visitorView = options.view;
+        },
+
+        render: function()
+        {
+            console.log("Rendering Modal View.");
+            // Render out the modal template
+            if (this.visitorView !== null)
+            {
+                $(this.el).html(this.template({title: this.title}));
+            }
+            // Render out the visitor
+            this.assign(this.visitorView, '.modal-body');
+
+            return this.trigger('render', this);
+        }
+    });
+
+    /**
+     * A simple paginator that fires events when it changes page.
+     * Page indexes start at 1.
+     *
+     * @type {*|void}
+     */
+    var PaginationView = CantusAbstractView.extend
+    ({
+        name: null,
+        elementCount: 1,
+        pageCount: 1,
+        currentPage: 1,
+        pageSize: 10,
+
+        events: {},
+
+        initialize: function(options)
+        {
+            _.bindAll(this, 'render', 'setPage', 'increment', 'decrement', 'render');
+            this.template = _.template($('#pagination-template').html());
+
+            this.name = options.name;
+
+            // Set the size and the current
+            this.elementCount = options.elementCount;
+            this.pageSize = options.pageSize;
+
+            // Calculate number of pages
+            this.pageCount = Math.floor(this.elementCount / this.pageSize);
+            if (this.elementCount % this.pageSize !== 0)
+            {
+                this.pageCount++;
+            }
+
+            // Page must be set after pagecount exists
+            this.setPage(options.currentPage);
+
+            // Register the click events
+            this.registerEvents();
+
+            console.log("elementCount: " + this.elementCount);
+            console.log("pageSize: " + this.pageSize);
+            console.log("pageCount: " + this.pageCount);
+            console.log("currentPage: " + this.currentPage);
+        },
+
+        registerEvents: function()
+        {
+            // Reset the events
+            this.events = {};
+            // Forwards and backwards
+            this.events["click #" + this.name + "-page-back"] = "decrement";
+            this.events["click #" + this.name + "-page-forward"] = "increment";
+            // Add the page clickers
+            for (var i = 1; i <= this.pageCount; i++)
+            {
+                this.events["click #" + this.name + "-page-" + i] = "buttonClick";
+            }
+        },
+
+        /**
+         * Get the current paginator page.
+         *
+         * @returns {number}
+         */
+        getPage: function()
+        {
+            return this.currentPage;
+        },
+
+        /**
+         * Set the page and render.
+         *
+         * @param page integer
+         */
+        setPage: function(page)
+        {
+            console.log("Setting page to " + page);
+            console.log(page);
+            if (page < 1)
+            {
+                this.currentPage = 1;
+            }
+            else if (page > this.pageCount)
+            {
+                this.currentPage = this.pageCount;
+            }
+            else
+            {
+                this.currentPage = page;
+            }
+            this.render();
+            this.trigger("change");
+        },
+
+        increment: function()
+        {
+            this.setPage(this.currentPage + 1);
+        },
+
+        decrement: function()
+        {
+            this.setPage(this.currentPage - 1);
+        },
+
+        /**
+         * This function gets called when you click on one of the numbered
+         * paginator buttons.
+         *
+         * @param query
+         */
+        buttonClick: function(query)
+        {
+            var buttonId = query.target.id;
+            var newPage = parseInt(buttonId.split("page-")[1]);
+            this.setPage(newPage);
+        },
+
+
+        render: function()
+        {
+            console.log("Rendering pagination view");
+            $(this.el).html(this.template(
+                {
+                    name: this.name,
+                    currentPage: this.currentPage,
+                    pageCount: this.pageCount
+                }
+            ));
             return this.trigger('render', this);
         }
     });
@@ -566,8 +748,8 @@
 
         events: {
             // This should call newSearch when the button is clicked
-//            "click #search-button" : "newSearch",
-//            "change #search-input" : "newSearch",
+            "click #search-button" : "newSearch",
+            "change #search-input" : "newSearch",
             "input #search-input" : "autoNewSearch"
         },
 
@@ -582,7 +764,6 @@
                 this.query = "";
             }
             //Date to use for checking timestamps
-//            this.lastSearchTime = new Date().getTime();
             this.searchResultView = new SearchResultView({query: this.query});
         },
 
@@ -621,13 +802,19 @@
 
     var SearchResultView = CantusAbstractView.extend
     ({
+        pageSize: 10,
+        currentPage: null,
+        paginationView: null,
+        query: null,
+
         initialize: function(options)
         {
-            _.bindAll(this, 'render');
+            _.bindAll(this, 'render', 'afterFetch', 'updatePage');
             this.template = _.template($('#search-result-template').html());
 
             if (options.query !== undefined)
             {
+                this.query = options.query;
                 this.model = new SearchResult(options.query);
             }
             else
@@ -635,18 +822,57 @@
                 this.model = new SearchResult();
             }
 
+            // Create the pagination
+            this.currentPage = 1;
+            // Create the paginator
+            this.paginationView = new PaginationView(
+                {
+                    name: "search",
+                    currentPage: this.currentPage,
+                    elementCount: 31,
+                    pageSize: this.pageSize
+                }
+            );
+
             // Query the search result
             this.model.fetch();
             this.listenTo(this.model, 'sync', this.render);
+
+            // Change the page with the paginator
+            this.listenTo(this.paginationView, 'change', this.updatePage);
+        },
+
+        afterFetch: function()
+        {
+            // Render
+            this.render();
+        },
+
+        /**
+         * Grab the page number from the paginator
+         */
+        updatePage: function()
+        {
+            // Grab the page
+            this.currentPage = this.paginationView.getPage();
+            // Rebuild the model with a modified query
+            this.model.setQuery(this.query + "&start="
+                + (this.pageSize * (this.currentPage - 1)));
+            this.model.fetch();
         },
 
         render: function()
         {
+            console.log("Rendering Search Result View.");
             // Only render if the model is defined
             if (this.model !== undefined)
             {
                 $(this.el).html(this.template({results: this.model.getFormattedData()}));
             }
+//            if (this.paginationView !== null)
+//            {
+                this.assign(this.paginationView, '#search-pagination');
+//            }
             return this.trigger('render', this);
         }
     });
@@ -677,6 +903,7 @@
 
         render: function()
         {
+            console.log("Rendering Index Page View.");
             $(this.el).html(this.template());
             // Render subviews
             this.assign(this.headerView, '.header');
@@ -728,29 +955,20 @@
         updateFolio: function()
         {
             this.activeFolioName = this.divaView.currentFolioName;
-
-            // Grab the new page index from the diva view
-//            this.setUrlFolioIndex(this.divaView.currentFolioIndex);
-
             // Pull out the folio number from the Diva view
             var splitFolioName = this.activeFolioName.split('.')[0].split('_');
             // Grab the finalmost element before
             var folioNumber = splitFolioName[splitFolioName.length - 1];
-            console.log("folioNumber: " + folioNumber);
-            console.log(this.manuscript.toJSON());
             // Query the folio set at that specific manuscript number
             newUrl =  siteUrl + "folio-set/manuscript/"
                       + this.manuscript.toJSON().id + "/"
                       + folioNumber + "/";
-
-            console.log("newUrl = " + newUrl);
-
+            console.log("Old url: " + this.folioView.model.url);
+            console.log("New url: " + newUrl);
             // Rebuild the folio View
-            this.folioView.model.url = newUrl;
+            this.folioView.setUrl(newUrl);
             this.folioView.setCustomNumber(folioNumber);
             this.folioView.update();
-            // Render it
-            this.renderFolioView();
         },
 
         getData: function()
@@ -767,6 +985,7 @@
 
         render: function()
         {
+            console.log("Rendering Manuscript Individual Page View.");
             $(this.el).html(this.template({
                 manuscript: this.manuscript.toJSON()
             }));
@@ -853,6 +1072,7 @@
 
         render: function()
         {
+            console.log("Rendering Search Page View.");
             $(this.el).html(this.template());
             // Render subviews
             this.assign(this.headerView, '.header');

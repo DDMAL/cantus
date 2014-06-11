@@ -20,6 +20,7 @@
         <div class="row content">
             <!-- Templates -->
             <div id="view-goes-here">Empty</div>
+            <div id="search-modal"></div>
         </div>
 {#        <hr/>#}
 {#        <div class="footer">#}
@@ -41,7 +42,7 @@
 
 <script type="text/template" id="top-menu-template">
 <% _.forEach(items, function(item) { %>
-    <li <% if (item.active) { %> class="active" <% } %>><a href="<%= item.url %>"><%= item.name %></a></li>
+    <li <% if (item.active) { %> class="active" <% } if (item.tags) { %><%= item.tags %><% } %>><a href="<%= item.url %>"><%= item.name %></a></li>
 <% }); %>
 </script>
 
@@ -126,11 +127,23 @@
 </div>
 </script>
 
+<script type="text/template" id="modal-template">
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel"><%= title %></h4>
+      </div>
+      <div class="modal-body">
+{#        <div id="modal-content"></div>#}
+      </div>
+    </div>
+  </div>
+</div>
+</script>
+
 <script type="text/template" id="search-page-template">
-{#<ol class="breadcrumb">#}
-{#    <li><a href="/">Home</a></li>#}
-{#    <li><a href="/search/">Search</a></li>#}
-{#</ol>#}
 <h1>Search</h1>
 <div id="search"></div>
 </script>
@@ -140,7 +153,7 @@
   <div class="form-group">
     <input type="text" id="search-input" class="form-control" placeholder="Search" value="<%= query %>">
   </div>
-  <button type="submit" id="search-button" class="btn btn-default">Submit</button>
+{#  <button type="submit" id="search-button" class="btn btn-default">Submit</button>#}
 {#</form>#}
 <div id="search-result"></div>
 </script>
@@ -153,6 +166,23 @@
     <li><p><a href="<%= item.url %>" ><%= item.name %></a></p></li>
 {#    <% } %>#}
 <% }); %>
+</ul>
+<div id="search-pagination"></div>
+</script>
+
+<script type="text/template" id="pagination-template">
+<ul class="pagination">
+    <li id="<%= name %>-page-back" <% if (currentPage <= 1) { %>class="disabled"<% } %> >
+        <a href="#">&laquo;</a>
+    </li>
+    <% for (var page = 1; page <= pageCount; page++) { %>
+    <li <% if (page == currentPage) { %>class="active"<% } %> >
+        <a href="#" id="<%= name %>-page-<%= page %>"><%= page %></a>
+    </li>
+    <% } %>
+    <li id="<%= name %>-page-forward" <% if (currentPage >= pageCount) { %>class="disabled"<% } %> >
+        <a href="#">&raquo;</a>
+    </li>
 </ul>
 </script>
 
