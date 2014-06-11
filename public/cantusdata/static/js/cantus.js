@@ -324,7 +324,6 @@
                     objectData: "/static/" + siglum + ".json",
                     imageDir: divaImageDirectory + siglum
                 });
-                // TODO: Get scrolling pages to not continuously query
                 diva.Events.subscribe("VisiblePageDidChange", storeFolioIndex);
             });
             return this.trigger('render', this);
@@ -560,20 +559,21 @@
     var SearchView = CantusAbstractView.extend
     ({
         query: null,
+        timer: null,
 
         // Subviews
         searchResultView: null,
 
         events: {
             // This should call newSearch when the button is clicked
-            "click #search-button" : "newSearch",
-            "change #search-input" : "newSearch",
+//            "click #search-button" : "newSearch",
+//            "change #search-input" : "newSearch",
             "input #search-input" : "autoNewSearch"
         },
 
         initialize: function(options)
         {
-            _.bindAll(this, 'render');
+            _.bindAll(this, 'render', 'newSearch', 'autoNewSearch');
             this.template= _.template($('#search-template').html());
             // If not supplied, the query is blank
             if (options !== undefined && options.query !== undefined) {
@@ -582,7 +582,7 @@
                 this.query = "";
             }
             //Date to use for checking timestamps
-            this.lastSearchTime = new Date().getTime();
+//            this.lastSearchTime = new Date().getTime();
             this.searchResultView = new SearchResultView({query: this.query});
         },
 
@@ -597,15 +597,17 @@
                 // This should automatically re-render the results... I think...
                 this.searchResultView.model.fetch();
                 app.navigate("/search/?q=" + this.query);
-                this.lastSearchTime = new Date().getTime();
             }
         },
 
         autoNewSearch: function()
         {
-            if ((new Date().getTime() - this.lastSearchTime) > 100) {
-                this.newSearch();
+            if (this.timer !== null)
+            {
+                console.log("Search timer cleared.");
+                window.clearTimeout(this.timer);
             }
+            this.timer = window.setTimeout(this.newSearch, 250);
         },
 
         render: function()
