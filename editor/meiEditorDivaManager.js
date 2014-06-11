@@ -47,7 +47,10 @@
                     meiEditor.createHighlights();
                 });
 
-                $("#clear-selection-dropdown").on('click', meiEditor.deselectAllHighlights);
+                $("#clear-selection-dropdown").on('click', function()
+                {
+                    meiEditor.deselectAllHighlights();
+                });
 
                 $("#diva-help-dropdown").on('click', function()
                 {
@@ -227,8 +230,10 @@
 
                 meiEditor.deselectAllHighlights = function()
                 {
+                    console.log("called", $(".selectedHover").length);
                     $(".selectedHover").css('background-color', 'rgba(255, 0, 0, 0.2)');
                     $(".selectedHover").toggleClass("selectedHover");
+                    console.log("post", $(".selectedHover").length);
                 }
 
                 meiEditor.deselectHighlight = function(divToDeselect)
@@ -289,7 +294,7 @@
                     {
                         if(meiFile == meiEditorSettings.divaImagesToMeiFiles[curDivaFile])
                         {
-                            return true;
+                            return curDivaFile;
                         }
                     }
                     return false;
@@ -337,7 +342,7 @@
                             {
                                 if($("#"+matchArr[curMatch]).length)
                                 {
-                                    $("#"+matchArr[curMatch]).trigger('click');
+                                    meiEditor.selectHighlight($("#"+matchArr[curMatch]));
                                 }
                             }
                         }
@@ -389,6 +394,14 @@
 
                 meiEditor.events.subscribe("PageEdited", meiEditor.createHighlights);
 
+                meiEditor.events.subscribe("PageWasDeleted", function(pageName)
+                {
+                    var retVal = meiEditor.meiIsLinked(pageName);
+                    if(retVal)
+                    {
+                        delete meiEditorSettings.divaImagesToMeiFiles[retVal];
+                    }
+                });
                 //to get default pages
                 meiEditor.reapplyEditorClickListener();
 
