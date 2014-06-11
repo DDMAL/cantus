@@ -23,6 +23,8 @@
                     divaImagesToMeiFiles: {}, //keeps track of linked files
                     neumeObjects: {}, //keeps track of neume objects
                     curOverlayBox: "",
+                    initDragTop: "",
+                    initDragLeft: "",
                 });
 
                 $("#file-link-dropdown").on('click', function()
@@ -458,6 +460,7 @@
                         $("#cover-div").width($("#diva-wrapper").width());
                         $("#cover-div").offset({'top': 0, 'left': $("#diva-wrapper").offset().left});
 
+                        //hover-div listener
                         $("#cover-div").on('mousemove', function(e)
                         {
                             //if hoverdiv currently exists
@@ -509,15 +512,41 @@
 
                             //append the div that will resize as you drag
                             $("#topbar").append('<div id="drag-div"></div>');
+                            meiEditorSettings.initDragTop = e.pageY;
+                            meiEditorSettings.initDragLeft = e.pageX;
                             $("#drag-div").offset({'top': e.pageY, 'left':e.pageX})
 
-                            //as you drag, resize it - only moves to bottom right
+                            //as you drag, resize it 
                             $(document).on('mousemove', function(ev)
                             {
+                                //original four sides
                                 var dragLeft = $("#drag-div").offset().left;
                                 var dragTop = $("#drag-div").offset().top;
-                                $("#drag-div").width(ev.pageX - dragLeft);
-                                $("#drag-div").height(ev.pageY - dragTop);
+                                var dragRight = dragLeft + $("#drag-div").width();
+                                var dragBottom = dragTop + $("#drag-div").height();           
+
+                                //if we're moving left
+                                if(ev.pageX < meiEditorSettings.initDragLeft)
+                                {
+                                    $("#drag-div").offset({'left': ev.pageX});
+                                    $("#drag-div").width(dragRight - ev.pageX);
+                                }
+                                //moving right
+                                else 
+                                {   
+                                    $("#drag-div").width(ev.pageX - dragLeft);
+                                }
+                                //moving up
+                                if(ev.pageY < meiEditorSettings.initDragTop)
+                                {
+                                    $("#drag-div").offset({'top': ev.pageY});
+                                    $("#drag-div").height(dragBottom - ev.pageY);
+                                }
+                                //moving down
+                                else 
+                                {
+                                    $("#drag-div").height(ev.pageY - dragTop);
+                                }
                             });
 
                             //when you let go of the mouse
