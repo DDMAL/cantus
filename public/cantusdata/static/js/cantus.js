@@ -238,7 +238,7 @@
         initialize: function(options)
         {
             _.bindAll(this, 'render');
-            this.template= _.template($('#chant-collection-template').html());
+            this.template = _.template($('#chant-collection-template').html());
             if (options && options.url) {
                 this.collection = new ChantCollection(options.url);
                 this.collection.fetch();
@@ -267,7 +267,7 @@
          */
         render: function()
         {
-            console.log("Rendering Chant Collection.");
+            console.log("Rendering Chant Collection View.");
             // Render out the template
             $(this.el).html(this.template(
                 {
@@ -298,6 +298,7 @@
 
         render: function()
         {
+            console.log("Rendering Diva View.");
             // It's kind of hacky to doubly-bind the name like this, but I'm
             // not aware of any other way to access storeFolioIndex() from the
             // anonymous function below.
@@ -448,6 +449,7 @@
 
         render: function()
         {
+            console.log("Rendering Folio View.");
             $(this.el).html(this.template(
                 {number: this.customNumber, model: this.model.toJSON()}
             ));
@@ -468,11 +470,19 @@
     ({
         // Subviews
         topMenuView: null,
+        searchView: null,
+        searchModalView: null,
+
 
         initialize: function()
         {
             _.bindAll(this, 'render');
             this.template= _.template($('#header-template').html());
+
+            // The search view that we will shove into the modal box
+            this.searchView = new SearchView();
+            // The modal box for the search pop-up
+            this.searchModalView = new ModalView({title: "Search", view: this.searchView});
 
             // Create the TopMenuView with all of its options
             this.topMenuView = new TopMenuView(
@@ -490,7 +500,8 @@
                         },
                         {
                             name: "Search",
-                            url: "/search/",
+                            tags: 'data-toggle="modal" data-target="#myModal"',
+                            url: "#",
                             active: false
                         }
                     ]
@@ -500,9 +511,11 @@
 
         render: function()
         {
+            console.log("Rendering Header View.");
             $(this.el).html(this.template());
             // Render subviews
             this.assign(this.topMenuView, '#top-menu');
+            this.assign(this.searchModalView, '#search-modal');
             return this.trigger('render', this);
         }
     });
@@ -520,6 +533,7 @@
 
         render: function()
         {
+            console.log("Rendering Top Menu View.");
             $(this.el).html(this.template({items: this.items}));
             return this.trigger('render', this);
         }
@@ -548,6 +562,7 @@
 
         render: function()
         {
+            console.log("Rendering Manuscript Collection View.");
             $(this.el).html(this.template({
                 manuscripts: this.collection.toJSON()
             }));
@@ -594,7 +609,7 @@
                 this.searchResultView.model.setQuery(this.query);
                 // This should automatically re-render the results... I think...
                 this.searchResultView.model.fetch();
-                app.navigate("/search/?q=" + this.query);
+//                app.navigate("/search/?q=" + this.query);
             }
         },
 
@@ -613,6 +628,41 @@
             $(this.el).html(this.template({query: this.query}));
             // Render subviews
             this.assign(this.searchResultView, '#search-result');
+            return this.trigger('render', this);
+        }
+    });
+
+    /**
+     * Draw a modal box containing a particular view.
+     * This view follows the visitor design pattern.
+     *
+     * @type {*|void}
+     */
+    var ModalView = CantusAbstractView.extend
+    ({
+        title: null,
+        visitorView: null,
+
+        initialize: function(options)
+        {
+            _.bindAll(this, 'render');
+            this.template = _.template($('#modal-template').html());
+
+            this.title = options.title;
+            this.visitorView = options.view;
+        },
+
+        render: function()
+        {
+            console.log("Rendering Modal View.");
+            // Render out the modal template
+            if (this.visitorView !== null)
+            {
+                $(this.el).html(this.template({title: this.title}));
+            }
+            // Render out the visitor
+            this.assign(this.visitorView, '.modal-body');
+
             return this.trigger('render', this);
         }
     });
@@ -640,6 +690,7 @@
 
         render: function()
         {
+            console.log("Rendering Search Result View.");
             // Only render if the model is defined
             if (this.model !== undefined)
             {
@@ -675,6 +726,7 @@
 
         render: function()
         {
+            console.log("Rendering Index Page View.");
             $(this.el).html(this.template());
             // Render subviews
             this.assign(this.headerView, '.header');
@@ -756,6 +808,7 @@
 
         render: function()
         {
+            console.log("Rendering Manuscript Individual Page View.");
             $(this.el).html(this.template({
                 manuscript: this.manuscript.toJSON()
             }));
@@ -842,6 +895,7 @@
 
         render: function()
         {
+            console.log("Rendering Search Page View.");
             $(this.el).html(this.template());
             // Render subviews
             this.assign(this.headerView, '.header');
