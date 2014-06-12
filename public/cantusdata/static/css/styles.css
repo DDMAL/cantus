@@ -1,6 +1,27 @@
+/* Fonts */
+
+@font-face {
+  font-family: 'Volpiano';
+  src: url('/static/fonts/volpiano.eot'); /* IE9 Compat Modes */
+  src: url('/static/fonts/volpiano.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('/static/fonts/volpiano.woff') format('woff'), /* Modern Browsers */
+       url('/static/fonts/volpiano.ttf')  format('truetype'), /* Safari, Android, iOS */
+       url('/static/fonts/volpiano.svg#a7a4d8715938a922c6a8c6587abbdcd3') format('svg'); /* Legacy iOS */
+
+  font-style:   normal;
+  font-weight:  400;
+}
+
+.volpiano {
+    font-family: 'Volpiano';
+    font-size: 22pt;
+}
+
 .cantus-container {
     width: 100%;
     padding: 0 30px 0 30px;
+    /*height: 400px;*/
+    /*overflow-y: scroll;*/
 }
 
 #diva-wrapper {
