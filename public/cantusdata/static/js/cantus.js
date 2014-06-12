@@ -616,14 +616,20 @@
         name: null,
         elementCount: 1,
         pageCount: 1,
-        currentPage: 1,
         pageSize: 10,
+
+
+        // Used for rendering
+        currentPage: 1,
+        startPage: 1,
+        endPage: 1,
+        maxWidth: 9,
 
         events: {},
 
         initialize: function(options)
         {
-            _.bindAll(this, 'render', 'setPage', 'increment', 'decrement', 'render');
+            _.bindAll(this, 'render', 'setPage', 'increment', 'decrement', 'render', 'buttonClick');
             this.template = _.template($('#pagination-template').html());
 
             this.name = options.name;
@@ -642,27 +648,31 @@
             // Page must be set after pagecount exists
             this.setPage(options.currentPage);
 
-            // Register the click events
-            this.registerEvents();
-
-            console.log("elementCount: " + this.elementCount);
-            console.log("pageSize: " + this.pageSize);
-            console.log("pageCount: " + this.pageCount);
-            console.log("currentPage: " + this.currentPage);
+//            console.log("elementCount: " + this.elementCount);
+//            console.log("pageSize: " + this.pageSize);
+//            console.log("pageCount: " + this.pageCount);
+//            console.log("currentPage: " + this.currentPage);
         },
 
         registerEvents: function()
         {
-            // Reset the events
-            this.events = {};
+            // Clear out the events
+            this.events = {}
+
             // Forwards and backwards
             this.events["click #" + this.name + "-page-back"] = "decrement";
             this.events["click #" + this.name + "-page-forward"] = "increment";
             // Add the page clickers
-            for (var i = 1; i <= this.pageCount; i++)
+            for (var i = this.startPage; i <= this.endPage; i++)
             {
+                console.log("i: " + i);
                 this.events["click #" + this.name + "-page-" + i] = "buttonClick";
+                console.log("click #" + this.name + "-page-" + i);
             }
+            console.log(this.events);
+
+            // Delegate the new events
+            this.delegateEvents();
         },
 
         /**
@@ -696,7 +706,41 @@
             {
                 this.currentPage = page;
             }
+
+            if (this.pageCount <= this.maxWidth)
+            {
+                // This is the case where we don't need to scroll through
+                // more pages than can fit in the paginator.
+                this.startPage = 1;
+                this.endPage = this.pageCount;
+            }
+            else
+            {
+                // This is the case where there are more pages than can fit
+                // In the paginator, so we need to "scroll" through the numbers.
+                if (this.currentPage <= Math.floor(((this.maxWidth | 0) / 2)))
+                {
+                    // This is the case of the first few numbers
+                    this.startPage = 1;
+                    this.endPage = this.maxWidth;
+                }
+                else if ((this.pageCount - this.currentPage) <= Math.floor((this.maxWidth | 0) / 2))
+                {
+                    // This is the case of the last few numbers
+                    this.startPage = this.pageCount - this.maxWidth + 1;
+                    this.endPage = this.pageCount;
+                }
+                else
+                {
+                    // This case should capture most instances where the
+                    // current page is somewhere in the "middle" of the paginator"
+                    this.startPage = this.currentPage - ((this.maxWidth / 2) | 0);
+                    this.endPage = this.currentPage + ((this.maxWidth / 2) | 0);
+                }
+            }
             this.render();
+            // Re-register all of the events
+//            this.registerEvents();
             this.trigger("change");
         },
 
@@ -718,6 +762,7 @@
          */
         buttonClick: function(query)
         {
+            console.log("button click");
             var buttonId = query.target.id;
             var newPage = parseInt(buttonId.split("page-")[1]);
             this.setPage(newPage);
@@ -730,10 +775,15 @@
             $(this.el).html(this.template(
                 {
                     name: this.name,
-                    currentPage: this.currentPage,
-                    pageCount: this.pageCount
+                    startPage: this.startPage,
+                    endPage: this.endPage,
+                    currentPage: this.currentPage
                 }
             ));
+
+            // We have to register the events every time we render
+            this.registerEvents();
+
             return this.trigger('render', this);
         }
     });
@@ -829,7 +879,7 @@
                 {
                     name: "search",
                     currentPage: this.currentPage,
-                    elementCount: 31,
+                    elementCount: 729,
                     pageSize: this.pageSize
                 }
             );
