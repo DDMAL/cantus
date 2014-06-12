@@ -1,10 +1,11 @@
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer, JSONPRenderer
 
 from cantusdata.serializers.search import SearchSerializer
 from cantusdata.renderers.custom_html_renderer import CustomHTMLRenderer
-from cantusdata.helpers.solrsearch import SolrSearch
+import solr
 
 
 class SearchViewHTMLRenderer(CustomHTMLRenderer):
@@ -20,9 +21,19 @@ class SearchView(APIView):
         if not querydict:
             return Response({'results': []})
 
-        s = SolrSearch(request)
+        query = ""
+        start = 0
 
-        search_results = s.search()
-        result = {'results': search_results}
-        response = Response(result)
-        return response
+        if 'q' in querydict:
+            query = querydict.get('q')
+        if 'start' in querydict:
+            start = querydict.get('start')
+
+        composed_request = u"{0}".format(query)
+
+        solrconn = solr.SolrConnection(settings.SOLR_SERVER)
+        result = solrconn.query(composed_request, start=start, rows=10)
+
+        # print result
+
+        return Response({'results': result})
