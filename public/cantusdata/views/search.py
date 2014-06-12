@@ -34,6 +34,4 @@ class SearchView(APIView):
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
         result = solrconn.query(composed_request, start=start, rows=10)
 
-        # print result
-
-        return Response({'results': result})
+        return Response({'results': result, 'numFound': result.numFound})
