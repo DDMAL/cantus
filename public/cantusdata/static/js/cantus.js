@@ -647,30 +647,20 @@
 
             // Page must be set after pagecount exists
             this.setPage(options.currentPage);
-
-//            console.log("elementCount: " + this.elementCount);
-//            console.log("pageSize: " + this.pageSize);
-//            console.log("pageCount: " + this.pageCount);
-//            console.log("currentPage: " + this.currentPage);
         },
 
         registerEvents: function()
         {
             // Clear out the events
             this.events = {}
-
             // Forwards and backwards
             this.events["click #" + this.name + "-page-back"] = "decrement";
             this.events["click #" + this.name + "-page-forward"] = "increment";
             // Add the page clickers
             for (var i = this.startPage; i <= this.endPage; i++)
             {
-                console.log("i: " + i);
                 this.events["click #" + this.name + "-page-" + i] = "buttonClick";
-                console.log("click #" + this.name + "-page-" + i);
             }
-            console.log(this.events);
-
             // Delegate the new events
             this.delegateEvents();
         },
@@ -692,8 +682,6 @@
          */
         setPage: function(page)
         {
-            console.log("Setting page to " + page);
-            console.log(page);
             if (page < 1)
             {
                 this.currentPage = 1;
@@ -739,8 +727,8 @@
                 }
             }
             this.render();
-            // Re-register all of the events
-//            this.registerEvents();
+            // We have to register the events every time we render
+            this.registerEvents();
             this.trigger("change");
         },
 
@@ -780,10 +768,6 @@
                     currentPage: this.currentPage
                 }
             ));
-
-            // We have to register the events every time we render
-            this.registerEvents();
-
             return this.trigger('render', this);
         }
     });
@@ -824,9 +808,7 @@
             if (newQuery !== this.query) {
                 this.query = newQuery;
                 // Set the new query and fetch it!
-                this.searchResultView.model.setQuery(this.query);
-                // This should automatically re-render the results... I think...
-                this.searchResultView.model.fetch();
+                this.searchResultView.changeQuery(this.query);
                 app.navigate("/search/?q=" + this.query);
             }
         },
@@ -859,7 +841,8 @@
 
         initialize: function(options)
         {
-            _.bindAll(this, 'render', 'afterFetch', 'updatePage');
+            _.bindAll(this, 'render', 'updatePage', 'afterFetch', 'changeQuery',
+                'updatePaginationView');
             this.template = _.template($('#search-result-template').html());
 
             if (options.query !== undefined)
@@ -879,23 +862,43 @@
                 {
                     name: "search",
                     currentPage: this.currentPage,
-                    elementCount: 729,
+                    elementCount: 0,
                     pageSize: this.pageSize
                 }
             );
+            this.listenTo(this.paginationView, 'change', this.updatePage);
+
 
             // Query the search result
             this.model.fetch();
-            this.listenTo(this.model, 'sync', this.render);
-
-            // Change the page with the paginator
-            this.listenTo(this.paginationView, 'change', this.updatePage);
+            this.listenTo(this.model, 'sync', this.afterFetch);
         },
 
         afterFetch: function()
         {
-            // Render
+            this.updatePaginationView();
             this.render();
+        },
+
+        changeQuery: function(query)
+        {
+            this.currentPage = 1;
+            this.model.setQuery(query);
+            this.query = query;
+            this.model.fetch({success: this.updatePaginationView});
+        },
+
+        updatePaginationView: function()
+        {
+            this.paginationView = new PaginationView(
+                {
+                    name: "search",
+                    currentPage: this.currentPage,
+                    elementCount: this.model.toJSON().numFound,
+                    pageSize: this.pageSize
+                }
+            );
+            this.listenTo(this.paginationView, 'change', this.updatePage);
         },
 
         /**
@@ -919,10 +922,8 @@
             {
                 $(this.el).html(this.template({results: this.model.getFormattedData()}));
             }
-//            if (this.paginationView !== null)
-//            {
-                this.assign(this.paginationView, '#search-pagination');
-//            }
+
+            this.assign(this.paginationView, '#search-pagination');
             return this.trigger('render', this);
         }
     });
