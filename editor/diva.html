@@ -37,19 +37,25 @@
         {
             jsonFile = 'imagesOut.json';
             //create the diva wrapper and editor
+
             $('#diva-wrapper').diva(
             {
+                adaptivePadding: 0,
                 contained: true,
-                enableAutoHeight: true,
-                enableAutoWidth: true,
+                enableAutoTitle: false,
+                enableAutoHeight: false,
+                enableAutoWidth: false,
+                enableFullscreen: false,
                 fixedHeightGrid: false,
                 iipServerURL: "http://132.206.14.136:8000/fcgi-bin/iipsrv.fcgi",
                 objectData: jsonFile,
                 imageDir: "/opt/stgall",
                 enableHighlight: true,
+                toolbarParentSelector: "#diva-toolbar",
                 viewerWidthPadding: 0,
                 viewerHeightPadding: 0,
             });
+
 
             divaInstance = $('#diva-wrapper').data('diva');
             meiEditor = $("#mei-editor").AceMeiEditor({
@@ -59,15 +65,32 @@
                 'jsonFileLocation': jsonFile
             });
 
-            //little graphics things
-
         });
+
+        window.onload = function()
+        {
+            $("#diva-toolbar").prepend($("#1-diva-tools").html());
+            $("#1-diva-tools").remove();
+            //here so I can wait for the diva objects to actually exist
+            $(window).on('resize', function(e){
+                $("#diva-wrapper").offset({'top': $("#openPages").offset().top, 'left': $("#mei-editor").width()});
+                $("#diva-wrapper").height(window.innerHeight);
+                $("#diva-wrapper").width("50%");
+                $("#1-diva-outer").height(window.innerHeight);
+                $("#diva-toolbar").height($("#openPages").offset().top);
+                $("#1-diva-tools-left").css('vertical-align', 'middle');
+            });
+
+            $(window).trigger('resize');
+        }
 
         </script>
     </head>
     <body>
-
         <div id="mei-editor"></div>
+        <div id="diva-toolbar" class="diva-tools">
+            <div style="clear:both"></div>
+        </div>
         <div id="diva-wrapper"></div>
     </body>
 </html> 

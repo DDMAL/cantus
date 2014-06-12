@@ -3,8 +3,47 @@
 	display:inline-block;
 }
 #diva-wrapper{
-	width:calc(50% - 9px);
-	top:0;
-	height:100%;
+	position:absolute;
 	display:inline-block;
+	padding:0px;
+	margin:0px;
+	top:0px;
+	height:100%;
+	width:50%;
+}
+
+#diva-toolbar{
+	display:inline-block;
+	position:absolute;
+	top:0px;
+	width:50%;
+}
+
+.diva-outer{
+	height:100%;
+}
+
+.diva-tools{
+	height:100%;
+	margin-top:10px;
+	vertical-align: middle;
+}
+
+.diva-tools-left{
+	height:100%;
+	margin-left:5px;
+}
+.diva-tools-right{
+	margin-right:20px;
+}
+
+.diva-outer{
+	border-radius:4px; /*to match the left side of the page*/
+}
+.diva-page-label{
+	display:inline;
+}
+body{
+	padding:0px;
+	margin:0px;
 }
