@@ -84,6 +84,7 @@ def solr_index(sender, instance, created, **kwargs):
         'finalis': chant.finalis,
         'incipit': chant.incipit,
         'full_text': chant.full_text,
+        'volpiano': chant.volpiano,
         'concordances': chant.concordance_citation_list
     }
     solrconn.add(**d)

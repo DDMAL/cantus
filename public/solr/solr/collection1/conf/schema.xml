@@ -116,7 +116,10 @@
     <field name="provenance" type="text_general" indexed="true" stored="true"/>
     <field name="description" type="text_general" indexed="true" stored="true"/>
 
+    <field name="number" type="string" indexed="true" stored="true"/>
+
     <field name="manuscript" type="text_general" indexed="true" stored="true"/>
+    <field name="manuscript_id" type="int" indexed="true" stored="true"/>
 
     <field name="marginalia" type="text_general" indexed="true" stored="true"/>
     <field name="folio" type="text_general" indexed="true" stored="true"/>
@@ -138,14 +141,11 @@
     <field name="finalis" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="incipit" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="full_text" type="text_general" indexed="true" stored="true" multiValued="false" />
-
+    <field name="volpiano" type="text_general" indexed="true" stored="true" multiValued="false" />
 
      <!-- Fields related to concordances  -->
     <field name="concordance_citation" type="text_general" indexed="true" stored="true" />
     <field name="concordances" type="text_general" indexed="true" stored="true" multiValued="true" />
-
-
-     <!-- <field name="Volpiano" type="text_general" indexed="true" stored="true" multiValued="false" /> -->
 
 
    <!-- Common metadata fields, named specifically to match up with
