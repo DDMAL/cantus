@@ -36,7 +36,7 @@ class Chant(models.Model):
         "cantusdata.Concordance", related_name="concordances",
         default="empty-concordance")
     # not sure about its type
-    volpiano = models.CharField(max_length=255, blank=True, null=True)
+    volpiano = models.TextField(blank=True, null=True)
     manuscript = models.ForeignKey("cantusdata.Manuscript",
                                    related_name="chants")
 
