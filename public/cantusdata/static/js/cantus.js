@@ -618,7 +618,6 @@
         pageCount: 1,
         pageSize: 10,
 
-
         // Used for rendering
         currentPage: 1,
         startPage: 1,
@@ -653,13 +652,25 @@
         {
             // Clear out the events
             this.events = {}
-            // Forwards and backwards
-            this.events["click #" + this.name + "-page-back"] = "decrement";
-            this.events["click #" + this.name + "-page-forward"] = "increment";
+            // No binding if there are no elements
+            if (this.elementCount === 0) return;
+            // Backwards
+            if (this.currentPage > 1)
+            {
+                this.events["click #" + this.name + "-page-back"] = "decrement";
+            }
+            // Forwards
+            if (this.currentPage < this.pageCount)
+            {
+                this.events["click #" + this.name + "-page-forward"] = "increment";
+            }
             // Add the page clickers
             for (var i = this.startPage; i <= this.endPage; i++)
             {
-                this.events["click #" + this.name + "-page-" + i] = "buttonClick";
+                if (i !== this.currentPage)
+                {
+                    this.events["click #" + this.name + "-page-" + i] = "buttonClick";
+                }
             }
             // Delegate the new events
             this.delegateEvents();
@@ -841,43 +852,21 @@
 
         initialize: function(options)
         {
-            _.bindAll(this, 'render', 'updatePage', 'afterFetch', 'changeQuery',
+            _.bindAll(this, 'render', 'updatePage', 'changeQuery',
                 'updatePaginationView');
             this.template = _.template($('#search-result-template').html());
+            this.currentPage = 1;
+            this.model = new SearchResult();
 
             if (options.query !== undefined)
             {
+                this.model.setQuery(options.query);
                 this.query = options.query;
-                this.model = new SearchResult(options.query);
             }
-            else
-            {
-                this.model = new SearchResult();
-            }
-
-            // Create the pagination
-            this.currentPage = 1;
-            // Create the paginator
-            this.paginationView = new PaginationView(
-                {
-                    name: "search",
-                    currentPage: this.currentPage,
-                    elementCount: 0,
-                    pageSize: this.pageSize
-                }
-            );
-            this.listenTo(this.paginationView, 'change', this.updatePage);
-
 
             // Query the search result
-            this.model.fetch();
-            this.listenTo(this.model, 'sync', this.afterFetch);
-        },
-
-        afterFetch: function()
-        {
-            this.updatePaginationView();
-            this.render();
+            this.model.fetch({success: this.updatePaginationView});
+            this.listenTo(this.model, 'sync', this.render);
         },
 
         changeQuery: function(query)
@@ -890,6 +879,7 @@
 
         updatePaginationView: function()
         {
+            console.log("TEEEST");
             this.paginationView = new PaginationView(
                 {
                     name: "search",
@@ -922,8 +912,11 @@
             {
                 $(this.el).html(this.template({results: this.model.getFormattedData()}));
             }
+            if (this.paginationView !== null)
+            {
+                this.assign(this.paginationView, '#search-pagination');
+            }
 
-            this.assign(this.paginationView, '#search-pagination');
             return this.trigger('render', this);
         }
     });
