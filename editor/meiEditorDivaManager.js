@@ -1,3 +1,5 @@
+require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js'], function(){
+
 (function ($)
 {
     window.meiEditorPlugins.push((function()
@@ -15,6 +17,7 @@
                 "Clear selection": "clear-selection-dropdown",
                 "Help...": "diva-help-dropdown",
             },
+            requiredSettings: ['divaInstance', 'jsonFileLocation'],
             init: function(meiEditor, meiEditorSettings)
             {
                 $.extend(meiEditorSettings, 
@@ -230,10 +233,8 @@
 
                 meiEditor.deselectAllHighlights = function()
                 {
-                    console.log("called", $(".selectedHover").length);
                     $(".selectedHover").css('background-color', 'rgba(255, 0, 0, 0.2)');
                     $(".selectedHover").toggleClass("selectedHover");
-                    console.log("post", $(".selectedHover").length);
                 }
 
                 meiEditor.deselectHighlight = function(divToDeselect)
@@ -656,4 +657,7 @@
         }
         return retval;
     })());
+    window.pluginLoader.pluginLoaded();
 })(jQuery);
+
+});
