@@ -107,13 +107,14 @@
             <% if (chant.finalis) { %>
             <p><b>Finalis: </b> <%= chant.finalis %></p>
             <% } %>
-            <% if (chant.volpiano) { %>
-            <p><b>Volpiano: </b> <%= chant.volpiano %></p>
-            <% } %>
             <hr/>
             <h5>Full Text</h5>
             <%= chant.full_text %>
             <hr/>
+            <% if (chant.volpiano) { %>
+            <p class="volpiano"><%= chant.volpiano %></p>
+            <hr/>
+            <% } %>
             <h5>Concordances</h5>
             <ul>
             <% _.each(chant.concordances, function(concordance) { %>
