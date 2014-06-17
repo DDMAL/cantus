@@ -302,21 +302,19 @@
             // It's kind of hacky to doubly-bind the name like this, but I'm
             // not aware of any other way to access storeFolioIndex() from the
             // anonymous function below.
-            var storeFolioIndex = this.storeFolioIndex;
             var siglum = this.siglum;
-            $(document).ready(function() {
-                $("#diva-wrapper").diva({
-                    enableAutoTitle: false,
-                    enableAutoWidth: true,
-                    enableAutoHeight: true,
-                    enableFilename: false,
-                    fixedHeightGrid: false,
-                    iipServerURL: iipImageServerUrl + "fcgi-bin/iipserver.fcgi",
-                    objectData: "/static/" + siglum + ".json",
-                    imageDir: divaImageDirectory + siglum
-                });
-                diva.Events.subscribe("VisiblePageDidChange", storeFolioIndex);
+            $("#diva-wrapper").diva({
+                enableAutoTitle: false,
+                enableAutoWidth: true,
+                enableAutoHeight: true,
+                enableFilename: false,
+                fixedHeightGrid: false,
+                iipServerURL: iipImageServerUrl + "fcgi-bin/iipserver.fcgi",
+                objectData: "/static/" + siglum + ".json",
+                imageDir: divaImageDirectory + siglum
             });
+            diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
+            diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
             return this.trigger('render', this);
         },
 
