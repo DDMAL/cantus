@@ -198,7 +198,9 @@
 
 <script type="text/template" id="manuscript-collection-template">
 <% _.forEach(manuscripts, function(aManuscript) { %>
+    <% if (aManuscript.chant_count > 0) { %>
     <p><a href="<%= aManuscript.url %>" ><%= aManuscript.name %></a></p>
+    <% } %>
 <% }); %>
 </script>
 
