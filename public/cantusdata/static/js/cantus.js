@@ -285,14 +285,14 @@
 
     var DivaView = CantusAbstractView.extend
     ({
-        currentFolioIndex: 0,
+        currentFolioIndex: -1,
         currentFolioName: 0,
 
         timer: null,
 
         initialize: function(options)
         {
-            _.bindAll(this, 'render', 'storeFolioIndex', 'triggerChange');
+            _.bindAll(this, 'render', 'storeFolioIndex', 'triggerChange', 'storeInitialFolio');
             this.siglum = options.siglum;
         },
 
@@ -318,6 +318,22 @@
             return this.trigger('render', this);
         },
 
+        /**
+         * Store the index and filename of the first loaded page.
+         */
+        storeInitialFolio: function()
+        {
+            var number = $("#diva-wrapper").data('diva').getCurrentPageIndex();
+            var name = $("#diva-wrapper").data('diva').getCurrentPageFilename();
+            this.storeFolioIndex(number, name);
+        },
+
+        /**
+         * Store a folio index and image filename.
+         *
+         * @param index int
+         * @param fileName string
+         */
         storeFolioIndex: function(index, fileName)
         {
             if (index != this.currentFolioIndex)
@@ -334,6 +350,9 @@
             }
         },
 
+        /**
+         * Trigger the global manuscriptChangeFolio event.
+         */
         triggerChange: function()
         {
             globalEventHandler.trigger("manuscriptChangeFolio");
@@ -356,9 +375,6 @@
         {
             _.bindAll(this, 'render', 'afterFetch', 'assignChants');
             this.template= _.template($('#folio-template').html());
-
-            // This needs to be set by default.
-            this.setCustomNumber(0);
 
             // This can handle situations where the first folio
             // doesn't have a url but subsequent ones do.
@@ -984,9 +1000,7 @@
             this.headerView = new HeaderView();
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
 
-            // TODO: Have the FolioView initialized at the first folio of the book
             this.folioView = new FolioView();
-            this.folioView.setCustomNumber(0);
 
             // Render every time the model changes...
             this.listenTo(this.manuscript, 'change', this.afterFetch);
