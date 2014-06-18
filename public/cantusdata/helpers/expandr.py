@@ -50,6 +50,7 @@ def ordinal(value):
 
     return ordval
 
+
 def feast_code_lookup(feast_code, feast_file):
     # f = [r for r in feastfile if r['FeastCode'] == feastcode]
     for record in feast_file:
@@ -60,6 +61,7 @@ def feast_code_lookup(feast_code, feast_file):
         if str(record["FeastCode"]) == str(feast_code):
             return record["EnglishName"]
     return None
+
 
 def expand_mode(mode_code):
     input_list = mode_code.strip().split()
@@ -93,9 +95,10 @@ def expand_mode(mode_code):
     outstring = " ".join(mode_output)
     return outstring
 
+
 def expand_genre(genre_code):
     return {
-        "A":"Antiphon",
+        "A": "Antiphon",
         "AV": "Antiphon Verse",
         "R": "Responsory",
         "V": "Responsory Verse",
@@ -106,6 +109,7 @@ def expand_genre(genre_code):
         "M": "Miscellaneous",
         "G": "Mass chants"
     }.get(genre_code, "Error")
+
 
 def expand_office(office_code):
     return {
@@ -160,12 +164,9 @@ class PositionExpander(object):
             if genre in self.position_data_base[office]:
                 if position in self.position_data_base[office][genre]:
                     raise KeyError(
-                        u"Position record {0} {1} {2} already set to {3}!".format(
-                            office,
-                            genre,
-                            position,
-                            self.position_data_base[office][genre][position]
-                        )
+                        u"Position record {0} {1} {2} already set to {3}!"
+                        .format(office, genre, position,
+                            self.position_data_base[office][genre][position])
                     )
                 else:
                     # Position doesn't exist, so we create it
