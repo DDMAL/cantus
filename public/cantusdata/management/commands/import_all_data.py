@@ -28,3 +28,5 @@ class Command(BaseCommand):
         call_command('import_chant_data', 'st-gallen-390-chants.csv', **kwargs)
         # St. Gallen 391 Chants
         call_command('import_chant_data', 'st-gallen-391-chants.csv', **kwargs)
+        # Salzinnes
+        call_command('import_chant_data', 'salzinnes-chants.csv', **kwargs)
