@@ -138,7 +138,7 @@
                         // Build the url
                         // TODO: Have this work with non-numbered folios
                         newElement.url = "/manuscript/" + current.manuscript_id
-                            + "/#p2=" + current.folio;
+                            + "/#p=" + current.folio;
                         break;
 
                     case "concordance":
