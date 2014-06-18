@@ -1,8 +1,8 @@
 (function($){
 
-    const siteUrl = "http://localhost:8000/";
-    const iipImageServerUrl = "http://localhost:8001/";
-    const divaImageDirectory = "/Users/afogarty/Documents/manuscript-images/processed/";
+    const siteUrl = "/";
+    const iipImageServerUrl = "http://cantus.simssa.ca/iip/";
+    const divaImageDirectory = "/opt/cantus/";
 
     // Global Event Handler for global events
     var globalEventHandler = {};
