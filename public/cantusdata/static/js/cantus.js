@@ -390,6 +390,11 @@
             this.chantCollectionView = new ChantCollectionView();
         },
 
+        /**
+         * Set the model URL.
+         *
+         * @param url
+         */
         setUrl: function(url)
         {
             this.model = new Folio(url);
@@ -407,12 +412,18 @@
             this.customNumber = number;
         },
 
-
+        /**
+         * Fetch the latest version of the model.
+         */
         update: function()
         {
             this.model.fetch();
         },
 
+        /**
+         * If the model is empty, un-render the view.  Otherwise, assign
+         * the chants and render the view.
+         */
         afterFetch: function()
         {
             if (jQuery.isEmptyObject(this.model.toJSON())) {
@@ -472,6 +483,9 @@
             return this.trigger('render', this);
         },
 
+        /**
+         * Render the collection of chants.
+         */
         renderChantCollectionView: function()
         {
             if (this.chantCollectionView !== null) {
@@ -662,6 +676,9 @@
             this.setPage(options.currentPage);
         },
 
+        /**
+         * Register the events that are necessary to have clickable buttons.
+         */
         registerEvents: function()
         {
             // Clear out the events
@@ -757,11 +774,17 @@
             this.trigger("change");
         },
 
+        /**
+         * Go to the next page.
+         */
         increment: function()
         {
             this.setPage(this.currentPage + 1);
         },
 
+        /**
+         * Go to the previous page.
+         */
         decrement: function()
         {
             this.setPage(this.currentPage - 1);
@@ -822,10 +845,15 @@
             } else {
                 this.query = "";
             }
+
             //Date to use for checking timestamps
             this.searchResultView = new SearchResultView({query: this.query});
         },
 
+        /**
+         * Take the value of the search input box and perform a search query
+         * with it.  This function hits the API every time it is called.
+         */
         newSearch: function()
         {
             // Grab the new search query
@@ -838,6 +866,11 @@
             }
         },
 
+        /**
+         * Set the timer to perform a new search.
+         * This is called when you want to avoid making multiple querie
+         * very quickly.
+         */
         autoNewSearch: function()
         {
             if (this.timer !== null)
@@ -883,6 +916,11 @@
             this.listenTo(this.model, 'sync', this.render);
         },
 
+        /**
+         * Set the model's query string and fetch results from the restful API.
+         *
+         * @param query string
+         */
         changeQuery: function(query)
         {
             this.currentPage = 1;
@@ -891,6 +929,9 @@
             this.model.fetch({success: this.updatePaginationView});
         },
 
+        /**
+         * Rebuild the pagination view with the latest data from the model.
+         */
         updatePaginationView: function()
         {
             console.log("TEEEST");
@@ -1027,6 +1068,9 @@
             this.folioView.update();
         },
 
+        /**
+         * Fetch the manuscript's data from the API.
+         */
         getData: function()
         {
             this.manuscript.fetch();
