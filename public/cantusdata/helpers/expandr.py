@@ -65,21 +65,21 @@ def expand_mode(mode_code):
     input_list = mode_code.strip().split()
     mode_output = []
     if "1" in input_list:
-        mode_output.append("Mode 1")
+        mode_output.append("1")
     if "2" in input_list:
-        mode_output.append("Mode 2")
+        mode_output.append("2")
     if "3" in input_list:
-        mode_output.append("Mode 3")
+        mode_output.append("3")
     if "4" in input_list:
-        mode_output.append("Mode 4")
+        mode_output.append("4")
     if "5" in input_list:
-        mode_output.append("Mode 5")
+        mode_output.append("5")
     if "6" in input_list:
-        mode_output.append("Mode 6")
+        mode_output.append("6")
     if "7" in input_list:
-        mode_output.append("Mode 7")
+        mode_output.append("7")
     if "8" in input_list:
-        mode_output.append("Mode 8")
+        mode_output.append("8")
     if "*" in input_list:
         mode_output.append("No music")
     if "r" in input_list:
