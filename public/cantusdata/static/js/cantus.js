@@ -834,7 +834,7 @@
                 this.query = newQuery;
                 // Set the new query and fetch it!
                 this.searchResultView.changeQuery(this.query);
-                app.navigate("/search/?q=" + this.query);
+//                app.navigate("/search/?q=" + this.query);
             }
         },
 
