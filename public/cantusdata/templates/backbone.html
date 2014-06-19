@@ -12,12 +12,24 @@
     <script src="/static/js/jquery.js"></script>
     <script src="/static/js/bootstrap.js"></script>
     <script src="/static/js/diva.min.js"></script>
+    <script type="text/javascript">
+    $(window).resize(function() {
+        $('#content-container').css("height",
+                $(window).height() - $("#header-container").height());
+    });
+    $(window).resize(function() {
+        $('.scrollable').css("height",
+                $(window).height() - $("#page-header").height());
+    });
+    </script>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="header"></div>
+    <div id="header-container" class="container-fluid">
+        <div id="page-header" class="header"></div>
+    </div>
+    <div id="content-container" class="container-fluid">
 {#        <hr/>#}
-        <div class="row content">
+        <div id="page-content" class="row content">
                 <div class="col-lg-12">
                     <!-- Templates -->
                     <div id="view-goes-here">Empty</div>
