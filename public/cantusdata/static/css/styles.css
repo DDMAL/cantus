@@ -21,14 +21,54 @@
     width: 100%;
     padding: 0 30px 0 30px;
     /*height: 400px;*/
+    overflow: hidden;
     /*overflow-y: scroll;*/
 }
 
 #diva-wrapper {
+    border-right: 1px solid #CCCCCC;
     width: 100%;
 }
 
 .scrollable {
-    height: 800px;
-    overflow: scroll;
+    /*height: 800px;*/
+    /*height: 100%;*/
+    overflow-y: scroll;
+}
+
+#header-container {
+    border-bottom: 1px solid #CCCCCC;
+}
+
+#header-container h3 {
+    /*font-size: 14px;*/
+}
+
+#content-container {
+    overflow: hidden;
+}
+
+#page-content {
+    height: 400px;
+    /*overflow: hidden;*/
+}
+
+.diva-tools {
+    height: 75px;
+    padding: 20px;
+    margin-top: 0px;
+    border-right: 1px solid #CCCCCC;
+    border-bottom: 1px solid #CCCCCC;
+    /*background: #FF9900;*/
+}
+
+.diva-outer {
+    width: 100%;
+    margin-left: 0px;
+    margin-right: 0px;
+    border: none;
+}
+
+.diva-inner {
+    width: 100%;
 }

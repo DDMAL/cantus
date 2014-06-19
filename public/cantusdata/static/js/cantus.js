@@ -292,7 +292,8 @@
 
         initialize: function(options)
         {
-            _.bindAll(this, 'render', 'storeFolioIndex', 'triggerChange', 'storeInitialFolio');
+            _.bindAll(this, 'render', 'storeFolioIndex', 'triggerChange',
+                'storeInitialFolio');
             this.siglum = options.siglum;
         },
 
@@ -304,8 +305,10 @@
             // anonymous function below.
             var siglum = this.siglum;
             $("#diva-wrapper").diva({
+                toolbarParentSelector: "#diva-toolbar",
+                viewerWidthPadding: 0,
                 enableAutoTitle: false,
-                enableAutoWidth: true,
+                enableAutoWidth: false,
                 enableAutoHeight: true,
                 enableFilename: false,
                 fixedHeightGrid: false,
