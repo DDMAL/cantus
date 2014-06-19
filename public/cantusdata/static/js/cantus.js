@@ -1,7 +1,7 @@
 (function($){
 
     const siteUrl = "/";
-    const iipImageServerUrl = "/iip/";
+    const iipImageServerUrl = "http://cantus.simssa.ca/iip/";
     const divaImageDirectory = "/opt/cantus/";
 
     // Global Event Handler for global events
