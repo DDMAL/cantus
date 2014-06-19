@@ -16,7 +16,6 @@
         <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
         <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 
-
         <!--local libraries -->
         <script src="diva.js/build/js/diva.js" type="text/javascript"></script>
         <script src="diva.js/build/js/utils.js" type="text/javascript"></script>
@@ -71,10 +70,9 @@
             $("#1-diva-tools").remove();
             //here so I can wait for the diva objects to actually exist
             $(window).on('resize', function(e){
-                $("#diva-wrapper").offset({'top': $("#openPages").offset().top, 'left': $("#mei-editor").width()});
-                $("#diva-wrapper").height(window.innerHeight);
-                $("#diva-wrapper").width("50%");
-                $("#1-diva-outer").height(window.innerHeight);
+                $("#diva-wrapper").offset({'top': $("#topbar").outerHeight(), 'left': $("#mei-editor").width()});
+                $("#diva-wrapper").height(window.innerHeight - $("#topbar").outerHeight());
+                $("#1-diva-outer").height(window.innerHeight - $("#topbar").outerHeight());
                 $("#diva-toolbar").height($("#openPages").offset().top);
                 $("#1-diva-tools-left").css('vertical-align', 'middle');
             });

@@ -15,7 +15,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js'], function(){
                 "Auto-link files by filename": "auto-link-dropdown",
                 "Update Diva": "update-diva-dropdown",
                 "Clear selection": "clear-selection-dropdown",
-                "Help...": "diva-help-dropdown",
             },
             requiredSettings: ['divaInstance', 'jsonFileLocation'],
             init: function(meiEditor, meiEditorSettings)
@@ -55,19 +54,19 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js'], function(){
                     meiEditor.deselectAllHighlights();
                 });
 
-                $("#diva-help-dropdown").on('click', function()
+                $("#diva-manager-help").on('click', function()
                 {
                     $("#divaHelpModal").modal();
                 });
 
-                meiEditor.createModal("fileLinkModal", false, 
+                createModal(meiEditorSettings.element, "fileLinkModal", false, 
                     "<span class='modalSubLeft'>"
                     + "Select an MEI file:<br>"
-                    + meiEditor.createSelect("file-link", meiEditorSettings.pageData)
+                    + createSelect("file-link", meiEditorSettings.pageData)
                     + "</span>"
                     + "<span class='modalSubRight'>"
                     + "Select a Diva image:<br>"
-                    + meiEditor.createSelect("diva-link", meiEditorSettings.divaPageList, true)
+                    + createSelect("diva-link", meiEditorSettings.divaPageList, true)
                     + "</span>"
                     + "<div class='clear'></div>"
                     + "<div class='centeredAccept'>"
@@ -75,7 +74,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js'], function(){
                     + "</div>"
                     );
 
-                meiEditor.createModal("fileUnlinkModal", false, 
+                createModal(meiEditorSettings.element, "fileUnlinkModal", false, 
                     "<div id='unlink-wrapper'>"
                     + "Unlink an MEI file from a Diva file:<br>"
                     + "<select id='selectUnlink'></select><br>"
@@ -83,8 +82,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js'], function(){
                     + "</div>"
                     );
 
-                meiEditor.createModal("divaHelpModal", false,
-                    "<h2>Help</h2>"
+                createModal(meiEditorSettings.element, "divaHelpModal", false,
+                    "<h4>Help for 'Diva Page Manager' menu:</h4>"
                     + "<li>To get highlights from a file to show up in the Diva pane, click 'Link files to Diva images...' from the dropdown menu and select the files you want to link.</li>"
                     + "<br><li>'Auto-link files by filename' will automatically strip file extensions and try to match files so that '001.mei' and '001.tiff' become linked.</li>"
                     + "<br><li>Changes you make to the MEI document will not automatically transfer over; click 'Update Diva' to reload the highlighted objects in the image viewer.</li>"
@@ -416,7 +415,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js'], function(){
                     //if there's not 2 selected files, "throw" an error
                     if(selectedMEI === undefined || selectedImage === undefined)
                     {
-                        meiEditor.localLog("Please make sure that an MEI file and an image are selected.");
+                        meiEditor.localError("Please make sure that an MEI file and an image are selected.");
                         return;
                     } 
                     else 
