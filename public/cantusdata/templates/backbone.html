@@ -169,11 +169,11 @@
 <script type="text/template" id="search-template">
 {#<form role="search">#}
   <div class="form-group">
-    <input type="text" id="search-input" class="form-control" placeholder="Search" value="<%= query %>">
+    <input type="text" class="form-control search-input" placeholder="Search" value="<%= query %>">
   </div>
-{#  <button type="submit" id="search-button" class="btn btn-default">Submit</button>#}
+{#  <button type="submit" class="btn btn-default search-button">Submit</button>#}
 {#</form>#}
-<div id="search-result"></div>
+<div class="search-result"></div>
 </script>
 
 <script type="text/template" id="search-result-template">
@@ -185,7 +185,7 @@
 {#    <% } %>#}
 <% }); %>
 </ul>
-<div id="search-pagination"></div>
+<div class="pagination">Nope</div>
 </script>
 
 <script type="text/template" id="pagination-template">
@@ -227,11 +227,11 @@
 {#  <li><a href="/manuscripts/">Manuscripts</a></li>#}
 {#  <li><a href="<%= manuscript.url %>"><%= manuscript.name %></a></li>#}
 {#</ol>#}
-<div class="row">
-    <div class="col-md-12">
-        <h1><%= manuscript.name %></h1>
-    </div>
-</div>
+{#<div class="row">#}
+{#    <div class="col-md-12">#}
+{#        <h1><%= manuscript.name %></h1>#}
+{#    </div>#}
+{#</div>#}
 <div class="row">
     <div class="col-md-6">
         <div id="diva-wrapper"></div>
@@ -240,26 +240,32 @@
         <div id="folio"></div>
     </div>
     <div class="col-md-3">
-        <!-- Nav tabs -->
-        <ul class="nav nav-tabs">
-          <li class="active"><a href="#home" data-toggle="tab">Manuscript Details</a></li>
-          <li><a href="#profile" data-toggle="tab">Search</a></li>
-        </ul>
-        <div class="scrollable">
-            <!-- Tab panes -->
-            <div class="tab-content">
-                <div class="tab-pane active" id="home">
-                    <h4>Siglum</h4>
-                    <p><%= manuscript.siglum %></p>
-                    <h4>Date</h4>
-                    <p><%= manuscript.date %></p>
-                    <h4>Provenance</h4>
-                    <p><%= manuscript.provenance %></p>
-                    <h4>Description</h4>
-                    <p><%= manuscript.description %></p>
-                </div>
-                <div class="tab-pane" id="profile">
-                    <div id="manuscript-search"></div>
+        <h1><%= manuscript.name %></h1>
+        <div class="row">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#home" data-toggle="tab">Manuscript Details</a></li>
+              <li><a href="#profile" data-toggle="tab">Search Manuscript</a></li>
+            </ul>
+        </div>
+        <div class="row">
+            <div class="scrollable">
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane active" id="home">
+                        <h4>Siglum</h4>
+                        <p><%= manuscript.siglum %></p>
+                        <h4>Date</h4>
+                        <p><%= manuscript.date %></p>
+                        <h4>Provenance</h4>
+                        <p><%= manuscript.provenance %></p>
+                        <h4>Description</h4>
+                        <p><%= manuscript.description %></p>
+                    </div>
+                    <div class="tab-pane" id="profile">
+                        <h3>Search this Manuscript</h3>
+                        <div id="manuscript-search"></div>
+                    </div>
                 </div>
             </div>
         </div>
