@@ -221,7 +221,7 @@
 {#    </div>#}
 {#</div>#}
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-8">
         <div class="row">
             <div id="diva-toolbar"></div>
         </div>
@@ -229,35 +229,44 @@
             <div id="diva-wrapper"></div>
         </div>
     </div>
-    <div class="col-md-3 scrollable">
-        <div id="folio"></div>
-    </div>
+{#    <div class="col-md-3 scrollable">#}
+{#        <div id="folio"></div>#}
+{#    </div>#}
 
-    <div class="col-md-3 scrollable">
-        <h1 class="h3"><%= manuscript.name %></h1>
-        <div class="row">
-            <!-- Nav tabs -->
-            <ul class="nav nav-tabs">
-              <li class="active"><a href="#home" data-toggle="tab">Manuscript Details</a></li>
-              <li><a href="#profile" data-toggle="tab">Search Manuscript</a></li>
-            </ul>
+    <div class="col-md-4">
+        <div id="manuscript-title-container" class="row">
+            <div class="column-md-12">
+                <h1 class="h3"><%= manuscript.name %></h1>
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs">
+                    <li class="active"><a href="#manuscript-folio-pane" data-toggle="tab">Current Folio</a></li>
+                    <li><a href="#manuscript-details-pane" data-toggle="tab">Manuscript Details</a></li>
+                    <li><a href="#manuscript-search-pane" data-toggle="tab">Search Manuscript</a></li>
+                </ul>
+            </div>
         </div>
-        <div class="row">
-            <!-- Tab panes -->
-            <div class="tab-content">
-                <div class="tab-pane col-md-12 active" id="home">
-                    <h4>Siglum</h4>
-                    <p><%= manuscript.siglum %></p>
-                    <h4>Date</h4>
-                    <p><%= manuscript.date %></p>
-                    <h4>Provenance</h4>
-                    <p><%= manuscript.provenance %></p>
-                    <h4>Description</h4>
-                    <p><%= manuscript.description %></p>
-                </div>
-                <div class="tab-pane col-md-12" id="profile">
-                    <h3>Search this Manuscript</h3>
-                    <div id="manuscript-search"></div>
+        <div id="manuscript-data-container" class="row">
+            <div class="tab-pane col-md-12 active">
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane active" id="manuscript-folio-pane" >
+                        <div id="folio"></div>
+                    </div>
+                    <div class="tab-pane" id="manuscript-details-pane">
+                        <h4>Siglum</h4>
+                        <p><%= manuscript.siglum %></p>
+                        <h4>Date</h4>
+                        <p><%= manuscript.date %></p>
+                        <h4>Provenance</h4>
+                        <p><%= manuscript.provenance %></p>
+                        <h4>Description</h4>
+                        <p><%= manuscript.description %></p>
+                    </div>
+                    <div class="tab-pane" id="manuscript-search-pane">
+                        <h3>Search this Manuscript</h3>
+                        <div id="manuscript-search"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -273,32 +282,46 @@
 
     <script type="text/javascript">
 
-    function setContainerHeight() {
+    function setContainerHeight()
+    {
         $('#content-container').css("height",
                 $(window).height() - $("#header-container").height() - 1);
     }
 
-    function setScrollableHeight() {
+    function setScrollableHeight()
+    {
         $('.scrollable').css("height", $("#content-container").height());
     }
 
-    function setDivaHeight() {
+    function setManuscriptContentContainerHeight()
+    {
+        $('#manuscript-data-container').css("height",
+                $("#content-container").height()
+                        - $("#manuscript-title-container").height());
+    }
+
+    function setDivaHeight()
+    {
         $('#diva-wrapper').css("height",
                 $("#content-container").height() - 75);
     }
 
     // When the window is resized
-    $(window).resize(function() {
+    $(window).resize(function()
+    {
         setContainerHeight();
-        setScrollableHeight();
+{#        setScrollableHeight();#}
+        setManuscriptContentContainerHeight();
         setDivaHeight();
     });
 
-    setTimeout(function(){
+    setTimeout(function()
+    {
         setContainerHeight();
-        setScrollableHeight();
+{#        setScrollableHeight();#}
+        setManuscriptContentContainerHeight();
         setDivaHeight();
-    },100);
+    },1000);
     </script>
 </body>
 </html>
