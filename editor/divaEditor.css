@@ -37,7 +37,9 @@
 }
 
 .diva-outer{
-	border-radius:4px; /*to match the left side of the page*/
+	border-width:.1em;
+	border-top-left-radius:4px; /*to match the left side of the page*/
+	border-top-right-radius:4px; /*to match the left side of the page*/
 }
 .diva-page-label{
 	display:inline;
