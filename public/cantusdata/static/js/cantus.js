@@ -312,10 +312,11 @@
                 enableAutoHeight: true,
                 enableFilename: false,
                 fixedHeightGrid: false,
-                iipServerURL: iipImageServerUrl + "fcgi-bin/iipserver.fcgi",
+                iipServerURL: iipImageServerUrl + "fcgi-bin/iipsrv.fcgi",
                 objectData: "/static/" + siglum + ".json",
                 imageDir: divaImageDirectory + siglum
             });
+            console.log(iipImageServerUrl + "fcgi-bin/iipsrv.fcgi");
             diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
             diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
             return this.trigger('render', this);
