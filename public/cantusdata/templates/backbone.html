@@ -6,18 +6,20 @@
 
     <link rel="stylesheet" href="/static/css/bootstrap.css">
     <link rel="stylesheet" href="/static/css/bootstrap-theme.css">
-    <link rel="stylesheet" href="/static/css/styles.css">
     <link rel="stylesheet" href="/static/css/diva.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
 
     <script src="/static/js/jquery.js"></script>
     <script src="/static/js/bootstrap.js"></script>
     <script src="/static/js/diva.min.js"></script>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="header"></div>
+    <div id="header-container" class="container-fluid">
+        <div id="page-header" class="header"></div>
+    </div>
+    <div id="content-container" class="container-fluid">
 {#        <hr/>#}
-        <div class="row content">
+        <div id="page-content" class="row content">
                 <div class="col-lg-12">
                     <!-- Templates -->
                     <div id="view-goes-here">Empty</div>
@@ -66,9 +68,7 @@
 
 <script type="text/template" id="folio-template">
 <h3>Folio <%= number %></h3>
-<div class="scrollable">
-    <div id="chant-list"></div>
-</div>
+<div id="chant-list"></div>
 </script>
 
 <script type="text/template" id="chant-collection-template">
@@ -157,11 +157,11 @@
 <script type="text/template" id="search-template">
 {#<form role="search">#}
   <div class="form-group">
-    <input type="text" id="search-input" class="form-control" placeholder="Search" value="<%= query %>">
+    <input type="text" class="form-control search-input" placeholder="Search" value="<%= query %>">
   </div>
-{#  <button type="submit" id="search-button" class="btn btn-default">Submit</button>#}
+{#  <button type="submit" class="btn btn-default search-button">Submit</button>#}
 {#</form>#}
-<div id="search-result"></div>
+<div class="search-result"></div>
 </script>
 
 <script type="text/template" id="search-result-template">
@@ -173,7 +173,7 @@
 {#    <% } %>#}
 <% }); %>
 </ul>
-<div id="search-pagination"></div>
+<div class="pagination">Nope</div>
 </script>
 
 <script type="text/template" id="pagination-template">
@@ -215,28 +215,37 @@
 {#  <li><a href="/manuscripts/">Manuscripts</a></li>#}
 {#  <li><a href="<%= manuscript.url %>"><%= manuscript.name %></a></li>#}
 {#</ol>#}
-<div class="row">
-    <div class="col-md-12">
-        <h1><%= manuscript.name %></h1>
-    </div>
-</div>
+{#<div class="row">#}
+{#    <div class="col-md-12">#}
+{#        <h1><%= manuscript.name %></h1>#}
+{#    </div>#}
+{#</div>#}
 <div class="row">
     <div class="col-md-6">
-        <div id="diva-wrapper"></div>
+        <div class="row">
+            <div id="diva-toolbar"></div>
+        </div>
+        <div class="row">
+            <div id="diva-wrapper"></div>
+        </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 scrollable">
         <div id="folio"></div>
     </div>
-    <div class="col-md-3">
-        <!-- Nav tabs -->
-        <ul class="nav nav-tabs">
-          <li class="active"><a href="#home" data-toggle="tab">Manuscript Details</a></li>
-          <li><a href="#profile" data-toggle="tab">Search</a></li>
-        </ul>
-        <div class="scrollable">
+
+    <div class="col-md-3 scrollable">
+        <h1 class="h3"><%= manuscript.name %></h1>
+        <div class="row">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#home" data-toggle="tab">Manuscript Details</a></li>
+              <li><a href="#profile" data-toggle="tab">Search Manuscript</a></li>
+            </ul>
+        </div>
+        <div class="row">
             <!-- Tab panes -->
             <div class="tab-content">
-                <div class="tab-pane active" id="home">
+                <div class="tab-pane col-md-12 active" id="home">
                     <h4>Siglum</h4>
                     <p><%= manuscript.siglum %></p>
                     <h4>Date</h4>
@@ -246,7 +255,8 @@
                     <h4>Description</h4>
                     <p><%= manuscript.description %></p>
                 </div>
-                <div class="tab-pane" id="profile">
+                <div class="tab-pane col-md-12" id="profile">
+                    <h3>Search this Manuscript</h3>
                     <div id="manuscript-search"></div>
                 </div>
             </div>
@@ -261,5 +271,34 @@
     <script src="/static/js/backbone.js"></script>
     <script src="/static/js/cantus.js"></script>
 
+    <script type="text/javascript">
+
+    function setContainerHeight() {
+        $('#content-container').css("height",
+                $(window).height() - $("#header-container").height() - 1);
+    }
+
+    function setScrollableHeight() {
+        $('.scrollable').css("height", $("#content-container").height());
+    }
+
+    function setDivaHeight() {
+        $('#diva-wrapper').css("height",
+                $("#content-container").height() - 75);
+    }
+
+    // When the window is resized
+    $(window).resize(function() {
+        setContainerHeight();
+        setScrollableHeight();
+        setDivaHeight();
+    });
+
+    setTimeout(function(){
+        setContainerHeight();
+        setScrollableHeight();
+        setDivaHeight();
+    },1000);
+    </script>
 </body>
 </html>

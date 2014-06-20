@@ -1,7 +1,7 @@
 (function($){
 
     const siteUrl = "/";
-    const iipImageServerUrl = "/iip/";
+    const iipImageServerUrl = "http://cantus.simssa.ca/iip/";
     const divaImageDirectory = "/opt/cantus/";
 
     // Global Event Handler for global events
@@ -292,7 +292,8 @@
 
         initialize: function(options)
         {
-            _.bindAll(this, 'render', 'storeFolioIndex', 'triggerChange', 'storeInitialFolio');
+            _.bindAll(this, 'render', 'storeFolioIndex', 'triggerChange',
+                'storeInitialFolio');
             this.siglum = options.siglum;
         },
 
@@ -304,15 +305,18 @@
             // anonymous function below.
             var siglum = this.siglum;
             $("#diva-wrapper").diva({
+                toolbarParentSelector: "#diva-toolbar",
+                viewerWidthPadding: 0,
                 enableAutoTitle: false,
-                enableAutoWidth: true,
+                enableAutoWidth: false,
                 enableAutoHeight: true,
                 enableFilename: false,
                 fixedHeightGrid: false,
-                iipServerURL: iipImageServerUrl + "fcgi-bin/iipserver.fcgi",
+                iipServerURL: iipImageServerUrl + "fcgi-bin/iipsrv.fcgi",
                 objectData: "/static/" + siglum + ".json",
                 imageDir: divaImageDirectory + siglum
             });
+            console.log(iipImageServerUrl + "fcgi-bin/iipsrv.fcgi");
             diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
             diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
             return this.trigger('render', this);
@@ -656,7 +660,8 @@
 
         initialize: function(options)
         {
-            _.bindAll(this, 'render', 'setPage', 'increment', 'decrement', 'render', 'buttonClick');
+            _.bindAll(this, 'render', 'setPage', 'increment', 'decrement',
+                'render', 'buttonClick');
             this.template = _.template($('#pagination-template').html());
 
             this.name = options.name;
@@ -804,7 +809,6 @@
             this.setPage(newPage);
         },
 
-
         render: function()
         {
             console.log("Rendering pagination view");
@@ -828,16 +832,12 @@
         // Subviews
         searchResultView: null,
 
-        events: {
-            // This should call newSearch when the button is clicked
-            "click #search-button" : "newSearch",
-            "change #search-input" : "newSearch",
-            "input #search-input" : "autoNewSearch"
-        },
+        events: {},
 
         initialize: function(options)
         {
-            _.bindAll(this, 'render', 'newSearch', 'autoNewSearch');
+            _.bindAll(this, 'render', 'newSearch', 'autoNewSearch',
+                'registerEvents');
             this.template= _.template($('#search-template').html());
             // If not supplied, the query is blank
             if (options !== undefined && options.query !== undefined) {
@@ -848,6 +848,9 @@
 
             //Date to use for checking timestamps
             this.searchResultView = new SearchResultView({query: this.query});
+
+            // Re-register events if this.el changes
+//            this.listenTo(this, "change", this.registerEvents);
         },
 
         /**
@@ -856,14 +859,34 @@
          */
         newSearch: function()
         {
+            console.log("New search!");
             // Grab the new search query
-            var newQuery = encodeURIComponent($('#search-input').val());
+            var newQuery = encodeURIComponent($(this.el.name + '.search-input').val());
             if (newQuery !== this.query) {
                 this.query = newQuery;
                 // Set the new query and fetch it!
                 this.searchResultView.changeQuery(this.query);
 //                app.navigate("/search/?q=" + this.query);
             }
+        },
+
+        /**
+         * Register the events that are necessary to have search input.
+         */
+        registerEvents: function()
+        {
+            console.log("Registering search events for:");
+            console.log(this.$el.selector);
+            // Clear out the events
+            this.events = {}
+            // Register them
+            console.log("click .search-button");
+//            this.events["click " + this.$el.selector + ".search-button"] = "newSearch";
+            this.events["change .search-input"] = "newSearch";
+            this.events["input .search-input"] = "autoNewSearch";
+
+            // Delegate the new events
+            this.delegateEvents();
         },
 
         /**
@@ -883,9 +906,13 @@
 
         render: function()
         {
+            this.registerEvents();
             $(this.el).html(this.template({query: this.query}));
             // Render subviews
-            this.assign(this.searchResultView, '#search-result');
+            console.log("Assign search result view:");
+            console.log(this.$el.selector + '.search-result');
+            $(this.$el.selector + ' .search-result').html("SEARCH RESULT VIEW!");
+            this.assign(this.searchResultView, this.$el.selector + ' .search-result');
             return this.trigger('render', this);
         }
     });
@@ -962,6 +989,7 @@
         render: function()
         {
             console.log("Rendering Search Result View.");
+            console.log(this.$el);
             // Only render if the model is defined
             if (this.model !== undefined)
             {
@@ -969,7 +997,10 @@
             }
             if (this.paginationView !== null)
             {
-                this.assign(this.paginationView, '#search-pagination');
+                console.log("Pagination Assignment:");
+//                console.log(this.$el.selector + '.pagination');
+//                console.log($(this.$el.selector + '.pagination'));
+                this.assign(this.paginationView, this.$el.selector + " .pagination");
             }
 
             return this.trigger('render', this);
@@ -1024,6 +1055,7 @@
         manuscript: null,
         folioCollection: null,
         folioHashSet: null,
+        searchView: null,
 
         // Subviews
         headerView: null,
@@ -1040,8 +1072,8 @@
             // Build the subviews
             this.headerView = new HeaderView();
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
-
             this.folioView = new FolioView();
+            this.searchView = new SearchView();
 
             // Render every time the model changes...
             this.listenTo(this.manuscript, 'change', this.afterFetch);
@@ -1097,6 +1129,7 @@
                 this.assign(this.divaView, '#diva-wrapper');
             }
             this.renderFolioView();
+            this.assign(this.searchView, '#manuscript-search');
 
             return this.trigger('render', this);
         },
@@ -1107,6 +1140,7 @@
                 this.assign(this.folioView, '#folio');
             }
         }
+
     });
 
     /**
