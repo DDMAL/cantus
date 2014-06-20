@@ -67,8 +67,7 @@
 
         window.onload = function()
         {
-            $("#diva-toolbar").prepend($("#1-diva-tools").html());
-            $("#1-diva-tools").remove();
+            $("#1-diva-tools").addClass('diva-toolbar');
             //here so I can wait for the diva objects to actually exist
             $(window).on('resize', function(e){
                 $("#diva-wrapper").offset({'top': $("#topbar").outerHeight(), 'left': $("#mei-editor").width()});
@@ -76,7 +75,7 @@
                 var divaOuterWidthDiff = $("#1-diva-outer").outerHeight() - $("#1-diva-outer").height();
                 $("#diva-wrapper").height(window.innerHeight - $("#topbar").outerHeight());
                 $("#1-diva-outer").height(window.innerHeight - $("#topbar").outerHeight() - divaOuterDiff);
-                $("#diva-toolbar").height($("#openPages").offset().top);
+                $(".diva-toolbar").height($("#openPages").offset().top);
                 $("#1-diva-outer").width(window.innerWidth/2 - divaOuterWidthDiff);
                 $("#1-diva-tools-left").css('vertical-align', 'middle');
             });

@@ -26,7 +26,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js'], function(){
                     neumeObjects: {}, //keeps track of neume objects
                     curOverlayBox: "",
                     initDragTop: "",
-                    initDragLeft: ""
+                    initDragLeft: "",
+                    dragActive: false
                 });
 
                 $("#file-link-dropdown").on('click', function()
@@ -104,6 +105,12 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js'], function(){
                     {
                         $(".overlay-box").hover(function(e) //when the hover starts for an overlay-box
                         {
+                            //if there is a box currently being drawn, don't do anything
+                            if(meiEditorSettings.dragActive === true)
+                            {
+                                return;
+                            }
+
                             currentTarget = e.target.id;
 
                             $("#hover-div").html(meiEditorSettings.neumeObjects[currentTarget] + "<br>Click to find in document.");
@@ -148,16 +155,21 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js'], function(){
                             }
                         });
 
-                        $(".overlay-box").click(function(e)
+                        //extra is true when this is called with coverDiv down - replaces e.shiftKey as that can't be called from a manually triggered event
+                        $(".overlay-box").click(function(e, shiftKey)
                         {
                             e.preventDefault();
 
                             //if shift key is not down, turn off all other .selectedHover items
-                            if(!e.shiftKey)
+                            if(shiftKey && $(e.target).hasClass('selectedHover'))
                             {
-                                meiEditor.deselectAllHighlights();
+                                meiEditor.deselectHighlight(e.target);
+                                return;
                             }
-
+                            else if(!shiftKey)
+                            {
+                                meiEditor.deselectAllHighlights(e.target);
+                            }
 
                             if(!$(e.target).hasClass('selectedHover'))
                             {
@@ -173,6 +185,10 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js'], function(){
 
                                 //add class and change the background color
                                 meiEditor.selectHighlight(e.target);
+                            }
+                            else
+                            {
+                                meiEditor.deselectHighlight(e.target);
                             }
                         
                             //don't send to children
@@ -237,7 +253,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js'], function(){
                 {
                     $(divToDeselect).css('background-color', 'rgba(255, 0, 0, 0.2)');
                     $(divToDeselect).toggleClass("selectedHover");
-
                 };
 
                 /*
@@ -278,8 +293,16 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js'], function(){
                             }
                         }
                     }
-                    meiEditor.localLog("Linked " + linkedArr.length + " of " + Object.keys(meiEditorSettings.pageData).length + " total MEI files. (" + linkedArr.join(', ') + ")");
-                    meiEditor.createHighlights();
+
+                    if(linkedArr.length === 0)
+                    {
+                        meiEditor.localWarn("Nothing to link.");
+                    }
+                    else 
+                    {
+                        meiEditor.localLog("Linked " + linkedArr.length + " of " + Object.keys(meiEditorSettings.pageData).length + " total MEI files. (" + linkedArr.join(', ') + ")");
+                        meiEditor.createHighlights();
+                    }
                 };
 
                 /*
@@ -562,12 +585,13 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js'], function(){
                         //when you click on that div
                         $("#cover-div").on('mousedown', function(e)
                         {
-                            e.preventDefault();
+                            //e.preventDefault();
 
                             //append the div that will resize as you drag
                             $("#topbar").append('<div id="drag-div"></div>');
                             meiEditorSettings.initDragTop = e.pageY;
                             meiEditorSettings.initDragLeft = e.pageX;
+                            meiEditorSettings.dragActive = true;
                             $("#drag-div").offset({'top': e.pageY, 'left':e.pageX});
 
                             //as you drag, resize it 
@@ -608,43 +632,55 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js'], function(){
                                 $(document).unbind('mousemove');
                                 $(document).unbind('mouseup');
 
-
-                                //there's gotta be something simpler than this, but I can't find it for the life of me.
-                                //get the four sides
-                                var boxLeft = $("#drag-div").offset().left;
-                                var boxRight = boxLeft + $("#drag-div").width();
-                                var boxTop = $("#drag-div").offset().top;
-                                var boxBottom = boxTop + $("#drag-div").height();
-
-                                //for each overlay-box
-                                var curBoxIndex = $(".overlay-box").length;
-                                while(curBoxIndex--)
+                                //if it's only a click, manually trigger a click on the overlay box beneath - curOverlayBox was set a bit above to pass info for the hover through
+                                if($("#drag-div").width() < 2 && $("#drag-div").height() < 2){
+                                    if(meiEditorSettings.curOverlayBox !== null)
+                                    {
+                                        meiEditorSettings.curOverlayBox.trigger('click', true);
+                                    }
+                                }
+                                else 
                                 {
-                                    var curBox = $(".overlay-box")[curBoxIndex];
+                                    //there's gotta be something simpler than this, but I can't find it for the life of me.
+                                    //get the four sides
+                                    var boxLeft = $("#drag-div").offset().left;
+                                    var boxRight = boxLeft + $("#drag-div").width();
+                                    var boxTop = $("#drag-div").offset().top;
+                                    var boxBottom = boxTop + $("#drag-div").height();
 
-                                    //see if any part of the box is inside (doesn't have to be the entire box)
-                                    var curLeft = $(curBox).offset().left;
-                                    var curRight = curLeft + $(curBox).width();
-                                    var curTop = $(curBox).offset().top;
-                                    var curBottom = curTop + $(curBox).height();
-                                    if(curRight < boxLeft)
-                                        continue;
-                                    else if(curLeft > boxRight)
-                                        continue;
-                                    else if(curBottom < boxTop)
-                                        continue;
-                                    else if(curTop > boxBottom)
-                                        continue;
+                                    //for each overlay-box
+                                    var curBoxIndex = $(".overlay-box").length;
+                                    while(curBoxIndex--)
+                                    {
+                                        var curBox = $(".overlay-box")[curBoxIndex];
 
-                                    //if we're still here, select it
-                                    $(curBox).addClass('selectedHover');
-                                    $(curBox).css('background-color', 'background-color:rgba(0, 255, 0, 0.2)');
+                                        //see if any part of the box is inside (doesn't have to be the entire box)
+                                        var curLeft = $(curBox).offset().left;
+                                        var curRight = curLeft + $(curBox).width();
+                                        var curTop = $(curBox).offset().top;
+                                        var curBottom = curTop + $(curBox).height();
+                                        if(curRight < boxLeft)
+                                            continue;
+                                        else if(curLeft > boxRight)
+                                            continue;
+                                        else if(curBottom < boxTop)
+                                            continue;
+                                        else if(curTop > boxBottom)
+                                            continue;
+
+                                        //if we're still here, select it
+                                        if(!($(curBox).hasClass('selectedHover')))
+                                        {
+                                            meiEditor.selectHighlight(curBox);
+                                        }
+                                    }
                                 }
 
                                 //remove the resizing div
                                 $("#drag-div").remove();
+                                meiEditorSettings.dragActive = false;
                             });
-                            e.stopPropagation();
+                            //e.stopPropagation();
                         });
                     }
                 });
