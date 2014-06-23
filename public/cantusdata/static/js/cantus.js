@@ -79,19 +79,19 @@
 
     var Manuscript = CantusAbstractModel.extend
     ({
-        defaults: function()
-        {
-            return {
-                url: "#",
-                name: "Test Name",
-                siglum: "Test Siglum",
-                siglum_slug: "#",
-                date: "Tomorrow",
-                provenance: "Test provenance",
-                description: "This is a nice manuscript...",
-                chant_count: 5
-            };
-        }
+//        defaults: function()
+//        {
+//            return {
+//                url: "#",
+//                name: "Test Name",
+//                siglum: "Test Siglum",
+//                siglum_slug: "#",
+//                date: "Tomorrow",
+//                provenance: "Test provenance",
+//                description: "This is a nice manuscript...",
+//                chant_count: 5
+//            };
+//        }
     });
 
     /**
@@ -826,7 +826,18 @@
 
     var SearchView = CantusAbstractView.extend
     ({
+        /**
+         *
+         */
         query: null,
+
+        /**
+         * Some additional text added to all queries.  For example, you might
+         * want this view to only search through chants.  In that case,
+         * you would set this.queryPostScript to "AND type:cantusdata_chant".
+         */
+        queryPostScript: null,
+
         timer: null,
 
         // Subviews
@@ -840,10 +851,22 @@
                 'registerEvents');
             this.template= _.template($('#search-template').html());
             // If not supplied, the query is blank
-            if (options !== undefined && options.query !== undefined) {
-                this.query = options.query;
-            } else {
-                this.query = "";
+            if (options !== undefined)
+            {
+                // Is there a query?
+                if (options.query !== undefined)
+                {
+                    this.query = options.query;
+                }
+                else
+                {
+                    this.query = "";
+                }
+                // Is there a query post script?
+                if (options.postScript !== undefined)
+                {
+                    this.queryPostScript = options.postScript;
+                }
             }
 
             //Date to use for checking timestamps
@@ -861,11 +884,23 @@
         {
             console.log("New search!");
             // Grab the new search query
-            var newQuery = encodeURIComponent($(this.el.name + '.search-input').val());
+            var newQuery = encodeURIComponent($(this.el.name
+                + '.search-input').val());
+
             if (newQuery !== this.query) {
                 this.query = newQuery;
-                // Set the new query and fetch it!
-                this.searchResultView.changeQuery(this.query);
+
+                if (this.queryPostScript !== null)
+                {
+                    // Attach this.queryPostScript if available
+                    this.searchResultView.changeQuery(this.query + " "
+                        + this.queryPostScript);
+                }
+                else
+                {
+                    // Set the new search results view
+                    this.searchResultView.changeQuery(this.query);
+                }
 //                app.navigate("/search/?q=" + this.query);
             }
         },
