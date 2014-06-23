@@ -239,10 +239,13 @@
         {
             _.bindAll(this, 'render');
             this.template = _.template($('#chant-collection-template').html());
-            if (options && options.url) {
+            if (options && options.url)
+            {
                 this.collection = new ChantCollection(options.url);
                 this.collection.fetch();
-            } else {
+            }
+            else
+            {
                 this.collection = new ChantCollection();
             }
             // TODO: Figure out why this is still rendering multiple times
@@ -479,8 +482,12 @@
         render: function()
         {
             console.log("Rendering Folio View.");
+
             $(this.el).html(this.template(
-                {number: this.customNumber, model: this.model.toJSON()}
+                {
+                    number: this.customNumber,
+                    model: this.model.toJSON()
+                }
             ));
             this.renderChantCollectionView();
 
