@@ -1078,7 +1078,7 @@
         initialize: function(options)
         {
             _.bindAll(this, 'render');
-            this.template = _.template($('#index-template').html());
+            this.template = _.template($('#loading-bar-template').html());
 
             if (options !== undefined)
             {
@@ -1100,6 +1100,8 @@
          */
         setCompletion: function(completion)
         {
+            console.log("COMPLETION TEST");
+            console.log(completion);
             if (parseInt(completion) < 0)
             {
                 this.completion = 0;
@@ -1116,6 +1118,14 @@
 
         render: function()
         {
+            console.log("Rendering loading bar with label:" + this.label
+                + " and completion:" + this.completion);
+            console.log(this.template(
+                {
+                    label: this.label,
+                    completion: this.completion
+                }
+            ));
             $(this.el).html(this.template(
                 {
                     label: this.label,
@@ -1271,18 +1281,22 @@
     ({
         el: $('#view-goes-here'),
 
+        loaded: false,
+
         //Subviews
         headerView: null,
         manuscriptCollectionView: null,
+        loadingBarView: null,
 
         initialize: function()
         {
-            _.bindAll(this, 'render', 'update');
+            _.bindAll(this, "render", "update", "afterFetch");
             this.template= _.template($('#manuscripts-page-template').html());
             //Subviews
             this.headerView = new HeaderView();
             this.manuscriptCollectionView = new ManuscriptCollectionView(
                 {url: siteUrl + "manuscripts/"});
+            this.loadingBarView = new LoadingBarView({label:"Loading...", completion:100})
             // Listen for changes
             this.listenTo(this.manuscriptCollectionView.collection, 'sync', this.afterFetch);
         },
@@ -1292,11 +1306,26 @@
             this.manuscriptCollectionView.update();
         },
 
+        afterFetch: function()
+        {
+            // The manuscripts are loaded, so we don't need the loading bar...
+            this.loaded = true;
+            this.render();
+        },
+
         render: function()
         {
             $(this.el).html(this.template());
             this.assign(this.headerView, '.header');
-            this.assign(this.manuscriptCollectionView, '.manuscript-list');
+            if (this.loaded)
+            {
+                this.assign(this.manuscriptCollectionView, '.manuscript-list');
+            }
+            else
+            {
+                this.assign(this.loadingBarView, '.manuscript-list');
+            }
+
             return this.trigger('render', this);
         }
     });
