@@ -192,6 +192,16 @@
 </ul>
 </script>
 
+<script type="text/template" id="loading-bar-template">
+<div class="progress">
+  <div class="progress-bar" role="progressbar" aria-valuenow="<%= completion %>" aria-valuemin="0" aria-valuemax="100" style="width: <%= completion %>%;">
+    <% if (label) { %>
+    <%= label %>
+    <% } %>
+  </div>
+</div>
+</script>
+
 <script type="text/template" id="manuscripts-page-template">
 {#<ol class="breadcrumb">#}
 {#  <li><a href="/">Home</a></li>#}

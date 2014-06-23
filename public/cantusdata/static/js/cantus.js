@@ -1065,6 +1065,67 @@
         }
     });
 
+    /**
+     * A generic loading bar.
+     *
+     * @type {*|void}
+     */
+    var LoadingBarView = CantusAbstractView.extend
+    ({
+        label: null,
+        completion: 0,
+
+        initialize: function(options)
+        {
+            _.bindAll(this, 'render');
+            this.template = _.template($('#index-template').html());
+
+            if (options !== undefined)
+            {
+                if (options.label !== undefined)
+                {
+                    this.label = String(options.label);
+                }
+                if (options.completion !== undefined)
+                {
+                    this.completion = this.setCompletion(options.completion);
+                }
+            }
+        },
+
+        /**
+         * Set the completion value.
+         *
+         * @param completion
+         */
+        setCompletion: function(completion)
+        {
+            if (parseInt(completion) < 0)
+            {
+                this.completion = 0;
+            }
+            else if (parseInt(completion) > 100)
+            {
+                this.completion = 100;
+            }
+            else {
+                this.completion = parseInt(completion);
+            }
+            this.render();
+        },
+
+        render: function()
+        {
+            $(this.el).html(this.template(
+                {
+                    label: this.label,
+                    completion: this.completion
+                }
+            ));
+            return this.trigger('render', this);
+        }
+    });
+
     /*
     Page Views
      */
