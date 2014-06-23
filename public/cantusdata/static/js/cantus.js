@@ -884,8 +884,11 @@
         {
             console.log("New search!");
             // Grab the new search query
-            var newQuery = encodeURIComponent($(this.el.name
-                + '.search-input').val());
+            var newQuery = encodeURIComponent($(this.$el.selector
+                + ' .search-input').val());
+
+            console.log("New query:");
+            console.log(newQuery);
 
             if (newQuery !== this.query) {
                 this.query = newQuery;
