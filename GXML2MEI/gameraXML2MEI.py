@@ -51,34 +51,70 @@ for xmlFile in fileList:
         zoneIndex = len(zones) - 1
 
         zones[zoneIndex].id = generate_MEI_ID()
-        zones[zoneIndex].addAttribute(MeiAttribute('neume', neumes[neumeIndex].id))
+        #zones[zoneIndex].addAttribute(MeiAttribute('neume', neumes[neumeIndex].id))
         zones[zoneIndex].addAttribute(MeiAttribute('ulx', startX))
         zones[zoneIndex].addAttribute(MeiAttribute('uly', startY))
         zones[zoneIndex].addAttribute(MeiAttribute('lrx', endX))
         zones[zoneIndex].addAttribute(MeiAttribute('lry', endY))
 
+        neumes[neumeIndex].addAttribute(MeiAttribute('facs', zones[zoneIndex].id))
+
 
     #needs meiHead here
+    meiHead = MeiElement('meiHead')
+    fileDesc = MeiElement('fileDesc')
+    titleStmt = MeiElement('titleStmt')
+    title = MeiElement('title')
+    pubStmt = MeiElement('pubStmt')
+    date = MeiElement('date')
+    encodingDesc = MeiElement('encodingDesc')
+    projectDesc = MeiElement('projectDesc')
+    p = MeiElement('p')
+
     music = MeiElement('music')
     facsimile = MeiElement('facsimile')
     surface = MeiElement('surface')
 
-    layout = MeiElement('layout') #gets added to music
-    page = MeiElement('page') #gets added to layout
     #systems get added to page
     #neumes get added to systems
 
     body = MeiElement('body')
+    mdiv = MeiElement('mdiv')
+    pages = MeiElement('pages')
+    page = MeiElement('page')
+    page.id = generate_MEI_ID()
+    initSystem = MeiElement('system')
+    initSystem.id = generate_MEI_ID()
+    initStaff = MeiElement('staff')
+    initStaff.id = generate_MEI_ID()
+    initLayer = MeiElement('layer')
+    initLayer.id = generate_MEI_ID()
+
+    root.addChild(meiHead)
+    meiHead.addChild(fileDesc)
+    fileDesc.addChild(titleStmt)
+    titleStmt.addChild(title)
+    fileDesc.addChild(pubStmt)
+    pubStmt.addChild(date)
+    meiHead.addChild(encodingDesc)
+    encodingDesc.addChild(projectDesc)
+    projectDesc.addChild(p)
 
     root.addChild(music)
     music.addChild(facsimile)
-    music.addChild(body)
     facsimile.addChild(surface)
+    music.addChild(body)
+    body.addChild(mdiv)
+    mdiv.addChild(pages)
+    pages.addChild(page)
+    page.addChild(initSystem)
+    initSystem.addChild(initStaff)
+    initStaff.addChild(initLayer)
 
     for element in zones:
         surface.addChild(element)
 
     for element in neumes:
-        body.addChild(element)
+        initLayer.addChild(element)
 
     XmlExport.meiDocumentToFile(meiDocOut, fileName+'.mei')
