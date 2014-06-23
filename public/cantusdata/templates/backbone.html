@@ -166,13 +166,14 @@
 
 <script type="text/template" id="search-result-template">
 <h3>Results</h3>
-<ul>
+<table class="table">
 <% _.forEach(results, function(item) { %>
-{#    <% if (item.type == "cantusdata_manuscript") { %>#}
-    <li><p><a href="<%= item.url %>" ><%= item.name %></a></p></li>
-{#    <% } %>#}
+    <tr>
+        <td><a href="<%= item.url %>" ><%= item.name %></a></td>
+        <td><%= item.model %></td>
+    </tr>
 <% }); %>
-</ul>
+</table>
 <div class="pagination">Nope</div>
 </script>
 
