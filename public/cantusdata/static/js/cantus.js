@@ -863,9 +863,9 @@
                     this.query = "";
                 }
                 // Is there a query post script?
-                if (options.postScript !== undefined)
+                if (options.queryPostScript !== undefined)
                 {
-                    this.queryPostScript = options.postScript;
+                    this.setQueryPostScript(options.queryPostScript);
                 }
             }
 
@@ -874,6 +874,18 @@
 
             // Re-register events if this.el changes
 //            this.listenTo(this, "change", this.registerEvents);
+        },
+
+        /**
+         * Set this.queryPostScript.
+         *
+         * @param postScript string
+         */
+        setQueryPostScript: function(postScript)
+        {
+            console.log("Setting query postscript:");
+            console.log(String(postScript));
+            this.queryPostScript = String(postScript);
         },
 
         /**
@@ -887,22 +899,23 @@
             var newQuery = encodeURIComponent($(this.$el.selector
                 + ' .search-input').val());
 
-            console.log("New query:");
-            console.log(newQuery);
-
             if (newQuery !== this.query) {
                 this.query = newQuery;
+
+                console.log("New search:");
 
                 if (this.queryPostScript !== null)
                 {
                     // Attach this.queryPostScript if available
-                    this.searchResultView.changeQuery(this.query + " "
+                    this.searchResultView.changeQuery(newQuery + " "
                         + this.queryPostScript);
+                    console.log(newQuery + " " + this.queryPostScript);
                 }
                 else
                 {
                     // Set the new search results view
-                    this.searchResultView.changeQuery(this.query);
+                    this.searchResultView.changeQuery(newQuery);
+                    console.log(newQuery);
                 }
 //                app.navigate("/search/?q=" + this.query);
             }
@@ -1145,6 +1158,10 @@
 
         afterFetch: function()
         {
+            // Set the search view to only search this manuscript
+            this.searchView.setQueryPostScript('AND manuscript:"'
+                + this.manuscript.toJSON().siglum + '"');
+
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
             this.render();
         },
