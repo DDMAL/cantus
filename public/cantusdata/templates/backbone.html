@@ -107,7 +107,7 @@
             <p><b>Mode: </b> <%= chant.mode %></p>
             <% } %>
             <% if (chant.differentia) { %>
-            <p><b>Differentia: </b> <%= chant.differentia %></p>
+            <p><b>Differentia: </b> <%= chant.differentia.replace('w', 'ω') %></p>
             <% } %>
             <% if (chant.finalis) { %>
             <p><b>Finalis: </b> <%= chant.finalis %></p>
@@ -193,12 +193,12 @@
 </script>
 
 <script type="text/template" id="manuscripts-page-template">
-<ol class="breadcrumb">
-  <li><a href="/">Home</a></li>
-  <li><a href="/manuscripts/">Manuscripts</a></li>
-</ol>
+{#<ol class="breadcrumb">#}
+{#  <li><a href="/">Home</a></li>#}
+{#  <li><a href="/manuscripts/">Manuscripts</a></li>#}
+{#</ol>#}
 <h1>Manuscripts</h1>
-<div class="manuscript-list"></div>
+<div class="manuscript-list">Loading...</div>
 </script>
 
 <script type="text/template" id="manuscript-collection-template">
