@@ -79,19 +79,19 @@
 
     var Manuscript = CantusAbstractModel.extend
     ({
-        defaults: function()
-        {
-            return {
-                url: "#",
-                name: "Test Name",
-                siglum: "Test Siglum",
-                siglum_slug: "#",
-                date: "Tomorrow",
-                provenance: "Test provenance",
-                description: "This is a nice manuscript...",
-                chant_count: 5
-            };
-        }
+//        defaults: function()
+//        {
+//            return {
+//                url: "#",
+//                name: "Test Name",
+//                siglum: "Test Siglum",
+//                siglum_slug: "#",
+//                date: "Tomorrow",
+//                provenance: "Test provenance",
+//                description: "This is a nice manuscript...",
+//                chant_count: 5
+//            };
+//        }
     });
 
     /**
@@ -239,10 +239,13 @@
         {
             _.bindAll(this, 'render');
             this.template = _.template($('#chant-collection-template').html());
-            if (options && options.url) {
+            if (options && options.url)
+            {
                 this.collection = new ChantCollection(options.url);
                 this.collection.fetch();
-            } else {
+            }
+            else
+            {
                 this.collection = new ChantCollection();
             }
             // TODO: Figure out why this is still rendering multiple times
@@ -479,8 +482,12 @@
         render: function()
         {
             console.log("Rendering Folio View.");
+
             $(this.el).html(this.template(
-                {number: this.customNumber, model: this.model.toJSON()}
+                {
+                    number: this.customNumber,
+                    model: this.model.toJSON()
+                }
             ));
             this.renderChantCollectionView();
 
@@ -826,7 +833,18 @@
 
     var SearchView = CantusAbstractView.extend
     ({
+        /**
+         *
+         */
         query: null,
+
+        /**
+         * Some additional text added to all queries.  For example, you might
+         * want this view to only search through chants.  In that case,
+         * you would set this.queryPostScript to "AND type:cantusdata_chant".
+         */
+        queryPostScript: null,
+
         timer: null,
 
         // Subviews
@@ -840,10 +858,22 @@
                 'registerEvents');
             this.template= _.template($('#search-template').html());
             // If not supplied, the query is blank
-            if (options !== undefined && options.query !== undefined) {
-                this.query = options.query;
-            } else {
-                this.query = "";
+            if (options !== undefined)
+            {
+                // Is there a query?
+                if (options.query !== undefined)
+                {
+                    this.query = options.query;
+                }
+                else
+                {
+                    this.query = "";
+                }
+                // Is there a query post script?
+                if (options.queryPostScript !== undefined)
+                {
+                    this.setQueryPostScript(options.queryPostScript);
+                }
             }
 
             //Date to use for checking timestamps
@@ -854,6 +884,18 @@
         },
 
         /**
+         * Set this.queryPostScript.
+         *
+         * @param postScript string
+         */
+        setQueryPostScript: function(postScript)
+        {
+            console.log("Setting query postscript:");
+            console.log(String(postScript));
+            this.queryPostScript = String(postScript);
+        },
+
+        /**
          * Take the value of the search input box and perform a search query
          * with it.  This function hits the API every time it is called.
          */
@@ -861,11 +903,27 @@
         {
             console.log("New search!");
             // Grab the new search query
-            var newQuery = encodeURIComponent($(this.el.name + '.search-input').val());
+            var newQuery = encodeURIComponent($(this.$el.selector
+                + ' .search-input').val());
+
             if (newQuery !== this.query) {
                 this.query = newQuery;
-                // Set the new query and fetch it!
-                this.searchResultView.changeQuery(this.query);
+
+                console.log("New search:");
+
+                if (this.queryPostScript !== null)
+                {
+                    // Attach this.queryPostScript if available
+                    this.searchResultView.changeQuery(newQuery + " "
+                        + this.queryPostScript);
+                    console.log(newQuery + " " + this.queryPostScript);
+                }
+                else
+                {
+                    // Set the new search results view
+                    this.searchResultView.changeQuery(newQuery);
+                    console.log(newQuery);
+                }
 //                app.navigate("/search/?q=" + this.query);
             }
         },
@@ -1053,8 +1111,6 @@
 
         id: null,
         manuscript: null,
-        folioCollection: null,
-        folioHashSet: null,
         searchView: null,
 
         // Subviews
@@ -1068,7 +1124,6 @@
             this.template= _.template($('#manuscript-template').html());
             this.manuscript = new Manuscript(
                 siteUrl + "manuscript/" + this.id + "/");
-            this.folioHashSet = [];
             // Build the subviews
             this.headerView = new HeaderView();
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
@@ -1110,7 +1165,10 @@
 
         afterFetch: function()
         {
-            hashSet = this.folioHashSet;
+            // Set the search view to only search this manuscript
+            this.searchView.setQueryPostScript('AND manuscript:"'
+                + this.manuscript.toJSON().siglum + '"');
+
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
             this.render();
         },
