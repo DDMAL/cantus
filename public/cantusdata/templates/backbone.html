@@ -213,11 +213,26 @@
 </script>
 
 <script type="text/template" id="manuscript-collection-template">
+<table class="table table-striped">
+<tr>
+    <th>Title</th>
+    <th>Siglum</th>
+    <th>Date</th>
+    <th>Provenance</th>
+    <th># Chants</th>
+</tr>
 <% _.forEach(manuscripts, function(aManuscript) { %>
-    <% if (aManuscript.chant_count > 0) { %>
-    <p><a href="<%= aManuscript.url %>" ><%= aManuscript.name %></a></p>
-    <% } %>
+<% if (aManuscript.chant_count > 0) { %>
+<tr>
+    <td><a href="<%= aManuscript.url %>" ><%= aManuscript.name %></a></td>
+    <td><%= aManuscript.siglum %></td>
+    <td><%= aManuscript.date %></td>
+    <td><%= aManuscript.provenance %></td>
+    <td><%= aManuscript.chant_count %></td>
+</tr>
+<% } %>
 <% }); %>
+</table>
 </script>
 
 <script type="text/template" id="manuscript-template">
