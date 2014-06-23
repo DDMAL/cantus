@@ -1091,7 +1091,6 @@
 
         id: null,
         manuscript: null,
-        folioCollection: null,
         searchView: null,
 
         // Subviews
