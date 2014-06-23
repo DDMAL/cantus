@@ -1092,7 +1092,6 @@
         id: null,
         manuscript: null,
         folioCollection: null,
-        folioHashSet: null,
         searchView: null,
 
         // Subviews
@@ -1106,7 +1105,6 @@
             this.template= _.template($('#manuscript-template').html());
             this.manuscript = new Manuscript(
                 siteUrl + "manuscript/" + this.id + "/");
-            this.folioHashSet = [];
             // Build the subviews
             this.headerView = new HeaderView();
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
@@ -1148,7 +1146,6 @@
 
         afterFetch: function()
         {
-            hashSet = this.folioHashSet;
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
             this.render();
         },
