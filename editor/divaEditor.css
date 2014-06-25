@@ -99,3 +99,15 @@ body{
 	position:fixed;
 	background-color:rgba(0, 0, 0, 0.1);
 }
+#lineQueryOverlay{
+	background-color:rgba(0, 0, 0, 0.7);
+	z-index:1040;
+}
+#lineQuery{
+	position:absolute;
+	
+	border: thin black solid;
+	background-color:rgb(255, 255, 255);
+	border-radius: 6px;
+	padding: 30px;
+}
