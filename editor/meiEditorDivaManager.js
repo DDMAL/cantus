@@ -150,7 +150,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js'], function(){
                                 'left': e.pageX + 10
                             });
                         }; 
-
+                        $(".overlay-box").unbind('hover');
+                        $(".overlay-box").unbind('click');
                         $(".overlay-box").hover(function(e) //when the hover starts for an overlay-box
                         {
                             //if there is a box currently being drawn, don't do anything
@@ -271,6 +272,15 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js'], function(){
 
                 meiEditor.selectHighlight = function(divToSelect)
                 {
+                    //if this is the first click, find the <neume> object
+                    var searchNeedle = new RegExp("<neume.*" + divToSelect.id, "g");
+
+                    var pageTitle = meiEditor.getActivePanel().text();
+                    var testSearch = meiEditorSettings.pageData[pageTitle].find(searchNeedle, 
+                    {
+                        wrap: true,
+                        range: null
+                    });
                     $(divToSelect).addClass('selectedHover');
                     $(divToSelect).css('background-color', 'background-color:rgba(0, 255, 0, 0.1)');
                 };
@@ -518,16 +528,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js'], function(){
                             }
                             else
                             {
-                                //if this is the first click, find the <neume> object
-                                var searchNeedle = new RegExp("<neume.*" + e.target.id, "g");
-
-                                var pageTitle = meiEditor.getActivePanel().text();
-                                var testSearch = meiEditorSettings.pageData[pageTitle].find(searchNeedle, 
-                                {
-                                    wrap: true,
-                                    range: null
-                                });
-
                                 //add class and change the background color
                                 meiEditor.selectHighlight(e.target);
                             }
@@ -537,6 +537,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js'], function(){
                         $("#editorConsole").append('<div id="cover-div"></div>');
                         $("#cover-div").height($("#diva-wrapper").height());
                         $("#cover-div").width($("#diva-wrapper").width());
+                        //if .overlay-box is not created yet, we want this to be NaN so it can't be clicked on.
                         $("#cover-div").css('z-index', $(".overlay-box").css('z-index') - 1);
                         $("#cover-div").offset({'top': $("#diva-wrapper").offset().top, 'left': $("#diva-wrapper").offset().left});
 
@@ -590,21 +591,82 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js'], function(){
                             {
                                 $(document).unbind('mousemove', changeDragSize);
                                 $(document).unbind('mouseup');
+
                                 if ($("#drag-div").width() < 2 && $("#drag-div").height() < 2)
                                 {
-//                                    meiEditorSettings.curOverlayBox.trigger('click', true);
+                                    if (meiEditorSettings.curOverlayBox === '')
+                                    {
+                                        var centerX = eve.pageX;
+                                        var centerY = eve.pageY;
+
+                                        var curIndex = meiEditorSettings.divaInstance.getCurrentPageIndex();
+                                        var divaInnerObj = $("#1-diva-page-"+curIndex);
+
+                                        centerY = meiEditorSettings.divaInstance.translateToMaxZoomLevel(centerY - divaInnerObj.offset().top);
+                                        centerX = meiEditorSettings.divaInstance.translateToMaxZoomLevel(centerX - divaInnerObj.offset().left);
+
+                                        var pxAboveCurrentPage = meiEditorSettings.divaInstance.getSettings().heightAbovePages[curIndex];
+
+                                        var newBoxLeft = centerX - 100;
+                                        var newBoxRight = centerX + 100;
+                                        var newBoxTop = centerY - 100;
+                                        var newBoxBottom = centerY + 100;
+
+                                        var zoneStringToAdd = '<zone xml:id="thisIsUnique" neume="thisIsAlsoUnique" ulx="' + newBoxLeft + '" uly="' + newBoxTop + '" lrx="' + newBoxRight + '" lry="' + newBoxBottom + '" />';
+                                        var neumeStringToAdd = '<neume xml:id="thisIsAlsoUnique" name="neume.por" />';
+
+                                        //get these three from user
+                                        var zoneStringLine = 6;
+                                        var neumeStringLine = 364;
+                                        var chosenDoc = 'csg-0390_015.mei';
+
+                                        var zoneWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(zoneStringLine).split("<")[0];
+                                        var neumeWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(neumeStringLine).split("<")[0];
+                                        meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(zoneStringLine, [zoneWhiteSpace + zoneStringToAdd]);
+                                        meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(neumeStringLine, [neumeWhiteSpace + neumeStringToAdd]);
+
+                                        meiEditor.createHighlights();
+                                    }
                                 }
-                                else
+                                else 
                                 {
-                                    console.log("just right");
+                                    //there's gotta be something simpler than this, but I can't find it for the life of me.
+                                    //get the four sides
+                                    var boxLeft = $("#drag-div").offset().left;
+                                    var boxRight = boxLeft + $("#drag-div").width();
+                                    var boxTop = $("#drag-div").offset().top;
+                                    var boxBottom = boxTop + $("#drag-div").height();
+
+                                    //for each overlay-box
+                                    var curBoxIndex = $(".overlay-box").length;
+                                    while (curBoxIndex--)
+                                    {
+                                        var curBox = $(".overlay-box")[curBoxIndex];
+
+                                        //see if any part of the box is inside (doesn't have to be the entire box)
+                                        var curLeft = $(curBox).offset().left;
+                                        var curRight = curLeft + $(curBox).width();
+                                        var curTop = $(curBox).offset().top;
+                                        var curBottom = curTop + $(curBox).height();
+                                        if (curRight < boxLeft)
+                                            continue;
+                                        else if (curLeft > boxRight)
+                                            continue;
+                                        else if (curBottom < boxTop)
+                                            continue;
+                                        else if (curTop > boxBottom)
+                                            continue;
+
+                                        //if we're still here, select it
+                                        if(!($(curBox).hasClass('selectedHover')))
+                                        {
+                                            meiEditor.selectHighlight(curBox);
+                                        }
+                                    }
                                 }
 
                                 $("#drag-div").remove();
                                 meiEditorSettings.dragActive = false;
-                            });
-                            $("#cover-div").on('dblclick', function(e)
-                            {
-                                console.log("double");
                             });
                         });
 
