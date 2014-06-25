@@ -9,6 +9,59 @@
     _.extend(globalEventHandler, Backbone.Events);
 
 
+    /**
+     * This object handles resizing the browser
+     *
+     *
+     * @type {{setContainerHeight: setContainerHeight, setScrollableHeight: setScrollableHeight, setManuscriptContentContainerHeight: setManuscriptContentContainerHeight, setDivaHeight: setDivaHeight}}
+     */
+    var BrowserResizer = {
+
+        setAll: function()
+        {
+            console.log("SET ALL");
+            this.setContainerHeight();
+            this.setManuscriptContentContainerHeight();
+            this.setDivaHeight();
+        },
+
+        setContainerHeight: function()
+        {
+            $('#content-container').css("height",
+                    $(window).height() - $("#header-container").height() - 1);
+        },
+
+        setScrollableHeight: function()
+        {
+            $('.scrollable').css("height", $("#content-container").height());
+        },
+
+        setManuscriptContentContainerHeight: function()
+        {
+            $('#manuscript-data-container').css("height",
+                    $("#content-container").height()
+                            - $("#manuscript-title-container").height());
+        },
+
+        setDivaHeight: function()
+        {
+            $('#diva-wrapper').css("height",
+                    $("#content-container").height() - 75);
+        }
+    };
+
+    $(window).resize(function()
+    {
+        BrowserResizer.setAll();
+    });
+
+    setTimeout(function()
+    {
+        console.log("ready.");
+        BrowserResizer.setAll();
+    },1000);
+
+
     /*
     Models
      */

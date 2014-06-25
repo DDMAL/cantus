@@ -305,49 +305,5 @@
     <script src="/static/js/underscore.js"></script>
     <script src="/static/js/backbone.js"></script>
     <script src="/static/js/cantus.js"></script>
-
-    <script type="text/javascript">
-
-    function setContainerHeight()
-    {
-        $('#content-container').css("height",
-                $(window).height() - $("#header-container").height() - 1);
-    }
-
-    function setScrollableHeight()
-    {
-        $('.scrollable').css("height", $("#content-container").height());
-    }
-
-    function setManuscriptContentContainerHeight()
-    {
-        $('#manuscript-data-container').css("height",
-                $("#content-container").height()
-                        - $("#manuscript-title-container").height());
-    }
-
-    function setDivaHeight()
-    {
-        $('#diva-wrapper').css("height",
-                $("#content-container").height() - 75);
-    }
-
-    // When the window is resized
-    $(window).resize(function()
-    {
-        setContainerHeight();
-{#        setScrollableHeight();#}
-        setManuscriptContentContainerHeight();
-        setDivaHeight();
-    });
-
-    setTimeout(function()
-    {
-        setContainerHeight();
-{#        setScrollableHeight();#}
-        setManuscriptContentContainerHeight();
-        setDivaHeight();
-    },1000);
-    </script>
 </body>
 </html>
