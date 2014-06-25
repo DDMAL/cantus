@@ -72,7 +72,7 @@
 </script>
 
 <script type="text/template" id="chant-collection-template">
-
+<h4>Chants</h4>
 <div class="panel-group" id="accordion">
 <% _.forEach(chants, function(chant, index) { %>
     <div id="chant-<%= index %>"class="panel panel-default">
@@ -142,7 +142,6 @@
         <h4 class="modal-title" id="myModalLabel"><%= title %></h4>
       </div>
       <div class="modal-body">
-{#        <div id="modal-content"></div>#}
       </div>
     </div>
   </div>
@@ -236,16 +235,6 @@
 </script>
 
 <script type="text/template" id="manuscript-template">
-{#<ol class="breadcrumb">#}
-{#  <li><a href="/">Home</a></li>#}
-{#  <li><a href="/manuscripts/">Manuscripts</a></li>#}
-{#  <li><a href="<%= manuscript.url %>"><%= manuscript.name %></a></li>#}
-{#</ol>#}
-{#<div class="row">#}
-{#    <div class="col-md-12">#}
-{#        <h1><%= manuscript.name %></h1>#}
-{#    </div>#}
-{#</div>#}
 <div class="row">
     <div class="col-md-8">
         <div class="row">
@@ -255,10 +244,6 @@
             <div id="diva-wrapper"></div>
         </div>
     </div>
-{#    <div class="col-md-3 scrollable">#}
-{#        <div id="folio"></div>#}
-{#    </div>#}
-
     <div class="col-md-4">
         <div id="manuscript-title-container" class="row">
             <div class="column-md-12">
