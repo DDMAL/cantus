@@ -573,10 +573,6 @@
                folio_id = this.model.toJSON().id;
             }
 
-//            console.log("item_id: " + this.model.toJSON().item_id);
-//            console.log("id: " + this.model.toJSON().id);
-//            console.log("folio_id: " + folio_id);
-
             if (folio_id !== undefined)
             {
                 // Compose the url
@@ -1320,22 +1316,16 @@
 
         updateFolio: function()
         {
-            // TODO: Move to function in diva view
-            var folioNumber = this.divaView.getFolio();
-//            this.activeFolioName = this.divaView.currentFolioName;
-//            // Pull out the folio number from the Diva view
-//            var splitFolioName = this.activeFolioName.split('.')[0].split('_');
-//            // Grab the finalmost element before
-//            var folioNumber = splitFolioName[splitFolioName.length - 1];
+            var folio = this.divaView.getFolio();
             // Query the folio set at that specific manuscript number
             newUrl =  siteUrl + "folio-set/manuscript/"
                       + this.manuscript.toJSON().id + "/"
-                      + folioNumber + "/";
+                      + folio + "/";
             console.log("Old url: " + this.folioView.model.url);
             console.log("New url: " + newUrl);
             // Rebuild the folio View
             this.folioView.setUrl(newUrl);
-            this.folioView.setCustomNumber(folioNumber);
+            this.folioView.setCustomNumber(folio);
             this.folioView.update();
         },
 
