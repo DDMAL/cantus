@@ -344,6 +344,9 @@
         currentFolioIndex: -1,
         currentFolioName: 0,
 
+        imagePrefix: "",
+        imageSuffix: "",
+
         timer: null,
 
         initialize: function(options)
@@ -351,6 +354,7 @@
             _.bindAll(this, 'render', 'storeFolioIndex', 'triggerChange',
                 'storeInitialFolio');
             this.siglum = options.siglum;
+            this.el = "#diva-wrapper";
         },
 
         render: function()
@@ -360,12 +364,12 @@
             // not aware of any other way to access storeFolioIndex() from the
             // anonymous function below.
             var siglum = this.siglum;
-            $("#diva-wrapper").diva({
+            this.$el.diva({
                 toolbarParentSelector: "#diva-toolbar",
                 viewerWidthPadding: 0,
                 enableAutoTitle: false,
-                enableAutoWidth: false,
-                enableAutoHeight: true,
+                enableAutoWidth: true,
+                enableAutoHeight: false,
                 enableFilename: false,
                 fixedHeightGrid: false,
                 iipServerURL: iipImageServerUrl + "fcgi-bin/iipsrv.fcgi",
@@ -383,9 +387,65 @@
          */
         storeInitialFolio: function()
         {
-            var number = $("#diva-wrapper").data('diva').getCurrentPageIndex();
-            var name = $("#diva-wrapper").data('diva').getCurrentPageFilename();
+            // Store the initial folio
+            var number = this.$el.data('diva').getCurrentPageIndex();
+            var name = this.$el.data('diva').getCurrentPageFilename();
             this.storeFolioIndex(number, name);
+            // Store the image prefix for later
+            this.setImagePrefixAndSuffix(name);
+        },
+
+        /**
+         * Takes an image file name and returns the folio code.
+         *
+         * @param imageName Some image name, ex: "folio_001.jpg"
+         * @returns string "001"
+         */
+        imageNameToFolio: function (imageName)
+        {
+            var splitFolioName = String(imageName).split('.')[0].split('_');
+            return splitFolioName[splitFolioName.length - 1];
+        },
+
+        /**
+         * Sets this.imagePrefix from any image name.
+         *
+         * @param imageName
+         */
+        setImagePrefixAndSuffix: function (imageName)
+        {
+            // Suffix is usually just ".jpeg" or whatever...
+            this.imageSuffix = String(imageName).split('.')[1];
+            // Prefix is trickier
+            var splitFolioName = String(imageName).split('.')[0].split('_');
+
+            // Assemble the parts into an image prefix
+            var prefix = "";
+            for (var i = 0; i < (splitFolioName.length - 1); i++)
+            {
+                prefix += splitFolioName[i];
+            }
+
+            this.imagePrefix = prefix;
+            console.log("imagePrefix set to " + "prefix + and imageSuffix to "
+                + this.imageSuffix);
+        },
+
+        /**
+         * Set the diva viewer to load a specific folio...
+         *
+         * @param folioCode
+         */
+        setFolio: function(folioCode)
+        {
+            var newImageName = this.imagePrefix + String(folioCode) + this.imageSuffix;
+            console.log("Setting diva folio to " + newImageName);
+            this.$el.gotoPageByName(newImageName);
+        },
+
+        getFolio: function()
+        {
+            return this.imageNameToFolio(this.currentFolioName);
         },
 
         /**
@@ -417,8 +477,6 @@
         {
             globalEventHandler.trigger("manuscriptChangeFolio");
         }
-
-
     });
 
     var FolioView = CantusAbstractView.extend
@@ -1262,11 +1320,13 @@
 
         updateFolio: function()
         {
-            this.activeFolioName = this.divaView.currentFolioName;
-            // Pull out the folio number from the Diva view
-            var splitFolioName = this.activeFolioName.split('.')[0].split('_');
-            // Grab the finalmost element before
-            var folioNumber = splitFolioName[splitFolioName.length - 1];
+            // TODO: Move to function in diva view
+            var folioNumber = this.divaView.getFolio();
+//            this.activeFolioName = this.divaView.currentFolioName;
+//            // Pull out the folio number from the Diva view
+//            var splitFolioName = this.activeFolioName.split('.')[0].split('_');
+//            // Grab the finalmost element before
+//            var folioNumber = splitFolioName[splitFolioName.length - 1];
             // Query the folio set at that specific manuscript number
             newUrl =  siteUrl + "folio-set/manuscript/"
                       + this.manuscript.toJSON().id + "/"
@@ -1292,7 +1352,6 @@
             // Set the search view to only search this manuscript
             this.searchView.setQueryPostScript('AND manuscript:"'
                 + this.manuscript.toJSON().siglum + '"');
-
             this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
             this.render();
         },
