@@ -12,6 +12,10 @@
   font-weight:  400;
 }
 
+body {
+    min-width: 960px;
+}
+
 .volpiano {
     font-family: 'Volpiano';
     font-size: 22pt;
@@ -80,4 +84,43 @@
 
 .diva-inner {
     width: 100%;
+}
+
+.diva-tools-left {
+    float: left;
+    width: 50%;
+}
+
+.diva-tools-right {
+    float: right;
+    width: 50%;
+}
+
+.zoom-button {
+    display: block;
+}
+
+.diva-buttons-label {
+    clear: none;
+    float: left;
+    margin-right: 10px;
+    display: block;
+}
+
+.diva-page-nav {
+    margin-right: 10px;
+    width: auto;
+    float: right;
+}
+
+.diva-page-label {
+    margin-right: 10px;
+}
+
+.diva-goto-form {
+    float: right;
+}
+
+.diva-page-label {
+    float: right;
 }
