@@ -1,4 +1,4 @@
-st_gallen-dev
+Cantus Universalis
 =============
 
-Serving images on a website using solr, diva.js and the St. Gallen collection.
+Serving images on a website using solr, diva.js and the CANTUS collection.
