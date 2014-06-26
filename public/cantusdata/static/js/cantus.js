@@ -19,7 +19,6 @@
 
         setAll: function()
         {
-            console.log("SET ALL");
             this.setContainerHeight();
             this.setManuscriptContentContainerHeight();
             this.setDivaHeight();
@@ -341,6 +340,9 @@
 
     var DivaView = CantusAbstractView.extend
     ({
+        // Only used if initial folio
+        initialFolio: undefined,
+
         currentFolioIndex: -1,
         currentFolioName: 0,
 
@@ -353,8 +355,8 @@
         {
             _.bindAll(this, 'render', 'storeFolioIndex', 'triggerChange',
                 'storeInitialFolio');
-            this.siglum = options.siglum;
             this.el = "#diva-wrapper";
+            this.setManuscript(options.siglum, options.folio);
         },
 
         render: function()
@@ -383,10 +385,37 @@
         },
 
         /**
+         * Set the manuscript.
+         *
+         * @param siglum
+         * @param initialFolio
+         */
+        setManuscript: function(siglum, initialFolio)
+        {
+            this.siglum = String(siglum);
+            if (initialFolio !== undefined)
+            {
+                this.initialFolio = String(initialFolio);
+            }
+            this.render();
+        },
+
+        /**
          * Store the index and filename of the first loaded page.
          */
         storeInitialFolio: function()
         {
+            console.log(this.initialFolio);
+            // If there exists a client-defined initial folio
+            if (this.initialFolio !== undefined)
+            {
+                console.log("CLIENT-SPECIFIED INITIAL FOLIO: " + this.initialFolio);
+                this.setFolio(this.initialFolio);
+            }
+            else
+            {
+                console.log("NO CLIENT-SPECIFIED FOLIO: " + this.initialFolio);
+            }
             // Store the initial folio
             var number = this.$el.data('diva').getCurrentPageIndex();
             var name = this.$el.data('diva').getCurrentPageFilename();
@@ -1126,7 +1155,6 @@
          */
         updatePaginationView: function()
         {
-            console.log("TEEEST");
             this.paginationView = new PaginationView(
                 {
                     name: "search",
@@ -1296,7 +1324,7 @@
         divaView: null,
         folioView: null,
 
-        initialize: function()
+        initialize: function(options)
         {
             _.bindAll(this, 'render', 'afterFetch', 'updateFolio');
             this.template= _.template($('#manuscript-template').html());
@@ -1304,7 +1332,13 @@
                 siteUrl + "manuscript/" + this.id + "/");
             // Build the subviews
             this.headerView = new HeaderView();
-            this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
+            console.log("FOLIO TEST: " + options.folio);
+            this.divaView = new DivaView(
+                {
+                    siglum: this.manuscript.get("siglum_slug"),
+                    folio: options.folio
+                }
+            );
             this.folioView = new FolioView();
             this.searchView = new SearchView();
 
@@ -1321,8 +1355,6 @@
             newUrl =  siteUrl + "folio-set/manuscript/"
                       + this.manuscript.toJSON().id + "/"
                       + folio + "/";
-            console.log("Old url: " + this.folioView.model.url);
-            console.log("New url: " + newUrl);
             // Rebuild the folio View
             this.folioView.setUrl(newUrl);
             this.folioView.setCustomNumber(folio);
@@ -1342,7 +1374,8 @@
             // Set the search view to only search this manuscript
             this.searchView.setQueryPostScript('AND manuscript:"'
                 + this.manuscript.toJSON().siglum + '"');
-            this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
+            // TODO: Diva is being initialized twice!!!!!!!
+            this.divaView.setManuscript(this.manuscript.get("siglum_slug"));
             this.render();
         },
 
@@ -1474,8 +1507,10 @@
     ({
         routes: {
             "" : "index",
+            "manuscript/:query/?folio=(:folio)": "manuscriptSingle",
             "manuscript/:query/": "manuscriptSingle",
             "manuscripts/": "manuscripts",
+            // TODO: Swap these two search lines to fix search result bug
             "search/": "search",
             "search/?q=(:query)": "search",
             '*path': "notFound"
@@ -1496,9 +1531,15 @@
             manuscripts.update();
         },
 
-        manuscriptSingle: function(query)
+        manuscriptSingle: function(query, folio)
         {
-            var manuscript = new ManuscriptIndividualPageView({ id: query });
+            console.log("Folio: " + folio);
+            var manuscript = new ManuscriptIndividualPageView(
+                {
+                    id: query,
+                    folio: folio
+                }
+            );
             // Fetch the data
             manuscript.getData();
         },
