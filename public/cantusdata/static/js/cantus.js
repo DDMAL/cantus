@@ -190,7 +190,7 @@
                         // Build the url
                         // TODO: Have this work with non-numbered folios
                         newElement.url = "/manuscript/" + current.manuscript_id
-                            + "/#p=" + current.folio;
+                            + "/?folio=" + current.folio;
                         break;
 
                     case "concordance":
@@ -322,7 +322,7 @@
          */
         render: function()
         {
-            console.log("Rendering Chant Collection View.");
+//            console.log("Rendering Chant Collection View.");
             // Render out the template
             $(this.el).html(this.template(
                 {
@@ -361,7 +361,7 @@
 
         render: function()
         {
-            console.log("Rendering Diva View.");
+//            console.log("Rendering Diva View.");
             // It's kind of hacky to doubly-bind the name like this, but I'm
             // not aware of any other way to access storeFolioIndex() from the
             // anonymous function below.
@@ -370,7 +370,7 @@
                 toolbarParentSelector: "#diva-toolbar",
                 viewerWidthPadding: 0,
                 enableAutoTitle: false,
-                enableAutoWidth: true,
+                enableAutoWidth: false,
                 enableAutoHeight: false,
                 enableFilename: false,
                 fixedHeightGrid: false,
@@ -443,6 +443,7 @@
          */
         setImagePrefixAndSuffix: function (imageName)
         {
+            console.log("Setting prefix and suffix from " + imageName);
             // Suffix is usually just ".jpeg" or whatever...
             this.imageSuffix = String(imageName).split('.')[1];
             // Prefix is trickier
@@ -467,9 +468,14 @@
          */
         setFolio: function(folioCode)
         {
-            var newImageName = this.imagePrefix + String(folioCode) + this.imageSuffix;
+            // We might need to set the prefix and suffix
+            if (this.imagePrefix === "" || this.imageSuffix === "")
+            {
+                this.setImagePrefixAndSuffix(this.currentFolioName);
+            }
+            var newImageName = this.imagePrefix + "_" + String(folioCode) + "." + this.imageSuffix;
             console.log("Setting diva folio to " + newImageName);
-            this.$el.gotoPageByName(newImageName);
+            this.$el.data('diva').gotoPageByName(newImageName);
         },
 
         getFolio: function()
@@ -617,7 +623,7 @@
 
         render: function()
         {
-            console.log("Rendering Folio View.");
+//            console.log("Rendering Folio View.");
 
             $(this.el).html(this.template(
                 {
@@ -686,7 +692,7 @@
 
         render: function()
         {
-            console.log("Rendering Header View.");
+//            console.log("Rendering Header View.");
             $(this.el).html(this.template());
             // Render subviews
             this.assign(this.topMenuView, '#top-menu');
@@ -708,7 +714,7 @@
 
         render: function()
         {
-            console.log("Rendering Top Menu View.");
+//            console.log("Rendering Top Menu View.");
             $(this.el).html(this.template({items: this.items}));
             return this.trigger('render', this);
         }
@@ -737,7 +743,7 @@
 
         render: function()
         {
-            console.log("Rendering Manuscript Collection View.");
+//            console.log("Rendering Manuscript Collection View.");
             $(this.el).html(this.template({
                 manuscripts: this.collection.toJSON()
             }));
@@ -767,7 +773,7 @@
 
         render: function()
         {
-            console.log("Rendering Modal View.");
+//            console.log("Rendering Modal View.");
             // Render out the modal template
             if (this.visitorView !== null)
             {
@@ -954,7 +960,7 @@
 
         render: function()
         {
-            console.log("Rendering pagination view");
+//            console.log("Rendering pagination view");
             $(this.el).html(this.template(
                 {
                     name: this.name,
@@ -1181,7 +1187,7 @@
 
         render: function()
         {
-            console.log("Rendering Search Result View.");
+//            console.log("Rendering Search Result View.");
             console.log(this.$el);
             // Only render if the model is defined
             if (this.model !== undefined)
@@ -1253,8 +1259,8 @@
 
         render: function()
         {
-            console.log("Rendering loading bar with label:" + this.label
-                + " and completion:" + this.completion);
+//            console.log("Rendering loading bar with label:" + this.label
+//                + " and completion:" + this.completion);
             console.log(this.template(
                 {
                     label: this.label,
@@ -1297,7 +1303,7 @@
 
         render: function()
         {
-            console.log("Rendering Index Page View.");
+//            console.log("Rendering Index Page View.");
             $(this.el).html(this.template());
             // Render subviews
             this.assign(this.headerView, '.header');
@@ -1381,7 +1387,7 @@
 
         render: function()
         {
-            console.log("Rendering Manuscript Individual Page View.");
+//            console.log("Rendering Manuscript Individual Page View.");
             $(this.el).html(this.template({
                 manuscript: this.manuscript.toJSON()
             }));
@@ -1489,7 +1495,7 @@
 
         render: function()
         {
-            console.log("Rendering Search Page View.");
+//            console.log("Rendering Search Page View.");
             $(this.el).html(this.template());
             // Render subviews
             this.assign(this.headerView, '.header');
