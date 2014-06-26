@@ -31,10 +31,6 @@
 
 <!--Templates -->
 <script type="text/template" id="header-template">
-{#<ul id="top-menu" class="nav nav-pills pull-right">#}
-{#</ul>#}
-{#<h3 class="text-muted">Cantus Ultimus</h3>#}
-
 <nav class="navbar navbar-default">
     <div class="navbar-header">
         <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
@@ -48,11 +44,14 @@
         <ul id="top-menu" class="nav navbar-nav navbar-right">  </ul>
     </div>
 </nav>
-
 </script>
 
 <script type="text/template" id="concordance-collection-template">
 
+</script>
+
+<script type="text/template" id="alert-template">
+<div class="alert alert-<%= role %>" role="alert"><%= content %></div>
 </script>
 
 <script type="text/template" id="top-menu-template">
