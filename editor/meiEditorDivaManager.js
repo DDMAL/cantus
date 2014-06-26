@@ -32,6 +32,7 @@ function genUUID()
     lut[d3&0xff]+lut[d3>>8&0xff]+lut[d3>>16&0xff]+lut[d3>>24&0xff];
 }
 
+
 require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.center.min'], function(){
 
 (function ($)
@@ -70,7 +71,10 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     dragActive: false,
                     editModeActive: false,
                     boxSingleTimeout: "",
-                    boxClickHandler: ""
+                    boxClickHandler: "",
+                    divaHoldX: "",
+                    divaHoldY: "",
+                    resizeTarget: ""
                 });
 
                 meiEditor.addToNavbar("Diva page manager", "diva-manager");
@@ -150,22 +154,53 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     Creates highlights based on the ACE documents.
                 */
                 meiEditor.createHighlights = function()
-                {      
+                {   
+                    var changeHoverPosition = function(e)
+                    {
+                        $("#hover-div").offset(
+                        {
+                            'top': e.pageY - 10,
+                            'left': e.pageX + 10
+                        });
+                    };
+
+                    var deselectResizable = function(object)
+                    {
+                        $(object).resizable('destroy');
+                        $(object).css('z-index', $(".overlay-box").css('z-index'));
+                        $(object).css('background-color', 'rgba(255, 0, 0, 0.2)');
+                        $("#lineQueryOverlay").remove();
+                        meiEditorSettings.divaInstance.enableScrollable();
+                        reapplyBoxListeners();
+                        $("#diva-wrapper").unbind('resize');
+                    };
+
+                    var detectEscape = function(ev)
+                    {
+                        if (ev.keyCode == 27) 
+                        { 
+                            deselectResizable(origObject);
+                        } 
+                    };
+
+                    var unbindBoxListeners = function()
+                    {
+                        $(".overlay-box").unbind('hover');
+                        $(".overlay-box").unbind('click');
+                        $(".overlay-box").unbind('dblclick');
+                        $(document).unbind('keyup', detectEscape);
+                        $(".overlay-box").unbind('mouseenter');
+                        $(document).unbind('mousemove', changeHoverPosition); //stops moving the div
+                        $(".overlay-box").unbind('mouseleave');
+                    };                          
+
                     /*
                         Function called when sections are rehighlighted to refresh the listeners.
                     */
-                    var reapplyHoverListener = function()
+                    var reapplyBoxListeners = function()
                     {
-                        var changeHoverPosition = function(e)
-                        {
-                            $("#hover-div").offset(
-                            {
-                                'top': e.pageY - 10,
-                                'left': e.pageX + 10
-                            });
-                        }; 
-                        $(".overlay-box").unbind('hover');
-                        $(".overlay-box").unbind('click');
+                        unbindBoxListeners();
+
                         $(".overlay-box").hover(function(e) //when the hover starts for an overlay-box
                         {
                             //if there is a box currently being drawn, don't do anything
@@ -217,7 +252,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         {
                             e.preventDefault();
                             e.stopPropagation();
-                            
+
                             /*
                             no matter what, clear the old one. 
                                 -in the case of a double-click, this'll clear the first
@@ -236,9 +271,46 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         $(".overlay-box").dblclick(function(e)
                         {
                             clearTimeout(meiEditorSettings.boxSingleTimeout);
-                            console.log('double registered');
                             e.preventDefault();
                             e.stopPropagation();
+
+                            meiEditorSettings.divaInstance.disableScrollable();
+                            $("#diva-wrapper").append("<div id='lineQueryOverlay'></div>");
+                            $("#lineQueryOverlay").offset({'top': $("#diva-wrapper").offset().top, 'left': $("#diva-wrapper").offset().left});
+                            $("#lineQueryOverlay").width($("#diva-wrapper").width());
+                            $("#lineQueryOverlay").height($("#diva-wrapper").height());
+
+                            origObject = e.target;           
+                            $("#hover-div").css('display', 'none'); //hides the div
+                            $("#hover-div").html("");
+                            unbindBoxListeners();
+
+                            $(origObject).css({'z-index': 150,
+                                'background-color': 'rgba(255, 255, 0, 0.5)'});
+                            $(origObject).resizable({
+                                handles: 'all',
+                                start: function(e)
+                                {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                },
+                                resize: function(e)
+                                {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                },
+                                stop: function(e)
+                                {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                }
+                            });
+                            $("#diva-wrapper").on('resize', function(e){
+                                e.stopPropagation();
+                                e.preventDefault();
+                            });
+
+                            $(document).keyup(detectEscape);
                         });
                     };
 
@@ -278,7 +350,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             regions.push({'width': neume_width, 'height': neume_height, 'ulx': neume_ulx, 'uly': neume_uly, 'divID': neumeID});
                         }
                         //at the end of each page, call the highlights
-                        meiEditorSettings.divaInstance.highlightOnPage(pageIndex, regions, undefined, "overlay-box", reapplyHoverListener);
+                        meiEditorSettings.divaInstance.highlightOnPage(pageIndex, regions, undefined, "overlay-box", reapplyBoxListeners);
                     }
                 };
 
@@ -337,7 +409,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             //if the two filenames are equal
                             if (curMei.slice(0, -(meiExtLength)) == curDivaFile.slice(0, -(divaExtLength)))
                             {
-                                //grab the option elements that we eventually need to hide by searching for the filename in the parent select object
+                                //grab the option elements that we eventually need to hide by searching for the filename in the $(object) select object
                                 var meiOption = $("#selectfile-link").find(':contains("' + curMei + '")');
                                 var imageOption = $("#selectdiva-link").find(':contains("' + curDivaFile + '")');
 
@@ -605,6 +677,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                                 $(document).unbind('mousemove', changeDragSize);
                                 $(document).unbind('mouseup');
 
+                                //if this was just a click
                                 if ($("#drag-div").width() < 2 && $("#drag-div").height() < 2)
                                 {
                                     if (meiEditorSettings.curOverlayBox === '')
@@ -613,7 +686,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                                         var centerX = eve.pageX;
                                         var centerY = eve.pageY;
 
-                                        var divaInnerObj = $("#1-diva-page-"+curIndex);
+                                        var divaInnerObj = $("#1-diva-page-" + meiEditorSettings.divaInstance.getCurrentPageIndex());
                                         centerY = meiEditorSettings.divaInstance.translateToMaxZoomLevel(centerY - divaInnerObj.offset().top);
                                         centerX = meiEditorSettings.divaInstance.translateToMaxZoomLevel(centerX - divaInnerObj.offset().left);
 
@@ -677,7 +750,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                                             //redraw highlights
                                             meiEditor.createHighlights();
-                                        }
+                                        };
 
                                         //on close for the overlay
                                         $("#lineQueryClose").on('click', function()
@@ -774,6 +847,11 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     }
 
                 });
+                
+                //easy mode to set a listener for clicking on icons
+                meiEditorSettings.editModeActive = true;
+                $(document).trigger('keyup');
+
                 return true;
             }
         };
