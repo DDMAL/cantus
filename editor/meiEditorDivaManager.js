@@ -323,7 +323,14 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     Creates highlights based on the ACE documents.
                 */
                 meiEditor.createHighlights = function()
-                {   
+                {  
+                    //grab IDs of highlighted objects
+                    var highlightedCache = [];
+                    var curHighlight = $(".selectedHover").length;
+                    while(curHighlight--)
+                    {
+                        highlightedCache.push($($(".selectedHover")[curHighlight]).attr('id'));
+                    }
 
                     meiEditorSettings.neumeObjects = {};
                     var x2js = new X2JS(); //from xml2json.js
@@ -362,6 +369,13 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         }
                         //at the end of each page, call the highlights
                         meiEditorSettings.divaInstance.highlightOnPage(pageIndex, regions, undefined, "overlay-box", reapplyBoxListeners);
+                    }
+
+                    //reinstate highlights from before the regeneration
+                    var curCache = highlightedCache.length;
+                    while(curCache--)
+                    {
+                        meiEditor.selectHighlight($('#' + highlightedCache[curCache]));
                     }
                 };
 
@@ -436,6 +450,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         wrap: true,
                         range: null
                     });
+                    
                     $(divToSelect).addClass('selectedHover');
                     $(divToSelect).css('background-color', 'background-color:rgba(0, 255, 0, 0.1)');
                 };
