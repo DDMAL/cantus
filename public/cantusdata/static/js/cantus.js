@@ -21,7 +21,7 @@
         {
             this.setContainerHeight();
             this.setManuscriptContentContainerHeight();
-            this.setDivaHeight();
+            this.setDivaSize();
         },
 
         setContainerHeight: function()
@@ -42,10 +42,17 @@
                             - $("#manuscript-title-container").height());
         },
 
-        setDivaHeight: function()
+        setDivaSize: function()
         {
-            $('#diva-wrapper').css("height",
+            $('.diva-outer').css("height",
                     $("#content-container").height() - 75);
+
+            // Temporary workaround for diva size issue
+            $('.diva-outer').css("width",
+                    $("#diva-toolbar").width());
+            $('.diva-inner').css("width",
+                    $("#diva-toolbar").width());
+
         }
     };
 
