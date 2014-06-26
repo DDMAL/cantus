@@ -12,33 +12,43 @@
     <script src="/static/js/jquery.js"></script>
     <script src="/static/js/bootstrap.js"></script>
     <script src="/static/js/diva.min.js"></script>
+
 </head>
 <body>
-    <div id="header-container" class="container-fluid">
+    <div id="header-container">
         <div id="page-header" class="header"></div>
     </div>
     <div id="content-container" class="container-fluid">
 {#        <hr/>#}
         <div id="page-content" class="row content">
-                <div class="col-lg-12">
-                    <!-- Templates -->
-                    <div id="view-goes-here">Empty</div>
-                    <div id="search-modal"></div>
-                </div>
+            <div class="col-lg-12">
+                <!-- Templates -->
+                <div id="view-goes-here"></div>
+                <div id="search-modal"></div>
             </div>
         </div>
-{#        <hr/>#}
-{#        <div class="footer">#}
-{#            <p>&copy; DDMAL 2014</p>#}
-{#        </div>#}
-    </div> <!-- /container -->
+    </div>
 
 <!--Templates -->
 <script type="text/template" id="header-template">
-<ul id="top-menu" class="nav nav-pills pull-right">
-</ul>
-<h3 class="text-muted">Cantus Ultimus</h3>
-</div>
+{#<ul id="top-menu" class="nav nav-pills pull-right">#}
+{#</ul>#}
+{#<h3 class="text-muted">Cantus Ultimus</h3>#}
+
+<nav class="navbar navbar-default">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="/">Cantus Ultimus</a>
+    </div>
+    <div class="navbar-collapse collapse navbar-responsive-collapse">
+        <ul id="top-menu" class="nav navbar-nav navbar-right">  </ul>
+    </div>
+</nav>
+
 </script>
 
 <script type="text/template" id="concordance-collection-template">
@@ -72,7 +82,7 @@
 </script>
 
 <script type="text/template" id="chant-collection-template">
-
+<h4>Chants</h4>
 <div class="panel-group" id="accordion">
 <% _.forEach(chants, function(chant, index) { %>
     <div id="chant-<%= index %>"class="panel panel-default">
@@ -142,7 +152,6 @@
         <h4 class="modal-title" id="myModalLabel"><%= title %></h4>
       </div>
       <div class="modal-body">
-{#        <div id="modal-content"></div>#}
       </div>
     </div>
   </div>
@@ -166,13 +175,14 @@
 
 <script type="text/template" id="search-result-template">
 <h3>Results</h3>
-<ul>
+<table class="table table-striped">
 <% _.forEach(results, function(item) { %>
-{#    <% if (item.type == "cantusdata_manuscript") { %>#}
-    <li><p><a href="<%= item.url %>" ><%= item.name %></a></p></li>
-{#    <% } %>#}
+    <tr>
+        <td><a href="<%= item.url %>" ><%= item.name %></a></td>
+        <td><%= item.model %></td>
+    </tr>
 <% }); %>
-</ul>
+</table>
 <div class="pagination">Nope</div>
 </script>
 
@@ -192,6 +202,16 @@
 </ul>
 </script>
 
+<script type="text/template" id="loading-bar-template">
+<div class="progress">
+  <div class="progress-bar" role="progressbar" aria-valuenow="<%= completion %>" aria-valuemin="0" aria-valuemax="100" style="width: <%= completion %>%;">
+    <% if (label) { %>
+    <%= label %>
+    <% } %>
+  </div>
+</div>
+</script>
+
 <script type="text/template" id="manuscripts-page-template">
 {#<ol class="breadcrumb">#}
 {#  <li><a href="/">Home</a></li>#}
@@ -202,26 +222,31 @@
 </script>
 
 <script type="text/template" id="manuscript-collection-template">
+<table class="table table-striped">
+<tr>
+    <th>Title</th>
+    <th>Siglum</th>
+    <th>Date</th>
+    <th>Provenance</th>
+    <th># Chants</th>
+</tr>
 <% _.forEach(manuscripts, function(aManuscript) { %>
-    <% if (aManuscript.chant_count > 0) { %>
-    <p><a href="<%= aManuscript.url %>" ><%= aManuscript.name %></a></p>
-    <% } %>
+<% if (aManuscript.chant_count > 0) { %>
+<tr>
+    <td><a href="<%= aManuscript.url %>" ><%= aManuscript.name %></a></td>
+    <td><%= aManuscript.siglum %></td>
+    <td><%= aManuscript.date %></td>
+    <td><%= aManuscript.provenance %></td>
+    <td><%= aManuscript.chant_count %></td>
+</tr>
+<% } %>
 <% }); %>
+</table>
 </script>
 
 <script type="text/template" id="manuscript-template">
-{#<ol class="breadcrumb">#}
-{#  <li><a href="/">Home</a></li>#}
-{#  <li><a href="/manuscripts/">Manuscripts</a></li>#}
-{#  <li><a href="<%= manuscript.url %>"><%= manuscript.name %></a></li>#}
-{#</ol>#}
-{#<div class="row">#}
-{#    <div class="col-md-12">#}
-{#        <h1><%= manuscript.name %></h1>#}
-{#    </div>#}
-{#</div>#}
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-xs-8">
         <div class="row">
             <div id="diva-toolbar"></div>
         </div>
@@ -229,18 +254,14 @@
             <div id="diva-wrapper"></div>
         </div>
     </div>
-{#    <div class="col-md-3 scrollable">#}
-{#        <div id="folio"></div>#}
-{#    </div>#}
-
-    <div class="col-md-4">
+    <div class="col-xs-4">
         <div id="manuscript-title-container" class="row">
             <div class="column-md-12">
                 <h1 class="h3"><%= manuscript.name %></h1>
 
                 <!-- Nav tabs -->
                 <ul class="nav nav-tabs">
-                    <li class="active"><a href="#manuscript-folio-pane" data-toggle="tab">Current Folio</a></li>
+                    <li class="active"><a href="#manuscript-folio-pane" data-toggle="tab">Folio</a></li>
                     <li><a href="#manuscript-details-pane" data-toggle="tab">Manuscript Details</a></li>
                     <li><a href="#manuscript-search-pane" data-toggle="tab">Search Manuscript</a></li>
                 </ul>
@@ -279,49 +300,5 @@
     <script src="/static/js/underscore.js"></script>
     <script src="/static/js/backbone.js"></script>
     <script src="/static/js/cantus.js"></script>
-
-    <script type="text/javascript">
-
-    function setContainerHeight()
-    {
-        $('#content-container').css("height",
-                $(window).height() - $("#header-container").height() - 1);
-    }
-
-    function setScrollableHeight()
-    {
-        $('.scrollable').css("height", $("#content-container").height());
-    }
-
-    function setManuscriptContentContainerHeight()
-    {
-        $('#manuscript-data-container').css("height",
-                $("#content-container").height()
-                        - $("#manuscript-title-container").height());
-    }
-
-    function setDivaHeight()
-    {
-        $('#diva-wrapper').css("height",
-                $("#content-container").height() - 75);
-    }
-
-    // When the window is resized
-    $(window).resize(function()
-    {
-        setContainerHeight();
-{#        setScrollableHeight();#}
-        setManuscriptContentContainerHeight();
-        setDivaHeight();
-    });
-
-    setTimeout(function()
-    {
-        setContainerHeight();
-{#        setScrollableHeight();#}
-        setManuscriptContentContainerHeight();
-        setDivaHeight();
-    },1000);
-    </script>
 </body>
 </html>

@@ -9,6 +9,58 @@
     _.extend(globalEventHandler, Backbone.Events);
 
 
+    /**
+     * This object handles resizing the browser
+     *
+     *
+     * @type {{setContainerHeight: setContainerHeight, setScrollableHeight: setScrollableHeight, setManuscriptContentContainerHeight: setManuscriptContentContainerHeight, setDivaHeight: setDivaHeight}}
+     */
+    var BrowserResizer = {
+
+        setAll: function()
+        {
+            this.setContainerHeight();
+            this.setManuscriptContentContainerHeight();
+            this.setDivaHeight();
+        },
+
+        setContainerHeight: function()
+        {
+            $('#content-container').css("height",
+                    $(window).height() - $("#header-container").height());
+        },
+
+        setScrollableHeight: function()
+        {
+            $('.scrollable').css("height", $("#content-container").height());
+        },
+
+        setManuscriptContentContainerHeight: function()
+        {
+            $('#manuscript-data-container').css("height",
+                    $("#content-container").height()
+                            - $("#manuscript-title-container").height());
+        },
+
+        setDivaHeight: function()
+        {
+            $('#diva-wrapper').css("height",
+                    $("#content-container").height() - 75);
+        }
+    };
+
+    $(window).resize(function()
+    {
+        BrowserResizer.setAll();
+    });
+
+    setTimeout(function()
+    {
+        console.log("ready.");
+        BrowserResizer.setAll();
+    },1000);
+
+
     /*
     Models
      */
@@ -138,7 +190,7 @@
                         // Build the url
                         // TODO: Have this work with non-numbered folios
                         newElement.url = "/manuscript/" + current.manuscript_id
-                            + "/#p=" + current.folio;
+                            + "/?folio=" + current.folio;
                         break;
 
                     case "concordance":
@@ -270,7 +322,7 @@
          */
         render: function()
         {
-            console.log("Rendering Chant Collection View.");
+//            console.log("Rendering Chant Collection View.");
             // Render out the template
             $(this.el).html(this.template(
                 {
@@ -288,8 +340,14 @@
 
     var DivaView = CantusAbstractView.extend
     ({
+        // Only used if initial folio
+        initialFolio: undefined,
+
         currentFolioIndex: -1,
         currentFolioName: 0,
+
+        imagePrefix: "",
+        imageSuffix: "",
 
         timer: null,
 
@@ -297,22 +355,23 @@
         {
             _.bindAll(this, 'render', 'storeFolioIndex', 'triggerChange',
                 'storeInitialFolio');
-            this.siglum = options.siglum;
+            this.el = "#diva-wrapper";
+            this.setManuscript(options.siglum, options.folio);
         },
 
         render: function()
         {
-            console.log("Rendering Diva View.");
+//            console.log("Rendering Diva View.");
             // It's kind of hacky to doubly-bind the name like this, but I'm
             // not aware of any other way to access storeFolioIndex() from the
             // anonymous function below.
             var siglum = this.siglum;
-            $("#diva-wrapper").diva({
+            this.$el.diva({
                 toolbarParentSelector: "#diva-toolbar",
                 viewerWidthPadding: 0,
                 enableAutoTitle: false,
                 enableAutoWidth: false,
-                enableAutoHeight: true,
+                enableAutoHeight: false,
                 enableFilename: false,
                 fixedHeightGrid: false,
                 iipServerURL: iipImageServerUrl + "fcgi-bin/iipsrv.fcgi",
@@ -326,13 +385,102 @@
         },
 
         /**
+         * Set the manuscript.
+         *
+         * @param siglum
+         * @param initialFolio
+         */
+        setManuscript: function(siglum, initialFolio)
+        {
+            this.siglum = String(siglum);
+            if (initialFolio !== undefined)
+            {
+                this.initialFolio = String(initialFolio);
+            }
+            this.render();
+        },
+
+        /**
          * Store the index and filename of the first loaded page.
          */
         storeInitialFolio: function()
         {
-            var number = $("#diva-wrapper").data('diva').getCurrentPageIndex();
-            var name = $("#diva-wrapper").data('diva').getCurrentPageFilename();
+            console.log(this.initialFolio);
+            // If there exists a client-defined initial folio
+            if (this.initialFolio !== undefined)
+            {
+                console.log("CLIENT-SPECIFIED INITIAL FOLIO: " + this.initialFolio);
+                this.setFolio(this.initialFolio);
+            }
+            else
+            {
+                console.log("NO CLIENT-SPECIFIED FOLIO: " + this.initialFolio);
+            }
+            // Store the initial folio
+            var number = this.$el.data('diva').getCurrentPageIndex();
+            var name = this.$el.data('diva').getCurrentPageFilename();
             this.storeFolioIndex(number, name);
+            // Store the image prefix for later
+            this.setImagePrefixAndSuffix(name);
+        },
+
+        /**
+         * Takes an image file name and returns the folio code.
+         *
+         * @param imageName Some image name, ex: "folio_001.jpg"
+         * @returns string "001"
+         */
+        imageNameToFolio: function (imageName)
+        {
+            var splitFolioName = String(imageName).split('.')[0].split('_');
+            return splitFolioName[splitFolioName.length - 1];
+        },
+
+        /**
+         * Sets this.imagePrefix from any image name.
+         *
+         * @param imageName
+         */
+        setImagePrefixAndSuffix: function (imageName)
+        {
+            console.log("Setting prefix and suffix from " + imageName);
+            // Suffix is usually just ".jpeg" or whatever...
+            this.imageSuffix = String(imageName).split('.')[1];
+            // Prefix is trickier
+            var splitFolioName = String(imageName).split('.')[0].split('_');
+
+            // Assemble the parts into an image prefix
+            var prefix = "";
+            for (var i = 0; i < (splitFolioName.length - 1); i++)
+            {
+                prefix += splitFolioName[i];
+            }
+
+            this.imagePrefix = prefix;
+            console.log("imagePrefix set to " + "prefix + and imageSuffix to "
+                + this.imageSuffix);
+        },
+
+        /**
+         * Set the diva viewer to load a specific folio...
+         *
+         * @param folioCode
+         */
+        setFolio: function(folioCode)
+        {
+            // We might need to set the prefix and suffix
+            if (this.imagePrefix === "" || this.imageSuffix === "")
+            {
+                this.setImagePrefixAndSuffix(this.currentFolioName);
+            }
+            var newImageName = this.imagePrefix + "_" + String(folioCode) + "." + this.imageSuffix;
+            console.log("Setting diva folio to " + newImageName);
+            this.$el.data('diva').gotoPageByName(newImageName);
+        },
+
+        getFolio: function()
+        {
+            return this.imageNameToFolio(this.currentFolioName);
         },
 
         /**
@@ -364,8 +512,6 @@
         {
             globalEventHandler.trigger("manuscriptChangeFolio");
         }
-
-
     });
 
     var FolioView = CantusAbstractView.extend
@@ -462,10 +608,6 @@
                folio_id = this.model.toJSON().id;
             }
 
-//            console.log("item_id: " + this.model.toJSON().item_id);
-//            console.log("id: " + this.model.toJSON().id);
-//            console.log("folio_id: " + folio_id);
-
             if (folio_id !== undefined)
             {
                 // Compose the url
@@ -481,7 +623,7 @@
 
         render: function()
         {
-            console.log("Rendering Folio View.");
+//            console.log("Rendering Folio View.");
 
             $(this.el).html(this.template(
                 {
@@ -550,7 +692,7 @@
 
         render: function()
         {
-            console.log("Rendering Header View.");
+//            console.log("Rendering Header View.");
             $(this.el).html(this.template());
             // Render subviews
             this.assign(this.topMenuView, '#top-menu');
@@ -572,7 +714,7 @@
 
         render: function()
         {
-            console.log("Rendering Top Menu View.");
+//            console.log("Rendering Top Menu View.");
             $(this.el).html(this.template({items: this.items}));
             return this.trigger('render', this);
         }
@@ -601,7 +743,7 @@
 
         render: function()
         {
-            console.log("Rendering Manuscript Collection View.");
+//            console.log("Rendering Manuscript Collection View.");
             $(this.el).html(this.template({
                 manuscripts: this.collection.toJSON()
             }));
@@ -631,7 +773,7 @@
 
         render: function()
         {
-            console.log("Rendering Modal View.");
+//            console.log("Rendering Modal View.");
             // Render out the modal template
             if (this.visitorView !== null)
             {
@@ -818,7 +960,7 @@
 
         render: function()
         {
-            console.log("Rendering pagination view");
+//            console.log("Rendering pagination view");
             $(this.el).html(this.template(
                 {
                     name: this.name,
@@ -1019,7 +1161,6 @@
          */
         updatePaginationView: function()
         {
-            console.log("TEEEST");
             this.paginationView = new PaginationView(
                 {
                     name: "search",
@@ -1046,7 +1187,7 @@
 
         render: function()
         {
-            console.log("Rendering Search Result View.");
+//            console.log("Rendering Search Result View.");
             console.log(this.$el);
             // Only render if the model is defined
             if (this.model !== undefined)
@@ -1061,6 +1202,77 @@
                 this.assign(this.paginationView, this.$el.selector + " .pagination");
             }
 
+            return this.trigger('render', this);
+        }
+    });
+
+    /**
+     * A generic loading bar.
+     *
+     * @type {*|void}
+     */
+    var LoadingBarView = CantusAbstractView.extend
+    ({
+        label: null,
+        completion: 0,
+
+        initialize: function(options)
+        {
+            _.bindAll(this, 'render');
+            this.template = _.template($('#loading-bar-template').html());
+
+            if (options !== undefined)
+            {
+                if (options.label !== undefined)
+                {
+                    this.label = String(options.label);
+                }
+                if (options.completion !== undefined)
+                {
+                    this.completion = this.setCompletion(options.completion);
+                }
+            }
+        },
+
+        /**
+         * Set the completion value.
+         *
+         * @param completion
+         */
+        setCompletion: function(completion)
+        {
+            console.log("COMPLETION TEST");
+            console.log(completion);
+            if (parseInt(completion) < 0)
+            {
+                this.completion = 0;
+            }
+            else if (parseInt(completion) > 100)
+            {
+                this.completion = 100;
+            }
+            else {
+                this.completion = parseInt(completion);
+            }
+            this.render();
+        },
+
+        render: function()
+        {
+//            console.log("Rendering loading bar with label:" + this.label
+//                + " and completion:" + this.completion);
+            console.log(this.template(
+                {
+                    label: this.label,
+                    completion: this.completion
+                }
+            ));
+            $(this.el).html(this.template(
+                {
+                    label: this.label,
+                    completion: this.completion
+                }
+            ));
             return this.trigger('render', this);
         }
     });
@@ -1091,7 +1303,7 @@
 
         render: function()
         {
-            console.log("Rendering Index Page View.");
+//            console.log("Rendering Index Page View.");
             $(this.el).html(this.template());
             // Render subviews
             this.assign(this.headerView, '.header');
@@ -1118,7 +1330,7 @@
         divaView: null,
         folioView: null,
 
-        initialize: function()
+        initialize: function(options)
         {
             _.bindAll(this, 'render', 'afterFetch', 'updateFolio');
             this.template= _.template($('#manuscript-template').html());
@@ -1126,7 +1338,13 @@
                 siteUrl + "manuscript/" + this.id + "/");
             // Build the subviews
             this.headerView = new HeaderView();
-            this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
+            console.log("FOLIO TEST: " + options.folio);
+            this.divaView = new DivaView(
+                {
+                    siglum: this.manuscript.get("siglum_slug"),
+                    folio: options.folio
+                }
+            );
             this.folioView = new FolioView();
             this.searchView = new SearchView();
 
@@ -1138,20 +1356,14 @@
 
         updateFolio: function()
         {
-            this.activeFolioName = this.divaView.currentFolioName;
-            // Pull out the folio number from the Diva view
-            var splitFolioName = this.activeFolioName.split('.')[0].split('_');
-            // Grab the finalmost element before
-            var folioNumber = splitFolioName[splitFolioName.length - 1];
+            var folio = this.divaView.getFolio();
             // Query the folio set at that specific manuscript number
             newUrl =  siteUrl + "folio-set/manuscript/"
                       + this.manuscript.toJSON().id + "/"
-                      + folioNumber + "/";
-            console.log("Old url: " + this.folioView.model.url);
-            console.log("New url: " + newUrl);
+                      + folio + "/";
             // Rebuild the folio View
             this.folioView.setUrl(newUrl);
-            this.folioView.setCustomNumber(folioNumber);
+            this.folioView.setCustomNumber(folio);
             this.folioView.update();
         },
 
@@ -1168,14 +1380,14 @@
             // Set the search view to only search this manuscript
             this.searchView.setQueryPostScript('AND manuscript:"'
                 + this.manuscript.toJSON().siglum + '"');
-
-            this.divaView = new DivaView({siglum: this.manuscript.get("siglum_slug")});
+            // TODO: Diva is being initialized twice!!!!!!!
+            this.divaView.setManuscript(this.manuscript.get("siglum_slug"));
             this.render();
         },
 
         render: function()
         {
-            console.log("Rendering Manuscript Individual Page View.");
+//            console.log("Rendering Manuscript Individual Page View.");
             $(this.el).html(this.template({
                 manuscript: this.manuscript.toJSON()
             }));
@@ -1210,18 +1422,22 @@
     ({
         el: $('#view-goes-here'),
 
+        loaded: false,
+
         //Subviews
         headerView: null,
         manuscriptCollectionView: null,
+        loadingBarView: null,
 
         initialize: function()
         {
-            _.bindAll(this, 'render', 'update');
+            _.bindAll(this, "render", "update", "afterFetch");
             this.template= _.template($('#manuscripts-page-template').html());
             //Subviews
             this.headerView = new HeaderView();
             this.manuscriptCollectionView = new ManuscriptCollectionView(
                 {url: siteUrl + "manuscripts/"});
+            this.loadingBarView = new LoadingBarView({label:"Loading...", completion:100})
             // Listen for changes
             this.listenTo(this.manuscriptCollectionView.collection, 'sync', this.afterFetch);
         },
@@ -1231,11 +1447,26 @@
             this.manuscriptCollectionView.update();
         },
 
+        afterFetch: function()
+        {
+            // The manuscripts are loaded, so we don't need the loading bar...
+            this.loaded = true;
+            this.render();
+        },
+
         render: function()
         {
             $(this.el).html(this.template());
             this.assign(this.headerView, '.header');
-            this.assign(this.manuscriptCollectionView, '.manuscript-list');
+            if (this.loaded)
+            {
+                this.assign(this.manuscriptCollectionView, '.manuscript-list');
+            }
+            else
+            {
+                this.assign(this.loadingBarView, '.manuscript-list');
+            }
+
             return this.trigger('render', this);
         }
     });
@@ -1264,7 +1495,7 @@
 
         render: function()
         {
-            console.log("Rendering Search Page View.");
+//            console.log("Rendering Search Page View.");
             $(this.el).html(this.template());
             // Render subviews
             this.assign(this.headerView, '.header');
@@ -1282,8 +1513,10 @@
     ({
         routes: {
             "" : "index",
+            "manuscript/:query/?folio=(:folio)": "manuscriptSingle",
             "manuscript/:query/": "manuscriptSingle",
             "manuscripts/": "manuscripts",
+            // TODO: Swap these two search lines to fix search result bug
             "search/": "search",
             "search/?q=(:query)": "search",
             '*path': "notFound"
@@ -1304,9 +1537,15 @@
             manuscripts.update();
         },
 
-        manuscriptSingle: function(query)
+        manuscriptSingle: function(query, folio)
         {
-            var manuscript = new ManuscriptIndividualPageView({ id: query });
+            console.log("Folio: " + folio);
+            var manuscript = new ManuscriptIndividualPageView(
+                {
+                    id: query,
+                    folio: folio
+                }
+            );
             // Fetch the data
             manuscript.getData();
         },
