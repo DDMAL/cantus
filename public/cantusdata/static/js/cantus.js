@@ -1206,6 +1206,41 @@
         }
     });
 
+
+    /*
+    Generic widget views.
+     */
+
+    /**
+     * Provide an alert message to the user.
+     */
+    var AlertView = CantusAbstractView.extend
+    ({
+        alertRoles: ["success", "info", "warning", "danger"],
+
+        role: "info",
+        content: undefined,
+
+        initialize: function(options)
+        {
+            _.bindAll(this, 'render');
+            this.template = _.template($('#alert-template').html());
+            role = options.role;
+            content = options.content;
+        },
+
+        render: function()
+        {
+            $(this.el).html(this.template(
+                {
+                    role: this.role,
+                    content: this.content
+                }
+            ));
+            return this.trigger('render', this);
+        }
+    });
+
     /**
      * A generic loading bar.
      *
