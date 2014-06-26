@@ -27,7 +27,7 @@
         setContainerHeight: function()
         {
             $('#content-container').css("height",
-                    $(window).height() - $("#header-container").height() - 1);
+                    $(window).height() - $("#header-container").height());
         },
 
         setScrollableHeight: function()

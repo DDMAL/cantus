@@ -15,7 +15,7 @@
 
 </head>
 <body>
-    <div id="header-container" class="container-fluid">
+    <div id="header-container">
         <div id="page-header" class="header"></div>
     </div>
     <div id="content-container" class="container-fluid">
@@ -31,9 +31,24 @@
 
 <!--Templates -->
 <script type="text/template" id="header-template">
-<ul id="top-menu" class="nav nav-pills pull-right">
-</ul>
-<h3 class="text-muted">Cantus Ultimus</h3>
+{#<ul id="top-menu" class="nav nav-pills pull-right">#}
+{#</ul>#}
+{#<h3 class="text-muted">Cantus Ultimus</h3>#}
+
+<nav class="navbar navbar-default">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">Cantus Ultimus</a>
+    </div>
+    <div class="navbar-collapse collapse navbar-responsive-collapse">
+        <ul id="top-menu" class="nav navbar-nav navbar-right">  </ul>
+    </div>
+</nav>
+
 </script>
 
 <script type="text/template" id="concordance-collection-template">

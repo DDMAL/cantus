@@ -16,6 +16,12 @@ body {
     min-width: 960px;
 }
 
+
+.navbar {
+    /** So that we don't have a space below the navbar. **/
+    margin-bottom: 0px;
+}
+
 .volpiano {
     font-family: 'Volpiano';
     font-size: 22pt;
@@ -41,7 +47,7 @@ body {
 }
 
 #header-container {
-    border-bottom: 1px solid #CCCCCC;
+
 }
 
 #header-container h3 {
