@@ -21,7 +21,7 @@
         {
             this.setContainerHeight();
             this.setManuscriptContentContainerHeight();
-            this.setDivaHeight();
+            this.setDivaSize();
         },
 
         setContainerHeight: function()
@@ -42,10 +42,17 @@
                             - $("#manuscript-title-container").height());
         },
 
-        setDivaHeight: function()
+        setDivaSize: function()
         {
-            $('#diva-wrapper').css("height",
+            $('.diva-outer').css("height",
                     $("#content-container").height() - 75);
+
+            // Temporary workaround for diva size issue
+            $('.diva-outer').css("width",
+                    $("#diva-toolbar").width());
+            $('.diva-inner').css("width",
+                    $("#diva-toolbar").width());
+
         }
     };
 
@@ -1225,8 +1232,9 @@
         {
             _.bindAll(this, 'render');
             this.template = _.template($('#alert-template').html());
-            role = options.role;
-            content = options.content;
+            this.role = options.role;
+            this.content = options.content;
+            console.log(this);
         },
 
         render: function()
@@ -1462,7 +1470,7 @@
         //Subviews
         headerView: null,
         manuscriptCollectionView: null,
-        loadingBarView: null,
+        loadingAlertView: null,
 
         initialize: function()
         {
@@ -1472,7 +1480,7 @@
             this.headerView = new HeaderView();
             this.manuscriptCollectionView = new ManuscriptCollectionView(
                 {url: siteUrl + "manuscripts/"});
-            this.loadingBarView = new LoadingBarView({label:"Loading...", completion:100})
+            this.loadingAlertView = new AlertView({content:"Loading manuscripts...", role:"info"});
             // Listen for changes
             this.listenTo(this.manuscriptCollectionView.collection, 'sync', this.afterFetch);
         },
@@ -1499,7 +1507,7 @@
             }
             else
             {
-                this.assign(this.loadingBarView, '.manuscript-list');
+                this.assign(this.loadingAlertView, '.manuscript-list');
             }
 
             return this.trigger('render', this);
