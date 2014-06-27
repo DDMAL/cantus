@@ -661,9 +661,16 @@
         searchView: null,
         searchModalView: null,
 
+        events: {
+            "click #site-logo": function()
+            {
+                app.navigate("/", {trigger: true});
+            }
+        },
+
         initialize: function()
         {
-            _.bindAll(this, 'render', 'registerClickEvents', 'clickSiteLogo');
+            _.bindAll(this, 'render');
             this.template= _.template($('#header-template').html());
             // The search view that we will shove into the modal box
             this.searchView = new SearchView();
@@ -692,29 +699,10 @@
                     ]
                 }
             );
-            this.registerClickEvents();
-        },
-
-        registerClickEvents: function()
-        {
-            // TODO: Figure out why this isn't working...
-            this.events = {};
-            this.events["click #site-logo"] = "clickSiteLogo";
-            this.delegateEvents();
-        },
-
-        /**
-         * Clicking the site logo navigates you home.
-         */
-        clickSiteLogo: function()
-        {
-            console.log("clicked site logo!");
-            app.navigate("/", {push: true});
         },
 
         render: function()
         {
-//            console.log("Rendering Header View.");
             $(this.el).html(this.template());
             // Render subviews
             this.assign(this.topMenuView, '#top-menu');
@@ -1616,8 +1604,7 @@
         initialize: function()
         {
             // There is always a header!
-            this.headerView = new HeaderView();
-            this.headerView.el = ".header";
+            this.headerView = new HeaderView({el:".header"});
             this.headerView.render();
 
             // IndexPageView has no state, so we might as well instantiate it
