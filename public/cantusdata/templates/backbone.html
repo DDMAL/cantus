@@ -38,7 +38,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="/">Cantus Ultimus</a>
+        <a id="header-logo" class="navbar-brand" href="/">Cantus Ultimus</a>
     </div>
     <div class="navbar-collapse collapse navbar-responsive-collapse">
         <ul id="top-menu" class="nav navbar-nav navbar-right">  </ul>
@@ -55,9 +55,10 @@
 </script>
 
 <script type="text/template" id="top-menu-template">
-<% _.forEach(items, function(item) { %>
-    <li <% if (item.active) { %> class="active" <% } if (item.tags) { %><%= item.tags %><% } %>><a href="<%= item.url %>"><%= item.name %></a></li>
-<% }); %>
+{#<% _.forEach(items, function(item) { %>#}
+<% for (var i = 0; i < items.length; i++) { %>
+    <li id="top-menu-button-<%= i %>"<% if (items[i].active) { %> class="active" <% } if (items[i].tags) { %><%= items[i].tags %><% } %> ><a href="#"><%= items[i].name %></a></li>
+<% }%>
 </script>
 
 <script type="text/template" id="index-template">

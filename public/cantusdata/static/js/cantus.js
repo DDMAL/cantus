@@ -661,6 +661,9 @@
         searchView: null,
         searchModalView: null,
 
+        events: {
+            "click #site-logo": "clickSiteLogo"
+        },
 
         initialize: function()
         {
@@ -697,6 +700,14 @@
             )
         },
 
+        /**
+         * Clicking the site logo navigates you home
+         */
+        clickSiteLogo: function()
+        {
+            app.navigate("/", {push: true});
+        },
+
         render: function()
         {
 //            console.log("Rendering Header View.");
@@ -712,11 +723,55 @@
     ({
         initialize: function(options)
         {
-            _.bindAll(this, 'render');
+            _.bindAll(this, 'render', 'registerClickEvents', "buttonClickCallback");
             this.template= _.template($('#top-menu-template').html());
-
             // Menu list items provided
             this.items = options.menuItems;
+            this.registerClickEvents();
+        },
+
+        /**
+         * Whenever a menu item is clicked, we want to push the state
+         */
+        registerClickEvents: function()
+        {
+            // Clear out the events
+            this.events = {};
+            // Menu items
+            for (var i = 0; i < this.items.length; i++)
+            {
+                this.events["click #top-menu-button-" + i] = "buttonClickCallback";
+            }
+            // Delegate the new events
+            this.delegateEvents();
+        },
+
+        homeButtonClickCallback: function()
+        {
+            app.navigate("/", {trigger: true});
+        },
+
+        buttonClickCallback: function(input)
+        {
+            // Figure out which button was pressed
+            var button_name = String(input.currentTarget.id);
+            var id = button_name.split('-')[button_name.split('-').length - 1];
+            // Now that we have that id, route the application to it's URL!
+
+            var new_url = this.items[id].url;
+            var old_url = Backbone.history.fragment;
+            console.log("new url:" + new_url.trim('/'));
+            console.log("old_url:" + old_url.trim('/'));
+
+            // Only route to the new URL if it really is a new url!
+            if (new_url === "#" || new_url.trim('/') === old_url.trim('/'))
+            {
+                return;
+            }
+            else
+            {
+                app.navigate(this.items[id].url, {trigger: true});
+            }
         },
 
         render: function()
@@ -736,10 +791,7 @@
         {
             _.bindAll(this, 'render', 'update');
             this.template= _.template($('#manuscript-collection-template').html());
-
             this.collection = new ManuscriptCollection(options.url);
-            this.collection.fetch();
-
             this.listenTo(this.collection, 'sync', this.render);
         },
 
@@ -1562,21 +1614,22 @@
             this.headerView = new HeaderView();
             this.headerView.el = ".header";
             this.headerView.render();
+
+            // IndexPageView has no state, so we might as well instantiate it
+            this.indexView = new IndexPageView();
+            // Same with manuscripts page
+            this.manuscriptsPageView = new ManuscriptsPageView();
         },
 
         index: function()
         {
-            this.indexView = new IndexPageView();
             this.indexView.render();
         },
 
         manuscripts: function()
         {
-            this.manuscriptsPageView = new ManuscriptsPageView();
-            // Render initial templates
-            this.manuscriptsPageView.render();
-            // Fetch the data
             this.manuscriptsPageView.update();
+            this.manuscriptsPageView.render();
         },
 
         manuscriptSingle: function(query, folio)
