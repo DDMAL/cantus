@@ -1607,9 +1607,8 @@
             "manuscript/:query/?folio=(:folio)": "manuscriptSingle",
             "manuscript/:query/": "manuscriptSingle",
             "manuscripts/": "manuscripts",
-            // TODO: Swap these two search lines to fix search result bug
-            "search/": "search",
             "search/?q=(:query)": "search",
+            "search/": "search",
             '*path': "notFound"
         },
 
