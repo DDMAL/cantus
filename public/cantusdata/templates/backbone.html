@@ -230,17 +230,17 @@
     <th>Provenance</th>
     <th># Chants</th>
 </tr>
-<% _.forEach(manuscripts, function(aManuscript) { %>
-<% if (aManuscript.chant_count > 0) { %>
+<% for (var i = 0; i < manuscripts.length; i++) { %>
+<% if (manuscripts[i].chant_count > 0) { %>
 <tr>
-    <td><a href="<%= aManuscript.url %>" ><%= aManuscript.name %></a></td>
-    <td><%= aManuscript.siglum %></td>
-    <td><%= aManuscript.date %></td>
-    <td><%= aManuscript.provenance %></td>
-    <td><%= aManuscript.chant_count %></td>
+    <td><a id="manuscript-list-<%= i %>" href="#" ><%= manuscripts[i].name %></a></td>
+    <td><%= manuscripts[i].siglum %></td>
+    <td><%= manuscripts[i].date %></td>
+    <td><%= manuscripts[i].provenance %></td>
+    <td><%= manuscripts[i].chant_count %></td>
 </tr>
 <% } %>
-<% }); %>
+<% } %>
 </table>
 </script>
 

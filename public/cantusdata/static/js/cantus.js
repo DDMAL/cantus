@@ -771,15 +771,56 @@
 
     var ManuscriptCollectionView = CantusAbstractView.extend
     ({
-        template: null,
         collection: null,
 
         initialize: function(options)
         {
-            _.bindAll(this, 'render', 'update');
+            _.bindAll(this, 'render', 'update', 'registerClickEvents',
+                'buttonClickCallback');
             this.template= _.template($('#manuscript-collection-template').html());
             this.collection = new ManuscriptCollection(options.url);
+            this.listenTo(this.collection, 'sync', this.registerClickEvents);
             this.listenTo(this.collection, 'sync', this.render);
+        },
+
+        registerClickEvents: function()
+        {
+            console.log("Registering click events.");
+            // Clear out the events
+            this.events = {};
+            // Menu items
+            for (var i = 0; i < this.collection.toJSON().length; i++)
+            {
+                console.log(i);
+                this.events["click #manuscript-list-" + i] = "buttonClickCallback";
+            }
+            // Delegate the new events
+            this.delegateEvents();
+        },
+
+        buttonClickCallback: function(input)
+        {
+            console.log("CALLBACK");
+            console.log(input);
+            // Figure out which button was pressed
+            var button_name = String(input.currentTarget.id);
+            var id = button_name.split('-')[button_name.split('-').length - 1];
+            console.log("id: " + id);
+            // Now that we have that id, route the application to it's URL!
+            var newUrl = "manuscript/" + this.collection.toJSON()[id].id + "/";
+            var oldUrl = Backbone.history.fragment;
+            console.log("new url:" + newUrl.trim('/'));
+            console.log("old_url:" + oldUrl.trim('/'));
+
+            // Only route to the new URL if it really is a new url!
+            if (newUrl === "#" || newUrl.trim('/') === oldUrl.trim('/'))
+            {
+                return;
+            }
+            else
+            {
+                app.navigate(newUrl, {trigger: true});
+            }
         },
 
         update: function()
