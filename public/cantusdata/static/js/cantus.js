@@ -1333,23 +1333,15 @@
     ({
         el: $('#view-goes-here'),
 
-        // Subviews
-        headerView: null,
-
         initialize: function()
         {
             _.bindAll(this, 'render');
             this.template = _.template($('#index-template').html());
-            // Initialize the subviews
-            this.headerView = new HeaderView();
         },
 
         render: function()
         {
-//            console.log("Rendering Index Page View.");
             $(this.el).html(this.template());
-            // Render subviews
-            this.assign(this.headerView, '.header');
             return this.trigger('render', this);
         }
     });
@@ -1369,7 +1361,6 @@
         searchView: null,
 
         // Subviews
-        headerView: null,
         divaView: null,
         folioView: null,
 
@@ -1380,7 +1371,6 @@
             this.manuscript = new Manuscript(
                 siteUrl + "manuscript/" + this.id + "/");
             // Build the subviews
-            this.headerView = new HeaderView();
             console.log("FOLIO TEST: " + options.folio);
             this.divaView = new DivaView(
                 {
@@ -1436,8 +1426,6 @@
             }));
 
             // Render subviews
-            this.assign(this.headerView, '.header');
-
             if (this.divaView !== undefined) {
                 this.assign(this.divaView, '#diva-wrapper');
             }
@@ -1468,7 +1456,6 @@
         loaded: false,
 
         //Subviews
-        headerView: null,
         manuscriptCollectionView: null,
         loadingAlertView: null,
 
@@ -1477,7 +1464,6 @@
             _.bindAll(this, "render", "update", "afterFetch");
             this.template= _.template($('#manuscripts-page-template').html());
             //Subviews
-            this.headerView = new HeaderView();
             this.manuscriptCollectionView = new ManuscriptCollectionView(
                 {url: siteUrl + "manuscripts/"});
             this.loadingAlertView = new AlertView({content:"Loading manuscripts...", role:"info"});
@@ -1500,7 +1486,6 @@
         render: function()
         {
             $(this.el).html(this.template());
-            this.assign(this.headerView, '.header');
             if (this.loaded)
             {
                 this.assign(this.manuscriptCollectionView, '.manuscript-list');
@@ -1524,7 +1509,6 @@
         el: $('#view-goes-here'),
 
         // Subviews
-        headerView: null,
         searchView: null,
 
         initialize: function(options)
@@ -1532,7 +1516,6 @@
             _.bindAll(this, 'render');
             this.template= _.template($('#search-page-template').html());
             // Initialize the subviews
-            this.headerView = new HeaderView();
             this.searchView = new SearchView({query: options.query});
         },
 
@@ -1541,7 +1524,6 @@
 //            console.log("Rendering Search Page View.");
             $(this.el).html(this.template());
             // Render subviews
-            this.assign(this.headerView, '.header');
             this.assign(this.searchView, '#search');
             return this.trigger('render', this);
         }
@@ -1554,6 +1536,14 @@
 
     var Workspace = Backbone.Router.extend
     ({
+        // Common to all routes
+        headerView: null,
+        // Only on certain routes
+        indexView: null,
+        manuscriptsPageView: null,
+        manuscriptView: null,
+        searchPageView: null,
+
         routes: {
             "" : "index",
             "manuscript/:query/?folio=(:folio)": "manuscriptSingle",
@@ -1565,38 +1555,47 @@
             '*path': "notFound"
         },
 
+        // We always want the header
+        initialize: function()
+        {
+            // There is always a header!
+            this.headerView = new HeaderView();
+            this.headerView.el = ".header";
+            this.headerView.render();
+        },
+
         index: function()
         {
-            var index = new IndexPageView();
-            index.render();
+            this.indexView = new IndexPageView();
+            this.indexView.render();
         },
 
         manuscripts: function()
         {
-            var manuscripts = new ManuscriptsPageView();
+            this.manuscriptsPageView = new ManuscriptsPageView();
             // Render initial templates
-            manuscripts.render();
+            this.manuscriptsPageView.render();
             // Fetch the data
-            manuscripts.update();
+            this.manuscriptsPageView.update();
         },
 
         manuscriptSingle: function(query, folio)
         {
             console.log("Folio: " + folio);
-            var manuscript = new ManuscriptIndividualPageView(
+            this.manuscriptView = new ManuscriptIndividualPageView(
                 {
                     id: query,
                     folio: folio
                 }
             );
             // Fetch the data
-            manuscript.getData();
+            this.manuscriptView.getData();
         },
 
         search: function(query)
         {
-            var search = new SearchPageView({query: query});
-            search.render();
+            this.searchView = new SearchPageView({query: query});
+            this.searchView.render();
         },
 
         notFound: function()
