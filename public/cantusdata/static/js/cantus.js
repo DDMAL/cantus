@@ -661,20 +661,14 @@
         searchView: null,
         searchModalView: null,
 
-        events: {
-            "click #site-logo": "clickSiteLogo"
-        },
-
         initialize: function()
         {
-            _.bindAll(this, 'render');
+            _.bindAll(this, 'render', 'registerClickEvents', 'clickSiteLogo');
             this.template= _.template($('#header-template').html());
-
             // The search view that we will shove into the modal box
             this.searchView = new SearchView();
             // The modal box for the search pop-up
             this.searchModalView = new ModalView({title: "Search", view: this.searchView});
-
             // Create the TopMenuView with all of its options
             this.topMenuView = new TopMenuView(
                 {
@@ -697,14 +691,24 @@
                         }
                     ]
                 }
-            )
+            );
+            this.registerClickEvents();
+        },
+
+        registerClickEvents: function()
+        {
+            // TODO: Figure out why this isn't working...
+            this.events = {};
+            this.events["click #site-logo"] = "clickSiteLogo";
+            this.delegateEvents();
         },
 
         /**
-         * Clicking the site logo navigates you home
+         * Clicking the site logo navigates you home.
          */
         clickSiteLogo: function()
         {
+            console.log("clicked site logo!");
             app.navigate("/", {push: true});
         },
 
@@ -744,11 +748,6 @@
             }
             // Delegate the new events
             this.delegateEvents();
-        },
-
-        homeButtonClickCallback: function()
-        {
-            app.navigate("/", {trigger: true});
         },
 
         buttonClickCallback: function(input)
