@@ -1384,6 +1384,13 @@
     ({
         el: $('#view-goes-here'),
 
+        events: {
+            "click #manuscripts-hero-button" : function()
+            {
+                app.navigate("/manuscripts/", {trigger: true});
+            }
+        },
+
         initialize: function()
         {
             _.bindAll(this, 'render');
