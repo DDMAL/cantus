@@ -713,6 +713,8 @@
 
     var TopMenuView = CantusAbstractView.extend
     ({
+        activeButton: 0,
+
         initialize: function(options)
         {
             _.bindAll(this, 'render', 'registerClickEvents', "buttonClickCallback");
@@ -758,7 +760,22 @@
             else
             {
                 app.navigate(this.items[id].url, {trigger: true});
+                this.setActiveButton(id);
             }
+        },
+
+        /**
+         * Set which menu button is active at the moment.
+         *
+         * @param index
+         */
+        setActiveButton: function(index)
+        {
+            if (index === this.activeButton) return;
+            this.items[this.activeButton].active = false;
+            this.activeButton = index;
+            this.items[this.activeButton].active = true;
+            this.render();
         },
 
         render: function()
