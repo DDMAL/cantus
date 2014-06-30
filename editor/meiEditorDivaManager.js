@@ -203,7 +203,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             'padding-left': '10px',
                             'padding-right': '10px',
                             'border': 'thin black solid',
-                            'background': '#FFFFFF',
+                            'background-color': '#FFFFFF',
                             'display': 'block',
                             'vertical-align': 'middle'
                         });
@@ -211,7 +211,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         //if this isn't selected, change the color 
                         if (!$("#" + currentTarget).hasClass('selectedHover'))
                         {
-                            $("#"+currentTarget).css('background-color', 'rgba(255, 255, 255, 0.05)');
+                            $("#"+currentTarget).css('background-color', 'rgba(255, 0, 0, 0.1)');
                         }
 
                         //needs to be separate function as we have separate document.mousemoves that need to be unbound separately
@@ -416,35 +416,37 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     $(object).addClass('resizableSelected');
 
                     //jQuery UI draggable, when drag stops update the box's position in the document
-                    if($(object).data('draggable'))
+                    if(!$(object).data('uiResizable') && !meiEditorSettings.editModeActive)
                     {
-                        $(object).draggable('destroy');
-                        $(object).resizable('destroy');
+                        $(object).resizable({
+                            handles: 'all',
+                            start: function(e)
+                            {
+                                e.stopPropagation();
+                                e.preventDefault();
+                            },
+                            resize: function(e)
+                            {
+                                e.stopPropagation();
+                                e.preventDefault();
+                            },
+                            stop: function(e, ui)
+                            {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                meiEditor.updateBox(ui.helper);
+                            }
+                        });
                     }
-                    $(object).resizable({
-                        handles: 'all',
-                        start: function(e)
-                        {
-                            e.stopPropagation();
-                            e.preventDefault();
-                        },
-                        resize: function(e)
-                        {
-                            e.stopPropagation();
-                            e.preventDefault();
-                        },
-                        stop: function(e, ui)
-                        {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            meiEditor.updateBox(ui.helper);
-                        }
-                    }).draggable({
-                        stop: function(e, ui)
-                        {
-                            meiEditor.updateBox(ui.helper);
-                        }
-                    });
+                    if(!$(object).data('uiDraggable'))
+                    {
+                        $(object).draggable({
+                            stop: function(e, ui)
+                            {
+                                meiEditor.updateBox(ui.helper);
+                            }
+                        });
+                    }
 
 
                     //this prevents a graphical glitch with Diva
@@ -719,8 +721,30 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                 $(document).on('keydown', function(e)
                 {
-                    if(e.shiftKey)
+                    //if shift key was the key that was put down
+                    if(e.shiftKey && !meiEditorSettings.editModeActive)
                     {
+                        //if we're currently resizing one and shift key was just pressed, only make it draggable
+                        if($(".resizableSelected").length)
+                        {
+                            if($(".resizableSelected").data('uiResizable'))
+                            {
+                                $(".resizableSelected").resizable('destroy');
+                            }
+
+                            if(!$(".resizableSelected").data('uiDraggable'))
+                            {
+                                $(".resizableSelected").draggable({
+                                    stop: function(e, ui)
+                                    {
+                                        meiEditor.updateBox(ui.helper);
+                                    }
+                                });
+                            }
+                            meiEditorSettings.editModeActive = true;
+                            return;
+                        }
+
                         /*
                             Click handler for when the shift key is down and a box is clicked
                         */
@@ -938,6 +962,45 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     //if it was the shift key that was released
                     if((!e.shiftKey) && meiEditorSettings.editModeActive)
                     {  
+                        //if we have something resizable active, turn everything back on that was originally off.
+                        if($(".resizableSelected").length)
+                        {
+                            if(!$(".resizableSelected").data('uiResizable'))
+                            {
+                                $(".resizableSelected").resizable({
+                                    handles: 'all',
+                                    start: function(e)
+                                    {
+                                        e.stopPropagation();
+                                        e.preventDefault();
+                                    },
+                                    resize: function(e)
+                                    {
+                                        e.stopPropagation();
+                                        e.preventDefault();
+                                    },
+                                    stop: function(e, ui)
+                                    {
+                                        e.stopPropagation();
+                                        e.preventDefault();
+                                        meiEditor.updateBox(ui.helper);
+                                    }
+                                });
+                            }
+
+                            if(!$(".resizableSelected").data('uiDraggable'))
+                            {
+                                $(".resizableSelected").draggable({
+                                    stop: function(e, ui)
+                                    {
+                                        meiEditor.updateBox(ui.helper);
+                                    }
+                                });
+                            }
+                            meiEditorSettings.editModeActive = false;
+                            return;
+                        }
+
                         meiEditorSettings.boxClickHandler = function(e)
                         {
                             clearTimeout(meiEditorSettings.boxSingleTimeout);
