@@ -285,8 +285,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     var boxID = $(box).attr('id');
                     var ulx = meiEditorSettings.divaInstance.translateToMaxZoomLevel(boxPosition.left);
                     var uly = meiEditorSettings.divaInstance.translateToMaxZoomLevel(boxPosition.top);
-                    var lrx = meiEditorSettings.divaInstance.translateToMaxZoomLevel(ulx + $(box).outerWidth());
-                    var lry = meiEditorSettings.divaInstance.translateToMaxZoomLevel(uly + $(box).outerHeight());
+                    var lrx = meiEditorSettings.divaInstance.translateToMaxZoomLevel(boxPosition.left + $(box).outerWidth());
+                    var lry = meiEditorSettings.divaInstance.translateToMaxZoomLevel(boxPosition.top + $(box).outerHeight());
 
                     //search to get the line number where the zone object is
                     var searchNeedle = new RegExp("<zone.*" + $(box).attr('id'), "g");
@@ -367,7 +367,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                                 }
                             }
                             //add it to regions
-                            regions.push({'width': neume_width, 'height': neume_height, 'ulx': neume_ulx, 'uly': neume_uly, 'divID': neumeID});
+                            regions.push({'width': neume_width, 'height': neume_height, 'ulx': neume_ulx, 'uly': neume_uly, 'divID': zoneID});
                         }
                         //at the end of each page, call the highlights
                         meiEditorSettings.divaInstance.highlightOnPage(pageIndex, regions, undefined, "overlay-box", reapplyBoxListeners);
@@ -390,7 +390,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     $(object).addClass('resizableSelected');
 
                     //jQuery UI draggable, when drag stops update the box's position in the document
-                    console.log(object);
                     $(object).resizable({
                         handles: 'all',
                         start: function(e)
@@ -430,7 +429,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 //deselects a resizable object
                 meiEditor.deselectResizable = function(object)
                 {
-                    console.log(object);
                     $(object).draggable('destroy');
                     $(object).resizable('destroy');
                     $(object).css('z-index', $(".overlay-box").css('z-index'));
