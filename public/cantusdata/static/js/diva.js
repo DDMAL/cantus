@@ -1124,9 +1124,12 @@ window.divaPlugins = [];
             $('body').toggleClass('diva-hide-scrollbar');
             $(settings.parentSelector).toggleClass('diva-full-width');
 
+            // Compensate: mobileWebkit excludes body margin from window.innerWidth calculation
+            var bodyMargin = (settings.mobileWebkit) ? parseInt($('body').css('margin')) : 0;
+
             // If in fullscreen, set margin to 0; if enableAutoWidth, use viewerWidthPadding
             var margin = settings.inFullscreen ? '0px'
-                       : settings.enableAutoWidth ? settings.viewerWidthPadding.toString() + 'px'
+                       : settings.enableAutoWidth ? (settings.viewerWidthPadding - bodyMargin).toString() + 'px'
                        : '';
 
             $(settings.outerSelector).css('margin-left', margin);
@@ -1153,7 +1156,12 @@ window.divaPlugins = [];
 
             // If it has changed, adjust panel size coming out of fullscreen
             if (!settings.inFullscreen)
-                adjustBrowserDims();
+            {
+                if(settings.mobileWebkit)
+                    adjustMobileWebkitDims();
+                else
+                    adjustBrowserDims();
+            }
 
             // Execute callbacks
             executeCallback(settings.onModeToggle, settings.inFullscreen);
@@ -2196,7 +2204,16 @@ window.divaPlugins = [];
 
                     // Set padding
                     if (settings.enableAutoWidth)
-                        $(settings.outerSelector).css('margin-left', settings.viewerWidthPadding);
+                    {
+                        // mobileWebkit does not include body margin in window.innerWidth, so we manually offset the viewer
+                        if (settings.mobileWebkit)
+                        {
+                            var bodyMargin = parseInt($('body').css('margin'));
+                            $(settings.outerSelector).css('margin-left', settings.viewerWidthPadding - bodyMargin);
+                        }
+                        else
+                            $(settings.outerSelector).css('margin-left', settings.viewerWidthPadding);
+                    }
 
                     if (settings.inFullscreen)
                         handleModeChange(false);
