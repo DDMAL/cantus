@@ -344,18 +344,20 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         regions = [];
 
                         xmlns = jsonData['mei']['_xmlns']; //find the xml namespace file
-                        var neume_ulx, neume_uly, neume_width, neume_height;
-                        neumeArray = jsonData['mei']['music']['body']['neume'];
-                        facsArray = jsonData['mei']['music']['facsimile']['surface']['zone'];
-                        for (curZoneIndex in facsArray) //for each "zone" object
+                        var neume_ulx, neume_uly, neume_width, neume_height, neumeID;
+                        neumeArray = jsonData['mei']['music']['body']['mdiv']['pages']['page']['system']['staff']['layer']['neume'];
+                        zoneArray = jsonData['mei']['music']['facsimile']['surface']['zone'];
+
+                        for (curZoneIndex in zoneArray) //for each "zone" object
                         { 
-                            curZone = facsArray[curZoneIndex];
-                            neumeID = curZone._neume;
+                            curZone = zoneArray[curZoneIndex];
+                            zoneID = curZone["_xml:id"];
                             for (curNeumeIndex in neumeArray) //find the corresponding neume - don't think there's a more elegant way in JS
                             { 
-                                if (neumeArray[curNeumeIndex]["_xml:id"] == neumeID)
+                                if (neumeArray[curNeumeIndex]["_facs"] == zoneID)
                                 {
                                     curNeume = neumeArray[curNeumeIndex]; //assemble the info on the neume
+                                    neumeID = curNeume["_xml:id"];
                                     meiEditorSettings.neumeObjects[neumeID] = curNeume['_name'];
                                     neume_ulx = curZone._ulx;
                                     neume_uly = curZone._uly;
