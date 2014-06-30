@@ -20,7 +20,12 @@
 
         initialize: function()
         {
-            this.listenTo(globalEventHandler, "renderLeafView", this.setAll);
+            var self = this;
+            $(window).resize(function()
+            {
+                self.setAll();
+            });
+            this.listenTo(globalEventHandler, "renderView", this.setAll);
         },
 
         setAll: function()
@@ -63,19 +68,6 @@
     });
 
     var resizer = new BrowserResizer();
-
-    $(window).resize(function()
-    {
-        resizer.setAll();
-    });
-//
-//
-//
-//    setTimeout(function()
-//    {
-//        console.log("ready.");
-//        BrowserResizer.setAll();
-//    },1000);
 
 
     /*
@@ -346,6 +338,7 @@
                     chants: this.collection.toJSON()
                 }
             ));
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         },
 
@@ -398,6 +391,7 @@
             console.log(iipImageServerUrl + "fcgi-bin/iipsrv.fcgi");
             diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
             diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         },
 
@@ -649,7 +643,7 @@
                 }
             ));
             this.renderChantCollectionView();
-
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         },
 
@@ -717,6 +711,7 @@
             // Render subviews
             this.assign(this.topMenuView, '#top-menu');
             this.assign(this.searchModalView, '#search-modal');
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -792,6 +787,7 @@
         {
 //            console.log("Rendering Top Menu View.");
             $(this.el).html(this.template({items: this.items}));
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -861,6 +857,7 @@
             $(this.el).html(this.template({
                 manuscripts: this.collection.toJSON()
             }));
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -895,7 +892,7 @@
             }
             // Render out the visitor
             this.assign(this.visitorView, '.modal-body');
-
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -1083,6 +1080,7 @@
                     currentPage: this.currentPage
                 }
             ));
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -1227,6 +1225,7 @@
             console.log(this.$el.selector + '.search-result');
             $(this.$el.selector + ' .search-result').html("SEARCH RESULT VIEW!");
             this.assign(this.searchResultView, this.$el.selector + ' .search-result');
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -1315,7 +1314,7 @@
 //                console.log($(this.$el.selector + '.pagination'));
                 this.assign(this.paginationView, this.$el.selector + " .pagination");
             }
-
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -1352,6 +1351,7 @@
                     content: this.content
                 }
             ));
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -1423,6 +1423,7 @@
                     completion: this.completion
                 }
             ));
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -1456,6 +1457,7 @@
         render: function()
         {
             $(this.el).html(this.template());
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -1545,7 +1547,7 @@
             }
             this.renderFolioView();
             this.assign(this.searchView, '#manuscript-search');
-
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         },
 
@@ -1609,7 +1611,7 @@
 
 //                this.assign(this.loadingAlertView, '.manuscript-list');
             }
-
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -1640,6 +1642,7 @@
             $(this.el).html(this.template());
             // Render subviews
             this.assign(this.searchView, '#search');
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
