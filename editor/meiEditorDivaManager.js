@@ -75,7 +75,9 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     divaHoldX: "",
                     divaHoldY: "",
                     resizeTarget: "",
-                    origDragInfo: {}
+                    origDragInfo: {},
+                    highlightedCache: [],
+                    resizableCache: []
                 });
 
                 meiEditor.addToNavbar("Diva page manager", "diva-manager");
@@ -109,6 +111,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 $("#clear-selection-dropdown").on('click', function()
                 {
                     meiEditor.deselectAllHighlights();
+                    meiEditor.deselectResizable(".resizableSelected");
                 });
 
                 $("#diva-manager-help").on('click', function()
@@ -269,6 +272,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 //unbinds listeners from above function
                 var unbindBoxListeners = function()
                 {
+                    console.log("unbind called");
                     $(".overlay-box").unbind('hover');
                     $(".overlay-box").unbind('click');
                     $(".overlay-box").unbind('dblclick');
@@ -316,7 +320,42 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     //regenerate the highlights, reset the listeners, reselect the same box
                     meiEditor.createHighlights();
                     unbindBoxListeners();
-                    meiEditor.selectResizable("#" + boxID);
+                };
+
+                /*
+                    Saves highlights/resizable IDs while highlights are being reloaded.
+                */
+                meiEditor.updateCaches = function()
+                {
+                    meiEditorSettings.highlightedCache = [];
+                    meiEditorSettings.resizableCache = [];
+                    var curHighlight = $(".selectedHover").length;
+                    while(curHighlight--)
+                    {
+                        meiEditorSettings.highlightedCache.push($($(".selectedHover")[curHighlight]).attr('id'));
+                    }
+                    var curResizable = $(".resizableSelected").length;
+                    while(curResizable--)
+                    {
+                        meiEditorSettings.resizableCache.push($($(".resizableSelected")[curResizable]).attr('id'));
+                    }
+                };
+
+                /*
+                    Reloads highlights/resizable IDs after highlights have been reloaded.
+                */
+                meiEditor.reloadCaches = function()
+                {
+                    var curHighlightedCached = meiEditorSettings.highlightedCache.length;
+                    while(curHighlightedCached--)
+                    {
+                        meiEditor.selectHighlight($('#' + meiEditorSettings.highlightedCache[curHighlightedCached]));
+                    }
+                    var curResizableCached = meiEditorSettings.resizableCache.length;
+                    while(curResizableCached--)
+                    {
+                        meiEditor.selectResizable('#' + meiEditorSettings.resizableCache[curResizableCached]);
+                    }
                 };
 
                 /*
@@ -324,14 +363,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 */
                 meiEditor.createHighlights = function()
                 {  
-                    //grab IDs of highlighted objects
-                    var highlightedCache = [];
-                    var curHighlight = $(".selectedHover").length;
-                    while(curHighlight--)
-                    {
-                        highlightedCache.push($($(".selectedHover")[curHighlight]).attr('id'));
-                    }
-
                     meiEditorSettings.neumeObjects = {};
                     var x2js = new X2JS(); //from xml2json.js
                     meiEditorSettings.divaInstance.resetHighlights();
@@ -358,7 +389,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                                 {
                                     curNeume = neumeArray[curNeumeIndex]; //assemble the info on the neume
                                     neumeID = curNeume["_xml:id"];
-                                    meiEditorSettings.neumeObjects[neumeID] = curNeume['_name'];
+                                    meiEditorSettings.neumeObjects[zoneID] = curNeume['_name'];
                                     neume_ulx = curZone._ulx;
                                     neume_uly = curZone._uly;
                                     neume_width = curZone._lrx - neume_ulx;
@@ -371,13 +402,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         }
                         //at the end of each page, call the highlights
                         meiEditorSettings.divaInstance.highlightOnPage(pageIndex, regions, undefined, "overlay-box", reapplyBoxListeners);
-                    }
-
-                    //reinstate highlights from before the regeneration
-                    var curCache = highlightedCache.length;
-                    while(curCache--)
-                    {
-                        meiEditor.selectHighlight($('#' + highlightedCache[curCache]));
                     }
                 };
 
@@ -424,6 +448,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                     //escape gets you out of this
                     $(document).keyup(detectEscape);
+                    meiEditor.updateCaches();
                 };
 
                 //deselects a resizable object
@@ -433,10 +458,13 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     $(object).resizable('destroy');
                     $(object).css('z-index', $(".overlay-box").css('z-index'));
                     $(object).css('background-color', 'rgba(255, 0, 0, 0.2)');
+                    $(object).toggleClass('resizableSelected');
+
                     $("#lineQueryOverlay").remove();
                     meiEditorSettings.divaInstance.enableScrollable();
                     reapplyBoxListeners();
                     $("#diva-wrapper").unbind('resize');
+                    meiEditor.updateCaches();
                 };
 
                 meiEditor.selectHighlight = function(divToSelect)
@@ -453,18 +481,19 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     
                     $(divToSelect).addClass('selectedHover');
                     $(divToSelect).css('background-color', 'background-color:rgba(0, 255, 0, 0.1)');
+                    meiEditor.updateCaches();
                 };
 
                 meiEditor.deselectAllHighlights = function()
                 {
-                    $(".selectedHover").css('background-color', 'rgba(255, 0, 0, 0.2)');
-                    $(".selectedHover").toggleClass("selectedHover");
+                    meiEditor.deselectHighlight(".selectedHover");
                 };
 
                 meiEditor.deselectHighlight = function(divToDeselect)
                 {
                     $(divToDeselect).css('background-color', 'rgba(255, 0, 0, 0.2)');
                     $(divToDeselect).toggleClass("selectedHover");
+                    meiEditor.updateCaches();
                 };
 
                 /*
@@ -618,6 +647,9 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         }
                     }
                 });
+
+                //re-select everything when highlights are finished
+                diva.Events.subscribe("HighlightCompleted", function(){meiEditor.reloadCaches();});
 
                 meiEditor.events.subscribe("NewFile", function(a, fileName)
                 {
