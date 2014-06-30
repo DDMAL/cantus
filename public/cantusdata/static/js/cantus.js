@@ -15,7 +15,13 @@
      *
      * @type {{setContainerHeight: setContainerHeight, setScrollableHeight: setScrollableHeight, setManuscriptContentContainerHeight: setManuscriptContentContainerHeight, setDivaHeight: setDivaHeight}}
      */
-    var BrowserResizer = {
+    var BrowserResizer = Backbone.View.extend
+    ({
+
+        initialize: function()
+        {
+            this.listenTo(globalEventHandler, "renderLeafView", this.setAll);
+        },
 
         setAll: function()
         {
@@ -54,18 +60,22 @@
                     $("#diva-toolbar").width());
 
         }
-    };
+    });
+
+    var resizer = new BrowserResizer();
 
     $(window).resize(function()
     {
-        BrowserResizer.setAll();
+        resizer.setAll();
     });
-
-    setTimeout(function()
-    {
-        console.log("ready.");
-        BrowserResizer.setAll();
-    },1000);
+//
+//
+//
+//    setTimeout(function()
+//    {
+//        console.log("ready.");
+//        BrowserResizer.setAll();
+//    },1000);
 
 
     /*
