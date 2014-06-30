@@ -178,6 +178,10 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 */
                 var reapplyBoxListeners = function()
                 {
+                    if($("#lineQueryOverlay").length !== 0)
+                    {
+                        return;
+                    }
                     unbindBoxListeners();
 
                     $(".overlay-box").hover(function(e) //when the hover starts for an overlay-box
@@ -272,7 +276,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 //unbinds listeners from above function
                 var unbindBoxListeners = function()
                 {
-                    console.log("unbind called");
                     $(".overlay-box").unbind('hover');
                     $(".overlay-box").unbind('click');
                     $(".overlay-box").unbind('dblclick');
@@ -319,7 +322,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                     //regenerate the highlights, reset the listeners, reselect the same box
                     meiEditor.createHighlights();
-                    unbindBoxListeners();
                 };
 
                 /*
@@ -344,7 +346,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 /*
                     Reloads highlights/resizable IDs after highlights have been reloaded.
                 */
-                meiEditor.reloadCaches = function()
+                meiEditor.reloadFromCaches = function()
                 {
                     var curHighlightedCached = meiEditorSettings.highlightedCache.length;
                     while(curHighlightedCached--)
@@ -414,6 +416,11 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     $(object).addClass('resizableSelected');
 
                     //jQuery UI draggable, when drag stops update the box's position in the document
+                    if($(object).data('draggable'))
+                    {
+                        $(object).draggable('destroy');
+                        $(object).resizable('destroy');
+                    }
                     $(object).resizable({
                         handles: 'all',
                         start: function(e)
@@ -437,8 +444,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         {
                             meiEditor.updateBox(ui.helper);
                         }
-                    //jQueryUI resizable, same as above
                     });
+
 
                     //this prevents a graphical glitch with Diva
                     $("#diva-wrapper").on('resize', function(e){
@@ -648,8 +655,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     }
                 });
 
-                //re-select everything when highlights are finished
-                diva.Events.subscribe("HighlightCompleted", function(){meiEditor.reloadCaches();});
+                diva.Events.subscribe("HighlightCompleted", meiEditor.reloadFromCaches);
 
                 meiEditor.events.subscribe("NewFile", function(a, fileName)
                 {
@@ -658,7 +664,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 });
 
                 meiEditor.events.subscribe("PageEdited", meiEditor.createHighlights);
-
                 meiEditor.events.subscribe("PageWasDeleted", function(pageName)
                 {
                     var retVal = meiEditor.meiIsLinked(pageName);
