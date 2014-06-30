@@ -681,15 +681,15 @@
                 {
                     menuItems: [
                         {
-                            name: "Home",
+                            name: "Manuscripts",
                             url: "/",
                             active: false
                         },
-                        {
-                            name: "Manuscripts",
-                            url: "/manuscripts/",
-                            active: false
-                        },
+//                        {
+//                            name: "Manuscripts",
+//                            url: "/manuscripts/",
+//                            active: false
+//                        },
                         {
                             name: "Search",
                             tags: 'data-toggle="modal" data-target="#myModal"',
@@ -1596,7 +1596,8 @@
             }
             else
             {
-                this.assign(this.loadingAlertView, '.manuscript-list');
+
+//                this.assign(this.loadingAlertView, '.manuscript-list');
             }
 
             return this.trigger('render', this);
@@ -1649,7 +1650,7 @@
         searchPageView: null,
 
         routes: {
-            "" : "index",
+            "" : "manuscripts",
             "manuscript/:query/?folio=(:folio)": "manuscriptSingle",
             "manuscript/:query/": "manuscriptSingle",
             "manuscripts/": "manuscripts",
