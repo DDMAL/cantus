@@ -77,7 +77,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     resizeTarget: "",
                     origDragInfo: {},
                     highlightedCache: [],
-                    resizableCache: []
+                    resizableCache: [],
+                    lastClicked: ""
                 });
 
                 meiEditor.addToNavbar("Diva page manager", "diva-manager");
@@ -144,11 +145,17 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     "<h4>Help for 'Diva Page Manager' menu:</h4>" + 
                     "<li>To get highlights from a file to show up in the Diva pane, click 'Link files to Diva images...' from the dropdown menu and select the files you want to link.</li>" + 
                     "<br><li>'Auto-link files by filename' will automatically strip file extensions and try to match files so that '001.mei' and '001.tiff' become linked.</li>" + 
-                    "<br><li>Changes you make to the MEI document will not automatically transfer over; click 'Update Diva' to reload the highlighted objects in the image viewer.</li>" + 
-                    "<br><li>Clicking on a highlight then clicking on another will unselect the first one; to select multiple, hold shift and drag to select every highlight within a box or hold shift and click multiple highlights to select them all.</li>" + 
-                    "<br><li>To deselect a single highlight, shift+click on the highlight.</li>" +
-                    "<br><li>To deselect all highlights, choose the 'Clear selection' option of this dropdown.</li>" + 
+                    "<br><li>Changes you make to the MEI document will not automatically transfer over; click the 'Update Diva' dropdown option to reload the highlighted objects in the image viewer.</li>" + 
+                    "<br><li>Clicking on a highlight will select it and move the MEI editor to its line.</li>" +
+                    "<li>Holding shift and clicking will select additional highlights.</li>" +
+                    "<li>Holding shfit and dragging the mouse will select everything within a box.</li>" + 
+                    "<li>To deselect a single highlight, hold shift and click on a selected highlight.</li>" +
+                    "<li>To deselect all highlights, choose the 'Clear selection' option of this dropdown.</li>" + 
                     "<br><li>To create a new highlight, shift+click on empty space on the image.</li>" +
+                    "<li>To resize or move a highlight, double-click on it.</li>" +
+                    "<li style='margin-left:0.25in'>Click and drag on the edge of the highlight to resize it.</li>" +
+                    "<li style='margin-left:0.25in'>Click and drag on the centre of the highlight or with the shift key down to move it.</li>" +
+                    "<li style='margin-left:0.25in'>Press the 'Escape' key to leave resize/move mode.</li>" +
                     "<br><li>Press the 'delete' key on your keyboard to delete all selected highlights and the MEI lines associated with them.</li>");
 
                 //the div that pops up when highlights are hovered over
@@ -173,12 +180,27 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     } 
                 };    
 
+                //detects whether the current resizable object is too small to hold the ui-resizable icon
+                var checkResizable = function()
+                {
+                    //if it's so small that the icon would be outside of the box
+                    var resizableIsTooSmall = ($(".resizableSelected").width() < 16 || $(".resizableSelected").height() < 16);
+                    //if it has the classes
+                    var resizableHasClasses = $(".resizableSelected > .ui-resizable-se").hasClass("ui-icon");
+
+                    //if these are even we need to toggle the classes
+                    if(resizableIsTooSmall === resizableHasClasses)
+                    {
+                        $(".resizableSelected > .ui-resizable-se").toggleClass("ui-icon ui-icon-gripsmall-diagonal-se");
+                    }
+                };
+
                 /*
                     Function called when sections are rehighlighted to refresh the listeners.
                 */
                 var reapplyBoxListeners = function()
                 {
-                    if($("#lineQueryOverlay").length !== 0)
+                    if($("#resizableOverlay").length !== 0)
                     {
                         return;
                     }
@@ -232,8 +254,9 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                     $(".overlay-box").click(function(e)
                     {
-                        e.preventDefault();
+                        //we stop propagation but trigger a click on the parent so that other boxes don't get selected but anything listening on a larger scale hears
                         e.stopPropagation();
+                        $(this).parent().trigger('click');
 
                         /*
                         no matter what, clear the old one. 
@@ -254,15 +277,14 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     $(".overlay-box").dblclick(function(e)
                     {
                         clearTimeout(meiEditorSettings.boxSingleTimeout);
-                        e.preventDefault();
                         e.stopPropagation();
 
                         //turn off scrollability and put the overlay down
                         meiEditorSettings.divaInstance.disableScrollable();
-                        $("#diva-wrapper").append("<div id='lineQueryOverlay'></div>");
-                        $("#lineQueryOverlay").offset({'top': $("#diva-wrapper").offset().top, 'left': $("#diva-wrapper").offset().left});
-                        $("#lineQueryOverlay").width($("#diva-wrapper").width());
-                        $("#lineQueryOverlay").height($("#diva-wrapper").height());
+                        $("#diva-wrapper").append("<div id='resizableOverlay'></div>");
+                        $("#resizableOverlay").offset({'top': $("#diva-wrapper").offset().top, 'left': $("#diva-wrapper").offset().left});
+                        $("#resizableOverlay").width($("#diva-wrapper").width());
+                        $("#resizableOverlay").height($("#diva-wrapper").height());
 
                         origObject = e.target;           
                         $("#hover-div").css('display', 'none'); //hides the div
@@ -429,6 +451,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             {
                                 e.stopPropagation();
                                 e.preventDefault();
+                                checkResizable();
                             },
                             stop: function(e, ui)
                             {
@@ -437,6 +460,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                                 meiEditor.updateBox(ui.helper);
                             }
                         });
+ 
+                        checkResizable();
                     }
                     if(!$(object).data('uiDraggable'))
                     {
@@ -463,30 +488,35 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 //deselects a resizable object
                 meiEditor.deselectResizable = function(object)
                 {
-                    $(object).draggable('destroy');
-                    $(object).resizable('destroy');
-                    $(object).css('z-index', $(".overlay-box").css('z-index'));
-                    $(object).css('background-color', 'rgba(255, 0, 0, 0.2)');
-                    $(object).toggleClass('resizableSelected');
+                    if($(object).length !== 0)
+                    {
+                        $(object).draggable('destroy');
+                        $(object).resizable('destroy');
+                        $(object).css('z-index', $(".overlay-box").css('z-index'));
+                        $(object).css('background-color', 'rgba(255, 0, 0, 0.2)');
+                        $(object).toggleClass('resizableSelected');
+                    }
 
-                    $("#lineQueryOverlay").remove();
+                    $("#resizableOverlay").remove();
                     meiEditorSettings.divaInstance.enableScrollable();
                     reapplyBoxListeners();
                     $("#diva-wrapper").unbind('resize');
                     meiEditor.updateCaches();
                 };
 
-                meiEditor.selectHighlight = function(divToSelect)
+                meiEditor.selectHighlight = function(divToSelect, findOverride)
                 {
-                    //if this is the first click, find the <neume> object
-                    var searchNeedle = new RegExp("<neume.*" + divToSelect.id, "g");
-
-                    var pageTitle = meiEditor.getActivePanel().text();
-                    var testSearch = meiEditorSettings.pageData[pageTitle].find(searchNeedle, 
+                    if(!findOverride)
                     {
-                        wrap: true,
-                        range: null
-                    });
+                        var searchNeedle = new RegExp("<neume.*" + divToSelect.id, "g");
+
+                        var pageTitle = meiEditor.getActivePanel().text();
+                        var testSearch = meiEditorSettings.pageData[pageTitle].find(searchNeedle, 
+                        {
+                            wrap: true,
+                            range: null
+                        });
+                    }
                     
                     $(divToSelect).addClass('selectedHover');
                     $(divToSelect).css('background-color', 'background-color:rgba(0, 255, 0, 0.1)');
@@ -505,10 +535,60 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     meiEditor.updateCaches();
                 };
 
+                meiEditor.deleteListener = function(e)
+                {
+                    if(e.keyCode == 46)
+                    {
+                        //if double-click active, we want to remove only the resizableSelected, otherwise we want to remove the selectedHover objects
+                        var selector = $("#resizableOverlay").length !== 0 ? ".resizableSelected" : ".selectedHover";
+
+                        var saveObject = [];
+                        var curItemIndex = $(selector).length;
+                        while (curItemIndex--)
+                        {
+                            var curItem = $(selector)[curItemIndex];    
+                            var itemID = $(curItem).attr('id');
+                            
+                            //remove item from display
+                            $(curItem).remove();
+
+                            //perform a new search to grab all occurences of the id and to delete both lines
+                            var pageTitle = meiEditor.getActivePanel().text();
+                            var uuidSearch = editor.findAll(itemID, 
+                            {
+                                wrap: true,
+                                range: null
+                            });
+
+                            //this may not be the right way to do it, but "findAll" returns how many it found, and there doesn't seem to be a clear way to select everything at once. This accurately deletes all instances, however.
+                            while (uuidSearch)
+                            {
+                                var row = editor.getSelectionRange().start.row;
+                                var text = editor.session.doc.getLine(row);
+                                saveObject.push({'doc': pageTitle, 'row': row, 'text': text});
+
+                                editor.removeLines();
+                                uuidSearch = editor.findAll(itemID, 
+                                {
+                                    wrap: true,
+                                    range: null
+                                });
+                            }
+                        }
+
+                        //this needs to be at the end so we don't remove the object before the while loop above; object also doesn't exist so we need to base this off what the selector was determined to be
+                        if(selector == ".resizableSelected"){
+                            meiEditor.deselectResizable(".resizableSelected");
+                        }
+
+                        meiEditor.createHighlights();
+                        meiEditor.localLog("Deleted highlights.");   
+                    }
+                };
+
                 /*
                     Automatically links all MEI files and Diva files by snipping off file extensions and finding matches.
                 */
-
                 meiEditor.autoLinkFiles = function()
                 {
                     var linkedArr = [];
@@ -595,17 +675,24 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     $(selectedMei).remove();
                     $(selectedImage).remove();
                 };
+
                 /*
                     This is a separate function as it's used in two locations.
                 */
                 meiEditor.reapplyEditorClickListener = function()
                 {
-                    $(".aceEditorPane").on('click', function()
+                    //commented out as per issue #36
+                    /*$(".aceEditorPane").on('click', function()
                     {
                         var activeTab = meiEditor.getActivePanel().text();
                         if (meiEditor.meiIsLinked(activeTab))
                         {
-                            var row = meiEditorSettings.pageData[activeTab].getCursorPosition().row;
+                            //if only one is selected, don't multiselect
+                            if($(".selectedHover").length == 1)
+                            {
+                                meiEditor.deselectAllHighlights();
+                            }
+                            var row = meiEditorSettings.pageData[activeTab].getSelectionRange().start.row;
                             var rowText = meiEditorSettings.pageData[activeTab].session.doc.getLine(row);
                             var matchArr = rowText.match(/m-[(0-9|a-f)]{8}(-[(0-9|a-f)]{4}){3}-[(0-9|a-f)]{12}/g);
                             var curMatch = matchArr.length;
@@ -613,11 +700,11 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             {
                                 if ($("#"+matchArr[curMatch]).length)
                                 {
-                                    meiEditor.selectHighlight($("#"+matchArr[curMatch]));
+                                    meiEditor.selectHighlight($("#"+matchArr[curMatch]), true);
                                 }
                             }
                         }
-                    });
+                    });*/
                 };
 
                 $.ajax( //this grabs the json file to get an meiEditor-local list of the image filepaths
@@ -665,7 +752,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     meiEditor.reapplyEditorClickListener();
                 });
 
-                meiEditor.events.subscribe("PageEdited", meiEditor.createHighlights);
                 meiEditor.events.subscribe("PageWasDeleted", function(pageName)
                 {
                     var retVal = meiEditor.meiIsLinked(pageName);
@@ -719,11 +805,48 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                 });
 
+                $(document).on('click', function(e)
+                {
+                    var pageTitle = meiEditor.getActivePanel().text();
+                    editor = meiEditorSettings.pageData[pageTitle];
+                    if($.contains(document.getElementById("diva-wrapper"), e.target))
+                    {
+                        if(e.target.id.match(/diva-tile/))
+                        {
+                            meiEditor.deselectAllHighlights();
+                        }
+                        editor.commands.addCommand({   
+                            name: "del",
+                            bindKey: {win: "Delete", mac: "Delete|Ctrl-D|Shift-Delete"},
+                            exec: function(editor) { },
+                            multiSelectAction: "forEach",
+                            scrollIntoView: "cursor"
+                        });
+
+                        $(document).on('keyup', meiEditor.deleteListener);
+                    } 
+                    else
+                    { 
+                        //taken from ace.js line 6754, #966bcd
+                        editor.commands.addCommand({   
+                            name: "del",
+                            bindKey: {win: "Delete", mac: "Delete|Ctrl-D|Shift-Delete"},
+                            exec: function(editor) { editor.remove("right"); },
+                            multiSelectAction: "forEach",
+                            scrollIntoView: "cursor"
+                        });
+                        $(document).unbind('keyup', meiEditor.deleteListener);
+                    }
+                });
+
                 $(document).on('keydown', function(e)
                 {
                     //if shift key was the key that was put down
                     if(e.shiftKey && !meiEditorSettings.editModeActive)
                     {
+                        //$(document).unbind('keyup', meiEditor.deleteSelection);
+                        //$(document).on('keyup', meiEditor.deleteSelection);
+
                         //if we're currently resizing one and shift key was just pressed, only make it draggable
                         if($(".resizableSelected").length)
                         {
@@ -952,8 +1075,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                                 meiEditorSettings.dragActive = false;
                             });
                         });
-
-                        
                     }
                 });
 
@@ -961,7 +1082,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 {
                     //if it was the shift key that was released
                     if((!e.shiftKey) && meiEditorSettings.editModeActive)
-                    {  
+                    {
                         //if we have something resizable active, turn everything back on that was originally off.
                         if($(".resizableSelected").length)
                         {
@@ -969,6 +1090,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             {
                                 $(".resizableSelected").resizable({
                                     handles: 'all',
+                                    create: checkResizable,
                                     start: function(e)
                                     {
                                         e.stopPropagation();
@@ -978,6 +1100,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                                     {
                                         e.stopPropagation();
                                         e.preventDefault();
+                                        checkResizable();
                                     },
                                     stop: function(e, ui)
                                     {
@@ -986,6 +1109,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                                         meiEditor.updateBox(ui.helper);
                                     }
                                 });
+   
+                                checkResizable();
                             }
 
                             if(!$(".resizableSelected").data('uiDraggable'))
