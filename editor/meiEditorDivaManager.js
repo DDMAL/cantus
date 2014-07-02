@@ -504,17 +504,19 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     meiEditor.updateCaches();
                 };
 
-                meiEditor.selectHighlight = function(divToSelect)
+                meiEditor.selectHighlight = function(divToSelect, findOverride)
                 {
-                    //if this is the first click, find the <neume> object
-                    var searchNeedle = new RegExp("<neume.*" + divToSelect.id, "g");
-
-                    var pageTitle = meiEditor.getActivePanel().text();
-                    var testSearch = meiEditorSettings.pageData[pageTitle].find(searchNeedle, 
+                    if(!findOverride)
                     {
-                        wrap: true,
-                        range: null
-                    });
+                        var searchNeedle = new RegExp("<neume.*" + divToSelect.id, "g");
+
+                        var pageTitle = meiEditor.getActivePanel().text();
+                        var testSearch = meiEditorSettings.pageData[pageTitle].find(searchNeedle, 
+                        {
+                            wrap: true,
+                            range: null
+                        });
+                    }
                     
                     $(divToSelect).addClass('selectedHover');
                     $(divToSelect).css('background-color', 'background-color:rgba(0, 255, 0, 0.1)');
@@ -673,17 +675,24 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     $(selectedMei).remove();
                     $(selectedImage).remove();
                 };
+
                 /*
                     This is a separate function as it's used in two locations.
                 */
                 meiEditor.reapplyEditorClickListener = function()
                 {
-                    $(".aceEditorPane").on('click', function()
+                    //commented out as per issue #36
+                    /*$(".aceEditorPane").on('click', function()
                     {
                         var activeTab = meiEditor.getActivePanel().text();
                         if (meiEditor.meiIsLinked(activeTab))
                         {
-                            var row = meiEditorSettings.pageData[activeTab].getCursorPosition().row;
+                            //if only one is selected, don't multiselect
+                            if($(".selectedHover").length == 1)
+                            {
+                                meiEditor.deselectAllHighlights();
+                            }
+                            var row = meiEditorSettings.pageData[activeTab].getSelectionRange().start.row;
                             var rowText = meiEditorSettings.pageData[activeTab].session.doc.getLine(row);
                             var matchArr = rowText.match(/m-[(0-9|a-f)]{8}(-[(0-9|a-f)]{4}){3}-[(0-9|a-f)]{12}/g);
                             var curMatch = matchArr.length;
@@ -691,11 +700,11 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             {
                                 if ($("#"+matchArr[curMatch]).length)
                                 {
-                                    meiEditor.selectHighlight($("#"+matchArr[curMatch]));
+                                    meiEditor.selectHighlight($("#"+matchArr[curMatch]), true);
                                 }
                             }
                         }
-                    });
+                    });*/
                 };
 
                 $.ajax( //this grabs the json file to get an meiEditor-local list of the image filepaths
@@ -743,7 +752,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     meiEditor.reapplyEditorClickListener();
                 });
 
-                meiEditor.events.subscribe("PageEdited", meiEditor.createHighlights);
                 meiEditor.events.subscribe("PageWasDeleted", function(pageName)
                 {
                     var retVal = meiEditor.meiIsLinked(pageName);
@@ -803,6 +811,10 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     editor = meiEditorSettings.pageData[pageTitle];
                     if($.contains(document.getElementById("diva-wrapper"), e.target))
                     {
+                        if(e.target.id.match(/diva-tile/))
+                        {
+                            meiEditor.deselectAllHighlights();
+                        }
                         editor.commands.addCommand({   
                             name: "del",
                             bindKey: {win: "Delete", mac: "Delete|Ctrl-D|Shift-Delete"},
