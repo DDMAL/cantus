@@ -13,6 +13,15 @@
     <script src="/static/js/bootstrap.js"></script>
     <script src="/static/js/diva.min.js"></script>
 
+{#    <meta content='width=960, initial-scale=2' name='viewport'/>#}
+    <meta name="viewport" content="width=device-width" />
+    <script>
+        if ($(window).width() < 760)
+        {
+            var window_width = $(window).width();
+            $('meta[name=viewport]').attr('content','width=760, initial-scale=0.40, maximum-scale=0.54, user-scalable=no');
+        }
+    </script>
 </head>
 <body>
     <div id="header-container">
