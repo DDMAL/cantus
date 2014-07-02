@@ -20,13 +20,14 @@
 }
 
 .diva-tools{
-	margin-top:.9em;
 	vertical-align: middle;
 }
 
 .diva-tools-left{
-	margin-left:.4em;
+	margin-top:.7em;
+	margin-left:1.4em;
 }
+
 .diva-tools-right{
 	margin-top:.5em;
 	margin-right:1.4em;
@@ -90,7 +91,7 @@ body{
 #cover-div{
 	position:fixed;
 }
-#lineQueryOverlay{
+#lineQueryOverlay, #resizableOverlay{
 	background-color:rgba(0, 0, 0, 0.5);
 	z-index:140;
 }
