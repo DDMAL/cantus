@@ -117,6 +117,7 @@
             {
                 console.log("Diva fullscreen callback error!");
             }
+            this.setDivaSize();
         }
     });
 
