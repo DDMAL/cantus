@@ -13,6 +13,15 @@
     <script src="/static/js/bootstrap.js"></script>
     <script src="/static/js/diva.min.js"></script>
 
+{#    <meta content='width=960, initial-scale=2' name='viewport'/>#}
+    <meta name="viewport" content="width=device-width" />
+    <script>
+        if ($(window).width() < 760)
+        {
+            var window_width = $(window).width();
+            $('meta[name=viewport]').attr('content','width=760, initial-scale=0.40, maximum-scale=0.54, user-scalable=no');
+        }
+    </script>
 </head>
 <body>
     <div id="header-container">
@@ -38,7 +47,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="/">Cantus Ultimus</a>
+        <a id="site-logo" class="navbar-brand" href="#">Cantus Ultimus</a>
     </div>
     <div class="navbar-collapse collapse navbar-responsive-collapse">
         <ul id="top-menu" class="nav navbar-nav navbar-right">  </ul>
@@ -55,16 +64,17 @@
 </script>
 
 <script type="text/template" id="top-menu-template">
-<% _.forEach(items, function(item) { %>
-    <li <% if (item.active) { %> class="active" <% } if (item.tags) { %><%= item.tags %><% } %>><a href="<%= item.url %>"><%= item.name %></a></li>
-<% }); %>
+{#<% _.forEach(items, function(item) { %>#}
+<% for (var i = 0; i < items.length; i++) { %>
+    <li id="top-menu-button-<%= i %>"<% if (items[i].active) { %> class="active" <% } if (items[i].tags) { %><%= items[i].tags %><% } %> ><a href="#"><%= items[i].name %></a></li>
+<% }%>
 </script>
 
 <script type="text/template" id="index-template">
 <div class="jumbotron">
     <h1>Hey, do you like chants?</h1>
     <p class="lead">If so, then we've got you covered!</p>
-    <p><a class="btn btn-lg btn-success" href="/manuscripts/" role="button">Check out the manuscripts</a></p>
+    <p><a id="manuscripts-hero-button" class="btn btn-lg btn-primary" href="#" role="button">Check out the manuscripts</a></p>
 </div>
 </script>
 
@@ -229,17 +239,17 @@
     <th>Provenance</th>
     <th># Chants</th>
 </tr>
-<% _.forEach(manuscripts, function(aManuscript) { %>
-<% if (aManuscript.chant_count > 0) { %>
+<% for (var i = 0; i < manuscripts.length; i++) { %>
+<% if (manuscripts[i].chant_count > 0) { %>
 <tr>
-    <td><a href="<%= aManuscript.url %>" ><%= aManuscript.name %></a></td>
-    <td><%= aManuscript.siglum %></td>
-    <td><%= aManuscript.date %></td>
-    <td><%= aManuscript.provenance %></td>
-    <td><%= aManuscript.chant_count %></td>
+    <td><a id="manuscript-list-<%= i %>" href="#" ><%= manuscripts[i].name %></a></td>
+    <td><%= manuscripts[i].siglum %></td>
+    <td><%= manuscripts[i].date %></td>
+    <td><%= manuscripts[i].provenance %></td>
+    <td><%= manuscripts[i].chant_count %></td>
 </tr>
 <% } %>
-<% }); %>
+<% } %>
 </table>
 </script>
 

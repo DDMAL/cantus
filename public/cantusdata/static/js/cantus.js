@@ -15,7 +15,18 @@
      *
      * @type {{setContainerHeight: setContainerHeight, setScrollableHeight: setScrollableHeight, setManuscriptContentContainerHeight: setManuscriptContentContainerHeight, setDivaHeight: setDivaHeight}}
      */
-    var BrowserResizer = {
+    var BrowserResizer = Backbone.View.extend
+    ({
+
+        initialize: function()
+        {
+            var self = this;
+            $(window).resize(function()
+            {
+                self.setAll();
+            });
+            this.listenTo(globalEventHandler, "renderView", this.setAll);
+        },
 
         setAll: function()
         {
@@ -54,18 +65,9 @@
                     $("#diva-toolbar").width());
 
         }
-    };
-
-    $(window).resize(function()
-    {
-        BrowserResizer.setAll();
     });
 
-    setTimeout(function()
-    {
-        console.log("ready.");
-        BrowserResizer.setAll();
-    },1000);
+    var resizer = new BrowserResizer();
 
 
     /*
@@ -336,6 +338,7 @@
                     chants: this.collection.toJSON()
                 }
             ));
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         },
 
@@ -388,6 +391,7 @@
             console.log(iipImageServerUrl + "fcgi-bin/iipsrv.fcgi");
             diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
             diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         },
 
@@ -639,7 +643,7 @@
                 }
             ));
             this.renderChantCollectionView();
-
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         },
 
@@ -661,31 +665,35 @@
         searchView: null,
         searchModalView: null,
 
+        events: {
+            "click #site-logo": function()
+            {
+                app.navigate("/", {trigger: true});
+            }
+        },
 
         initialize: function()
         {
             _.bindAll(this, 'render');
             this.template= _.template($('#header-template').html());
-
             // The search view that we will shove into the modal box
             this.searchView = new SearchView();
             // The modal box for the search pop-up
             this.searchModalView = new ModalView({title: "Search", view: this.searchView});
-
             // Create the TopMenuView with all of its options
             this.topMenuView = new TopMenuView(
                 {
                     menuItems: [
                         {
-                            name: "Home",
+                            name: "Manuscripts",
                             url: "/",
                             active: false
                         },
-                        {
-                            name: "Manuscripts",
-                            url: "/manuscripts/",
-                            active: false
-                        },
+//                        {
+//                            name: "Manuscripts",
+//                            url: "/manuscripts/",
+//                            active: false
+//                        },
                         {
                             name: "Search",
                             tags: 'data-toggle="modal" data-target="#myModal"',
@@ -694,53 +702,148 @@
                         }
                     ]
                 }
-            )
+            );
         },
 
         render: function()
         {
-//            console.log("Rendering Header View.");
             $(this.el).html(this.template());
             // Render subviews
             this.assign(this.topMenuView, '#top-menu');
             this.assign(this.searchModalView, '#search-modal');
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
 
     var TopMenuView = CantusAbstractView.extend
     ({
+        activeButton: 0,
+
         initialize: function(options)
         {
-            _.bindAll(this, 'render');
+            _.bindAll(this, 'render', 'registerClickEvents', "buttonClickCallback");
             this.template= _.template($('#top-menu-template').html());
-
             // Menu list items provided
             this.items = options.menuItems;
+            this.registerClickEvents();
+        },
+
+        /**
+         * Whenever a menu item is clicked, we want to push the state
+         */
+        registerClickEvents: function()
+        {
+            // Clear out the events
+            this.events = {};
+            // Menu items
+            for (var i = 0; i < this.items.length; i++)
+            {
+                this.events["click #top-menu-button-" + i] = "buttonClickCallback";
+            }
+            // Delegate the new events
+            this.delegateEvents();
+        },
+
+        buttonClickCallback: function(input)
+        {
+            // Figure out which button was pressed
+            var button_name = String(input.currentTarget.id);
+            var id = button_name.split('-')[button_name.split('-').length - 1];
+            // Now that we have that id, route the application to it's URL!
+
+            var new_url = this.items[id].url;
+            var old_url = Backbone.history.fragment;
+            console.log("new url:" + new_url.trim('/'));
+            console.log("old_url:" + old_url.trim('/'));
+
+            // Only route to the new URL if it really is a new url!
+            if (new_url === "#" || new_url.trim('/') === old_url.trim('/'))
+            {
+                return;
+            }
+            else
+            {
+                app.navigate(this.items[id].url, {trigger: true});
+                this.setActiveButton(id);
+            }
+        },
+
+        /**
+         * Set which menu button is active at the moment.
+         *
+         * @param index
+         */
+        setActiveButton: function(index)
+        {
+            if (index === this.activeButton) return;
+            this.items[this.activeButton].active = false;
+            this.activeButton = index;
+            this.items[this.activeButton].active = true;
+            this.render();
         },
 
         render: function()
         {
 //            console.log("Rendering Top Menu View.");
             $(this.el).html(this.template({items: this.items}));
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
 
     var ManuscriptCollectionView = CantusAbstractView.extend
     ({
-        template: null,
         collection: null,
 
         initialize: function(options)
         {
-            _.bindAll(this, 'render', 'update');
+            _.bindAll(this, 'render', 'update', 'registerClickEvents',
+                'buttonClickCallback');
             this.template= _.template($('#manuscript-collection-template').html());
-
             this.collection = new ManuscriptCollection(options.url);
-            this.collection.fetch();
-
+            this.listenTo(this.collection, 'sync', this.registerClickEvents);
             this.listenTo(this.collection, 'sync', this.render);
+        },
+
+        registerClickEvents: function()
+        {
+            console.log("Registering click events.");
+            // Clear out the events
+            this.events = {};
+            // Menu items
+            for (var i = 0; i < this.collection.toJSON().length; i++)
+            {
+                console.log(i);
+                this.events["click #manuscript-list-" + i] = "buttonClickCallback";
+            }
+            // Delegate the new events
+            this.delegateEvents();
+        },
+
+        buttonClickCallback: function(input)
+        {
+            console.log("CALLBACK");
+            console.log(input);
+            // Figure out which button was pressed
+            var button_name = String(input.currentTarget.id);
+            var id = button_name.split('-')[button_name.split('-').length - 1];
+            console.log("id: " + id);
+            // Now that we have that id, route the application to it's URL!
+            var newUrl = "manuscript/" + this.collection.toJSON()[id].id + "/";
+            var oldUrl = Backbone.history.fragment;
+            console.log("new url:" + newUrl.trim('/'));
+            console.log("old_url:" + oldUrl.trim('/'));
+
+            // Only route to the new URL if it really is a new url!
+            if (newUrl === "#" || newUrl.trim('/') === oldUrl.trim('/'))
+            {
+                return;
+            }
+            else
+            {
+                app.navigate(newUrl, {trigger: true});
+            }
         },
 
         update: function()
@@ -754,6 +857,7 @@
             $(this.el).html(this.template({
                 manuscripts: this.collection.toJSON()
             }));
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -788,7 +892,7 @@
             }
             // Render out the visitor
             this.assign(this.visitorView, '.modal-body');
-
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -976,6 +1080,7 @@
                     currentPage: this.currentPage
                 }
             ));
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -1120,6 +1225,7 @@
             console.log(this.$el.selector + '.search-result');
             $(this.$el.selector + ' .search-result').html("SEARCH RESULT VIEW!");
             this.assign(this.searchResultView, this.$el.selector + ' .search-result');
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -1208,7 +1314,7 @@
 //                console.log($(this.$el.selector + '.pagination'));
                 this.assign(this.paginationView, this.$el.selector + " .pagination");
             }
-
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -1245,6 +1351,7 @@
                     content: this.content
                 }
             ));
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -1316,6 +1423,7 @@
                     completion: this.completion
                 }
             ));
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -1333,23 +1441,23 @@
     ({
         el: $('#view-goes-here'),
 
-        // Subviews
-        headerView: null,
+        events: {
+            "click #manuscripts-hero-button" : function()
+            {
+                app.navigate("/manuscripts/", {trigger: true});
+            }
+        },
 
         initialize: function()
         {
             _.bindAll(this, 'render');
             this.template = _.template($('#index-template').html());
-            // Initialize the subviews
-            this.headerView = new HeaderView();
         },
 
         render: function()
         {
-//            console.log("Rendering Index Page View.");
             $(this.el).html(this.template());
-            // Render subviews
-            this.assign(this.headerView, '.header');
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -1369,7 +1477,6 @@
         searchView: null,
 
         // Subviews
-        headerView: null,
         divaView: null,
         folioView: null,
 
@@ -1380,7 +1487,6 @@
             this.manuscript = new Manuscript(
                 siteUrl + "manuscript/" + this.id + "/");
             // Build the subviews
-            this.headerView = new HeaderView();
             console.log("FOLIO TEST: " + options.folio);
             this.divaView = new DivaView(
                 {
@@ -1436,14 +1542,12 @@
             }));
 
             // Render subviews
-            this.assign(this.headerView, '.header');
-
             if (this.divaView !== undefined) {
                 this.assign(this.divaView, '#diva-wrapper');
             }
             this.renderFolioView();
             this.assign(this.searchView, '#manuscript-search');
-
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         },
 
@@ -1468,7 +1572,6 @@
         loaded: false,
 
         //Subviews
-        headerView: null,
         manuscriptCollectionView: null,
         loadingAlertView: null,
 
@@ -1477,7 +1580,6 @@
             _.bindAll(this, "render", "update", "afterFetch");
             this.template= _.template($('#manuscripts-page-template').html());
             //Subviews
-            this.headerView = new HeaderView();
             this.manuscriptCollectionView = new ManuscriptCollectionView(
                 {url: siteUrl + "manuscripts/"});
             this.loadingAlertView = new AlertView({content:"Loading manuscripts...", role:"info"});
@@ -1500,16 +1602,16 @@
         render: function()
         {
             $(this.el).html(this.template());
-            this.assign(this.headerView, '.header');
             if (this.loaded)
             {
                 this.assign(this.manuscriptCollectionView, '.manuscript-list');
             }
             else
             {
-                this.assign(this.loadingAlertView, '.manuscript-list');
-            }
 
+//                this.assign(this.loadingAlertView, '.manuscript-list');
+            }
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -1524,7 +1626,6 @@
         el: $('#view-goes-here'),
 
         // Subviews
-        headerView: null,
         searchView: null,
 
         initialize: function(options)
@@ -1532,7 +1633,6 @@
             _.bindAll(this, 'render');
             this.template= _.template($('#search-page-template').html());
             // Initialize the subviews
-            this.headerView = new HeaderView();
             this.searchView = new SearchView({query: options.query});
         },
 
@@ -1541,8 +1641,8 @@
 //            console.log("Rendering Search Page View.");
             $(this.el).html(this.template());
             // Render subviews
-            this.assign(this.headerView, '.header');
             this.assign(this.searchView, '#search');
+            globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
     });
@@ -1554,49 +1654,65 @@
 
     var Workspace = Backbone.Router.extend
     ({
+        // Common to all routes
+        headerView: null,
+        // Only on certain routes
+        indexView: null,
+        manuscriptsPageView: null,
+        manuscriptView: null,
+        searchPageView: null,
+
         routes: {
-            "" : "index",
+            "" : "manuscripts",
             "manuscript/:query/?folio=(:folio)": "manuscriptSingle",
             "manuscript/:query/": "manuscriptSingle",
             "manuscripts/": "manuscripts",
-            // TODO: Swap these two search lines to fix search result bug
-            "search/": "search",
             "search/?q=(:query)": "search",
+            "search/": "search",
             '*path': "notFound"
+        },
+
+        // We always want the header
+        initialize: function()
+        {
+            // There is always a header!
+            this.headerView = new HeaderView({el:".header"});
+            this.headerView.render();
+
+            // IndexPageView has no state, so we might as well instantiate it
+            this.indexView = new IndexPageView();
+            // Same with manuscripts page
+            this.manuscriptsPageView = new ManuscriptsPageView();
         },
 
         index: function()
         {
-            var index = new IndexPageView();
-            index.render();
+            this.indexView.render();
         },
 
         manuscripts: function()
         {
-            var manuscripts = new ManuscriptsPageView();
-            // Render initial templates
-            manuscripts.render();
-            // Fetch the data
-            manuscripts.update();
+            this.manuscriptsPageView.update();
+            this.manuscriptsPageView.render();
         },
 
         manuscriptSingle: function(query, folio)
         {
             console.log("Folio: " + folio);
-            var manuscript = new ManuscriptIndividualPageView(
+            this.manuscriptView = new ManuscriptIndividualPageView(
                 {
                     id: query,
                     folio: folio
                 }
             );
             // Fetch the data
-            manuscript.getData();
+            this.manuscriptView.getData();
         },
 
         search: function(query)
         {
-            var search = new SearchPageView({query: query});
-            search.render();
+            this.searchView = new SearchPageView({query: query});
+            this.searchView.render();
         },
 
         notFound: function()
