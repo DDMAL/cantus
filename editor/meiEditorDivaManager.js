@@ -77,7 +77,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     resizeTarget: "",
                     origDragInfo: {},
                     highlightedCache: [],
-                    resizableCache: []
+                    resizableCache: [],
+                    lastClicked: ""
                 });
 
                 meiEditor.addToNavbar("Diva page manager", "diva-manager");
@@ -179,6 +180,21 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     } 
                 };    
 
+                //detects whether the current resizable object is too small to hold the ui-resizable icon
+                var checkResizable = function()
+                {
+                    //if it's so small that the icon would be outside of the box
+                    var resizableIsTooSmall = ($(".resizableSelected").width() < 16 || $(".resizableSelected").height() < 16);
+                    //if it has the classes
+                    var resizableHasClasses = $(".resizableSelected > .ui-resizable-se").hasClass("ui-icon");
+
+                    //if these are even we need to toggle the classes
+                    if(resizableIsTooSmall === resizableHasClasses)
+                    {
+                        $(".resizableSelected > .ui-resizable-se").toggleClass("ui-icon ui-icon-gripsmall-diagonal-se");
+                    }
+                };
+
                 /*
                     Function called when sections are rehighlighted to refresh the listeners.
                 */
@@ -238,8 +254,9 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                     $(".overlay-box").click(function(e)
                     {
-                        e.preventDefault();
+                        //we stop propagation but trigger a click on the parent so that other boxes don't get selected but anything listening on a larger scale hears
                         e.stopPropagation();
+                        $(this).parent().trigger('click');
 
                         /*
                         no matter what, clear the old one. 
@@ -260,7 +277,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     $(".overlay-box").dblclick(function(e)
                     {
                         clearTimeout(meiEditorSettings.boxSingleTimeout);
-                        e.preventDefault();
                         e.stopPropagation();
 
                         //turn off scrollability and put the overlay down
@@ -435,6 +451,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             {
                                 e.stopPropagation();
                                 e.preventDefault();
+                                checkResizable();
                             },
                             stop: function(e, ui)
                             {
@@ -443,6 +460,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                                 meiEditor.updateBox(ui.helper);
                             }
                         });
+ 
+                        checkResizable();
                     }
                     if(!$(object).data('uiDraggable'))
                     {
@@ -514,10 +533,60 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     meiEditor.updateCaches();
                 };
 
+                meiEditor.deleteListener = function(e)
+                {
+                    if(e.keyCode == 46)
+                    {
+                        //if double-click active, we want to remove only the resizableSelected, otherwise we want to remove the selectedHover objects
+                        var selector = $("#resizableOverlay").length !== 0 ? ".resizableSelected" : ".selectedHover";
+
+                        var saveObject = [];
+                        var curItemIndex = $(selector).length;
+                        while (curItemIndex--)
+                        {
+                            var curItem = $(selector)[curItemIndex];    
+                            var itemID = $(curItem).attr('id');
+                            
+                            //remove item from display
+                            $(curItem).remove();
+
+                            //perform a new search to grab all occurences of the id and to delete both lines
+                            var pageTitle = meiEditor.getActivePanel().text();
+                            var uuidSearch = editor.findAll(itemID, 
+                            {
+                                wrap: true,
+                                range: null
+                            });
+
+                            //this may not be the right way to do it, but "findAll" returns how many it found, and there doesn't seem to be a clear way to select everything at once. This accurately deletes all instances, however.
+                            while (uuidSearch)
+                            {
+                                var row = editor.getSelectionRange().start.row;
+                                var text = editor.session.doc.getLine(row);
+                                saveObject.push({'doc': pageTitle, 'row': row, 'text': text});
+
+                                editor.removeLines();
+                                uuidSearch = editor.findAll(itemID, 
+                                {
+                                    wrap: true,
+                                    range: null
+                                });
+                            }
+                        }
+
+                        //this needs to be at the end so we don't remove the object before the while loop above; object also doesn't exist so we need to base this off what the selector was determined to be
+                        if(selector == ".resizableSelected"){
+                            meiEditor.deselectResizable(".resizableSelected");
+                        }
+
+                        meiEditor.createHighlights();
+                        meiEditor.localLog("Deleted highlights.");   
+                    }
+                };
+
                 /*
                     Automatically links all MEI files and Diva files by snipping off file extensions and finding matches.
                 */
-
                 meiEditor.autoLinkFiles = function()
                 {
                     var linkedArr = [];
@@ -728,11 +797,44 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                 });
 
+                $(document).on('click', function(e)
+                {
+                    var pageTitle = meiEditor.getActivePanel().text();
+                    editor = meiEditorSettings.pageData[pageTitle];
+                    if($.contains(document.getElementById("diva-wrapper"), e.target))
+                    {
+                        editor.commands.addCommand({   
+                            name: "del",
+                            bindKey: {win: "Delete", mac: "Delete|Ctrl-D|Shift-Delete"},
+                            exec: function(editor) { },
+                            multiSelectAction: "forEach",
+                            scrollIntoView: "cursor"
+                        });
+
+                        $(document).on('keyup', meiEditor.deleteListener);
+                    } 
+                    else
+                    { 
+                        //taken from ace.js line 6754, #966bcd
+                        editor.commands.addCommand({   
+                            name: "del",
+                            bindKey: {win: "Delete", mac: "Delete|Ctrl-D|Shift-Delete"},
+                            exec: function(editor) { editor.remove("right"); },
+                            multiSelectAction: "forEach",
+                            scrollIntoView: "cursor"
+                        });
+                        $(document).unbind('keyup', meiEditor.deleteListener);
+                    }
+                });
+
                 $(document).on('keydown', function(e)
                 {
                     //if shift key was the key that was put down
                     if(e.shiftKey && !meiEditorSettings.editModeActive)
                     {
+                        //$(document).unbind('keyup', meiEditor.deleteSelection);
+                        //$(document).on('keyup', meiEditor.deleteSelection);
+
                         //if we're currently resizing one and shift key was just pressed, only make it draggable
                         if($(".resizableSelected").length)
                         {
@@ -961,65 +1063,14 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                                 meiEditorSettings.dragActive = false;
                             });
                         });
-
-                        
                     }
                 });
 
                 $(document).on('keyup', function(e)
                 {
-                    if (e.keyCode == 46) //delete, as backspace triggers a history.back event
-                    {
-                        e.preventDefault();
-
-                        //if double-click active, we want to remove only the resizableSelected, otherwise we want to remove the selectedHover objects
-                        var selector = $("#resizableOverlay").length !== 0 ? ".resizableSelected" : ".selectedHover";
-
-                        var saveObject = [];
-                        var curItemIndex = $(selector).length;
-                        while (curItemIndex--)
-                        {
-                            var curItem = $(selector)[curItemIndex];    
-                            var itemID = $(curItem).attr('id');
-                            
-                            //remove item from display
-                            $(curItem).remove();
-
-                            //perform a new search to grab all occurences of the id and to delete both lines
-                            var pageTitle = meiEditor.getActivePanel().text();
-                            var uuidSearch = meiEditorSettings.pageData[pageTitle].findAll(itemID, 
-                            {
-                                wrap: true,
-                                range: null
-                            });
-
-                            //this may not be the right way to do it, but "findAll" returns how many it found, and there doesn't seem to be a clear way to select everything at once. This accurately deletes all instances, however.
-                            while (uuidSearch)
-                            {
-                                var row = meiEditorSettings.pageData[pageTitle].getSelectionRange().start.row;
-                                var text = meiEditorSettings.pageData[pageTitle].session.doc.getLine(row);
-                                saveObject.push({'doc': pageTitle, 'row': row, 'text': text});
-
-                                meiEditorSettings.pageData[pageTitle].removeLines();
-                                uuidSearch = meiEditorSettings.pageData[pageTitle].findAll(itemID, 
-                                {
-                                    wrap: true,
-                                    range: null
-                                });
-                            }
-                        }
-
-                        //this needs to be at the end so we don't remove the object before the while loop above; object also doesn't exist so we need to base this off what the selector was determined to be
-                        if(selector == ".resizableSelected"){
-                            meiEditor.deselectResizable(".resizableSelected");
-                        }
-
-                        meiEditor.createHighlights();
-                        meiEditor.localLog("Deleted highlights.");                                
-                    }
                     //if it was the shift key that was released
-                    else if((!e.shiftKey) && meiEditorSettings.editModeActive)
-                    {  
+                    if((!e.shiftKey) && meiEditorSettings.editModeActive)
+                    {
                         //if we have something resizable active, turn everything back on that was originally off.
                         if($(".resizableSelected").length)
                         {
@@ -1027,6 +1078,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             {
                                 $(".resizableSelected").resizable({
                                     handles: 'all',
+                                    create: checkResizable,
                                     start: function(e)
                                     {
                                         e.stopPropagation();
@@ -1036,6 +1088,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                                     {
                                         e.stopPropagation();
                                         e.preventDefault();
+                                        checkResizable();
                                     },
                                     stop: function(e, ui)
                                     {
@@ -1044,6 +1097,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                                         meiEditor.updateBox(ui.helper);
                                     }
                                 });
+   
+                                checkResizable();
                             }
 
                             if(!$(".resizableSelected").data('uiDraggable'))
