@@ -1,8 +1,8 @@
 (function($){
 
     const siteUrl = "/";
-    const iipImageServerUrl = "http://cantus.simssa.ca/iip/";
-    const divaImageDirectory = "/opt/cantus/";
+    const iipImageServerUrl = "http://diva.simssa.ca/";
+    const divaImageDirectory = "/srv/images/cantus/";
 
     // Global Event Handler for global events
     var globalEventHandler = {};
@@ -18,18 +18,42 @@
     var BrowserResizer = Backbone.View.extend
     ({
 
+        divaFullScreen: null,
+        timedQuery: null,
+
         initialize: function()
         {
+            console.log("initialize browser resizer!");
+            _.bindAll(this, 'timedQuerySetAll', 'setAll', 'setContainerHeight',
+                'setScrollableHeight', 'setManuscriptContentContainerHeight',
+            'setDivaSize', 'setDivaFullScreen');
             var self = this;
             $(window).resize(function()
             {
-                self.setAll();
+                console.log("Window resize");
+                self.timedQuerySetAll();
             });
-            this.listenTo(globalEventHandler, "renderView", this.setAll);
+            this.divaFullScreen = "lol";
+            this.listenTo(globalEventHandler, "renderView",
+                this.timedQuerySetAll);
+            this.listenTo(globalEventHandler, "divaFullScreen",
+                function(){this.setDivaFullScreen(true);});
+            this.listenTo(globalEventHandler, "divaNotFullScreen",
+                function(){this.setDivaFullScreen(false);});
+        },
+
+        /**
+         * Set a timed query for resizing the window.
+         */
+        timedQuerySetAll: function()
+        {
+            window.clearTimeout(this.timedQuery);
+            this.timedQuery = window.setTimeout(this.setAll, 250);
         },
 
         setAll: function()
         {
+            console.log("Resizing browser.");
             this.setContainerHeight();
             this.setManuscriptContentContainerHeight();
             this.setDivaSize();
@@ -55,15 +79,45 @@
 
         setDivaSize: function()
         {
-            $('.diva-outer').css("height",
-                    $("#content-container").height() - 75);
+            if (this.divaFullScreen === true)
+            {
+                console.log("Diva in full screen? " + this.divaFullScreen);
+//                $('.diva-inner').css("width", $(window).width());
+            }
+            else
+            {
+                console.log("Diva in full screen? " + this.divaFullScreen);
+                $('.diva-outer').css("height",
+                        $("#content-container").height() - 75);
+                $('.diva-outer').css("width", $("#diva-toolbar").width());
+                $('.diva-inner').css("width", $("#diva-toolbar").width());
+            }
+        },
 
-            // Temporary workaround for diva size issue
-            $('.diva-outer').css("width",
-                    $("#diva-toolbar").width());
-            $('.diva-inner').css("width",
-                    $("#diva-toolbar").width());
-
+        /**
+         * Resize the Diva viewer into fullscreen mode when necessary
+         *
+         * @param isFullScreen
+         */
+        setDivaFullScreen: function(isFullScreen)
+        {
+            if (isFullScreen === true)
+            {
+                console.log("Setting Diva to full screen.");
+                this.divaFullScreen = true;
+                console.log(this.divaFullScreen);
+            }
+            else if (isFullScreen === false)
+            {
+                console.log("Setting Diva to not full screen.");
+                this.divaFullScreen = false;
+                console.log(this.divaFullScreen);
+            }
+            else
+            {
+                console.log("Diva fullscreen callback error!");
+            }
+            this.setDivaSize();
         }
     });
 
@@ -364,7 +418,7 @@
         initialize: function(options)
         {
             _.bindAll(this, 'render', 'storeFolioIndex', 'triggerChange',
-                'storeInitialFolio');
+                'storeInitialFolio', 'setGlobalFullScreen');
             this.el = "#diva-wrapper";
             this.setManuscript(options.siglum, options.folio);
         },
@@ -391,8 +445,21 @@
             console.log(iipImageServerUrl + "fcgi-bin/iipsrv.fcgi");
             diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
             diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
+            diva.Events.subscribe("ModeDidSwitch", this.setGlobalFullScreen);
             globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
+        },
+
+        setGlobalFullScreen: function(isFullScreen)
+        {
+            if (isFullScreen === true)
+            {
+                globalEventHandler.trigger("divaFullScreen");
+            }
+            else if (isFullScreen === false)
+            {
+                globalEventHandler.trigger("divaNotFullScreen");
+            }
         },
 
         /**
@@ -1119,7 +1186,7 @@
                 {
                     this.query = options.query;
                 }
-                else
+                elses
                 {
                     this.query = "";
                 }
@@ -1162,10 +1229,13 @@
 
             if (newQuery !== this.query) {
                 this.query = newQuery;
-
-                console.log("New search:");
-
-                if (this.queryPostScript !== null)
+                console.log("New search:" + newQuery);
+                if (newQuery === "")
+                {
+                    // Empty search, so hide the searchResultView
+                    this.searchResultView.hide();
+                }
+                else if (this.queryPostScript !== null)
                 {
                     // Attach this.queryPostScript if available
                     this.searchResultView.changeQuery(newQuery + " "
@@ -1178,7 +1248,7 @@
                     this.searchResultView.changeQuery(newQuery);
                     console.log(newQuery);
                 }
-//                app.navigate("/search/?q=" + this.query);
+                // app.navigate("/search/?q=" + this.query);
             }
         },
 
@@ -1193,7 +1263,7 @@
             this.events = {}
             // Register them
             console.log("click .search-button");
-//            this.events["click " + this.$el.selector + ".search-button"] = "newSearch";
+            // this.events["click " + this.$el.selector + ".search-button"] = "newSearch";
             this.events["change .search-input"] = "newSearch";
             this.events["input .search-input"] = "autoNewSearch";
 
@@ -1306,14 +1376,20 @@
             if (this.model !== undefined)
             {
                 $(this.el).html(this.template({results: this.model.getFormattedData()}));
+                if (this.model.getFormattedData().length !== 0 && this.paginationView !== null)
+                {
+                    console.log("Pagination Assignment:");
+                    this.assign(this.paginationView, this.$el.selector + " .pagination");
+                }
             }
-            if (this.paginationView !== null)
-            {
-                console.log("Pagination Assignment:");
-//                console.log(this.$el.selector + '.pagination');
-//                console.log($(this.$el.selector + '.pagination'));
-                this.assign(this.paginationView, this.$el.selector + " .pagination");
-            }
+            globalEventHandler.trigger("renderView");
+            return this.trigger('render', this);
+        },
+
+        hide: function()
+        {
+            console.log("Hiding search results.");
+            $(this.el).html(this.template({results: []}));
             globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
@@ -1527,7 +1603,7 @@
         afterFetch: function()
         {
             // Set the search view to only search this manuscript
-            this.searchView.setQueryPostScript('AND manuscript:"'
+            this.searchView.setQueryPostScript(' AND manuscript:"'
                 + this.manuscript.toJSON().siglum + '"');
             // TODO: Diva is being initialized twice!!!!!!!
             this.divaView.setManuscript(this.manuscript.get("siglum_slug"));
