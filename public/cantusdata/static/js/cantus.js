@@ -18,19 +18,42 @@
     var BrowserResizer = Backbone.View.extend
     ({
 
+        divaFullScreen: null,
+        timedQuery: null,
+
         initialize: function()
         {
+            console.log("initialize browser resizer!");
+            _.bindAll(this, 'timedQuerySetAll', 'setAll', 'setContainerHeight',
+                'setScrollableHeight', 'setManuscriptContentContainerHeight',
+            'setDivaSize', 'setDivaFullScreen');
             var self = this;
             $(window).resize(function()
             {
-                self.setAll();
+                console.log("Window resize");
+                self.timedQuerySetAll();
             });
+            this.divaFullScreen = "lol";
+            this.listenTo(globalEventHandler, "renderView",
+                this.timedQuerySetAll);
+            this.listenTo(globalEventHandler, "divaFullScreen",
+                function(){this.setDivaFullScreen(true);});
+            this.listenTo(globalEventHandler, "divaNotFullScreen",
+                function(){this.setDivaFullScreen(false);});
+        },
 
-            this.listenTo(globalEventHandler, "renderView", this.setAll);
+        /**
+         * Set a timed query for resizing the window.
+         */
+        timedQuerySetAll: function()
+        {
+            window.clearTimeout(this.timedQuery);
+            this.timedQuery = window.setTimeout(this.setAll, 250);
         },
 
         setAll: function()
         {
+            console.log("Resizing browser.");
             this.setContainerHeight();
             this.setManuscriptContentContainerHeight();
             this.setDivaSize();
@@ -56,15 +79,44 @@
 
         setDivaSize: function()
         {
-            $('.diva-outer').css("height",
-                    $("#content-container").height() - 75);
+            if (this.divaFullScreen === true)
+            {
+                console.log("Diva in full screen? " + this.divaFullScreen);
+//                $('.diva-inner').css("width", $(window).width());
+            }
+            else
+            {
+                console.log("Diva in full screen? " + this.divaFullScreen);
+                $('.diva-outer').css("height",
+                        $("#content-container").height() - 75);
+                $('.diva-outer').css("width", $("#diva-toolbar").width());
+                $('.diva-inner').css("width", $("#diva-toolbar").width());
+            }
+        },
 
-            // Temporary workaround for diva size issue
-            $('.diva-outer').css("width",
-                    $("#diva-toolbar").width());
-            $('.diva-inner').css("width",
-                    $("#diva-toolbar").width());
-
+        /**
+         * Resize the Diva viewer into fullscreen mode when necessary
+         *
+         * @param isFullScreen
+         */
+        setDivaFullScreen: function(isFullScreen)
+        {
+            if (isFullScreen === true)
+            {
+                console.log("Setting Diva to full screen.");
+                this.divaFullScreen = true;
+                console.log(this.divaFullScreen);
+            }
+            else if (isFullScreen === false)
+            {
+                console.log("Setting Diva to not full screen.");
+                this.divaFullScreen = false;
+                console.log(this.divaFullScreen);
+            }
+            else
+            {
+                console.log("Diva fullscreen callback error!");
+            }
         }
     });
 
@@ -365,7 +417,7 @@
         initialize: function(options)
         {
             _.bindAll(this, 'render', 'storeFolioIndex', 'triggerChange',
-                'storeInitialFolio');
+                'storeInitialFolio', 'setGlobalFullScreen');
             this.el = "#diva-wrapper";
             this.setManuscript(options.siglum, options.folio);
         },
@@ -392,8 +444,21 @@
             console.log(iipImageServerUrl + "fcgi-bin/iipsrv.fcgi");
             diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
             diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
+            diva.Events.subscribe("ModeDidSwitch", this.setGlobalFullScreen);
             globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
+        },
+
+        setGlobalFullScreen: function(isFullScreen)
+        {
+            if (isFullScreen === true)
+            {
+                globalEventHandler.trigger("divaFullScreen");
+            }
+            else if (isFullScreen === false)
+            {
+                globalEventHandler.trigger("divaNotFullScreen");
+            }
         },
 
         /**
