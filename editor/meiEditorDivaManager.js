@@ -811,7 +811,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     editor = meiEditorSettings.pageData[pageTitle];
                     if($.contains(document.getElementById("diva-wrapper"), e.target))
                     {
-                        if(e.target.id.match(/diva-tile/))
+                        if(e.target.hasClass("diva-document-title"))
                         {
                             meiEditor.deselectAllHighlights();
                         }
