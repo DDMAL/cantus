@@ -1,8 +1,8 @@
 (function($){
 
     const siteUrl = "/";
-    const iipImageServerUrl = "http://cantus.simssa.ca/iip/";
-    const divaImageDirectory = "/opt/cantus/";
+    const iipImageServerUrl = "http://diva.simssa.ca/";
+    const divaImageDirectory = "/srv/images/cantus/";
 
     // Global Event Handler for global events
     var globalEventHandler = {};
@@ -25,6 +25,7 @@
             {
                 self.setAll();
             });
+
             this.listenTo(globalEventHandler, "renderView", this.setAll);
         },
 
@@ -1527,7 +1528,7 @@
         afterFetch: function()
         {
             // Set the search view to only search this manuscript
-            this.searchView.setQueryPostScript('AND manuscript:"'
+            this.searchView.setQueryPostScript(' AND manuscript:"'
                 + this.manuscript.toJSON().siglum + '"');
             // TODO: Diva is being initialized twice!!!!!!!
             this.divaView.setManuscript(this.manuscript.get("siglum_slug"));
