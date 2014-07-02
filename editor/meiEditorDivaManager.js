@@ -144,11 +144,17 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     "<h4>Help for 'Diva Page Manager' menu:</h4>" + 
                     "<li>To get highlights from a file to show up in the Diva pane, click 'Link files to Diva images...' from the dropdown menu and select the files you want to link.</li>" + 
                     "<br><li>'Auto-link files by filename' will automatically strip file extensions and try to match files so that '001.mei' and '001.tiff' become linked.</li>" + 
-                    "<br><li>Changes you make to the MEI document will not automatically transfer over; click 'Update Diva' to reload the highlighted objects in the image viewer.</li>" + 
-                    "<br><li>Clicking on a highlight then clicking on another will unselect the first one; to select multiple, hold shift and drag to select every highlight within a box or hold shift and click multiple highlights to select them all.</li>" + 
-                    "<br><li>To deselect a single highlight, shift+click on the highlight.</li>" +
-                    "<br><li>To deselect all highlights, choose the 'Clear selection' option of this dropdown.</li>" + 
+                    "<br><li>Changes you make to the MEI document will not automatically transfer over; click the 'Update Diva' dropdown option to reload the highlighted objects in the image viewer.</li>" + 
+                    "<br><li>Clicking on a highlight will select it and move the MEI editor to its line.</li>" +
+                    "<li>Holding shift and clicking will select additional highlights.</li>" +
+                    "<li>Holding shfit and dragging the mouse will select everything within a box.</li>" + 
+                    "<li>To deselect a single highlight, hold shift and click on a selected highlight.</li>" +
+                    "<li>To deselect all highlights, choose the 'Clear selection' option of this dropdown.</li>" + 
                     "<br><li>To create a new highlight, shift+click on empty space on the image.</li>" +
+                    "<li>To resize or move a highlight, double-click on it.</li>" +
+                    "<li style='margin-left:0.25in'>Click and drag on the edge of the highlight to resize it.</li>" +
+                    "<li style='margin-left:0.25in'>Click and drag on the centre of the highlight or with the shift key down to move it.</li>" +
+                    "<li style='margin-left:0.25in'>Press the 'Escape' key to leave resize/move mode.</li>" +
                     "<br><li>Press the 'delete' key on your keyboard to delete all selected highlights and the MEI lines associated with them.</li>");
 
                 //the div that pops up when highlights are hovered over
@@ -178,7 +184,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 */
                 var reapplyBoxListeners = function()
                 {
-                    if($("#lineQueryOverlay").length !== 0)
+                    if($("#resizableOverlay").length !== 0)
                     {
                         return;
                     }
@@ -259,10 +265,10 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                         //turn off scrollability and put the overlay down
                         meiEditorSettings.divaInstance.disableScrollable();
-                        $("#diva-wrapper").append("<div id='lineQueryOverlay'></div>");
-                        $("#lineQueryOverlay").offset({'top': $("#diva-wrapper").offset().top, 'left': $("#diva-wrapper").offset().left});
-                        $("#lineQueryOverlay").width($("#diva-wrapper").width());
-                        $("#lineQueryOverlay").height($("#diva-wrapper").height());
+                        $("#diva-wrapper").append("<div id='resizableOverlay'></div>");
+                        $("#resizableOverlay").offset({'top': $("#diva-wrapper").offset().top, 'left': $("#diva-wrapper").offset().left});
+                        $("#resizableOverlay").width($("#diva-wrapper").width());
+                        $("#resizableOverlay").height($("#diva-wrapper").height());
 
                         origObject = e.target;           
                         $("#hover-div").css('display', 'none'); //hides the div
@@ -463,13 +469,16 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 //deselects a resizable object
                 meiEditor.deselectResizable = function(object)
                 {
-                    $(object).draggable('destroy');
-                    $(object).resizable('destroy');
-                    $(object).css('z-index', $(".overlay-box").css('z-index'));
-                    $(object).css('background-color', 'rgba(255, 0, 0, 0.2)');
-                    $(object).toggleClass('resizableSelected');
+                    if($(object).length !== 0)
+                    {
+                        $(object).draggable('destroy');
+                        $(object).resizable('destroy');
+                        $(object).css('z-index', $(".overlay-box").css('z-index'));
+                        $(object).css('background-color', 'rgba(255, 0, 0, 0.2)');
+                        $(object).toggleClass('resizableSelected');
+                    }
 
-                    $("#lineQueryOverlay").remove();
+                    $("#resizableOverlay").remove();
                     meiEditorSettings.divaInstance.enableScrollable();
                     reapplyBoxListeners();
                     $("#diva-wrapper").unbind('resize');
@@ -959,8 +968,57 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                 $(document).on('keyup', function(e)
                 {
+                    if (e.keyCode == 46) //delete, as backspace triggers a history.back event
+                    {
+                        e.preventDefault();
+
+                        //if double-click active, we want to remove only the resizableSelected, otherwise we want to remove the selectedHover objects
+                        var selector = $("#resizableOverlay").length !== 0 ? ".resizableSelected" : ".selectedHover";
+
+                        var saveObject = [];
+                        var curItemIndex = $(selector).length;
+                        while (curItemIndex--)
+                        {
+                            var curItem = $(selector)[curItemIndex];    
+                            var itemID = $(curItem).attr('id');
+                            
+                            //remove item from display
+                            $(curItem).remove();
+
+                            //perform a new search to grab all occurences of the id and to delete both lines
+                            var pageTitle = meiEditor.getActivePanel().text();
+                            var uuidSearch = meiEditorSettings.pageData[pageTitle].findAll(itemID, 
+                            {
+                                wrap: true,
+                                range: null
+                            });
+
+                            //this may not be the right way to do it, but "findAll" returns how many it found, and there doesn't seem to be a clear way to select everything at once. This accurately deletes all instances, however.
+                            while (uuidSearch)
+                            {
+                                var row = meiEditorSettings.pageData[pageTitle].getSelectionRange().start.row;
+                                var text = meiEditorSettings.pageData[pageTitle].session.doc.getLine(row);
+                                saveObject.push({'doc': pageTitle, 'row': row, 'text': text});
+
+                                meiEditorSettings.pageData[pageTitle].removeLines();
+                                uuidSearch = meiEditorSettings.pageData[pageTitle].findAll(itemID, 
+                                {
+                                    wrap: true,
+                                    range: null
+                                });
+                            }
+                        }
+
+                        //this needs to be at the end so we don't remove the object before the while loop above; object also doesn't exist so we need to base this off what the selector was determined to be
+                        if(selector == ".resizableSelected"){
+                            meiEditor.deselectResizable(".resizableSelected");
+                        }
+
+                        meiEditor.createHighlights();
+                        meiEditor.localLog("Deleted highlights.");                                
+                    }
                     //if it was the shift key that was released
-                    if((!e.shiftKey) && meiEditorSettings.editModeActive)
+                    else if((!e.shiftKey) && meiEditorSettings.editModeActive)
                     {  
                         //if we have something resizable active, turn everything back on that was originally off.
                         if($(".resizableSelected").length)
