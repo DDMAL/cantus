@@ -1375,20 +1375,11 @@
             // Only render if the model is defined
             if (this.model !== undefined)
             {
-                if (this.model.getFormattedData().length === 0)
+                $(this.el).html(this.template({results: this.model.getFormattedData()}));
+                if (this.model.getFormattedData().length !== 0 && this.paginationView !== null)
                 {
-                    $(this.el).html(this.template({results: []}));
-                }
-                else
-                {
-                    $(this.el).html(this.template({results: this.model.getFormattedData()}));
-                    if (this.paginationView !== null)
-                    {
-                        console.log("Pagination Assignment:");
-        //                console.log(this.$el.selector + '.pagination');
-        //                console.log($(this.$el.selector + '.pagination'));
-                        this.assign(this.paginationView, this.$el.selector + " .pagination");
-                    }
+                    console.log("Pagination Assignment:");
+                    this.assign(this.paginationView, this.$el.selector + " .pagination");
                 }
             }
             globalEventHandler.trigger("renderView");
