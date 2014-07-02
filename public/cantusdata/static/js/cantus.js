@@ -1186,7 +1186,7 @@
                 {
                     this.query = options.query;
                 }
-                else
+                elses
                 {
                     this.query = "";
                 }
@@ -1229,10 +1229,13 @@
 
             if (newQuery !== this.query) {
                 this.query = newQuery;
-
-                console.log("New search:");
-
-                if (this.queryPostScript !== null)
+                console.log("New search:" + newQuery);
+                if (newQuery === "")
+                {
+                    // Empty search, so hide the searchResultView
+                    this.searchResultView.hide();
+                }
+                else if (this.queryPostScript !== null)
                 {
                     // Attach this.queryPostScript if available
                     this.searchResultView.changeQuery(newQuery + " "
@@ -1245,7 +1248,7 @@
                     this.searchResultView.changeQuery(newQuery);
                     console.log(newQuery);
                 }
-//                app.navigate("/search/?q=" + this.query);
+                // app.navigate("/search/?q=" + this.query);
             }
         },
 
@@ -1260,7 +1263,7 @@
             this.events = {}
             // Register them
             console.log("click .search-button");
-//            this.events["click " + this.$el.selector + ".search-button"] = "newSearch";
+            // this.events["click " + this.$el.selector + ".search-button"] = "newSearch";
             this.events["change .search-input"] = "newSearch";
             this.events["input .search-input"] = "autoNewSearch";
 
@@ -1372,15 +1375,30 @@
             // Only render if the model is defined
             if (this.model !== undefined)
             {
-                $(this.el).html(this.template({results: this.model.getFormattedData()}));
+                if (this.model.getFormattedData().length === 0)
+                {
+                    $(this.el).html(this.template({results: []}));
+                }
+                else
+                {
+                    $(this.el).html(this.template({results: this.model.getFormattedData()}));
+                    if (this.paginationView !== null)
+                    {
+                        console.log("Pagination Assignment:");
+        //                console.log(this.$el.selector + '.pagination');
+        //                console.log($(this.$el.selector + '.pagination'));
+                        this.assign(this.paginationView, this.$el.selector + " .pagination");
+                    }
+                }
             }
-            if (this.paginationView !== null)
-            {
-                console.log("Pagination Assignment:");
-//                console.log(this.$el.selector + '.pagination');
-//                console.log($(this.$el.selector + '.pagination'));
-                this.assign(this.paginationView, this.$el.selector + " .pagination");
-            }
+            globalEventHandler.trigger("renderView");
+            return this.trigger('render', this);
+        },
+
+        hide: function()
+        {
+            console.log("Hiding search results.");
+            $(this.el).html(this.template({results: []}));
             globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
