@@ -99,6 +99,14 @@
                 $(".diva-page-label").css({
                     'margin-top': '5px'
                 });
+                $("#loadingScreen").animate({
+                    'height': '30px',
+                    'line-height': '30px',
+                    'opacity': '0'
+                }, {
+                    duration: 300,
+                    complete: function(){$("#loadingScreen").remove();}
+                });
             });
         };
 
@@ -107,5 +115,6 @@
     <body>
         <div id="mei-editor"></div>
         <div id="diva-wrapper"></div>
+        <div id="loadingScreen">The ACE MEI Editor is loading...</div>
     </body>
 </html> 
