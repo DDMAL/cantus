@@ -594,6 +594,30 @@
         triggerChange: function()
         {
             globalEventHandler.trigger("manuscriptChangeFolio");
+        },
+
+        /**
+         * Draw boxes on the Diva viewer.  These usually correspond to
+         * music notation on a manuscript page.
+         *
+         * @param boxSet [ {p,w,h,x,y}, ... ]
+         */
+        paintBoxes: function(boxSet)
+        {
+            this.$el.data('diva').resetHighlights();
+            // Use the Diva highlight plugin to draw the boxes
+            for (var i = 0; i < boxSet.length; i++) {
+                this.$el.data('diva').highlightOnPage
+                (
+                    boxSet[i].p, // The page
+                    [{
+                        'width': boxSet[i].w,
+                        'height': boxSet[i].h,
+                        'ulx': boxSet[i].x,
+                        'uly': boxSet[i].y
+                    }]
+                );
+            }
         }
     });
 
