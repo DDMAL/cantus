@@ -251,7 +251,8 @@
                     case "chant":
                         newElement.name = current.incipit;
                         // Build the url
-                        // TODO: Have this work with non-numbered folios
+                        // We have stored the manuscript name in Solr
+                        newElement.manuscript = current.manuscript_name_hidden;
                         newElement.url = "/manuscript/" + current.manuscript_id
                             + "/?folio=" + current.folio;
                         break;

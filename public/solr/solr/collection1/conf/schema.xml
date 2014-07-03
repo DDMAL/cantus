@@ -120,6 +120,7 @@
 
     <field name="manuscript" type="text_general" indexed="true" stored="true"/>
     <field name="manuscript_id" type="int" indexed="true" stored="true"/>
+    <field name="manuscript_name_hidden" type="string" indexed="false" stored="true" />
 
     <field name="marginalia" type="text_general" indexed="true" stored="true"/>
     <field name="folio" type="text_general" indexed="true" stored="true"/>
@@ -127,25 +128,25 @@
     <field name="sequence" type="int" indexed="true" stored="true" />
     <field name="cantus_id" type="text_general" indexed="true" stored="true"/>
 
-    <field name="feast" type="text_general" indexed="true" stored="true"/>
+    <field name="feast" type="string" indexed="true" stored="true"/>
     <field name="feast_date" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="feast_code" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="feast_explanation" type="text_general" indexed="true" stored="true" multiValued="false" />
 
 
-    <field name="office" type="text_general" indexed="true" stored="true" multiValued="false" />
-    <field name="genre" type="text_general" indexed="true" stored="true" multiValued="false" />
-    <field name="position" type="text_general" indexed="true" stored="true" multiValued="false" />
-    <field name="mode" type="text_general" indexed="true" stored="true" multiValued="false" />
-    <field name="differentia" type="text_general" indexed="true" stored="true" multiValued="false" />
-    <field name="finalis" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="office" type="string" indexed="true" stored="true" multiValued="false" />
+    <field name="genre" type="string" indexed="true" stored="true" multiValued="false" />
+    <field name="position" type="string" indexed="true" stored="true" multiValued="false" />
+    <field name="mode" type="string" indexed="true" stored="true" multiValued="false" />
+    <field name="differentia" type="string" indexed="true" stored="true" multiValued="false" />
+    <field name="finalis" type="string" indexed="true" stored="true" multiValued="false" />
     <field name="incipit" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="full_text" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="volpiano" type="text_general" indexed="true" stored="true" multiValued="false" />
 
      <!-- Fields related to concordances  -->
     <field name="concordance_citation" type="text_general" indexed="true" stored="true" />
-    <field name="concordances" type="text_general" indexed="true" stored="true" multiValued="true" />
+    <field name="concordances" type="string" indexed="true" stored="true" multiValued="true" />
 
 
    <!-- Common metadata fields, named specifically to match up with
@@ -458,6 +459,8 @@
         <filter class="solr.SynonymFilterFactory" synonyms="index_synonyms.txt" ignoreCase="true" expand="false"/>
         -->
         <filter class="solr.LowerCaseFilterFactory"/>
+
+        <filter class="solr.NGramFilterFactory" minGramSize="2" maxGramSize="15"/>
       </analyzer>
       <analyzer type="query">
         <tokenizer class="solr.StandardTokenizerFactory"/>
