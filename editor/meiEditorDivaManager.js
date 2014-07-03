@@ -178,7 +178,175 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     { 
                         meiEditor.deselectResizable(".resizableSelected");
                     } 
-                };    
+                };   
+
+                var changeDragSize = function(eve)
+                {
+                    clearSelections();
+
+                    //original four sides
+                    var dragLeft = $("#drag-div").offset().left;
+                    var dragTop = $("#drag-div").offset().top;
+                    var dragRight = dragLeft + $("#drag-div").width();
+                    var dragBottom = dragTop + $("#drag-div").height();           
+
+                    //if we're moving left
+                    if (eve.pageX < meiEditorSettings.initDragLeft)
+                    {
+                        $("#drag-div").offset({'left': eve.pageX});
+                        $("#drag-div").width(dragRight - eve.pageX);
+                    }
+                    //moving right
+                    else 
+                    {   
+                        $("#drag-div").width(eve.pageX - dragLeft);
+                    }
+                    //moving up
+                    if (eve.pageY < meiEditorSettings.initDragTop)
+                    {
+                        $("#drag-div").offset({'top': eve.pageY});
+                        $("#drag-div").height(dragBottom - eve.pageY);
+                    }
+                    //moving down
+                    else 
+                    {
+                        $("#drag-div").height(eve.pageY - dragTop);
+                    }
+                };
+
+                var shiftClickHandler = function(eve)
+                {
+                    $(document).unbind('mousemove', changeDragSize);
+                    $(document).unbind('mouseup', shiftClickHandler);
+
+                    //if this was just a click
+                    if ($("#drag-div").width() < 2 && $("#drag-div").height() < 2)
+                    {
+                        if (meiEditorSettings.curOverlayBox === '')
+                        {
+                            //get the click
+                            var centerX = eve.pageX;
+                            var centerY = eve.pageY;
+
+                            var divaInnerObj = $("#1-diva-page-" + meiEditorSettings.divaInstance.getCurrentPageIndex());
+                            centerY = meiEditorSettings.divaInstance.translateToMaxZoomLevel(centerY - divaInnerObj.offset().top);
+                            centerX = meiEditorSettings.divaInstance.translateToMaxZoomLevel(centerX - divaInnerObj.offset().left);
+
+                            //make a 200*200 box
+                            var newBoxLeft = centerX - 100;
+                            var newBoxRight = centerX + 100;
+                            var newBoxTop = centerY - 100;
+                            var newBoxBottom = centerY + 100;
+
+                            //generate some UUIDs
+                            var zoneID = genUUID();
+                            var neumeID = genUUID();
+
+                            //generate the element strings
+                            var zoneStringToAdd = '<zone xml:id="' + zoneID + '" ulx="' + newBoxLeft + '" uly="' + newBoxTop + '" lrx="' + newBoxRight + '" lry="' + newBoxBottom + '"/>';
+                            var neumeStringToAdd = '<neume xml:id="' + neumeID + '" name="neume.por" facs="' + zoneID + '"/>';
+
+                            //create the fake modal
+                            $("#diva-wrapper").append("<div id='lineQueryOverlay'></div>");
+                            $("#lineQueryOverlay").offset({'top': $("#diva-wrapper").offset().top, 'left': $("#diva-wrapper").offset().left});
+                            $("#lineQueryOverlay").width($("#diva-wrapper").width());
+                            $("#lineQueryOverlay").height($("#diva-wrapper").height());
+
+                            //create the contents of the modal
+                            $("#lineQueryOverlay").append("<div id='lineQuery'>" +
+                                "<h4>Enter desired line numbers for the zone and neume objects:</h4>" +
+                                "Zone line number: <input type='text' id='zoneLineInput'><br>" +
+                                "Neume line number: <input type='text' id='neumeLineInput'><br>" +
+                                "<button style='float:right' type='button' class='btn btn-default' id='lineQueryClose'>Close</button>" +
+                                "<button style='float:right' type='button' class='btn btn-primary' id='lineQuerySubmit'>Create Highlight</button>" +
+                                "</div>");
+
+                            $("#lineQuery").center({against: 'parent'});
+
+                            //function to insert a new neume, takes the document filename as input
+                            var insertNewNeume = function(chosenDoc)
+                            {                          
+                                var lineCount = meiEditorSettings.pageData[chosenDoc].getSession().doc.getLength();
+                                var zoneStringLine = parseInt($("#zoneLineInput").val(), 10);
+                                var neumeStringLine = parseInt($("#neumeLineInput").val(), 10);
+
+                                //if the line number is not an int and inside the line count for the current page, throw an error
+                                if((zoneStringLine < 1) || (zoneStringLine > lineCount) || !(zoneStringLine))
+                                {
+                                    meiEditor.localError("Please enter a number between 1 and " + lineCount + " for the zone line.");
+                                    return;
+                                }
+                                if((neumeStringLine < 1) || (neumeStringLine > lineCount) || !(neumeStringLine))
+                                {
+                                    meiEditor.localError("Please enter a number between 1 and " + lineCount + " for the neume line.");
+                                    return;
+                                }
+
+                                $("#lineQueryClose").trigger('click');
+
+                                //add to the document
+                                var zoneWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(zoneStringLine).split("<")[0];
+                                var neumeWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(neumeStringLine).split("<")[0];
+                                meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(zoneStringLine, [zoneWhiteSpace + zoneStringToAdd]);
+                                meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(neumeStringLine, [neumeWhiteSpace + neumeStringToAdd]);
+
+                                //redraw highlights
+                                meiEditor.createHighlights();
+                            };
+
+                            //on close for the overlay
+                            $("#lineQueryClose").on('click', function()
+                            {
+                                $("#lineQueryOverlay").remove();
+                            });
+
+                            //on submit for the overlay
+                            $("#lineQuerySubmit").on('click', function()
+                            {
+                                insertNewNeume(meiEditor.getActivePanel().text());
+                            });
+                        }
+                    }
+                    else 
+                    {
+                        //there's gotta be something simpler than this, but I can't find it for the life of me.
+                        //get the four sides
+                        var boxLeft = $("#drag-div").offset().left;
+                        var boxRight = boxLeft + $("#drag-div").width();
+                        var boxTop = $("#drag-div").offset().top;
+                        var boxBottom = boxTop + $("#drag-div").height();
+
+                        //for each overlay-box
+                        var curBoxIndex = $(".overlay-box").length;
+                        while (curBoxIndex--)
+                        {
+                            var curBox = $(".overlay-box")[curBoxIndex];
+
+                            //see if any part of the box is inside (doesn't have to be the entire box)
+                            var curLeft = $(curBox).offset().left;
+                            var curRight = curLeft + $(curBox).width();
+                            var curTop = $(curBox).offset().top;
+                            var curBottom = curTop + $(curBox).height();
+                            if (curRight < boxLeft)
+                                continue;
+                            else if (curLeft > boxRight)
+                                continue;
+                            else if (curBottom < boxTop)
+                                continue;
+                            else if (curTop > boxBottom)
+                                continue;
+
+                            //if we're still here, select it
+                            if(!($(curBox).hasClass('selectedHover')))
+                            {
+                                meiEditor.selectHighlight(curBox);
+                            }
+                        }
+                    }
+
+                    $("#drag-div").remove();
+                    meiEditorSettings.dragActive = false;
+                };
 
                 //detects whether the current resizable object is too small to hold the ui-resizable icon
                 var checkResizable = function()
@@ -917,39 +1085,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                         $("#cover-div").on('mousedown', function(ev)
                         {
-                            var changeDragSize = function(eve)
-                            {
-                                clearSelections();
-
-                                //original four sides
-                                var dragLeft = $("#drag-div").offset().left;
-                                var dragTop = $("#drag-div").offset().top;
-                                var dragRight = dragLeft + $("#drag-div").width();
-                                var dragBottom = dragTop + $("#drag-div").height();           
-
-                                //if we're moving left
-                                if (ev.pageX < meiEditorSettings.initDragLeft)
-                                {
-                                    $("#drag-div").offset({'left': eve.pageX});
-                                    $("#drag-div").width(dragRight - eve.pageX);
-                                }
-                                //moving right
-                                else 
-                                {   
-                                    $("#drag-div").width(eve.pageX - dragLeft);
-                                }
-                                //moving up
-                                if (ev.pageY < meiEditorSettings.initDragTop)
-                                {
-                                    $("#drag-div").offset({'top': eve.pageY});
-                                    $("#drag-div").height(dragBottom - eve.pageY);
-                                }
-                                //moving down
-                                else 
-                                {
-                                    $("#drag-div").height(eve.pageY - dragTop);
-                                }
-                            };
                             //append the div that will resize as you drag
                             $("#topbar").append('<div id="drag-div"></div>');
                             $("#drag-div").css('z-index', $(".overlay-box").css('z-index') + 1);
@@ -961,139 +1096,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             //as you drag, resize it - separate function as we have two document.mousemoves that we need to unbind separately
                             $(document).on('mousemove', changeDragSize);
 
-                            $(document).on('mouseup', function(eve)
-                            {
-                                $(document).unbind('mousemove', changeDragSize);
-                                $(document).unbind('mouseup');
-
-                                //if this was just a click
-                                if ($("#drag-div").width() < 2 && $("#drag-div").height() < 2)
-                                {
-                                    if (meiEditorSettings.curOverlayBox === '')
-                                    {
-                                        //get the click
-                                        var centerX = eve.pageX;
-                                        var centerY = eve.pageY;
-
-                                        var divaInnerObj = $("#1-diva-page-" + meiEditorSettings.divaInstance.getCurrentPageIndex());
-                                        centerY = meiEditorSettings.divaInstance.translateToMaxZoomLevel(centerY - divaInnerObj.offset().top);
-                                        centerX = meiEditorSettings.divaInstance.translateToMaxZoomLevel(centerX - divaInnerObj.offset().left);
-
-                                        //make a 200*200 box
-                                        var newBoxLeft = centerX - 100;
-                                        var newBoxRight = centerX + 100;
-                                        var newBoxTop = centerY - 100;
-                                        var newBoxBottom = centerY + 100;
-
-                                        //generate some UUIDs
-                                        var zoneID = genUUID();
-                                        var neumeID = genUUID();
-
-                                        //generate the element strings
-                                        var zoneStringToAdd = '<zone xml:id="' + zoneID + '" neume="' + neumeID + '" ulx="' + newBoxLeft + '" uly="' + newBoxTop + '" lrx="' + newBoxRight + '" lry="' + newBoxBottom + '" />';
-                                        var neumeStringToAdd = '<neume xml:id="' + neumeID + '" name="neume.por" />';
-
-                                        //create the fake modal
-                                        $("#diva-wrapper").append("<div id='lineQueryOverlay'></div>");
-                                        $("#lineQueryOverlay").offset({'top': $("#diva-wrapper").offset().top, 'left': $("#diva-wrapper").offset().left});
-                                        $("#lineQueryOverlay").width($("#diva-wrapper").width());
-                                        $("#lineQueryOverlay").height($("#diva-wrapper").height());
-
-                                        //create the contents of the modal
-                                        $("#lineQueryOverlay").append("<div id='lineQuery'>" +
-                                            "<h4>Enter desired line numbers for the zone and neume objects:</h4>" +
-                                            "Zone line number: <input type='text' id='zoneLineInput'><br>" +
-                                            "Neume line number: <input type='text' id='neumeLineInput'><br>" +
-                                            "<button style='float:right' type='button' class='btn btn-default' id='lineQueryClose'>Close</button>" +
-                                            "<button style='float:right' type='button' class='btn btn-primary' id='lineQuerySubmit'>Create Highlight</button>" +
-                                            "</div>");
-
-                                        $("#lineQuery").center({against: 'parent'});
-
-                                        //function to insert a new neume, takes the document filename as input
-                                        var insertNewNeume = function(chosenDoc)
-                                        {                          
-                                            var lineCount = meiEditorSettings.pageData[chosenDoc].getSession().doc.getLength();
-                                            var zoneStringLine = parseInt($("#zoneLineInput").val(), 10);
-                                            var neumeStringLine = parseInt($("#neumeLineInput").val(), 10);
-
-                                            //if the line number is not an int and inside the line count for the current page, throw an error
-                                            if((zoneStringLine < 1) || (zoneStringLine > lineCount) || !(zoneStringLine))
-                                            {
-                                                meiEditor.localError("Please enter a number between 1 and " + lineCount + " for the zone line.");
-                                                return;
-                                            }
-                                            if((neumeStringLine < 1) || (neumeStringLine > lineCount) || !(neumeStringLine))
-                                            {
-                                                meiEditor.localError("Please enter a number between 1 and " + lineCount + " for the neume line.");
-                                                return;
-                                            }
-
-                                            $("#lineQueryClose").trigger('click');
-
-                                            //add to the document
-                                            var zoneWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(zoneStringLine).split("<")[0];
-                                            var neumeWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(neumeStringLine).split("<")[0];
-                                            meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(zoneStringLine, [zoneWhiteSpace + zoneStringToAdd]);
-                                            meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(neumeStringLine, [neumeWhiteSpace + neumeStringToAdd]);
-
-                                            //redraw highlights
-                                            meiEditor.createHighlights();
-                                        };
-
-                                        //on close for the overlay
-                                        $("#lineQueryClose").on('click', function()
-                                        {
-                                            $("#lineQueryOverlay").remove();
-                                        });
-
-                                        //on submit for the overlay
-                                        $("#lineQuerySubmit").on('click', function()
-                                        {
-                                            insertNewNeume(meiEditor.getActivePanel().text());
-                                        });
-                                    }
-                                }
-                                else 
-                                {
-                                    //there's gotta be something simpler than this, but I can't find it for the life of me.
-                                    //get the four sides
-                                    var boxLeft = $("#drag-div").offset().left;
-                                    var boxRight = boxLeft + $("#drag-div").width();
-                                    var boxTop = $("#drag-div").offset().top;
-                                    var boxBottom = boxTop + $("#drag-div").height();
-
-                                    //for each overlay-box
-                                    var curBoxIndex = $(".overlay-box").length;
-                                    while (curBoxIndex--)
-                                    {
-                                        var curBox = $(".overlay-box")[curBoxIndex];
-
-                                        //see if any part of the box is inside (doesn't have to be the entire box)
-                                        var curLeft = $(curBox).offset().left;
-                                        var curRight = curLeft + $(curBox).width();
-                                        var curTop = $(curBox).offset().top;
-                                        var curBottom = curTop + $(curBox).height();
-                                        if (curRight < boxLeft)
-                                            continue;
-                                        else if (curLeft > boxRight)
-                                            continue;
-                                        else if (curBottom < boxTop)
-                                            continue;
-                                        else if (curTop > boxBottom)
-                                            continue;
-
-                                        //if we're still here, select it
-                                        if(!($(curBox).hasClass('selectedHover')))
-                                        {
-                                            meiEditor.selectHighlight(curBox);
-                                        }
-                                    }
-                                }
-
-                                $("#drag-div").remove();
-                                meiEditorSettings.dragActive = false;
-                            });
+                            $(document).on('mouseup', shiftClickHandler);
                         });
                     }
                 });
