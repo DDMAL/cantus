@@ -604,6 +604,7 @@
          */
         paintBoxes: function(boxSet)
         {
+            console.log("Painting boxes!");
             this.$el.data('diva').resetHighlights();
             // Use the Diva highlight plugin to draw the boxes
             for (var i = 0; i < boxSet.length; i++) {
@@ -1181,6 +1182,61 @@
         }
     });
 
+    var SearchNotationView = CantusAbstractView.extend
+    ({
+        query: null,
+        results: null,
+        divaView: null,
+
+        initialize: function(options)
+        {
+            _.bindAll(this, 'render');
+            this.template = _.template($('#search-notation-template').html());
+            // The diva view which we will act upon!
+            this.divaView = options.divaView;
+            console.log(this.divaView);
+            this.registerEvents();
+        },
+
+        /**
+         * Register the events that are necessary to have search input.
+         */
+        registerEvents: function()
+        {
+            console.log("Registering search events for:");
+            console.log(this.$el.selector);
+            // Clear out the events
+            this.events = {};
+            // Register them
+            // this.events["click " + this.$el.selector + ".search-button"] = "newSearch";
+            this.events["click button"] = "newSearch";
+
+            // Delegate the new events
+            this.delegateEvents();
+        },
+
+        newSearch: function()
+        {
+            console.log("Notation search!");
+            var newQuery = encodeURIComponent($(this.$el.selector
+                + ' .query-input').val());
+            console.log(newQuery);
+
+            // Handle the empty case
+            if (newQuery === "")
+            {
+                // If we pass an empty array, then all boxes are erased.
+                this.divaView.paintBoxes([]);
+            }
+        },
+
+        render: function()
+        {
+            console.log("Render SearchNotationView.");
+            $(this.el).html(this.template());
+        }
+    });
+
     var SearchView = CantusAbstractView.extend
     ({
         /**
@@ -1580,6 +1636,7 @@
         id: null,
         manuscript: null,
         searchView: null,
+        searchNotationView: null,
 
         // Subviews
         divaView: null,
@@ -1601,6 +1658,7 @@
             );
             this.folioView = new FolioView();
             this.searchView = new SearchView();
+            this.searchNotationView = new SearchNotationView({divaView: this.divaView});
 
             // Render every time the model changes...
             this.listenTo(this.manuscript, 'change', this.afterFetch);
@@ -1652,6 +1710,7 @@
             }
             this.renderFolioView();
             this.assign(this.searchView, '#manuscript-search');
+            this.assign(this.searchNotationView, '#search-notation');
             globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         },

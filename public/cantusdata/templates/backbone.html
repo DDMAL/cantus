@@ -208,6 +208,16 @@
 <div class="pagination"></div>
 </script>
 
+<script type="text/template" id="search-notation-template">
+<form class="form-inline" role="form">
+    <div class="form-group">
+        <label class="sr-only" for="exampleInputPassword2">Password</label>
+        <input type="password" class="form-control query-input" id="exampleInputPassword2" placeholder="Password">
+    </div>
+    <button type="submit">Search</button>
+</form>
+</script>
+
 <script type="text/template" id="pagination-template">
 <ul class="pagination">
     <li id="<%= name %>-page-back" <% if (currentPage <= 1) { %>class="disabled"<% } %> >
@@ -320,7 +330,9 @@
                             <div class="tab-pane active" id="text-search-container">
                                 <div id="manuscript-search"></div>
                             </div>
-                            <div class="tab-pane" id="notation-search-container">...</div>
+                            <div class="tab-pane" id="notation-search-container">
+                                <div id="search-notation"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
