@@ -253,6 +253,7 @@
                         // Build the url
                         // We have stored the manuscript name in Solr
                         newElement.manuscript = current.manuscript_name_hidden;
+                        newElement.folio = current.folio;
                         newElement.url = "/manuscript/" + current.manuscript_id
                             + "/?folio=" + current.folio;
                         break;

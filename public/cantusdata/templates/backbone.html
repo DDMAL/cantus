@@ -174,9 +174,9 @@
 
 <script type="text/template" id="search-template">
 {#<form role="search">#}
-  <div class="form-group">
+<div class="form-group">
     <input type="text" class="form-control search-input" placeholder="Search" value="<%= query %>">
-  </div>
+</div>
 {#  <button type="submit" class="btn btn-default search-button">Submit</button>#}
 {#</form>#}
 <div class="search-result"></div>
@@ -194,6 +194,11 @@
         <td><%= item.model %></td>
         <% if (item.manuscript !== undefined) { %>
         <td><%= item.manuscript %></td>
+        <% } else { %>
+        <td></td>
+        <% } %>
+        <% if (item.folio !== undefined) { %>
+        <td><%= item.folio %></td>
         <% } else { %>
         <td></td>
         <% } %>
