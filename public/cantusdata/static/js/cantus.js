@@ -1187,7 +1187,7 @@
                 {
                     this.query = options.query;
                 }
-                elses
+                else
                 {
                     this.query = "";
                 }
