@@ -214,6 +214,9 @@
      */
     var SearchResult = Backbone.Model.extend
     ({
+        // Sometimes overridden
+        searchPage: "search/?q=",
+
         initialize: function(pQuery)
         {
             this.setQuery(pQuery);
@@ -221,7 +224,7 @@
 
         setQuery: function(query)
         {
-            this.url = siteUrl + "search/?q=" + query;
+            this.url = siteUrl + this.searchPage + query;
         },
 
         /**
