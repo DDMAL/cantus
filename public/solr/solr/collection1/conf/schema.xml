@@ -148,6 +148,31 @@
     <field name="concordance_citation" type="text_general" indexed="true" stored="true" />
     <field name="concordances" type="string" indexed="true" stored="true" multiValued="true" />
 
+     <!-- Fields related to OMR Data -->
+    <!-- <field name="suggest" type="suggestions" indexed="true" multiValued="true" /> -->
+
+    <field name="pagen" type="int" indexed="true" stored="true" required="false" />
+    <field name="pnames" type="string" indexed="true" stored="true" required="false" />
+    <field name="neumes" type="string" indexed="true" stored="true" required="false" />
+    <field name="contour" type="string" indexed="true" stored="true" required="false" />
+    <field name="semitones" type="string" indexed="true" stored="true" required="false" />
+    <field name="intervals" type="string" indexed="true" stored="true" required="false" />
+    <field name="location" type="string" indexed="false" stored="true" required="false" />
+    <!--<field name="text" type="text_general" indexed="true" stored="true" required="false" />-->
+    <!--<field name="incipit" type="string" indexed="true" stored="true" required="false" />-->
+    <!-- <dynamicField name="*_l"  type="long" indexed="true" stored="true"/> -->
+    <!--<dynamicField name="*_t"  type="text_general" indexed="true" stored="true"/>-->
+    <!--<dynamicField name="*_txt" type="text_general" indexed="true" stored="true" multiValued="true"/>-->
+    <dynamicField name="*_strm" type="string" indexed="true" stored="true" multiValued="true"/>
+    <dynamicField name="*_stored" type="string" indexed="false" stored="true" />
+
+    <copyField source="feastnameeng_t" dest="feastnameeng_s" />
+    <copyField source="genre_t" dest="genre_s" />
+    <copyField source="mode_t" dest="mode_s" />
+    <copyField source="office_t" dest="office_s" />
+    <copyField source="position_t" dest="position_s" />
+
+
 
    <!-- Common metadata fields, named specifically to match up with
      SolrCell metadata when parsing rich documents such as Word, PDF.
