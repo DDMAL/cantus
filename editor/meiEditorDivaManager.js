@@ -669,7 +669,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     meiEditorSettings.divaImagesToMeiFiles[selectedImageText] = selectedMeiText;
 
                     //make the option object
-                    $("#selectUnlink").append("<option>" + selectedMeiText + " and " + selectedImageText + "</option>");
+                    var optionID = meiEditor.stripFilenameForJQuery(selectedMeiText) + "_" + meiEditor.stripFilenameForJQuery(selectedImageText);
+                    $("#selectUnlink").append("<option id='" + optionID + "'>" + selectedMeiText + " and " + selectedImageText + "</option>");
 
                     //byebye
                     $(selectedMei).remove();
@@ -757,9 +758,18 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     var retVal = meiEditor.meiIsLinked(pageName);
                     if (retVal)
                     {
-                        delete meiEditorSettings.divaImagesToMeiFiles[retVal];
+                        var imageName = pageName.split(".")[0] + ".tiff";
+                        delete meiEditorSettings.divaImagesToMeiFiles[imageName];
+                        var dualOptionID = meiEditor.stripFilenameForJQuery(pageName) + "_" + meiEditor.stripFilenameForJQuery(imageName);
+                        $("#" + dualOptionID).remove();
+                        $("#selectdiva-link").append("<option name='" + imageName + "'>" + imageName + "</option>");
+                        meiEditor.createHighlights();
+                        $("#resizableOverlay").remove();
                     }
                 });
+
+                meiEditor.events.subscribe("PageEdited", meiEditor.createHighlights);
+
                 //to get default pages
                 meiEditor.reapplyEditorClickListener();
 
@@ -807,11 +817,20 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                 $(document).on('click', function(e)
                 {
+                    if(!e || !e.target)
+                    {
+                        return;
+                    }
                     var pageTitle = meiEditor.getActivePanel().text();
+                    if(pageTitle == "")
+                    {
+                        //this happens in very rare cases when a user deletes a page that was just linked. I will debug it later, but the user will not delete immediately after it, so this work around is fine for now.
+                        return;
+                    }
                     editor = meiEditorSettings.pageData[pageTitle];
                     if($.contains(document.getElementById("diva-wrapper"), e.target))
                     {
-                        if(e.target.hasClass("diva-document-tile"))
+                        if($(e.target).hasClass("diva-document-tile"))
                         {
                             meiEditor.deselectAllHighlights();
                         }
@@ -823,6 +842,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             scrollIntoView: "cursor"
                         });
 
+                        $(document).unbind('keyup', meiEditor.deleteListener);
                         $(document).on('keyup', meiEditor.deleteListener);
                     } 
                     else
