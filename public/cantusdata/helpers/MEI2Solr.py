@@ -30,6 +30,8 @@ from music21.interval import convertSemitoneToSpecifierGeneric
 #import time
 # from pymei.Import import convert
 from pymei import XmlImport
+import os
+import sys
 
 import logging
 
@@ -39,6 +41,27 @@ lg.setLevel(logging.DEBUG)
 
 systemcache = {}
 idcache = {}
+
+
+# I don't know if this is really the right STEPREF.  I found it somewhere
+# online...
+STEPREF = {
+           'C' : 0,
+           'D' : 2, #2
+           'E' : 4,
+           'F' : 5,
+           'G' : 7,
+           'A' : 9, #9
+           'B' : 11,
+               }
+# I also don't know if this is right!!!
+project_id = 1
+
+TYPE = "cantusdata_music_notation"
+
+#Going to log the results
+text_file = open("output_log.txt", "w")
+
 
 #*****************************FUNCTIONS*******************************
 
@@ -80,10 +103,11 @@ def findbyID(llist, mid, meifile):
         return idcache[mid]
 
 def getLocation(seq, meifile, zones):
-    """ Given a sequence of notes and the corresponding MEI Document, calculates and returns the json formatted list of 
-        locations (box coordinates) to be stored for an instance of a pitch sequence in our CouchDB. 
-        If the sequence is contained in a single system, only one location will be stored. If the sequence
-        spans two systems, a list of two locations will be stored.
+    """ Given a sequence of notes and the corresponding MEI Document, calculates
+    and returns the json formatted list of  locations (box coordinates) to be
+    stored for an instance of a pitch sequence in our CouchDB.  If the sequence
+    is contained in a single system, only one location will be stored. If the
+    sequence spans two systems, a list of two locations will be stored.
     """
     ulys = []
     lrys = []
@@ -158,12 +182,14 @@ def getPitchNames(seq):
     return [str("".join(pnames)), midipitch]
     
 def getIntervals(semitones, pnames):
-    """ Get quality (major, minor, etc.) invariant interval name and direction for example, an ascending 
-        major second and an ascending minor second will both be encoded as 'u2'. the only tritone to occur is between 
-        b and f, in the context of this application we will assume that the b will always be sung as b 
-        flat. So a tritone found in the music is never encoded as a tritone in our database; it will instead always be 
-        represented as either a fifth or a fourth, depending on inversion. If the one wishes to search for tritones, 
-        they may use the semitones field.
+    """ Get quality (major, minor, etc.) invariant interval name and direction
+    for example, an ascending major second and an ascending minor second will
+    both be encoded as 'u2'. the only tritone to occur is between b and f, in
+    the context of this application we will assume that the b will always be
+    sung as b  flat. So a tritone found in the music is never encoded as a
+    tritone in our database; it will instead always be  represented as either a
+    fifth or a fourth, depending on inversion. If the one wishes to search for
+    tritones, they may use the semitones field.
     """
     intervals = []
     for z,interval in enumerate(semitones):
@@ -192,8 +218,9 @@ def getIntervals(semitones, pnames):
     return "_".join(intervals)
 
 def getContour(semitones):
-    """ Given a list of integers defining the size and direction of a series of musical intervals in semitones, 
-        this function encodes the contour of the melody with Parsons code for musical contour where u=up, d=down, r=repeat.
+    """ Given a list of integers defining the size and direction of a series of
+    musical intervals in semitones, this function encodes the contour of the
+    melody with Parsons code for musical contour where u=up, d=down, r=repeat.
     """
     contour = ''
     for p in semitones:
@@ -206,8 +233,9 @@ def getContour(semitones):
     return contour
         
 def storeText(lines, zones, textdb):
-    """ For each line of text in the list "lines", this function gets the corresponding box coordinates and saves the 
-    line as a doc in the "text" database.
+    """ For each line of text in the list "lines", this function gets the
+    corresponding box coordinates and saves the  line as a doc in the "text"
+    database.
     """
     for line in lines:
         text = line.value
@@ -227,12 +255,12 @@ def processMeiFile(ffile, solr_server, shortest_gram, longest_gram):
     try:
         meifile = XmlImport.documentFromFile(str(ffile))
     except Exception, e:
-        print "E: ",e
+        print "E: ", e
         lg.debug("Could not process file {0}. Threw exception: {1}".format(ffile, e))
         print "Whoops!"
 
     page = meifile.getElementsByName('page')
-    pagen = int(page[0].getAttributeByName('n').getValue())
+    pagen = int(page[0].getAttribute('n').getValue())
 
     notes = meifile.getElementsByName('note')
     zones = meifile.getElementsByName('zone')
@@ -262,12 +290,12 @@ def processMeiFile(ffile, solr_server, shortest_gram, longest_gram):
         # lrows = len(rows)
         lrows = 0 #comment out this line if you want to process files that aren't already in the couch
         if lrows == 0:
-          #*******************TEST************************
-          # for note in notes:
-          #             s = meifile.get_system(note)
-          #             neume = str(note.parent.parent.attribute_by_name('name').value)
-          #             print 'pitch: '+ str(note.pitch[0])+ ' neume: ' + neume + " system: " +str(s)
-          #***********************************************
+            #*******************TEST************************
+            # for note in notes:
+            #             s = meifile.get_system(note)
+            #             neume = str(note.parent.parent.attribute_by_name('name').value)
+            #             print 'pitch: '+ str(note.pitch[0])+ ' neume: ' + neume + " system: " +str(s)
+            #***********************************************
 
             print "Processing pitch sequences... "
             # for j,note in enumerate(notes):
@@ -283,38 +311,53 @@ def processMeiFile(ffile, solr_server, shortest_gram, longest_gram):
                 # get neumes
                 neumes = getNeumes(seq, i)
 
-        #         # get pitch names
+                # get pitch names
                 [pnames, midipitch] = getPitchNames(seq)
 
-        #         # get semitones
-        #         # calculate difference between each adjacent entry in midipitch list
+                # get semitones
+                # calculate difference between each adjacent entry in midipitch list
                 semitones = [m-n for n, m in zip(midipitch[:-1], midipitch[1:])]
                 str_semitones = str(semitones)[1:-1] # string will be stored instead of array for easy searching
                 str_semitones = str_semitones.replace(', ', '_')
 
-        #         # get quality invariant interval name and direction
-        #         # for example, an ascending major second and an ascending minor second will both be encoded as 'u2' 
-        #         # the only tritone to occur would be between b and f, in the context of this application we will assume that the be will always be sung as b flat
-        #         # thus the tritone is never encoded as such and will always be represented as either a fifth or a fourth, depending on inversion
+                # get quality invariant interval name and direction
+                # for example, an ascending major second and an ascending minor second will both be encoded as 'u2'
+                # the only tritone to occur would be between b and f, in the context of this application we will assume that the be will always be sung as b flat
+                # thus the tritone is never encoded as such and will always be represented as either a fifth or a fourth, depending on inversion
                 intervals = getIntervals(semitones, pnames)
 
-        #         # get contour - encode with Parsons code for musical contour
+                # get contour - encode with Parsons code for musical contour
                 contour = getContour(semitones)
-        #         # save new document
-                mydocs.append({'id': str(uuid.uuid4()), 'pagen': int(pagen), 'project': int(project_id), 'pnames': pnames, 'neumes': neumes, 'contour': contour, 'semitones': str_semitones, 'intervals': intervals, 'location': str(location)})
+                # save new document
+                mydocs.append({'id': str(uuid.uuid4()), 'type': TYPE, 'pagen': int(pagen), 'project': int(project_id), 'pnames': pnames, 'neumes': neumes, 'contour': contour, 'semitones': str_semitones, 'intervals': intervals, 'location': str(location)})
         else:
-            print 'page ' + str(pagen) +  ' already processed\n'
+            print 'page ' + str(pagen) + ' already processed\n'
+    text_file.write(mydocs.__str__())
+    text_file.write("\n")
+    text_file.write("###################################### ITER ##############")
+    text_file.write("\n")
+    # solrconn.add_many(mydocs)
 
-    solrconn.add_many(mydocs)
+    iter_id = 0
+    for doc in mydocs:
+        print "Adding doc {0}".format(iter_id)
+        print doc
+        solrconn.add(**doc)
+        iter_id += iter_id
     solrconn.commit()
     systemcache.clear()
     idcache.clear()
 
+
 if __name__ == '__main__':
-    #***************************** MEI PROCESSING *******************************      
-    solr_server = "http://localhost:8080/salzinnes2-search/"
+    #***************************** MEI PROCESSING ****************************
+    solr_server = "http://localhost:8080/cantusdata-solr/"
     args = sys.argv
     path = args[1]
+
+    # TEMP
+    shortest_gram = 2
+    longest_gram = 10
 
     # Generate list of files to process, preferring human-corrected MEI files
     meifiles = []
@@ -325,11 +368,11 @@ if __name__ == '__main__':
             if f.startswith("."):
                 continue
             if "_corr.mei" in f:
-                meifiles.append(os.path.join(bd,f))
+                meifiles.append(os.path.join(bd, f))
                 print "Adding {0}".format(f)
             # if not (('uncorr' in f) and os.path.exists(os.path.join(bd,f[0:5]+'corr.mei'))): # if current is uncorr version and corr version exists, don't add to list
                 
-            #     meifiles = meifiles + [os.path.join(bd,f)] 
+            #     meifiles = meifiles + [os.path.join(bd,f)]
 
     meifiles.sort()
     # couch = couchdb.Server("http://localhost:5984")
@@ -337,7 +380,10 @@ if __name__ == '__main__':
 
     # Iterate through each MEI file in directory
     for ffile in meifiles:
-        processMeiFile(ffile, solr_server, longest_gram, shortest_gram)
-        solrconn.commit()
-        systemcache.clear()
-        idcache.clear()
+        print "ffile"
+        processMeiFile(ffile, solr_server, shortest_gram, longest_gram)
+        # solrconn.commit()
+        # systemcache.clear()
+        # idcache.clear()
+
+text_file.close()

@@ -108,7 +108,7 @@
         
     <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false" />
     <field name="type" type="string" indexed="true" stored="true" required="true" multiValued="false" />
-    <field name="item_id" type="string" indexed="true" stored="true" required="true" multiValued="false" />
+    <field name="item_id" type="string" indexed="true" stored="true" required="false" multiValued="false" />
 
     <field name="name" type="text_general" indexed="true" stored="true"/>
     <field name="siglum" type="text_general" indexed="true" stored="true"/>
@@ -171,6 +171,10 @@
     <copyField source="mode_t" dest="mode_s" />
     <copyField source="office_t" dest="office_s" />
     <copyField source="position_t" dest="position_s" />
+
+     <!-- Some fields I made up to match the python file output -->
+     <field name="project" type="int" indexed="true" stored="true" required="false" />
+
 
 
 
