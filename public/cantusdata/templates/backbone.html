@@ -47,7 +47,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
         </button>
-        <a id="site-logo" class="navbar-brand" href="" >Cantus Ultimus</a>
+        <a id="site-logo" class="navbar-brand" href="#">Cantus Ultimus</a>
     </div>
     <div class="navbar-collapse collapse navbar-responsive-collapse">
         <ul id="top-menu" class="nav navbar-nav navbar-right">  </ul>
@@ -66,7 +66,7 @@
 <script type="text/template" id="top-menu-template">
 {#<% _.forEach(items, function(item) { %>#}
 <% for (var i = 0; i < items.length; i++) { %>
-    <li id="top-menu-button-<%= i %>"<% if (items[i].active) { %> class="active" <% } if (items[i].tags) { %><%= items[i].tags %><% } %> ><a href="" ><%= items[i].name %></a></li>
+    <li id="top-menu-button-<%= i %>"<% if (items[i].active) { %> class="active" <% } if (items[i].tags) { %><%= items[i].tags %><% } %> ><a href="#"><%= items[i].name %></a></li>
 <% }%>
 </script>
 
@@ -74,7 +74,7 @@
 <div class="jumbotron">
     <h1>Hey, do you like chants?</h1>
     <p class="lead">If so, then we've got you covered!</p>
-    <p><a id="manuscripts-hero-button" class="btn btn-lg btn-primary" href=""  role="button">Check out the manuscripts</a></p>
+    <p><a id="manuscripts-hero-button" class="btn btn-lg btn-primary" href="#" role="button">Check out the manuscripts</a></p>
 </div>
 </script>
 
@@ -201,15 +201,15 @@
 <script type="text/template" id="pagination-template">
 <ul class="pagination">
     <li id="<%= name %>-page-back" <% if (currentPage <= 1) { %>class="disabled"<% } %> >
-        <a href="" >&laquo;</a>
+        <a href="#">&laquo;</a>
     </li>
     <% for (var page = startPage; page <= endPage; page++) { %>
     <li <% if (page == currentPage) { %>class="active"<% } %> >
-        <a href=""  id="<%= name %>-page-<%= page %>"><%= page %></a>
+        <a href="#" id="<%= name %>-page-<%= page %>"><%= page %></a>
     </li>
     <% } %>
     <li id="<%= name %>-page-forward" <% if (currentPage >= endPage) { %>class="disabled"<% } %> >
-        <a href="" >&raquo;</a>
+        <a href="#">&raquo;</a>
     </li>
 </ul>
 </script>
@@ -245,7 +245,7 @@
 <% for (var i = 0; i < manuscripts.length; i++) { %>
 <% if (manuscripts[i].chant_count > 0) { %>
 <tr>
-    <td><a id="manuscript-list-<%= i %>" href="" ><%= manuscripts[i].name %></a></td>
+    <td><a id="manuscript-list-<%= i %>" href="#" ><%= manuscripts[i].name %></a></td>
     <td><%= manuscripts[i].siglum %></td>
     <td><%= manuscripts[i].date %></td>
     <td><%= manuscripts[i].provenance %></td>
