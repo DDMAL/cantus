@@ -1,3 +1,21 @@
+body{
+	padding:0px;
+	margin:0px;
+}
+#loadingScreen{
+	top:0;
+	left:0;
+	width:100%;
+	height:100%;
+	position:fixed;
+	background-color:#222;
+	color:#FFF;
+	z-index:1000;
+	font-size:16pt;
+	text-align: center;
+	vertical-align: middle;
+	line-height:200px;
+}
 #mei-editor{
 	width:50%;
 	display:inline-block;
@@ -11,12 +29,6 @@
 	margin-left: 50%;
 	width:50%;
 }
-
-body{
-	padding:0px;
-	margin:0px;
-}
-
 .modalSubLeft{
 	text-align:center;
 	float:left;
