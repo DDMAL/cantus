@@ -6,6 +6,7 @@
 
         <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//cantus.simssa.ca/static/css/bootstrap-theme.css">
         <link rel="stylesheet" href="diva.js/build/css/diva.min.css" />
         <link rel="stylesheet" href="meix.js/css/meiEditor.css" />
         <link rel="stylesheet" href="divaEditor.css" />
@@ -69,7 +70,7 @@
 
         window.onload = function()
         {
-            $("#1-diva-tools").addClass('diva-toolbar');
+            $("#1-diva-tools").addClass('diva-toolbar navbar navbar-default');
             //here so I can wait for the diva objects to actually exist
             $(window).on('allReady', function(e){
                 var divaOuterDiff = $("#1-diva-outer").outerHeight() - $("#1-diva-outer").height();
@@ -81,9 +82,23 @@
                 $("#1-diva-outer").height(window.innerHeight - $("#topbar").outerHeight() - divaOuterDiff);
                 $("#diva-wrapper").width(window.innerWidth/2 - divaOuterWidthDiff);
                 $(".diva-toolbar").offset({'top': 0, 'left': $("#diva-wrapper").offset().left});
-                $("#1-diva-zoom-buttons-label, .zoom-button").css('display', 'inline');
+                $(".diva-page-nav").css({
+                    'padding-right': '0em'
+                });
+                $(".diva-tools-left").css({'margin-left': '1.4em'});
+                $("#1-diva-zoom-buttons-label").css({
+                    'padding': '7px',
+                    'padding-left': '15px',
+                    'border-top-width': '0px',
+                    'border-bottom-width': '0px'
+                });
+                $("#1-diva-goto-page-input").css({
+                    'padding': '5px'
+                });
+                $(".diva-page-label").css({
+                    'margin-top': '5px'
+                });
             });
-            $("#1-diva-tools-left").css('margin-left', '1.4em');
         };
 
         </script>

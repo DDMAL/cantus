@@ -12,32 +12,6 @@
 	width:50%;
 }
 
-.diva-toolbar{
-	display:inline-block;
-	position:absolute;
-	top:0px;
-	vertical-align: middle;
-}
-
-.diva-tools{
-	vertical-align: middle;
-}
-
-.diva-tools-left{
-	margin-top:.7em;
-	margin-left:1.4em;
-}
-
-.diva-tools-right{
-	margin-top:.5em;
-	margin-right:1.4em;
-}
-
-.diva-outer{
-	border-top-left-radius:4px;
-	border-top-right-radius: 4px;
-}
-
 body{
 	padding:0px;
 	margin:0px;
@@ -101,4 +75,53 @@ body{
 	background-color:rgb(255, 255, 255);
 	border-radius: 6px;
 	padding: 30px;
+}
+#openPages{
+	font-family: inherit;
+	font-size: inherit;
+}
+.diva-toolbar{
+	display:inline-block;
+	position:absolute;
+	top:0px;
+	vertical-align: middle;
+	color: #FFF;
+}
+.diva-goto-form{
+	color: #000;
+}
+
+.diva-tools-left {
+    float: left;
+    margin-left:1.4em;
+    margin-top:0.5em;
+}
+
+.diva-tools-right {
+    float: right;
+    width: auto;
+	margin-top:0.5em;
+	margin-right:1.4em;
+}
+
+.zoom-button {
+    display: block;
+}
+
+.diva-page-nav {
+    width: auto;
+    float: right;
+    padding-right: 0px;
+}
+
+.diva-page-label {
+    margin-right: 10px;
+}
+
+.diva-goto-form {
+    float: right;
+}
+
+.diva-page-label {
+    float: right;
 }
