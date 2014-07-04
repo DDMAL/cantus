@@ -18,6 +18,13 @@ function clearSelections() {
     }
 }
 
+function backspacePrevent(e){
+    if(e.keyCode == 8)
+    {
+        e.preventDefault();
+    }
+}
+
 //credit to http://stackoverflow.com/a/21963136
 var lut = []; for (var i=0; i<256; i++) { lut[i] = (i<16?'0':'')+(i).toString(16); }
 function genUUID()
@@ -31,7 +38,6 @@ function genUUID()
     lut[d2&0x3f|0x80]+lut[d2>>8&0xff]+'-'+lut[d2>>16&0xff]+lut[d2>>24&0xff]+
     lut[d3&0xff]+lut[d3>>8&0xff]+lut[d3>>16&0xff]+lut[d3>>24&0xff];
 }
-
 
 require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.center.min'], function(){
 
@@ -705,8 +711,9 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                 meiEditor.deleteListener = function(e)
                 {
-                    if(e.keyCode == 46)
+                    if(e.keyCode == 46 || e.keyCode == 8)
                     {
+                        e.preventDefault();
                         //if double-click active, we want to remove only the resizableSelected, otherwise we want to remove the selectedHover objects
                         var selector = $("#resizableOverlay").length !== 0 ? ".resizableSelected" : ".selectedHover";
 
@@ -1011,7 +1018,9 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         });
 
                         $(document).unbind('keyup', meiEditor.deleteListener);
+                        $(document).unbind('keydown', backspacePrevent);
                         $(document).on('keyup', meiEditor.deleteListener);
+                        $(document).on('keydown', backspacePrevent);
                     } 
                     else
                     { 
@@ -1024,6 +1033,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             scrollIntoView: "cursor"
                         });
                         $(document).unbind('keyup', meiEditor.deleteListener);
+                        $(document).unbind('keydown', backspacePrevent);
                     }
                 });
 
