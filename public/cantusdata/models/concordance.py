@@ -37,6 +37,18 @@ class Concordance(models.Model):
             self.rism_code
         )
 
+    @property
+    def unicode_citation(self):
+        return u"{0}  {1}, {2}, {3} ({4}, from {5}) [RISM: {6}]".format(
+            self.letter_code,
+            self.institution_city,
+            self.institution_name,
+            self.library_manuscript_name,
+            self.date,
+            self.location,
+            self.rism_code
+        )
+
 
 @receiver(post_save, sender=Concordance)
 def solr_index(sender, instance, created, **kwargs):
