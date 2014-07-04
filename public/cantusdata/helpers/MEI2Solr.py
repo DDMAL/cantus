@@ -266,6 +266,9 @@ def processMeiFile(ffile, solr_server, shortest_gram, longest_gram):
     zones = meifile.getElementsByName('zone')
     nnotes = len(notes) # number of notes in file
     #print str(nnotes) + 'notes\n'
+
+    # For now it's just Salzinnes!
+    manuscript = "cdn-hsmu-m2149l4"
     
     # get and store text
     # if dotext:
@@ -329,7 +332,21 @@ def processMeiFile(ffile, solr_server, shortest_gram, longest_gram):
                 # get contour - encode with Parsons code for musical contour
                 contour = getContour(semitones)
                 # save new document
-                mydocs.append({'id': str(uuid.uuid4()), 'type': TYPE, 'pagen': int(pagen), 'project': int(project_id), 'pnames': pnames, 'neumes': neumes, 'contour': contour, 'semitones': str_semitones, 'intervals': intervals, 'location': str(location)})
+                mydocs.append(
+                    {
+                        'id': str(uuid.uuid4()),
+                        'type': TYPE,
+                        'manuscript': manuscript,
+                        'pagen': int(pagen),
+                        'project': int(project_id),
+                        'pnames': pnames,
+                        'neumes': neumes,
+                        'contour': contour,
+                        'semitones': str_semitones,
+                        'intervals': intervals,
+                        'location': str(location)
+                    }
+                )
         else:
             print 'page ' + str(pagen) + ' already processed\n'
     text_file.write(mydocs.__str__())
