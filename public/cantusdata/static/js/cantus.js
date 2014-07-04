@@ -627,8 +627,8 @@
 
             for (var i = 0; i < boxSet.length; i++)
             {
-
-                var page = boxSet[i].p; // The page
+                console.log("BOXSET P:" + boxSet[i].p);
+                var page = boxSet[i].p - 3; // The page
 
                 if (highlightsByPageHash[page] === undefined)
                 {
@@ -691,7 +691,7 @@
             // Now figure out the page that box is on
             var divaOuter = this.$el.data('diva').getSettings().outerSelector;
 
-            var desiredPage = box.p;
+            var desiredPage = box.p - 2;
             // Zoom in
             this.$el.data('diva').setZoomLevel(5);
             // Now jump to that page
@@ -1352,7 +1352,7 @@
                 }
             );
             // Automatically go to the first result
-            this.zoomToResult();
+//            this.zoomToResult();
             this.listenTo(this.paginator, 'change', this.zoomToResult);
 
             this.renderResults();
