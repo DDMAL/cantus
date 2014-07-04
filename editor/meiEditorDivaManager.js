@@ -76,6 +76,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     initDragLeft: "",
                     dragActive: false,
                     editModeActive: false,
+                    createModeActive: false,
                     boxSingleTimeout: "",
                     boxClickHandler: "",
                     divaHoldX: "",
@@ -220,6 +221,148 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     }
                 };
 
+                var makeNeumeString = function(ulx, uly, lrx, lry)
+                {
+                    //generate some UUIDs
+                    var zoneID = genUUID();
+                    var neumeID = genUUID();
+
+                    //generate the element strings
+                    var zoneStringToAdd = '<zone xml:id="' + zoneID + '" ulx="' + ulx + '" uly="' + uly + '" lrx="' + lrx + '" lry="' + lry + '"/>';
+                    var neumeStringToAdd = '<neume xml:id="' + neumeID + '" name="neume.por" facs="' + zoneID + '"/>';
+                    return {'zone': zoneStringToAdd, 'neume': neumeStringToAdd};
+                };
+
+                //function to insert a new neume, takes the document filename as input
+                var insertNewNeume = function(neumeObj, chosenDoc)
+                {                          
+                    var zoneStringToAdd = neumeObj['zone'];
+                    var neumeStringToAdd = neumeObj['neume'];
+                    var lineCount = meiEditorSettings.pageData[chosenDoc].getSession().doc.getLength();
+                    var zoneStringLine = parseInt($("#zoneLineInput").val(), 10);
+                    var neumeStringLine = parseInt($("#neumeLineInput").val(), 10);
+
+                    //if the line number is not an int and inside the line count for the current page, throw an error
+                    if((zoneStringLine < 1) || (zoneStringLine > lineCount) || !(zoneStringLine))
+                    {
+                        meiEditor.localError("Please enter a number between 1 and " + lineCount + " for the zone line.");
+                        return;
+                    }
+                    if((neumeStringLine < 1) || (neumeStringLine > lineCount) || !(neumeStringLine))
+                    {
+                        meiEditor.localError("Please enter a number between 1 and " + lineCount + " for the neume line.");
+                        return;
+                    }
+
+                    $("#lineQueryClose").trigger('click');
+
+                    //add to the document
+                    var zoneWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(zoneStringLine).split("<")[0];
+                    var neumeWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(neumeStringLine).split("<")[0];
+                    meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(zoneStringLine, [zoneWhiteSpace + zoneStringToAdd]);
+                    meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(neumeStringLine, [neumeWhiteSpace + neumeStringToAdd]);
+
+                    //redraw highlights
+                    meiEditor.createHighlights();
+                };
+
+                var metaClickHandler = function(eve)
+                {
+                    $(document).unbind('mousemove', changeDragSize);
+                    $(document).unbind('mouseup', metaClickHandler);
+
+                    //if this was just a click
+                    if ($("#drag-div").width() < 2 && $("#drag-div").height() < 2)
+                    {
+                        if (meiEditorSettings.curOverlayBox === '')
+                        {
+                            //get the click
+                            var centerX = eve.pageX;
+                            var centerY = eve.pageY;
+
+                            var divaInnerObj = $("#1-diva-page-" + meiEditorSettings.divaInstance.getCurrentPageIndex());
+                            centerY = meiEditorSettings.divaInstance.translateToMaxZoomLevel(centerY - divaInnerObj.offset().top);
+                            centerX = meiEditorSettings.divaInstance.translateToMaxZoomLevel(centerX - divaInnerObj.offset().left);
+
+                            //make a 200*200 box
+                            var newBoxLeft = centerX - 100;
+                            var newBoxRight = centerX + 100;
+                            var newBoxTop = centerY - 100;
+                            var newBoxBottom = centerY + 100;
+
+                            var neumeLines = makeNeumeString(newBoxLeft, newBoxTop, newBoxRight, newBoxBottom);
+
+                            //create the fake modal
+                            $("#diva-wrapper").append("<div id='lineQueryOverlay'></div>");
+                            $("#lineQueryOverlay").offset({'top': $("#diva-wrapper").offset().top, 'left': $("#diva-wrapper").offset().left});
+                            $("#lineQueryOverlay").width($("#diva-wrapper").width());
+                            $("#lineQueryOverlay").height($("#diva-wrapper").height());
+
+                            //create the contents of the modal
+                            $("#lineQueryOverlay").append("<div id='lineQuery'>" +
+                                "<h4>Enter desired line numbers for the zone and neume objects:</h4>" +
+                                "Zone line number: <input type='text' id='zoneLineInput'><br>" +
+                                "Neume line number: <input type='text' id='neumeLineInput'><br>" +
+                                "<button style='float:right' type='button' class='btn btn-default' id='lineQueryClose'>Close</button>" +
+                                "<button style='float:right' type='button' class='btn btn-primary' id='lineQuerySubmit'>Create Highlight</button>" +
+                                "</div>");
+
+                            $("#lineQuery").center({against: 'parent'});
+
+                            //on close for the overlay
+                            $("#lineQueryClose").on('click', function()
+                            {
+                                $("#lineQueryOverlay").remove();
+                            });
+
+                            //on submit for the overlay
+                            $("#lineQuerySubmit").on('click', function()
+                            {
+                                insertNewNeume(neumeLines, meiEditor.getActivePanel().text());
+                            });
+                        }
+                    }
+                    else 
+                    {
+                        //there's gotta be something simpler than this, but I can't find it for the life of me.
+                        //get the four sides
+                        var boxLeft = $("#drag-div").offset().left;
+                        var boxRight = boxLeft + $("#drag-div").width();
+                        var boxTop = $("#drag-div").offset().top;
+                        var boxBottom = boxTop + $("#drag-div").height();
+
+                        //for each overlay-box
+                        var curBoxIndex = $(".overlay-box").length;
+                        while (curBoxIndex--)
+                        {
+                            var curBox = $(".overlay-box")[curBoxIndex];
+
+                            //see if any part of the box is inside (doesn't have to be the entire box)
+                            var curLeft = $(curBox).offset().left;
+                            var curRight = curLeft + $(curBox).width();
+                            var curTop = $(curBox).offset().top;
+                            var curBottom = curTop + $(curBox).height();
+                            if (curRight < boxLeft)
+                                continue;
+                            else if (curLeft > boxRight)
+                                continue;
+                            else if (curBottom < boxTop)
+                                continue;
+                            else if (curTop > boxBottom)
+                                continue;
+
+                            //if we're still here, select it
+                            if(!($(curBox).hasClass('selectedHover')))
+                            {
+                                meiEditor.selectHighlight(curBox);
+                            }
+                        }
+                    }
+
+                    $("#drag-div").remove();
+                    meiEditorSettings.dragActive = false;
+                };
+
                 var shiftClickHandler = function(eve)
                 {
                     $(document).unbind('mousemove', changeDragSize);
@@ -244,13 +387,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             var newBoxTop = centerY - 100;
                             var newBoxBottom = centerY + 100;
 
-                            //generate some UUIDs
-                            var zoneID = genUUID();
-                            var neumeID = genUUID();
-
-                            //generate the element strings
-                            var zoneStringToAdd = '<zone xml:id="' + zoneID + '" ulx="' + newBoxLeft + '" uly="' + newBoxTop + '" lrx="' + newBoxRight + '" lry="' + newBoxBottom + '"/>';
-                            var neumeStringToAdd = '<neume xml:id="' + neumeID + '" name="neume.por" facs="' + zoneID + '"/>';
+                            var neumeLines = makeNeumeString(newBoxLeft, newBoxTop, newBoxRight, newBoxBottom);
 
                             //create the fake modal
                             $("#diva-wrapper").append("<div id='lineQueryOverlay'></div>");
@@ -269,37 +406,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                             $("#lineQuery").center({against: 'parent'});
 
-                            //function to insert a new neume, takes the document filename as input
-                            var insertNewNeume = function(chosenDoc)
-                            {                          
-                                var lineCount = meiEditorSettings.pageData[chosenDoc].getSession().doc.getLength();
-                                var zoneStringLine = parseInt($("#zoneLineInput").val(), 10);
-                                var neumeStringLine = parseInt($("#neumeLineInput").val(), 10);
-
-                                //if the line number is not an int and inside the line count for the current page, throw an error
-                                if((zoneStringLine < 1) || (zoneStringLine > lineCount) || !(zoneStringLine))
-                                {
-                                    meiEditor.localError("Please enter a number between 1 and " + lineCount + " for the zone line.");
-                                    return;
-                                }
-                                if((neumeStringLine < 1) || (neumeStringLine > lineCount) || !(neumeStringLine))
-                                {
-                                    meiEditor.localError("Please enter a number between 1 and " + lineCount + " for the neume line.");
-                                    return;
-                                }
-
-                                $("#lineQueryClose").trigger('click');
-
-                                //add to the document
-                                var zoneWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(zoneStringLine).split("<")[0];
-                                var neumeWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(neumeStringLine).split("<")[0];
-                                meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(zoneStringLine, [zoneWhiteSpace + zoneStringToAdd]);
-                                meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(neumeStringLine, [neumeWhiteSpace + neumeStringToAdd]);
-
-                                //redraw highlights
-                                meiEditor.createHighlights();
-                            };
-
                             //on close for the overlay
                             $("#lineQueryClose").on('click', function()
                             {
@@ -309,7 +415,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             //on submit for the overlay
                             $("#lineQuerySubmit").on('click', function()
                             {
-                                insertNewNeume(meiEditor.getActivePanel().text());
+                                insertNewNeume(neumeLines, meiEditor.getActivePanel().text());
                             });
                         }
                     }
@@ -1003,7 +1109,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         return;
                     }
                     editor = meiEditorSettings.pageData[pageTitle];
-                    if($.contains(document.getElementById("diva-wrapper"), e.target))
+                    if($.contains(document.getElementById("diva-wrapper"), e.target) && ($("#lineQueryOverlay").length < 1))
                     {
                         if($(e.target).hasClass("diva-document-tile"))
                         {
@@ -1039,6 +1145,34 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                 $(document).on('keydown', function(e)
                 {
+                    //if win-ctrl or mac-cmd was the key that was put down
+                    if(e.metaKey && !meiEditorSettings.createModeActive)
+                    {
+                        meiEditorSettings.createModeActive = true;
+                        $("#editorConsole").append('<div id="cover-div"></div>');
+                        $("#cover-div").height($("#diva-wrapper").height());
+                        $("#cover-div").width($("#diva-wrapper").width());
+                        //if .overlay-box is not created yet, we want this to be NaN so it can't be clicked on.
+                        $("#cover-div").css('z-index', $(".overlay-box").css('z-index') - 1);
+                        $("#cover-div").offset({'top': $("#diva-wrapper").offset().top, 'left': $("#diva-wrapper").offset().left});
+
+                        $("#cover-div").on('mousedown', function(ev)
+                        {
+                            //append the div that will resize as you drag
+                            $("#topbar").append('<div id="drag-div"></div>');
+                            $("#drag-div").css('z-index', $(".overlay-box").css('z-index') + 1);
+                            meiEditorSettings.initDragTop = ev.pageY;
+                            meiEditorSettings.initDragLeft = ev.pageX;
+                            meiEditorSettings.dragActive = true;
+                            $("#drag-div").offset({'top': ev.pageY, 'left':ev.pageX});
+
+                            //as you drag, resize it - separate function as we have two document.mousemoves that we need to unbind separately
+                            $(document).on('mousemove', changeDragSize);
+
+                            $(document).on('mouseup', metaClickHandler);
+                        });
+
+                    }
                     //if shift key was the key that was put down
                     if(e.shiftKey && !meiEditorSettings.editModeActive)
                     {
@@ -1113,6 +1247,14 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                 $(document).on('keyup', function(e)
                 {
+                    //if it was the shift key that was released
+                    if((!e.metaKey) && meiEditorSettings.createModeActive)
+                    {
+                        meiEditorSettings.createModeActive = false;
+                        $("#cover-div").unbind('dblclick');
+                        $("#cover-div").unbind('mousedown');
+                        $("#cover-div").remove();
+                    }
                     //if it was the shift key that was released
                     if((!e.shiftKey) && meiEditorSettings.editModeActive)
                     {
