@@ -37,6 +37,9 @@ Allows you to highlight regions of a page image
                 {
                     var highlightObj = divaSettings.parentSelector.data('highlights');
 
+                    if (typeof highlightObj === 'undefined')
+                        return;
+
                     if (highlightObj.hasOwnProperty(pageIdx))
                     {
                         var pageId = divaInstance.getInstanceId() + 'page-' + pageIdx;
@@ -174,7 +177,11 @@ Allows you to highlight regions of a page image
 
                     if (typeof callback !== 'undefined')
                     {
-                        diva.Events.subscribe("HighlightCompleted", callback);
+                        //don't overlap the event if it already exists
+                        if(!diva.Events.isSubscribedTo("HighlightCompleted", callback))
+                        {
+                            diva.Events.subscribe("HighlightCompleted", callback);
+                        }
                     }
 
                     return true;
