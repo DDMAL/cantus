@@ -455,7 +455,7 @@
             diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
             diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
             diva.Events.subscribe("ModeDidSwitch", this.setGlobalFullScreen);
-            diva.Events.subscribe("VisiblePageDidChange", this.reloadPaintedBoxes);
+//            diva.Events.subscribe("VisiblePageDidChange", this.reloadPaintedBoxes);
 //            diva.Events.subscribe("ViewerDidZoomOut", this.reloadPaintedBoxes);
 //            diva.Events.subscribe("ViewerDidZoomIn", this.reloadPaintedBoxes);
             globalEventHandler.trigger("renderView");
@@ -620,18 +620,42 @@
             console.log("BOXSET:");
             console.log(boxSet);
             console.log("Length" + boxSet.length);
-            for (var i = 0; i < boxSet.length; i++) {
-                console.log("Painting box:" + 1);
-                console.log(boxSet[i]);
-                this.$el.data('diva').highlightOnPage
-                (
-                    boxSet[i].p + 1, // The page
-                    [{
+
+            var output = [];
+            var highlightsByPageHash = {};
+            var pageList = [];
+
+            for (var i = 0; i < boxSet.length; i++)
+            {
+
+                var page = boxSet[i].p + 1; // The page
+
+                if (highlightsByPageHash[page] === undefined)
+                {
+                    // Add page to the hash
+                    highlightsByPageHash[page] = [];
+                    pageList.push(page);
+                }
+                else
+                {
+                    // Page is in the hash, so we add to it.
+                    highlightsByPageHash[page].push
+                    ({
                         'width': boxSet[i].w,
                         'height': boxSet[i].h,
                         'ulx': boxSet[i].x,
                         'uly': boxSet[i].y
-                    }]
+                    });
+                }
+            }
+
+            // Now we need to add all of the pages to the Diva viewer
+            for (var j = 0; j < pageList.length; j++)
+            {
+                this.$el.data('diva').highlightOnPage
+                (
+                    pageList[j], // The page number
+                    highlightsByPageHash[pageList[j]] // List of boxes
                 );
             }
         },
@@ -643,6 +667,10 @@
                 console.log("Repainting Diva boxes.");
                 this.paintBoxes(this.paintedBoxSet);
             }
+            else
+            {
+                console.log("No painted boxes");
+            }
         },
 
         /**
@@ -650,18 +678,34 @@
          */
         zoomToLocation: function(box)
         {
-            console.log("Zooming to Diva location!");
-            // We need to construct a "state" object that tells Diva what to do
-            var newState = {
-                z:5,
-                g: false,
-                f: false,
-                p: box.p + 1,
-                x: box.x,
-                y: box.y
-            };
-            // Tell Diva to go there
-            this.$el.data('diva').setState(newState);
+            //console.log("Zooming to Diva location!");
+            //// We need to construct a "state" object that tells Diva what to do
+            //var newState = {
+            //    z:5,
+            //    g: false,
+            //    f: false,
+            //    p: box.p + 1,
+            //    x: box.x,
+            //    y: box.y
+            //};
+            //// Tell Diva to go there
+            //this.$el.data('diva').setState(newState);
+
+//            var desiredBox = box + direction;
+
+            // Now figure out the page that box is on
+            var desiredPage = box.p + 2;
+            // Now jump to that page
+            this.$el.data('diva').gotoPageByNumber(desiredPage);
+            // Get the height above top for that box
+            var boxTop = box.y;
+            var currentScrollTop = parseInt($('#1-diva-outer').scrollTop(), 10);
+            // +250 pixels just to center it a bit or whatever
+            $('#1-diva-outer').scrollTop(boxTop + currentScrollTop - 250);
+            // Now get the horizontal scroll
+            var boxLeft = box.x;
+            $('#1-diva-outer').scrollLeft(boxLeft);
+            // Will include the padding between pages for best results
         }
     });
 
