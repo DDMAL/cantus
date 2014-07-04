@@ -606,6 +606,7 @@
         /**
          * Draw boxes on the Diva viewer.  These usually correspond to
          * music notation on a manuscript page.
+         * music notation on a manuscript page.
          *
          * @param boxSet [ {p,w,h,x,y}, ... ]
          */
@@ -615,13 +616,13 @@
             this.paintedBoxSet = boxSet;
 
             // console.log("Painting boxes!");
+            // TODO: resetHighlights() is breaking search boxes!!!
             this.$el.data('diva').resetHighlights();
             // Use the Diva highlight plugin to draw the boxes
             // console.log("BOXSET:");
             // console.log(boxSet);
             // console.log("Length" + boxSet.length);
 
-            var output = [];
             var highlightsByPageHash = {};
             var pageList = [];
 
@@ -1311,7 +1312,7 @@
             this.events = {};
             // Register them
             // this.events["click " + this.$el.selector + ".search-button"] = "newSearch";
-            this.events["click button"] = "newSearch";
+            this.events["click" + this.$el.selector +  " button"] = "newSearch";
 
             // Delegate the new events
             this.delegateEvents();
@@ -1347,7 +1348,7 @@
             // We need a new paginator
             this.paginator = new PaginationView(
                 {
-                    name: "search",
+                    name: "notation-paginator",
                     currentPage: 1,
                     elementCount: this.results.toJSON().numFound,
                     pageSize: 1
@@ -1377,20 +1378,20 @@
 
         clearResults: function()
         {
-            $(this.$el.selector + ' .search-results').html(
+            $(this.$el.selector + ' .note-search-results').html(
                 "<h4>Please enter a search query.</h4>"
             );
-            $(this.$el.selector + ' .pagination').empty();
+            $(this.$el.selector + ' .note-pagination').empty();
         },
 
         renderResults: function()
         {
             // console.log("Rendering notation results:");
-            $(this.$el.selector + ' .search-results').html(
+            $(this.$el.selector + ' .note-search-results').html(
                 "<h4>" + this.results.toJSON().numFound + " results found for query: " + this.query + "</h4>"
             );
             // console.log(this.$el.selector + ' .pagination');
-            this.assign(this.paginator, this.$el.selector + ' .pagination');
+            this.assign(this.paginator, this.$el.selector + ' .note-pagination');
         }
     });
 
@@ -1535,8 +1536,8 @@
             // Render subviews
             // console.log("Assign search result view:");
             // console.log(this.$el.selector + '.search-result');
-            $(this.$el.selector + ' .search-result').html("SEARCH RESULT VIEW!");
-            this.assign(this.searchResultView, this.$el.selector + ' .search-result');
+            $(this.$el.selector + ' .search-results').html("SEARCH RESULT VIEW!");
+            this.assign(this.searchResultView, this.$el.selector + ' .search-results');
             globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
