@@ -442,6 +442,7 @@
                 enableAutoWidth: false,
                 enableAutoHeight: false,
                 enableFilename: false,
+                enableHighlight: true,
                 fixedHeightGrid: false,
                 iipServerURL: iipImageServerUrl + "fcgi-bin/iipsrv.fcgi",
                 objectData: "/static/" + siglum + ".json",
@@ -607,10 +608,15 @@
             console.log("Painting boxes!");
             this.$el.data('diva').resetHighlights();
             // Use the Diva highlight plugin to draw the boxes
+            console.log("BOXSET:");
+            console.log(boxSet);
+            console.log("Length" + boxSet.length);
             for (var i = 0; i < boxSet.length; i++) {
+                console.log("Painting boxSet:");
+                console.log(boxSet[i]);
                 this.$el.data('diva').highlightOnPage
                 (
-                    boxSet[i].p, // The page
+                    boxSet[i].p + 1, // The page
                     [{
                         'width': boxSet[i].w,
                         'height': boxSet[i].h,
@@ -1190,12 +1196,16 @@
 
         initialize: function(options)
         {
-            _.bindAll(this, 'render');
+            _.bindAll(this, 'render', 'registerEvents', 'newSearch',
+                'resultFetchCallback');
             this.template = _.template($('#search-notation-template').html());
             // The diva view which we will act upon!
             this.divaView = options.divaView;
             console.log(this.divaView);
+            this.results = new CantusAbstractModel();
             this.registerEvents();
+
+            this.listenTo(this.results, "sync", this.resultFetchCallback);
         },
 
         /**
@@ -1228,6 +1238,18 @@
                 // If we pass an empty array, then all boxes are erased.
                 this.divaView.paintBoxes([]);
             }
+            else
+            {
+                this.results.url = siteUrl + "liber-search/?q=" + newQuery + "&type=pnames";
+                this.results.fetch();
+            }
+        },
+
+        resultFetchCallback: function()
+        {
+            this.divaView.paintBoxes(this.results.toJSON().results);
+            console.log("NOTATION RESULTS:");
+            console.log(this.results.toJSON());
         },
 
         render: function()
