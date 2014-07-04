@@ -694,17 +694,23 @@
 //            var desiredBox = box + direction;
 
             // Now figure out the page that box is on
+            var divaOuter = this.$el.data('diva').getSettings().outerSelector;
+
             var desiredPage = box.p + 2;
+            // Zoom in
+            this.$el.data('diva').setZoomLevel(5);
             // Now jump to that page
             this.$el.data('diva').gotoPageByNumber(desiredPage);
             // Get the height above top for that box
             var boxTop = box.y;
-            var currentScrollTop = parseInt($('#1-diva-outer').scrollTop(), 10);
-            // +250 pixels just to center it a bit or whatever
-            $('#1-diva-outer').scrollTop(boxTop + currentScrollTop - 250);
+            var currentScrollTop = parseInt($(divaOuter).scrollTop(), 10);
+            console.log("currentScrollTop:");
+            console.log(currentScrollTop);
+            // +50 pixels just to center it a bit or whatever
+            $(divaOuter).scrollTop(boxTop + currentScrollTop + ($(divaOuter).height() / 3));
             // Now get the horizontal scroll
             var boxLeft = box.x;
-            $('#1-diva-outer').scrollLeft(boxLeft);
+            $(divaOuter).scrollLeft(boxLeft);
             // Will include the padding between pages for best results
         }
     });
