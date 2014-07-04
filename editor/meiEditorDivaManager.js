@@ -237,7 +237,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                     //generate the element strings
                     var zoneStringToAdd = '<zone xml:id="' + zoneID + '" ulx="' + ulx + '" uly="' + uly + '" lrx="' + lrx + '" lry="' + lry + '"/>';
-                    var neumeStringToAdd = '<neume xml:id="' + neumeID + '" name="neume.por" facs="' + zoneID + '"/>';
+                    var neumeStringToAdd = '<neume xml:id="' + neumeID + '" facs="' + zoneID + '"/>';
                     
                     if($("#estimateBox").is(":checked"))
                     {
@@ -264,6 +264,14 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(layerLine, [neumeWhiteSpace + neumeStringToAdd]);
 
                         meiEditor.createHighlights();
+
+                        var searchNeedle = new RegExp("<neume.*" + neumeID, "g");
+
+                        var testSearch = editorRef.find(searchNeedle, 
+                        {
+                            wrap: true,
+                            range: null
+                        });
                         return;
                     }
                     //create the fake modal
@@ -293,7 +301,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     $("#lineQuerySubmit").on('click', function()
                     {             
                         var chosenDoc = meiEditor.getActivePanel().text();
-                        var lineCount = meiEditorSettings.pageData[chosenDoc].getSession().doc.getLength();
+                        var editorRef = meiEditorSettings.pageData[chosenDoc];
+                        var lineCount = editorRef.getSession().doc.getLength();
                         var zoneStringLine = parseInt($("#zoneLineInput").val(), 10);
                         var neumeStringLine = parseInt($("#neumeLineInput").val(), 10);
 
@@ -312,13 +321,21 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         $("#lineQueryClose").trigger('click');
 
                         //add to the document
-                        var zoneWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(zoneStringLine).split("<")[0];
-                        var neumeWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(neumeStringLine).split("<")[0];
-                        meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(zoneStringLine, [zoneWhiteSpace + zoneStringToAdd]);
-                        meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(neumeStringLine, [neumeWhiteSpace + neumeStringToAdd]);
+                        var zoneWhiteSpace = editorRef.session.doc.getLine(zoneStringLine).split("<")[0];
+                        var neumeWhiteSpace = editorRef.session.doc.getLine(neumeStringLine).split("<")[0];
+                        editorRef.session.doc.insertLines(zoneStringLine, [zoneWhiteSpace + zoneStringToAdd]);
+                        editorRef.session.doc.insertLines(neumeStringLine, [neumeWhiteSpace + neumeStringToAdd]);
 
                         //redraw highlights
                         meiEditor.createHighlights();
+
+                        var searchNeedle = new RegExp("<neume.*" + neumeID, "g");
+
+                        var testSearch = editorRef.find(searchNeedle, 
+                        {
+                            wrap: true,
+                            range: null
+                        });
                     });
                 };
 
