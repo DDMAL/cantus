@@ -1193,6 +1193,7 @@
         query: null,
         results: null,
         divaView: null,
+        paginator: null,
 
         initialize: function(options)
         {
@@ -1203,6 +1204,7 @@
             this.divaView = options.divaView;
             console.log(this.divaView);
             this.results = new CantusAbstractModel();
+            this.paginator = new PaginationView({name: "notation-paginator"});
             this.registerEvents();
 
             this.listenTo(this.results, "sync", this.resultFetchCallback);
@@ -1231,12 +1233,13 @@
             var newQuery = encodeURIComponent($(this.$el.selector
                 + ' .query-input').val());
             console.log(newQuery);
-
+            this.query = newQuery;
             // Handle the empty case
             if (newQuery === "")
             {
                 // If we pass an empty array, then all boxes are erased.
                 this.divaView.paintBoxes([]);
+                this.clearResults();
             }
             else
             {
@@ -1250,12 +1253,47 @@
             this.divaView.paintBoxes(this.results.toJSON().results);
             console.log("NOTATION RESULTS:");
             console.log(this.results.toJSON());
+
+            // We need a new paginator
+            this.paginator = new PaginationView(
+                {
+                    name: "search",
+                    currentPage: 1,
+                    elementCount: this.results.toJSON().numFound,
+                    pageSize: 1
+                }
+            );
+            this.listenTo(this.paginator, 'change', this.zoomToResult);
+
+            this.renderResults();
         },
 
-        render: function()
+        zoomToResult: function()
         {
+
+        },
+
+        render: function() {
             console.log("Render SearchNotationView.");
             $(this.el).html(this.template());
+//            this.renderResults();
+        },
+
+        clearResults: function()
+        {
+            $(this.$el.selector + ' .search-results').html(
+                "<h4>Please enter a search query.</h4>"
+            );
+        },
+
+        renderResults: function()
+        {
+            console.log("Rendering notation results:");
+            $(this.$el.selector + ' .search-results').html(
+                "<h4>" + this.results.toJSON().numFound + " results found for query: " + this.query + "</h4>"
+            );
+            console.log(this.$el.selector + ' .pagination');
+            this.assign(this.paginator, this.$el.selector + ' .pagination');
         }
     });
 
