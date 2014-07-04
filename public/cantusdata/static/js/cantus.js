@@ -690,26 +690,28 @@
 
             // Now figure out the page that box is on
             var divaOuter = this.$el.data('diva').getSettings().outerSelector;
-
             var desiredPage = box.p;
+//            var zoomLevel = 4;
+            var zoomLevel = this.$el.data('diva').getZoomLevel();
+
             // Zoom in
-            this.$el.data('diva').setZoomLevel(5);
+//            this.$el.data('diva').setZoomLevel(zoomLevel);
             // Now jump to that page
             this.$el.data('diva').gotoPageByNumber(desiredPage);
             // Get the height above top for that box
-            var boxTop = box.y;
+            var boxTop = this.$el.data('diva').translateFromMaxZoomLevel(box.y);
             var currentScrollTop = parseInt($(divaOuter).scrollTop(), 10);
             // console.log("currentScrollTop:");
             // console.log(currentScrollTop);
 
-            var topMarginConsiderations = this.$el.data('diva').getSettings().averageHeights[5]
+            var topMarginConsiderations = this.$el.data('diva').getSettings().averageHeights[zoomLevel]
                 * this.$el.data('diva').getSettings().adaptivePadding;
-             var leftMarginConsiderations = this.$el.data('diva').getSettings().averageWidths[5]
+             var leftMarginConsiderations = this.$el.data('diva').getSettings().averageWidths[zoomLevel]
                 * this.$el.data('diva').getSettings().adaptivePadding;
              $(divaOuter).scrollTop(boxTop + currentScrollTop -
                 ($(divaOuter).height() / 2) + (box.h / 2) + topMarginConsiderations);
             // Now get the horizontal scroll
-            var boxLeft = box.x;
+            var boxLeft = this.$el.data('diva').translateFromMaxZoomLevel(box.x);
             $(divaOuter).scrollLeft(boxLeft - ($(divaOuter).width() / 2)
                 + (box.w / 2) + leftMarginConsiderations);
             // Will include the padding between pages for best results
