@@ -678,6 +678,15 @@
          */
         zoomToLocation: function(box)
         {
+            console.log("Zooming to location:");
+            console.log(box);
+
+            if (box === undefined)
+            {
+                // Do nothing if no box!
+                return;
+            }
+
             // Now figure out the page that box is on
             var divaOuter = this.$el.data('diva').getSettings().outerSelector;
 
@@ -1368,6 +1377,7 @@
             $(this.$el.selector + ' .search-results').html(
                 "<h4>Please enter a search query.</h4>"
             );
+            $(this.$el.selector + ' .pagination').empty();
         },
 
         renderResults: function()
