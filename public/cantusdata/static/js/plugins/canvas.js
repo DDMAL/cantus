@@ -30,7 +30,13 @@ Adds a little "tools" icon next to each image
             rgbMax: 50,
             rgbMin: -50,
             throbberFadeSpeed: 200,
-            throbberTimeout: 100
+            throbberTimeout: 100,
+            buttons: [
+                'contrast',
+                'brightness',
+                'rotation',
+                'zoom'
+            ]
         };
 
         // Convert an angle from degrees to radians
@@ -311,6 +317,7 @@ Adds a little "tools" icon next to each image
         {
             image = new Image();
             image.src = imageURL;
+            image.crossOrigin = "Anonymous";
 
             image.onload = function ()
             {
@@ -331,7 +338,29 @@ Adds a little "tools" icon next to each image
                 // Draw the image to the large canvas, and save the pixel array
                 canvas.context = canvas.canvas.getContext('2d');
                 canvas.context.drawImage(image, canvas.cornerX, canvas.cornerY, canvas.width, canvas.height);
-                canvas.data = canvas.context.getImageData(0, 0, canvas.size, canvas.size);
+                try
+                {
+                    canvas.data = canvas.context.getImageData(0, 0, canvas.size, canvas.size);
+                }
+                catch (error)
+                {
+                    var canvasError = '<div id="diva-error" class="diva-error"><p><strong>Error</strong></p><p>' + error.message + '</p>';
+
+                    if (error.name === 'SecurityError')
+                    {
+                        canvasError += '<p>You may need to update your server configuration in order to use the image manipulation tools. ' +
+                        'For help, see the <a href="https://github.com/DDMAL/diva.js/wiki/The-API-and-Plugins#a-note-about-' +
+                        'canvas-and-cross-site-data" target="_blank">canvas cross-site data documentation</a>.</p>' +
+                        '</div>';
+                    }
+                    else
+                    {
+                        throw error;
+                    }
+
+                    canvasError += '</div>';
+                    $('#diva-canvas-backdrop').append(canvasError);
+                }
 
                 // Only load the map the first time (when there is no callback)
                 if (callback === undefined) {
@@ -548,22 +577,12 @@ Adds a little "tools" icon next to each image
                     return true;
                 }
 
-                var buttons = [
-                    'contrast',
-                    'brightness',
-                    'rotation',
-                    'zoom',
-                    'red',
-                    'green',
-                    'blue'
-                ];
-
                 var canvasButtonsList = [];
                 var buttonHTML, button, buttonTitle, i;
 
-                for (i in buttons)
+                for (i in settings.buttons)
                 {
-                    button = buttons[i];
+                    button = settings.buttons[i];
                     buttonTitle = sliders[button].title;
                     buttonHTML = '<div class="' + button + '" title="' + buttonTitle + '"></div>';
                     canvasButtonsList.push(buttonHTML);
@@ -724,7 +743,7 @@ Adds a little "tools" icon next to each image
                     $('#diva-canvas-buttons .clicked').removeClass('clicked');
                     updateSlider('contrast');
 
-                    Events.publish("CanvasViewDidHide");
+                    diva.Events.publish("CanvasViewDidHide");
                 });
 
                 // Hide the toolbar when the minimise icon is clicked
@@ -885,7 +904,7 @@ Adds a little "tools" icon next to each image
 
                 showThrobber();
 
-                Events.publish("CanvasViewDidActivate", [page]);
+                diva.Events.publish("CanvasViewDidActivate", [page]);
 
                 loadCanvas(imageURL);
             },

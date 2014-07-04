@@ -1,7 +1,7 @@
 (function($){
 
     const siteUrl = "/";
-    const iipImageServerUrl = "http://diva.simssa.ca/";
+    const iipImageServerUrl = "http://cantus.simssa.ca/";
     const divaImageDirectory = "/srv/images/cantus/";
 
     // Global Event Handler for global events
@@ -90,7 +90,7 @@
                 $('.diva-outer').css("height",
                         $("#content-container").height() - 75);
                 $('.diva-outer').css("width", $("#diva-toolbar").width());
-                $('.diva-inner').css("width", $("#diva-toolbar").width());
+//                $('.diva-inner').css("width", $("#diva-toolbar").width());
             }
         },
 
@@ -214,6 +214,9 @@
      */
     var SearchResult = Backbone.Model.extend
     ({
+        // Sometimes overridden
+        searchPage: "search/?q=",
+
         initialize: function(pQuery)
         {
             this.setQuery(pQuery);
@@ -221,7 +224,7 @@
 
         setQuery: function(query)
         {
-            this.url = siteUrl + "search/?q=" + query;
+            this.url = siteUrl + this.searchPage + query;
         },
 
         /**
@@ -417,10 +420,13 @@
 
         timer: null,
 
+        paintedBoxSet: null,
+
         initialize: function(options)
         {
             _.bindAll(this, 'render', 'storeFolioIndex', 'triggerChange',
-                'storeInitialFolio', 'setGlobalFullScreen');
+                'storeInitialFolio', 'setGlobalFullScreen', 'reloadPaintedBoxes',
+            'zoomToLocation');
             this.el = "#diva-wrapper";
             this.setManuscript(options.siglum, options.folio);
         },
@@ -439,6 +445,7 @@
                 enableAutoWidth: false,
                 enableAutoHeight: false,
                 enableFilename: false,
+                enableHighlight: true,
                 fixedHeightGrid: false,
                 iipServerURL: iipImageServerUrl + "fcgi-bin/iipsrv.fcgi",
                 objectData: "/static/" + siglum + ".json",
@@ -448,6 +455,9 @@
             diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
             diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
             diva.Events.subscribe("ModeDidSwitch", this.setGlobalFullScreen);
+//            diva.Events.subscribe("VisiblePageDidChange", this.reloadPaintedBoxes);
+//            diva.Events.subscribe("ViewerDidZoomOut", this.reloadPaintedBoxes);
+//            diva.Events.subscribe("ViewerDidZoomIn", this.reloadPaintedBoxes);
             globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         },
@@ -591,6 +601,117 @@
         triggerChange: function()
         {
             globalEventHandler.trigger("manuscriptChangeFolio");
+        },
+
+        /**
+         * Draw boxes on the Diva viewer.  These usually correspond to
+         * music notation on a manuscript page.
+         *
+         * @param boxSet [ {p,w,h,x,y}, ... ]
+         */
+        paintBoxes: function(boxSet)
+        {
+            // Store the boxes for repainting later
+            this.paintedBoxSet = boxSet;
+
+            console.log("Painting boxes!");
+            this.$el.data('diva').resetHighlights();
+            // Use the Diva highlight plugin to draw the boxes
+            console.log("BOXSET:");
+            console.log(boxSet);
+            console.log("Length" + boxSet.length);
+
+            var output = [];
+            var highlightsByPageHash = {};
+            var pageList = [];
+
+            for (var i = 0; i < boxSet.length; i++)
+            {
+
+                var page = boxSet[i].p + 1; // The page
+
+                if (highlightsByPageHash[page] === undefined)
+                {
+                    // Add page to the hash
+                    highlightsByPageHash[page] = [];
+                    pageList.push(page);
+                }
+                else
+                {
+                    // Page is in the hash, so we add to it.
+                    highlightsByPageHash[page].push
+                    ({
+                        'width': boxSet[i].w,
+                        'height': boxSet[i].h,
+                        'ulx': boxSet[i].x,
+                        'uly': boxSet[i].y
+                    });
+                }
+            }
+
+            // Now we need to add all of the pages to the Diva viewer
+            for (var j = 0; j < pageList.length; j++)
+            {
+                this.$el.data('diva').highlightOnPage
+                (
+                    pageList[j], // The page number
+                    highlightsByPageHash[pageList[j]] // List of boxes
+                );
+            }
+        },
+
+        reloadPaintedBoxes: function()
+        {
+            if (this.paintedBoxSet !== null)
+            {
+                console.log("Repainting Diva boxes.");
+                this.paintBoxes(this.paintedBoxSet);
+            }
+            else
+            {
+                console.log("No painted boxes");
+            }
+        },
+
+        /**
+         * Zoom Diva to a locatiom.
+         */
+        zoomToLocation: function(box)
+        {
+            console.log("Zooming to location:");
+            console.log(box);
+
+            if (box === undefined)
+            {
+                // Do nothing if no box!
+                return;
+            }
+
+            // Now figure out the page that box is on
+            var divaOuter = this.$el.data('diva').getSettings().outerSelector;
+
+            var desiredPage = box.p + 2;
+            // Zoom in
+            this.$el.data('diva').setZoomLevel(5);
+            // Now jump to that page
+            this.$el.data('diva').gotoPageByNumber(desiredPage);
+            // Get the height above top for that box
+            var boxTop = box.y;
+            var currentScrollTop = parseInt($(divaOuter).scrollTop(), 10);
+            console.log("currentScrollTop:");
+            console.log(currentScrollTop);
+
+            var topMarginConsiderations = this.$el.data('diva').getSettings().averageHeights[5]
+                * this.$el.data('diva').getSettings().adaptivePadding;
+             var leftMarginConsiderations = this.$el.data('diva').getSettings().averageWidths[5]
+                * this.$el.data('diva').getSettings().adaptivePadding;
+             $(divaOuter).scrollTop(boxTop + currentScrollTop -
+                ($(divaOuter).height() / 2) + (box.h / 2) + topMarginConsiderations);
+            // Now get the horizontal scroll
+            var boxLeft = box.x;
+            $(divaOuter).scrollLeft(boxLeft - ($(divaOuter).width() / 2)
+                + (box.w / 2) + leftMarginConsiderations);
+            // Will include the padding between pages for best results
         }
     });
 
@@ -1154,6 +1275,122 @@
         }
     });
 
+    var SearchNotationView = CantusAbstractView.extend
+    ({
+        query: null,
+        results: null,
+        divaView: null,
+        paginator: null,
+
+        initialize: function(options)
+        {
+            _.bindAll(this, 'render', 'registerEvents', 'newSearch',
+                'resultFetchCallback', 'zoomToResult');
+            this.template = _.template($('#search-notation-template').html());
+            // The diva view which we will act upon!
+            this.divaView = options.divaView;
+            console.log(this.divaView);
+            this.results = new CantusAbstractModel();
+            this.paginator = new PaginationView({name: "notation-paginator"});
+            this.registerEvents();
+
+            this.listenTo(this.results, "sync", this.resultFetchCallback);
+        },
+
+        /**
+         * Register the events that are necessary to have search input.
+         */
+        registerEvents: function()
+        {
+            console.log("Registering search events for:");
+            console.log(this.$el.selector);
+            // Clear out the events
+            this.events = {};
+            // Register them
+            // this.events["click " + this.$el.selector + ".search-button"] = "newSearch";
+            this.events["click button"] = "newSearch";
+
+            // Delegate the new events
+            this.delegateEvents();
+        },
+
+        newSearch: function()
+        {
+            console.log("Notation search!");
+            var newQuery = encodeURIComponent($(this.$el.selector
+                + ' .query-input').val());
+            console.log(newQuery);
+            this.query = newQuery;
+            // Handle the empty case
+            if (newQuery === "")
+            {
+                // If we pass an empty array, then all boxes are erased.
+                this.divaView.paintBoxes([]);
+                this.clearResults();
+            }
+            else
+            {
+                this.results.url = siteUrl + "liber-search/?q=" + newQuery + "&type=pnames";
+                this.results.fetch();
+            }
+        },
+
+        resultFetchCallback: function()
+        {
+            this.divaView.paintBoxes(this.results.toJSON().results);
+            console.log("NOTATION RESULTS:");
+            console.log(this.results.toJSON());
+
+            // We need a new paginator
+            this.paginator = new PaginationView(
+                {
+                    name: "search",
+                    currentPage: 1,
+                    elementCount: this.results.toJSON().numFound,
+                    pageSize: 1
+                }
+            );
+            // Automatically go to the first result
+            this.zoomToResult();
+            this.listenTo(this.paginator, 'change', this.zoomToResult);
+
+            this.renderResults();
+        },
+
+        zoomToResult: function()
+        {
+            var newIndex = this.paginator.getPage() - 1;
+
+            console.log("Zooming to index: " + newIndex);
+            console.log(this.divaView);
+            this.divaView.zoomToLocation(this.results.toJSON().results[newIndex]);
+        },
+
+        render: function() {
+            console.log("Render SearchNotationView.");
+            $(this.el).html(this.template());
+//            this.renderResults();
+        },
+
+        clearResults: function()
+        {
+            $(this.$el.selector + ' .search-results').html(
+                "<h4>Please enter a search query.</h4>"
+            );
+            $(this.$el.selector + ' .pagination').empty();
+        },
+
+        renderResults: function()
+        {
+            console.log("Rendering notation results:");
+            $(this.$el.selector + ' .search-results').html(
+                "<h4>" + this.results.toJSON().numFound + " results found for query: " + this.query + "</h4>"
+            );
+            console.log(this.$el.selector + ' .pagination');
+            this.assign(this.paginator, this.$el.selector + ' .pagination');
+        }
+    });
+
     var SearchView = CantusAbstractView.extend
     ({
         /**
@@ -1553,6 +1790,7 @@
         id: null,
         manuscript: null,
         searchView: null,
+        searchNotationView: null,
 
         // Subviews
         divaView: null,
@@ -1574,6 +1812,7 @@
             );
             this.folioView = new FolioView();
             this.searchView = new SearchView();
+            this.searchNotationView = new SearchNotationView({divaView: this.divaView});
 
             // Render every time the model changes...
             this.listenTo(this.manuscript, 'change', this.afterFetch);
@@ -1625,6 +1864,7 @@
             }
             this.renderFolioView();
             this.assign(this.searchView, '#manuscript-search');
+            this.assign(this.searchNotationView, '#search-notation');
             globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         },

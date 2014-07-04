@@ -11,7 +11,9 @@
 
     <script src="/static/js/jquery.js"></script>
     <script src="/static/js/bootstrap.js"></script>
-    <script src="/static/js/diva.min.js"></script>
+    <script src="/static/js/utils.js"></script>
+    <script src="/static/js/diva.js"></script>
+    <script src="/static/js/plugins/highlight.js"></script>
 
 {#    <meta content='width=960, initial-scale=2' name='viewport'/>#}
     <meta name="viewport" content="width=device-width" />
@@ -208,6 +210,18 @@
 <div class="pagination"></div>
 </script>
 
+<script type="text/template" id="search-notation-template">
+{#<form role="form">#}
+<div class="form-group">
+    <label class="sr-only" for="exampleInputPassword2">Password</label>
+    <input class="form-control query-input" id="exampleInputPassword2" placeholder="Notation">
+</div>
+<button type="submit">Search</button>
+{#</form>#}
+<div class="search-results"></div>
+<div class="pagination"></div>
+</script>
+
 <script type="text/template" id="pagination-template">
 <ul class="pagination">
     <li id="<%= name %>-page-back" <% if (currentPage <= 1) { %>class="disabled"<% } %> >
@@ -308,7 +322,22 @@
                     </div>
                     <div class="tab-pane" id="manuscript-search-pane">
                         <h3>Search this Manuscript</h3>
-                        <div id="manuscript-search"></div>
+
+                        <!-- Nav tabs -->
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="active"><a href="#text-search-container" role="tab" data-toggle="tab">Text Search</a></li>
+                            <li><a href="#notation-search-container" role="tab" data-toggle="tab">Notation Search</a></li>
+                        </ul>
+
+                        <!-- Tab panes -->
+                        <div class="tab-content">
+                            <div class="tab-pane active" id="text-search-container">
+                                <div id="manuscript-search"></div>
+                            </div>
+                            <div class="tab-pane" id="notation-search-container">
+                                <div id="search-notation"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
