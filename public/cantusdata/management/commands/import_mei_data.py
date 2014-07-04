@@ -276,8 +276,15 @@ def MEI2Solr(folder_name):
             lg.debug("Could not process file {0}. Threw exception: {1}".format(ffile, e))
             print "Whoops!"
 
+
         page = meifile.getElementsByName('page')
-        pagen = int(page[0].getAttribute('n').getValue())
+
+
+        # Taken directly from file name!!!
+        pagen = str(ffile).split('_')[len(str(ffile).split('_')) - 1].split('.')[0]
+
+        # We are overriding this with the one taken from the file name!
+        # pagen = int(page[0].getAttribute('n').getValue())
 
         notes = meifile.getElementsByName('note')
         zones = meifile.getElementsByName('zone')
