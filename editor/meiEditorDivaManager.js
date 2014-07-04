@@ -89,11 +89,12 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 });
 
                 meiEditor.addToNavbar("Diva page manager", "diva-manager");
-                $("#dropdown-diva-manager").append("<li><a id='file-link-dropdown'>Link files to Diva images...</a></li>");
-                $("#dropdown-diva-manager").append("<li><a id='file-unlink-dropdown'>Unlink files from Diva images...</a></li>");
-                $("#dropdown-diva-manager").append("<li><a id='auto-link-dropdown'>Auto-link files by filename</a></li>");
-                $("#dropdown-diva-manager").append("<li><a id='update-diva-dropdown'>Update Diva</a></li>");
-                $("#dropdown-diva-manager").append("<li><a id='clear-selection-dropdown'>Clear selection</a></li>");
+                $("#dropdown-diva-manager").append("<li><a id='file-link-dropdown'>Link files to Diva images...</a></li>" +
+                    "<li><a id='file-unlink-dropdown'>Unlink files from Diva images...</a></li>" +
+                    "<li><a id='auto-link-dropdown'>Auto-link files by filename</a></li>" +
+                    "<li><a id='update-diva-dropdown'>Update Diva</a></li>" +
+                    "<li><a id='clear-selection-dropdown'>Clear selection</a></li>" +
+                    "<li><a id='estiamte-dropdown'>Estimate line numbers:<span style='float:right'><input type='checkbox' id='estimateBox'></span></a></li>");
                 $("#help-dropdown").append("<li><a id='diva-manager-help'>Diva page manager</a></li>");
 
                 $("#file-link-dropdown").on('click', function()
@@ -120,6 +121,10 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 {
                     meiEditor.deselectAllHighlights();
                     meiEditor.deselectResizable(".resizableSelected");
+                });
+
+                $("#estimateBox").on('click', function(e){
+                    e.stopPropagation();
                 });
 
                 $("#diva-manager-help").on('click', function()
@@ -155,11 +160,14 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     "<br><li>Changes you make to the MEI document will not automatically transfer over; click the 'Update Diva' dropdown option to reload the highlighted objects in the image viewer.</li>" + 
                     "<br><li>Clicking on a highlight will select it and move the MEI editor to its line.</li>" +
                     "<li>Holding shift and clicking will select additional highlights.</li>" +
-                    "<li>Holding shfit and dragging the mouse will select everything within a box.</li>" + 
+                    "<li>Holding shift and click-dragging the mouse will select everything within a box.</li>" + 
                     "<li>To deselect a single highlight, hold shift and click on a selected highlight.</li>" +
                     "<li>To deselect all highlights, choose the 'Clear selection' option of this dropdown.</li>" + 
-                    "<br><li>To create a new highlight, shift+click on empty space on the image.</li>" +
-                    "<li>To resize or move a highlight, double-click on it.</li>" +
+                    "<br><li>To create a new highlight, ctrl+click (Windows) or cmd+click (Mac) on empty space on the image. </li>" +
+                    "<li style='margin-left:0.25in'>Only clicking will create a default box that can be resized later.</li>" +
+                    "<li style='margin-left:0.25in'>Clicking and dragging will create a box with a specific size.</li>" +
+                    "<li style='margin-left:0.25in'>If the 'Estimate line numbers' checkbox is checked in the Diva Page Manager dropdown menu, the program will insert a 'zone' object immediately after the 'surface' object and a 'neume' object immediately after the first 'layer' object. Use this at your own discretion.</li>" +
+                    "<br><li>To resize or move a highlight, double-click on it.</li>" +
                     "<li style='margin-left:0.25in'>Click and drag on the edge of the highlight to resize it.</li>" +
                     "<li style='margin-left:0.25in'>Click and drag on the centre of the highlight or with the shift key down to move it.</li>" +
                     "<li style='margin-left:0.25in'>Press the 'Escape' key to leave resize/move mode.</li>" +
@@ -231,6 +239,33 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     var zoneStringToAdd = '<zone xml:id="' + zoneID + '" ulx="' + ulx + '" uly="' + uly + '" lrx="' + lrx + '" lry="' + lry + '"/>';
                     var neumeStringToAdd = '<neume xml:id="' + neumeID + '" name="neume.por" facs="' + zoneID + '"/>';
                     
+                    if($("#estimateBox").is(":checked"))
+                    {
+                        var chosenDoc = meiEditor.getActivePanel().text();
+                        var editorRef = meiEditorSettings.pageData[chosenDoc];
+
+                        var surfaceSearch = editorRef.find(/surface/g, 
+                        {
+                            wrap: true,
+                            range: null
+                        });
+                        var surfaceLine = surfaceSearch.start.row + 2; //converting from 0-index to 1-index, adding 1 to get the line after
+                                               
+                        var layerSearch = editorRef.find(/layer/g, 
+                        {
+                            wrap: true,
+                            range: null
+                        });
+                        var layerLine = layerSearch.start.row + 2; //converting from 0-index to 1-index, adding 1 to get the line after
+                    
+                        var zoneWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(surfaceLine).split("<")[0];
+                        var neumeWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(layerLine).split("<")[0];
+                        meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(surfaceLine, [zoneWhiteSpace + zoneStringToAdd]);
+                        meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(layerLine, [neumeWhiteSpace + neumeStringToAdd]);
+
+                        meiEditor.createHighlights();
+                        return;
+                    }
                     //create the fake modal
                     $("#diva-wrapper").append("<div id='lineQueryOverlay'></div>");
                     $("#lineQueryOverlay").offset({'top': $("#diva-wrapper").offset().top, 'left': $("#diva-wrapper").offset().left});
@@ -301,50 +336,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             var centerX = eve.pageX;
                             var centerY = eve.pageY;
 
-                            var divaInnerRef = $("#1-diva-page-" + meiEditorSettings.divaInstance.getCurrentPageIndex());
-                            centerY = meiEditorSettings.divaInstance.translateToMaxZoomLevel(centerY - divaInnerObj.offset().top);
-                            centerX = meiEditorSettings.divaInstance.translateToMaxZoomLevel(centerX - divaInnerObj.offset().left);
-
-                            //make a 200*200 box
-                            var newBoxLeft = centerX - 100;
-                            var newBoxRight = centerX + 100;
-                            var newBoxTop = centerY - 100;
-                            var newBoxBottom = centerY + 100;
-
-                            insertNewNeume(newBoxLeft, newBoxTop, newBoxRight, newBoxBottom);
-                        }
-                    }
-                    else 
-                    {
-                        var divaInnerRef = $("#1-diva-page-" + meiEditorSettings.divaInstance.getCurrentPageIndex());
-                        var draggedBoxLeft = $("#drag-div").offset().left - divaInnerObj.offset().left;
-                        var draggedBoxRight = meiEditorSettings.divaInstance.translateToMaxZoomLevel(draggedBoxLeft + $("#drag-div").width());
-                        draggedBoxLeft = meiEditorSettings.divaInstance.translateToMaxZoomLevel(draggedBoxLeft);
-                        var draggedBoxTop = $("#drag-div").offset().top - divaInnerObj.offset().top;
-                        var draggedBoxBottom = meiEditorSettings.divaInstance.translateToMaxZoomLevel(draggedBoxTop + $("#drag-div").height());
-                        draggedBoxTop = meiEditorSettings.divaInstance.translateToMaxZoomLevel(draggedBoxTop);
-
-                        insertNewNeume(draggedBoxLeft, draggedBoxTop, draggedBoxRight, draggedBoxBottom);
-                    }
-
-                    $("#drag-div").remove();
-                    meiEditorSettings.dragActive = false;
-                };
-
-                var shiftClickHandler = function(eve)
-                {
-                    $(document).unbind('mousemove', changeDragSize);
-                    $(document).unbind('mouseup', shiftClickHandler);
-
-                    //if this was just a click
-                    if ($("#drag-div").width() < 2 && $("#drag-div").height() < 2)
-                    {
-                        if (meiEditorSettings.curOverlayBox === '')
-                        {
-                            //get the click
-                            var centerX = eve.pageX;
-                            var centerY = eve.pageY;
-
                             var divaInnerObj = $("#1-diva-page-" + meiEditorSettings.divaInstance.getCurrentPageIndex());
                             centerY = meiEditorSettings.divaInstance.translateToMaxZoomLevel(centerY - divaInnerObj.offset().top);
                             centerX = meiEditorSettings.divaInstance.translateToMaxZoomLevel(centerX - divaInnerObj.offset().left);
@@ -360,38 +351,57 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     }
                     else 
                     {
-                        //there's gotta be something simpler than this, but I can't find it for the life of me.
-                        //get the four sides
-                        var boxLeft = $("#drag-div").offset().left;
-                        var boxRight = boxLeft + $("#drag-div").width();
-                        var boxTop = $("#drag-div").offset().top;
-                        var boxBottom = boxTop + $("#drag-div").height();
+                        var divaInnerObj = $("#1-diva-page-" + meiEditorSettings.divaInstance.getCurrentPageIndex());
+                        var draggedBoxLeft = $("#drag-div").offset().left - divaInnerObj.offset().left;
+                        var draggedBoxRight = meiEditorSettings.divaInstance.translateToMaxZoomLevel(draggedBoxLeft + $("#drag-div").outerWidth());
+                        draggedBoxLeft = meiEditorSettings.divaInstance.translateToMaxZoomLevel(draggedBoxLeft);
+                        var draggedBoxTop = $("#drag-div").offset().top - divaInnerObj.offset().top;
+                        var draggedBoxBottom = meiEditorSettings.divaInstance.translateToMaxZoomLevel(draggedBoxTop + $("#drag-div").outerHeight());
+                        draggedBoxTop = meiEditorSettings.divaInstance.translateToMaxZoomLevel(draggedBoxTop);
 
-                        //for each overlay-box
-                        var curBoxIndex = $(".overlay-box").length;
-                        while (curBoxIndex--)
+                        insertNewNeume(draggedBoxLeft, draggedBoxTop, draggedBoxRight, draggedBoxBottom);
+                    }
+
+                    $("#drag-div").remove();
+                    meiEditorSettings.dragActive = false;
+                };
+
+                var shiftClickHandler = function(eve)
+                {
+                    $(document).unbind('mousemove', changeDragSize);
+                    $(document).unbind('mouseup', shiftClickHandler);
+
+                    //there's gotta be something simpler than this, but I can't find it for the life of me.
+                    //get the four sides
+                    var boxLeft = $("#drag-div").offset().left;
+                    var boxRight = boxLeft + $("#drag-div").outerWidth();
+                    var boxTop = $("#drag-div").offset().top;
+                    var boxBottom = boxTop + $("#drag-div").outerHeight();
+
+                    //for each overlay-box
+                    var curBoxIndex = $(".overlay-box").length;
+                    while (curBoxIndex--)
+                    {
+                        var curBox = $(".overlay-box")[curBoxIndex];
+
+                        //see if any part of the box is inside (doesn't have to be the entire box)
+                        var curLeft = $(curBox).offset().left;
+                        var curRight = curLeft + $(curBox).width();
+                        var curTop = $(curBox).offset().top;
+                        var curBottom = curTop + $(curBox).height();
+                        if (curRight < boxLeft)
+                            continue;
+                        else if (curLeft > boxRight)
+                            continue;
+                        else if (curBottom < boxTop)
+                            continue;
+                        else if (curTop > boxBottom)
+                            continue;
+
+                        //if we're still here, select it
+                        if(!($(curBox).hasClass('selectedHover')))
                         {
-                            var curBox = $(".overlay-box")[curBoxIndex];
-
-                            //see if any part of the box is inside (doesn't have to be the entire box)
-                            var curLeft = $(curBox).offset().left;
-                            var curRight = curLeft + $(curBox).width();
-                            var curTop = $(curBox).offset().top;
-                            var curBottom = curTop + $(curBox).height();
-                            if (curRight < boxLeft)
-                                continue;
-                            else if (curLeft > boxRight)
-                                continue;
-                            else if (curBottom < boxTop)
-                                continue;
-                            else if (curTop > boxBottom)
-                                continue;
-
-                            //if we're still here, select it
-                            if(!($(curBox).hasClass('selectedHover')))
-                            {
-                                meiEditor.selectHighlight(curBox);
-                            }
+                            meiEditor.selectHighlight(curBox);
                         }
                     }
 
