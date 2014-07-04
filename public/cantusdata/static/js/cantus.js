@@ -1350,7 +1350,8 @@
                     pageSize: 1
                 }
             );
-//            this.zoomToResult();
+            // Automatically go to the first result
+            this.zoomToResult();
             this.listenTo(this.paginator, 'change', this.zoomToResult);
 
             this.renderResults();
