@@ -420,10 +420,13 @@
 
         timer: null,
 
+        paintedBoxSet: null,
+
         initialize: function(options)
         {
             _.bindAll(this, 'render', 'storeFolioIndex', 'triggerChange',
-                'storeInitialFolio', 'setGlobalFullScreen');
+                'storeInitialFolio', 'setGlobalFullScreen', 'reloadPaintedBoxes',
+            'zoomToLocation');
             this.el = "#diva-wrapper";
             this.setManuscript(options.siglum, options.folio);
         },
@@ -452,6 +455,9 @@
             diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
             diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
             diva.Events.subscribe("ModeDidSwitch", this.setGlobalFullScreen);
+            diva.Events.subscribe("VisiblePageDidChange", this.reloadPaintedBoxes);
+//            diva.Events.subscribe("ViewerDidZoomOut", this.reloadPaintedBoxes);
+//            diva.Events.subscribe("ViewerDidZoomIn", this.reloadPaintedBoxes);
             globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         },
@@ -605,6 +611,9 @@
          */
         paintBoxes: function(boxSet)
         {
+            // Store the boxes for repainting later
+            this.paintedBoxSet = boxSet;
+
             console.log("Painting boxes!");
             this.$el.data('diva').resetHighlights();
             // Use the Diva highlight plugin to draw the boxes
@@ -612,7 +621,7 @@
             console.log(boxSet);
             console.log("Length" + boxSet.length);
             for (var i = 0; i < boxSet.length; i++) {
-                console.log("Painting boxSet:");
+                console.log("Painting box:" + 1);
                 console.log(boxSet[i]);
                 this.$el.data('diva').highlightOnPage
                 (
@@ -625,6 +634,34 @@
                     }]
                 );
             }
+        },
+
+        reloadPaintedBoxes: function()
+        {
+            if (this.paintedBoxSet !== null)
+            {
+                console.log("Repainting Diva boxes.");
+                this.paintBoxes(this.paintedBoxSet);
+            }
+        },
+
+        /**
+         * Zoom Diva to a locatiom.
+         */
+        zoomToLocation: function(box)
+        {
+            console.log("Zooming to Diva location!");
+            // We need to construct a "state" object that tells Diva what to do
+            var newState = {
+                z:5,
+                g: false,
+                f: false,
+                p: box.p + 1,
+                x: box.x,
+                y: box.y
+            };
+            // Tell Diva to go there
+            this.$el.data('diva').setState(newState);
         }
     });
 
@@ -1263,7 +1300,7 @@
                     pageSize: 1
                 }
             );
-            this.zoomToResult();
+//            this.zoomToResult();
             this.listenTo(this.paginator, 'change', this.zoomToResult);
 
             this.renderResults();
@@ -1274,6 +1311,8 @@
             var newIndex = this.paginator.getPage() - 1;
 
             console.log("Zooming to index: " + newIndex);
+            console.log(this.divaView);
+            this.divaView.zoomToLocation(this.results.toJSON().results[newIndex]);
         },
 
         render: function() {
