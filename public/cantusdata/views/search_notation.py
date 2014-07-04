@@ -60,7 +60,7 @@ class LiberSearchView(APIView):
         rows = request.GET.get("rows", "100")
         start = request.GET.get("start", "0")
 
-        results = self.do_query(stype, q, 1, 4)
+        results = self.do_query(stype, q, 5, 5)
 
         return Response({'numFound': len(results), 'results': results})
 
