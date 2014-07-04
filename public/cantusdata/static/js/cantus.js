@@ -678,21 +678,6 @@
          */
         zoomToLocation: function(box)
         {
-            //console.log("Zooming to Diva location!");
-            //// We need to construct a "state" object that tells Diva what to do
-            //var newState = {
-            //    z:5,
-            //    g: false,
-            //    f: false,
-            //    p: box.p + 1,
-            //    x: box.x,
-            //    y: box.y
-            //};
-            //// Tell Diva to go there
-            //this.$el.data('diva').setState(newState);
-
-//            var desiredBox = box + direction;
-
             // Now figure out the page that box is on
             var divaOuter = this.$el.data('diva').getSettings().outerSelector;
 
@@ -706,11 +691,17 @@
             var currentScrollTop = parseInt($(divaOuter).scrollTop(), 10);
             console.log("currentScrollTop:");
             console.log(currentScrollTop);
-            // +50 pixels just to center it a bit or whatever
-            $(divaOuter).scrollTop(boxTop + currentScrollTop + ($(divaOuter).height() / 3));
+
+            var topMarginConsiderations = this.$el.data('diva').getSettings().averageHeights[5]
+                * this.$el.data('diva').getSettings().adaptivePadding;
+             var leftMarginConsiderations = this.$el.data('diva').getSettings().averageWidths[5]
+                * this.$el.data('diva').getSettings().adaptivePadding;
+             $(divaOuter).scrollTop(boxTop + currentScrollTop -
+                ($(divaOuter).height() / 2) + (box.h / 2) + topMarginConsiderations);
             // Now get the horizontal scroll
             var boxLeft = box.x;
-            $(divaOuter).scrollLeft(boxLeft);
+            $(divaOuter).scrollLeft(boxLeft - ($(divaOuter).width() / 2)
+                + (box.w / 2) + leftMarginConsiderations);
             // Will include the padding between pages for best results
         }
     });
