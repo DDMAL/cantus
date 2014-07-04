@@ -1198,7 +1198,7 @@
         initialize: function(options)
         {
             _.bindAll(this, 'render', 'registerEvents', 'newSearch',
-                'resultFetchCallback');
+                'resultFetchCallback', 'zoomToResult');
             this.template = _.template($('#search-notation-template').html());
             // The diva view which we will act upon!
             this.divaView = options.divaView;
@@ -1263,6 +1263,7 @@
                     pageSize: 1
                 }
             );
+            this.zoomToResult();
             this.listenTo(this.paginator, 'change', this.zoomToResult);
 
             this.renderResults();
@@ -1270,7 +1271,9 @@
 
         zoomToResult: function()
         {
+            var newIndex = this.paginator.getPage() - 1;
 
+            console.log("Zooming to index: " + newIndex);
         },
 
         render: function() {
