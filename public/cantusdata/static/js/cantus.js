@@ -1285,6 +1285,7 @@
         results: null,
         divaView: null,
         paginator: null,
+        manuscript: undefined,
 
         initialize: function(options)
         {
@@ -1299,6 +1300,12 @@
             this.registerEvents();
 
             this.listenTo(this.results, "sync", this.resultFetchCallback);
+        },
+
+        setManuscript: function(manuscript)
+        {
+            this.manuscript = manuscript;
+            console.log(this.manuscript);
         },
 
         /**
@@ -1330,11 +1337,18 @@
             {
                 // If we pass an empty array, then all boxes are erased.
                 this.divaView.paintBoxes([]);
-                this.clearResults();
+                this.clearResults("<h4>Please enter a search query.</h4>");
+            }
+            else if (this.manuscript !== "cdn-hsmu-m2149l4")
+            {
+                // Right now it's only Salzinnes
+//                this.divaView.paintBoxes([]);
+                this.clearResults("<h4>0 results found for query: " + newQuery + "</h4>");
             }
             else
             {
-                this.results.url = siteUrl + "liber-search/?q=" + newQuery + "&type=pnames";
+                var composedQuery = siteUrl + "liber-search/?q=" + newQuery + "&type=pnames";
+                this.results.url = composedQuery;
                 this.results.fetch();
             }
         },
@@ -1376,10 +1390,10 @@
 //            this.renderResults();
         },
 
-        clearResults: function()
+        clearResults: function(message)
         {
             $(this.$el.selector + ' .note-search-results').html(
-                "<h4>Please enter a search query.</h4>"
+                message
             );
             $(this.$el.selector + ' .note-pagination').empty();
         },
@@ -1816,7 +1830,11 @@
             );
             this.folioView = new FolioView();
             this.searchView = new SearchView();
-            this.searchNotationView = new SearchNotationView({divaView: this.divaView});
+            this.searchNotationView = new SearchNotationView(
+                {
+                    divaView: this.divaView
+                }
+            );
 
             // Render every time the model changes...
             this.listenTo(this.manuscript, 'change', this.afterFetch);
@@ -1852,6 +1870,7 @@
                 + this.manuscript.toJSON().siglum + '"');
             // TODO: Diva is being initialized twice!!!!!!!
             this.divaView.setManuscript(this.manuscript.get("siglum_slug"));
+            this.searchNotationView.setManuscript(this.manuscript.get("siglum_slug"));
             this.render();
         },
 
