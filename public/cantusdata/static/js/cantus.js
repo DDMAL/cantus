@@ -447,6 +447,7 @@
                 enableFilename: false,
                 enableHighlight: true,
                 fixedHeightGrid: false,
+                enableCanvas: true,
                 iipServerURL: iipImageServerUrl + "fcgi-bin/iipsrv.fcgi",
                 objectData: "/static/" + siglum + ".json",
                 imageDir: divaImageDirectory + siglum
