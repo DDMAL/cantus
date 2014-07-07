@@ -25,6 +25,7 @@ class SolrSearch(object):
     """
     def __init__(self, request):
         self.server = solr.Solr(settings.SOLR_SERVER)
+        # self.query_dict = query_dict
         self.request = request
         self.parsed_request = {}
         self.prepared_query = u""
@@ -78,6 +79,10 @@ class SolrSearch(object):
                 if k == 'q':
                     if v[0] != u"":
                         arr.insert(0, u"{0}".format(v[0]))
+                elif k == 'start':
+                    # Start should only ever have one value, so we'll just
+                    # grab it from index 0.
+                    self.solr_params['start'] = int(v[0])
                 else:
                     arr.append(u"{0}:({1})".format(k, " OR ".join(["\"{0}\"".format(s) for s in v if v is not None])))
             self.prepared_query = u" AND ".join(arr)
