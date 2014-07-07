@@ -293,7 +293,7 @@ a {
 }
 a:hover,
 a:focus {
-  color: #84231f;
+  color: #5b1816;
   text-decoration: underline;
 }
 a:focus {
@@ -2306,7 +2306,7 @@ fieldset[disabled] .btn-link {
 }
 .btn-link:hover,
 .btn-link:focus {
-  color: #84231f;
+  color: #5b1816;
   text-decoration: underline;
   background-color: transparent;
 }
@@ -4161,7 +4161,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 .pagination > li > span:hover,
 .pagination > li > a:focus,
 .pagination > li > span:focus {
-  color: #84231f;
+  color: #5b1816;
   background-color: #eeeeee;
   border-color: transparent;
 }
@@ -5780,6 +5780,11 @@ button.close {
     display: none !important;
   }
 }
+#content-container a:hover,
+#content-container a:focus {
+  color: #5b1816;
+  text-decoration: none;
+}
 .navbar {
   border: none;
   font-size: 13px;
@@ -5960,6 +5965,9 @@ label,
   background-color: #e7e7e7;
   color: #222222;
 }
+.nav-tabs > li > a:hover {
+  color: #c2342e;
+}
 .nav-tabs .caret {
   border-top-color: #222222;
   border-bottom-color: #222222;
@@ -6080,4 +6088,12 @@ label,
 .panel-footer {
   border-top-right-radius: 0;
   border-top-left-radius: 0;
+}
+.panel-heading:hover,
+.panel-footer:hover {
+  background: #fcfcfc;
+}
+.panel-title > a:hover {
+  color: #c2342e;
+  text-decoration: none;
 }
