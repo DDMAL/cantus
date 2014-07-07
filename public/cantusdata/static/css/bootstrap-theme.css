@@ -5780,6 +5780,12 @@ button.close {
     display: none !important;
   }
 }
+table a:hover,
+table a:focus {
+  color: #84231f;
+  background: #eeeeee;
+  text-decoration: none;
+}
 .navbar {
   border: none;
   font-size: 13px;
@@ -5960,6 +5966,9 @@ label,
   background-color: #e7e7e7;
   color: #222222;
 }
+.nav-tabs > li > a:hover {
+  color: #c2342e;
+}
 .nav-tabs .caret {
   border-top-color: #222222;
   border-bottom-color: #222222;
@@ -6080,4 +6089,12 @@ label,
 .panel-footer {
   border-top-right-radius: 0;
   border-top-left-radius: 0;
+}
+.panel-heading:hover,
+.panel-footer:hover {
+  background: #fcfcfc;
+}
+.panel-title > a:hover {
+  color: #c2342e;
+  text-decoration: none;
 }

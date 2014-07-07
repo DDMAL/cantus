@@ -47,7 +47,7 @@ class Chant(models.Model):
     def concordance_citation_list(self):
         output = []
         for concordance in self.concordances.all():
-            output.append(concordance.__unicode__())
+            output.append(concordance.unicode_citation)
         output.sort()
         return output
 
@@ -101,4 +101,5 @@ def solr_delete(sender, instance, **kwargs):
                             .format(instance.id), q_op="AND")
     if record:
         solrconn.delete(record.results[0]['id'])
-        solrconn.commit()
+        solrconn.commit(
+)

@@ -36,7 +36,7 @@ class SearchNotationView(APIView):
         # for i, obj in enumerate(response.results):
         #     print obj
 
-        js = {"result": response.results, "num_found": response.numFound}
+        js = {"result": response.results, "numFound": response.numFound}
 
         return Response(js)
 

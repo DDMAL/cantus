@@ -33,7 +33,6 @@ window.divaPlugins = [];
             adaptivePadding: 0.05,      // The ratio of padding to the page dimension
             arrowScrollAmount: 40,      // The amount (in pixels) to scroll by when using arrow keys
             blockMobileMove: true,      // Prevent moving or scrolling the page on mobile devices
-            contained: false,           // Determines the location of the fullscreen icon
             objectData: '',             // URL to the JSON file that provides the object dimension data - *MANDATORY*
             enableAutoHeight: false,    // Automatically adjust height based on the window size
             enableAutoTitle: true,      // Shows the title within a div of id diva-title
@@ -360,7 +359,7 @@ window.divaPlugins = [];
                         // it isn't, if it should be visible.
                         if (!isTileLoaded(pageIndex, tileIndex)) {
                             if (isTileVisible(pageIndex, row, col)) {
-                                content.push('<div id="' + settings.ID + 'tile-' + pageIndex + '-' + tileIndex + '" style="display:inline; position: absolute; top: ' + top + 'px; left: ' + left + 'px; background-image: url(\'' + imageURL + '\'); height: ' + tileHeight + 'px; width: ' + tileWidth + 'px;"></div>');
+                                content.push('<div id="' + settings.ID + 'tile-' + pageIndex + '-' + tileIndex + '" class="diva-document-tile" style="display:inline; position: absolute; top: ' + top + 'px; left: ' + left + 'px; background-image: url(\'' + imageURL + '\'); height: ' + tileHeight + 'px; width: ' + tileWidth + 'px;"></div>');
                             } else {
                                 // The tile does not need to be loaded - not all have been loaded
                                 allTilesLoaded = false;
@@ -1119,7 +1118,6 @@ window.divaPlugins = [];
             }
 
             // Toggle the classes
-            $(settings.selector + 'fullscreen').toggleClass('diva-in-fullscreen');
             $(settings.outerSelector).toggleClass('diva-fullscreen');
             $('body').toggleClass('diva-hide-scrollbar');
             $(settings.parentSelector).toggleClass('diva-full-width');
@@ -1487,16 +1485,6 @@ window.divaPlugins = [];
         // Binds most of the event handlers (some more in createToolbar)
         var handleEvents = function ()
         {
-            // Create the fullscreen toggle icon if fullscreen is enabled
-            if (settings.enableFullscreen)
-            {
-                // Event handler for fullscreen toggling
-                $(settings.selector + 'fullscreen').click(function ()
-                {
-                    toggleFullscreen();
-                });
-            }
-
             // Change the cursor for dragging
             $(settings.innerSelector).mouseover(function ()
             {
@@ -1714,24 +1702,10 @@ window.divaPlugins = [];
             var gridButtonsLabelHTML = (settings.enableGridControls === 'buttons') ? '<div id="' + settings.ID + 'grid-buttons-label" class="diva-buttons-label">Pages per row: <span id="' + settings.ID + 'pages-per-row">' + settings.pagesPerRow + '</span></div>' : '';
             var pageNumberHTML = '<div class="diva-page-label">Page <span id="' + settings.ID + 'current-page">1</span> of <span id="' + settings.ID + 'num-pages">' + settings.numPages + '</span></div>';
 
-            // If the viewer is specified to be "contained", we make room for the fullscreen icon
-            var otherToolbarClass = '';
+            var fullscreenIconHTML = (settings.enableFullscreen) ? '<div id="' + settings.ID + 'fullscreen" class="diva-fullscreen-icon" title="Toggle fullscreen mode"></div>' : '';
 
-            if (settings.contained)
-            {
-                // Make sure the container element does not have a static position
-                // (Needed for the fullscreen icon to be contained)
-                if ($(settings.parentSelector).css('position') === 'static')
-                    $(settings.parentSelector).addClass('diva-relative-position');
+            var toolbarHTML = '<div id="' + settings.ID + 'tools-left" class="diva-tools-left' + '">' + zoomSliderHTML + zoomButtonsHTML + gridSliderHTML + gridButtonsHTML + zoomSliderLabelHTML + zoomButtonsLabelHTML + gridSliderLabelHTML + gridButtonsLabelHTML + '</div><div id="' + settings.ID + 'tools-right" class="diva-tools-right">' + fullscreenIconHTML + linkIconHTML + gridIconHTML + '<div class="diva-page-nav">' + gotoPageHTML + pageNumberHTML + '</div></div>';
 
-                otherToolbarClass = ' diva-fullscreen-space';
-
-                // If enableAutoTitle is set to TRUE, move it down
-                if (settings.enableAutoTitle)
-                    $(settings.selector + 'fullscreen').addClass('diva-contained');
-            }
-
-            var toolbarHTML = '<div id="' + settings.ID + 'tools-left" class="diva-tools-left' + otherToolbarClass + '">' + zoomSliderHTML + zoomButtonsHTML + gridSliderHTML + gridButtonsHTML + zoomSliderLabelHTML + zoomButtonsLabelHTML + gridSliderLabelHTML + gridButtonsLabelHTML + '</div><div id="' + settings.ID + 'tools-right" class="diva-tools-right">' + linkIconHTML + gridIconHTML + '<div class="diva-page-nav">' + gotoPageHTML + pageNumberHTML + '</div></div>';
 
             if (settings.toolbarParentSelector)
                 $(settings.toolbarParentSelector).prepend('<div id="' + settings.ID + 'tools" class="diva-tools">' + toolbarHTML + '</div>');
@@ -1815,6 +1789,11 @@ window.divaPlugins = [];
                     if (ui.value !== settings.pagesPerRow)
                         handleGrid(ui.value);
                 }
+            });
+
+            // Bind fullscreen button
+            $(settings.selector + 'fullscreen').click(function() {
+                toggleFullscreen();
             });
 
             // Bind the grid buttons
@@ -2269,12 +2248,6 @@ window.divaPlugins = [];
             $(settings.parentSelector).append('<div id="' + settings.ID + 'outer" class="diva-outer"></div>');
             $(settings.outerSelector).append('<div id="' + settings.ID + 'inner" class="diva-inner diva-dragger"></div>');
 
-            // Create the fullscreen icon
-            if (settings.enableFullscreen)
-            {
-                $(settings.parentSelector).prepend('<div id="' + settings.ID + 'fullscreen" class="diva-fullscreen-icon" title="Toggle fullscreen mode"></div>');
-            }
-
             // First, n - check if it's in range
             var nParam = parseInt($.getHashParam('n' + settings.hashParamSuffix), 10);
 
@@ -2649,7 +2622,7 @@ window.divaPlugins = [];
             if (zoomDifference === 0)
                 return position;
 
-            return position * Math.pow(zoomDifference, 2);
+            return position * Math.pow(2, zoomDifference);
         };
 
         // Align this diva instance with a state object (as returned by getState)

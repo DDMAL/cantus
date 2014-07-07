@@ -23,14 +23,12 @@
 
         initialize: function()
         {
-            // console.log("initialize browser resizer!");
             _.bindAll(this, 'timedQuerySetAll', 'setAll', 'setContainerHeight',
                 'setScrollableHeight', 'setManuscriptContentContainerHeight',
             'setDivaSize', 'setDivaFullScreen');
             var self = this;
             $(window).resize(function()
             {
-                // console.log("Window resize");
                 self.timedQuerySetAll();
             });
             this.divaFullScreen = "lol";
@@ -53,7 +51,6 @@
 
         setAll: function()
         {
-            // console.log("Resizing browser.");
             this.setContainerHeight();
             this.setManuscriptContentContainerHeight();
             this.setDivaSize();
@@ -81,16 +78,14 @@
         {
             if (this.divaFullScreen === true)
             {
-                // console.log("Diva in full screen? " + this.divaFullScreen);
-//                $('.diva-inner').css("width", $(window).width());
+                // $('.diva-inner').css("width", $(window).width());
             }
             else
             {
-                // console.log("Diva in full screen? " + this.divaFullScreen);
                 $('.diva-outer').css("height",
                         $("#content-container").height() - 75);
                 $('.diva-outer').css("width", $("#diva-toolbar").width());
-//                $('.diva-inner').css("width", $("#diva-toolbar").width());
+                // $('.diva-inner').css("width", $("#diva-toolbar").width());
             }
         },
 
@@ -103,19 +98,11 @@
         {
             if (isFullScreen === true)
             {
-                // console.log("Setting Diva to full screen.");
                 this.divaFullScreen = true;
-                // console.log(this.divaFullScreen);
             }
             else if (isFullScreen === false)
             {
-                // console.log("Setting Diva to not full screen.");
                 this.divaFullScreen = false;
-                // console.log(this.divaFullScreen);
-            }
-            else
-            {
-                // console.log("Diva fullscreen callback error!");
             }
             this.setDivaSize();
         }
@@ -133,8 +120,6 @@
         initialize: function(url)
         {
             this.url = url;
-//            // console.log("Model URL: " + this.url);
-//            // console.log(this.url);
         }
     });
 
@@ -390,7 +375,6 @@
          */
         render: function()
         {
-//            // console.log("Rendering Chant Collection View.");
             // Render out the template
             $(this.el).html(this.template(
                 {
@@ -433,7 +417,6 @@
 
         render: function()
         {
-//            // console.log("Rendering Diva View.");
             // It's kind of hacky to doubly-bind the name like this, but I'm
             // not aware of any other way to access storeFolioIndex() from the
             // anonymous function below.
@@ -447,17 +430,14 @@
                 enableFilename: false,
                 enableHighlight: true,
                 fixedHeightGrid: false,
+                enableCanvas: true,
                 iipServerURL: iipImageServerUrl + "fcgi-bin/iipsrv.fcgi",
                 objectData: "/static/" + siglum + ".json",
                 imageDir: divaImageDirectory + siglum
             });
-            // console.log(iipImageServerUrl + "fcgi-bin/iipsrv.fcgi");
             diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
             diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
             diva.Events.subscribe("ModeDidSwitch", this.setGlobalFullScreen);
-//            diva.Events.subscribe("VisiblePageDidChange", this.reloadPaintedBoxes);
-//            diva.Events.subscribe("ViewerDidZoomOut", this.reloadPaintedBoxes);
-//            diva.Events.subscribe("ViewerDidZoomIn", this.reloadPaintedBoxes);
             globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         },
@@ -495,16 +475,10 @@
          */
         storeInitialFolio: function()
         {
-            // console.log(this.initialFolio);
             // If there exists a client-defined initial folio
             if (this.initialFolio !== undefined)
             {
-                // console.log("CLIENT-SPECIFIED INITIAL FOLIO: " + this.initialFolio);
                 this.setFolio(this.initialFolio);
-            }
-            else
-            {
-                // console.log("NO CLIENT-SPECIFIED FOLIO: " + this.initialFolio);
             }
             // Store the initial folio
             var number = this.$el.data('diva').getCurrentPageIndex();
@@ -533,7 +507,6 @@
          */
         setImagePrefixAndSuffix: function (imageName)
         {
-            // console.log("Setting prefix and suffix from " + imageName);
             // Suffix is usually just ".jpeg" or whatever...
             this.imageSuffix = String(imageName).split('.')[1];
             // Prefix is trickier
@@ -547,8 +520,6 @@
             }
 
             this.imagePrefix = prefix;
-            // console.log("imagePrefix set to " + "prefix + and imageSuffix to "
-//                + this.imageSuffix);
         },
 
         /**
@@ -564,7 +535,6 @@
                 this.setImagePrefixAndSuffix(this.currentFolioName);
             }
             var newImageName = this.imagePrefix + "_" + String(folioCode) + "." + this.imageSuffix;
-            // console.log("Setting diva folio to " + newImageName);
             this.$el.data('diva').gotoPageByName(newImageName);
         },
 
@@ -606,6 +576,7 @@
         /**
          * Draw boxes on the Diva viewer.  These usually correspond to
          * music notation on a manuscript page.
+         * music notation on a manuscript page.
          *
          * @param boxSet [ {p,w,h,x,y}, ... ]
          */
@@ -613,22 +584,15 @@
         {
             // Store the boxes for repainting later
             this.paintedBoxSet = boxSet;
-
-            // console.log("Painting boxes!");
             this.$el.data('diva').resetHighlights();
-            // Use the Diva highlight plugin to draw the boxes
-            // console.log("BOXSET:");
-            // console.log(boxSet);
-            // console.log("Length" + boxSet.length);
 
-            var output = [];
+            // Use the Diva highlight plugin to draw the boxes
             var highlightsByPageHash = {};
             var pageList = [];
 
             for (var i = 0; i < boxSet.length; i++)
             {
-                console.log("BOXSET P:" + boxSet[i].p);
-                var page = boxSet[i].p - 3; // The page
+                var page = boxSet[i].p - 1; // The page
 
                 if (highlightsByPageHash[page] === undefined)
                 {
@@ -646,13 +610,9 @@
                     'uly': boxSet[i].y
                 });
             }
-            console.log("Painting pages:");
-            console.log(pageList);
-            console.log(highlightsByPageHash);
             // Now we need to add all of the pages to the Diva viewer
             for (var j = 0; j < pageList.length; j++)
             {
-                console.log("j: " + j + " => " + pageList[j]);
                 this.$el.data('diva').highlightOnPage
                 (
                     pageList[j], // The page number
@@ -665,12 +625,7 @@
         {
             if (this.paintedBoxSet !== null)
             {
-                // console.log("Repainting Diva boxes.");
                 this.paintBoxes(this.paintedBoxSet);
-            }
-            else
-            {
-                // console.log("No painted boxes");
             }
         },
 
@@ -679,9 +634,6 @@
          */
         zoomToLocation: function(box)
         {
-            // console.log("Zooming to location:");
-            // console.log(box);
-
             if (box === undefined)
             {
                 // Do nothing if no box!
@@ -690,26 +642,25 @@
 
             // Now figure out the page that box is on
             var divaOuter = this.$el.data('diva').getSettings().outerSelector;
+            var desiredPage = box.p;
+            var zoomLevel = this.$el.data('diva').getZoomLevel();
 
-            var desiredPage = box.p - 2;
             // Zoom in
-            this.$el.data('diva').setZoomLevel(5);
+            // this.$el.data('diva').setZoomLevel(zoomLevel);
             // Now jump to that page
             this.$el.data('diva').gotoPageByNumber(desiredPage);
             // Get the height above top for that box
-            var boxTop = box.y;
+            var boxTop = this.$el.data('diva').translateFromMaxZoomLevel(box.y);
             var currentScrollTop = parseInt($(divaOuter).scrollTop(), 10);
-            // console.log("currentScrollTop:");
-            // console.log(currentScrollTop);
 
-            var topMarginConsiderations = this.$el.data('diva').getSettings().averageHeights[5]
+            var topMarginConsiderations = this.$el.data('diva').getSettings().averageHeights[zoomLevel]
                 * this.$el.data('diva').getSettings().adaptivePadding;
-             var leftMarginConsiderations = this.$el.data('diva').getSettings().averageWidths[5]
+             var leftMarginConsiderations = this.$el.data('diva').getSettings().averageWidths[zoomLevel]
                 * this.$el.data('diva').getSettings().adaptivePadding;
              $(divaOuter).scrollTop(boxTop + currentScrollTop -
                 ($(divaOuter).height() / 2) + (box.h / 2) + topMarginConsiderations);
             // Now get the horizontal scroll
-            var boxLeft = box.x;
+            var boxLeft = this.$el.data('diva').translateFromMaxZoomLevel(box.x);
             $(divaOuter).scrollLeft(boxLeft - ($(divaOuter).width() / 2)
                 + (box.w / 2) + leftMarginConsiderations);
             // Will include the padding between pages for best results
@@ -782,7 +733,6 @@
         afterFetch: function()
         {
             if (jQuery.isEmptyObject(this.model.toJSON())) {
-                // console.log("Unassigning chant list.");
                 this.unAssign('#chant-list');
             } else {
                 this.assignChants();
@@ -825,8 +775,6 @@
 
         render: function()
         {
-//            // console.log("Rendering Folio View.");
-
             $(this.el).html(this.template(
                 {
                     number: this.customNumber,
@@ -942,12 +890,8 @@
             var button_name = String(input.currentTarget.id);
             var id = button_name.split('-')[button_name.split('-').length - 1];
             // Now that we have that id, route the application to it's URL!
-
             var new_url = this.items[id].url;
             var old_url = Backbone.history.fragment;
-            // console.log("new url:" + new_url.trim('/'));
-            // console.log("old_url:" + old_url.trim('/'));
-
             // Only route to the new URL if it really is a new url!
             if (new_url === "#" || new_url.trim('/') === old_url.trim('/'))
             {
@@ -976,7 +920,6 @@
 
         render: function()
         {
-//            // console.log("Rendering Top Menu View.");
             $(this.el).html(this.template({items: this.items}));
             globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
@@ -999,13 +942,11 @@
 
         registerClickEvents: function()
         {
-            // console.log("Registering click events.");
             // Clear out the events
             this.events = {};
             // Menu items
             for (var i = 0; i < this.collection.toJSON().length; i++)
             {
-                // console.log(i);
                 this.events["click #manuscript-list-" + i] = "buttonClickCallback";
             }
             // Delegate the new events
@@ -1014,17 +955,12 @@
 
         buttonClickCallback: function(input)
         {
-            // console.log("CALLBACK");
-            // console.log(input);
             // Figure out which button was pressed
             var button_name = String(input.currentTarget.id);
             var id = button_name.split('-')[button_name.split('-').length - 1];
-            // console.log("id: " + id);
             // Now that we have that id, route the application to it's URL!
             var newUrl = "manuscript/" + this.collection.toJSON()[id].id + "/";
             var oldUrl = Backbone.history.fragment;
-            // console.log("new url:" + newUrl.trim('/'));
-            // console.log("old_url:" + oldUrl.trim('/'));
 
             // Only route to the new URL if it really is a new url!
             if (newUrl === "#" || newUrl.trim('/') === oldUrl.trim('/'))
@@ -1044,7 +980,6 @@
 
         render: function()
         {
-//            // console.log("Rendering Manuscript Collection View.");
             $(this.el).html(this.template({
                 manuscripts: this.collection.toJSON()
             }));
@@ -1075,7 +1010,6 @@
 
         render: function()
         {
-//            // console.log("Rendering Modal View.");
             // Render out the modal template
             if (this.visitorView !== null)
             {
@@ -1138,7 +1072,7 @@
         registerEvents: function()
         {
             // Clear out the events
-            this.events = {}
+            this.events = {};
             // No binding if there are no elements
             if (this.elementCount === 0) return;
             // Backwards
@@ -1254,7 +1188,6 @@
          */
         buttonClick: function(query)
         {
-            // console.log("button click");
             var buttonId = query.target.id;
             var newPage = parseInt(buttonId.split("page-")[1]);
             this.setPage(newPage);
@@ -1262,7 +1195,6 @@
 
         render: function()
         {
-//            // console.log("Rendering pagination view");
             $(this.el).html(this.template(
                 {
                     name: this.name,
@@ -1282,6 +1214,7 @@
         results: null,
         divaView: null,
         paginator: null,
+        manuscript: undefined,
 
         initialize: function(options)
         {
@@ -1290,7 +1223,6 @@
             this.template = _.template($('#search-notation-template').html());
             // The diva view which we will act upon!
             this.divaView = options.divaView;
-            // console.log(this.divaView);
             this.results = new CantusAbstractModel();
             this.paginator = new PaginationView({name: "notation-paginator"});
             this.registerEvents();
@@ -1298,18 +1230,21 @@
             this.listenTo(this.results, "sync", this.resultFetchCallback);
         },
 
+        setManuscript: function(manuscript)
+        {
+            this.manuscript = manuscript;
+        },
+
         /**
          * Register the events that are necessary to have search input.
          */
         registerEvents: function()
         {
-            // console.log("Registering search events for:");
-            // console.log(this.$el.selector);
             // Clear out the events
             this.events = {};
             // Register them
             // this.events["click " + this.$el.selector + ".search-button"] = "newSearch";
-            this.events["click button"] = "newSearch";
+            this.events["click" + this.$el.selector +  " button"] = "newSearch";
 
             // Delegate the new events
             this.delegateEvents();
@@ -1317,21 +1252,26 @@
 
         newSearch: function()
         {
-            // console.log("Notation search!");
             var newQuery = encodeURIComponent($(this.$el.selector
                 + ' .query-input').val());
-            // console.log(newQuery);
             this.query = newQuery;
             // Handle the empty case
             if (newQuery === "")
             {
                 // If we pass an empty array, then all boxes are erased.
                 this.divaView.paintBoxes([]);
-                this.clearResults();
+                this.clearResults("<h4>Please enter a search query.</h4>");
+            }
+            else if (this.manuscript !== "cdn-hsmu-m2149l4")
+            {
+                // Right now it's only Salzinnes
+                // this.divaView.paintBoxes([]);
+                this.clearResults("<h4>0 results found for query: " + newQuery + "</h4>");
             }
             else
             {
-                this.results.url = siteUrl + "liber-search/?q=" + newQuery + "&type=pnames";
+                var composedQuery = siteUrl + "liber-search/?q=" + newQuery + "&type=pnames";
+                this.results.url = composedQuery;
                 this.results.fetch();
             }
         },
@@ -1339,20 +1279,17 @@
         resultFetchCallback: function()
         {
             this.divaView.paintBoxes(this.results.toJSON().results);
-            // console.log("NOTATION RESULTS:");
-            // console.log(this.results.toJSON());
-
             // We need a new paginator
             this.paginator = new PaginationView(
                 {
-                    name: "search",
+                    name: "notation-paginator",
                     currentPage: 1,
                     elementCount: this.results.toJSON().numFound,
                     pageSize: 1
                 }
             );
             // Automatically go to the first result
-//            this.zoomToResult();
+            this.zoomToResult();
             this.listenTo(this.paginator, 'change', this.zoomToResult);
 
             this.renderResults();
@@ -1361,34 +1298,27 @@
         zoomToResult: function()
         {
             var newIndex = this.paginator.getPage() - 1;
-
-            // console.log("Zooming to index: " + newIndex);
-            // console.log(this.divaView);
             this.divaView.zoomToLocation(this.results.toJSON().results[newIndex]);
         },
 
         render: function() {
-            // console.log("Render SearchNotationView.");
             $(this.el).html(this.template());
-//            this.renderResults();
         },
 
-        clearResults: function()
+        clearResults: function(message)
         {
-            $(this.$el.selector + ' .search-results').html(
-                "<h4>Please enter a search query.</h4>"
+            $(this.$el.selector + ' .note-search-results').html(
+                message
             );
-            $(this.$el.selector + ' .pagination').empty();
+            $(this.$el.selector + ' .note-pagination').empty();
         },
 
         renderResults: function()
         {
-            // console.log("Rendering notation results:");
-            $(this.$el.selector + ' .search-results').html(
+            $(this.$el.selector + ' .note-search-results').html(
                 "<h4>" + this.results.toJSON().numFound + " results found for query: " + this.query + "</h4>"
             );
-            // console.log(this.$el.selector + ' .pagination');
-            this.assign(this.paginator, this.$el.selector + ' .pagination');
+            this.assign(this.paginator, this.$el.selector + ' .note-pagination');
         }
     });
 
@@ -1451,8 +1381,6 @@
          */
         setQueryPostScript: function(postScript)
         {
-            // console.log("Setting query postscript:");
-            // console.log(String(postScript));
             this.queryPostScript = String(postScript);
         },
 
@@ -1462,14 +1390,12 @@
          */
         newSearch: function()
         {
-            // console.log("New search!");
             // Grab the new search query
             var newQuery = encodeURIComponent($(this.$el.selector
                 + ' .search-input').val());
 
             if (newQuery !== this.query) {
                 this.query = newQuery;
-                // console.log("New search:" + newQuery);
                 if (newQuery === "")
                 {
                     // Empty search, so hide the searchResultView
@@ -1480,13 +1406,11 @@
                     // Attach this.queryPostScript if available
                     this.searchResultView.changeQuery(newQuery + " "
                         + this.queryPostScript);
-                    // console.log(newQuery + " " + this.queryPostScript);
                 }
                 else
                 {
                     // Set the new search results view
                     this.searchResultView.changeQuery(newQuery);
-                    // console.log(newQuery);
                 }
                 // app.navigate("/search/?q=" + this.query);
             }
@@ -1497,12 +1421,9 @@
          */
         registerEvents: function()
         {
-            // console.log("Registering search events for:");
-            // console.log(this.$el.selector);
             // Clear out the events
-            this.events = {}
+            this.events = {};
             // Register them
-            // console.log("click .search-button");
             // this.events["click " + this.$el.selector + ".search-button"] = "newSearch";
             this.events["change .search-input"] = "newSearch";
             this.events["input .search-input"] = "autoNewSearch";
@@ -1520,7 +1441,6 @@
         {
             if (this.timer !== null)
             {
-                // console.log("Search timer cleared.");
                 window.clearTimeout(this.timer);
             }
             this.timer = window.setTimeout(this.newSearch, 250);
@@ -1531,10 +1451,8 @@
             this.registerEvents();
             $(this.el).html(this.template({query: this.query}));
             // Render subviews
-            // console.log("Assign search result view:");
-            // console.log(this.$el.selector + '.search-result');
-            $(this.$el.selector + ' .search-result').html("SEARCH RESULT VIEW!");
-            this.assign(this.searchResultView, this.$el.selector + ' .search-result');
+            $(this.$el.selector + ' .search-results').html("SEARCH RESULT VIEW!");
+            this.assign(this.searchResultView, this.$el.selector + ' .search-results');
             globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
@@ -1610,15 +1528,12 @@
 
         render: function()
         {
-//            // console.log("Rendering Search Result View.");
-            // console.log(this.$el);
             // Only render if the model is defined
             if (this.model !== undefined)
             {
                 $(this.el).html(this.template({results: this.model.getFormattedData()}));
                 if (this.model.getFormattedData().length !== 0 && this.paginationView !== null)
                 {
-                    // console.log("Pagination Assignment:");
                     this.assign(this.paginationView, this.$el.selector + " .pagination");
                 }
             }
@@ -1628,7 +1543,6 @@
 
         hide: function()
         {
-            // console.log("Hiding search results.");
             $(this.el).html(this.template({results: []}));
             globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
@@ -1656,7 +1570,6 @@
             this.template = _.template($('#alert-template').html());
             this.role = options.role;
             this.content = options.content;
-            // console.log(this);
         },
 
         render: function()
@@ -1707,8 +1620,6 @@
          */
         setCompletion: function(completion)
         {
-            // console.log("COMPLETION TEST");
-            // console.log(completion);
             if (parseInt(completion) < 0)
             {
                 this.completion = 0;
@@ -1725,14 +1636,6 @@
 
         render: function()
         {
-//            // console.log("Rendering loading bar with label:" + this.label
-//                + " and completion:" + this.completion);
-            // console.log(this.template(
-//                {
-//                    label: this.label,
-//                    completion: this.completion
-//                }
-//            ));
             $(this.el).html(this.template(
                 {
                     label: this.label,
@@ -1804,7 +1707,6 @@
             this.manuscript = new Manuscript(
                 siteUrl + "manuscript/" + this.id + "/");
             // Build the subviews
-            // console.log("FOLIO TEST: " + options.folio);
             this.divaView = new DivaView(
                 {
                     siglum: this.manuscript.get("siglum_slug"),
@@ -1813,7 +1715,11 @@
             );
             this.folioView = new FolioView();
             this.searchView = new SearchView();
-            this.searchNotationView = new SearchNotationView({divaView: this.divaView});
+            this.searchNotationView = new SearchNotationView(
+                {
+                    divaView: this.divaView
+                }
+            );
 
             // Render every time the model changes...
             this.listenTo(this.manuscript, 'change', this.afterFetch);
@@ -1849,12 +1755,12 @@
                 + this.manuscript.toJSON().siglum + '"');
             // TODO: Diva is being initialized twice!!!!!!!
             this.divaView.setManuscript(this.manuscript.get("siglum_slug"));
+            this.searchNotationView.setManuscript(this.manuscript.get("siglum_slug"));
             this.render();
         },
 
         render: function()
         {
-//            // console.log("Rendering Manuscript Individual Page View.");
             $(this.el).html(this.template({
                 manuscript: this.manuscript.toJSON()
             }));
@@ -1957,7 +1863,6 @@
 
         render: function()
         {
-//            // console.log("Rendering Search Page View.");
             $(this.el).html(this.template());
             // Render subviews
             this.assign(this.searchView, '#search');
@@ -2017,7 +1922,6 @@
 
         manuscriptSingle: function(query, folio)
         {
-            // console.log("Folio: " + folio);
             this.manuscriptView = new ManuscriptIndividualPageView(
                 {
                     id: query,
@@ -2036,7 +1940,7 @@
 
         notFound: function()
         {
-            // console.log("404 - Backbone route not found!");
+            // TODO: Handle 404 somehow
         }
     });
 
