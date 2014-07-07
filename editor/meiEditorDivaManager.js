@@ -214,7 +214,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     }*/
                 };   
 
-                //nudges the current resizable object 1px in a certain direction
+                //nudges the current resizable object 1px in the direction of the keycode
                 /*var nudgeListeners = function(keyCode)
                 {
                     var object = ".resizableSelected";
@@ -238,6 +238,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     meiEditor.updateBox(object);
                 };*/
 
+                //updates the size of the drag-div box (spawned on shift/meta+drag)
                 var changeDragSize = function(eve)
                 {
                     clearSelections();
@@ -272,6 +273,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     }
                 };
 
+                //code to insert a new neume, takes the four corner positions (upper left x/y, lower right x/y) as params
                 var insertNewNeume = function(ulx, uly, lrx, lry)
                 {
                     //generate some UUIDs
@@ -282,11 +284,13 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     var zoneStringToAdd = '<zone xml:id="' + zoneID + '" ulx="' + ulx + '" uly="' + uly + '" lrx="' + lrx + '" lry="' + lry + '"/>';
                     var neumeStringToAdd = '<neume xml:id="' + neumeID + '" facs="' + zoneID + '"/>';
                     
+                    //if the "estimate line numbers" dropdown box is checked, it will make its best guess and automatically insert them
                     if($("#estimateBox").is(":checked"))
                     {
                         var chosenDoc = meiEditor.getActivePanel().text();
                         var editorRef = meiEditorSettings.pageData[chosenDoc];
 
+                        //finds the first instance of "surface"
                         var surfaceSearch = editorRef.find(/surface/g, 
                         {
                             wrap: true,
@@ -294,6 +298,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         });
                         var surfaceLine = surfaceSearch.start.row + 2; //converting from 0-index to 1-index, adding 1 to get the line after
                                                
+                        //finds the first instance of "layer"
                         var layerSearch = editorRef.find(/layer/g, 
                         {
                             wrap: true,
@@ -301,13 +306,17 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         });
                         var layerLine = layerSearch.start.row + 2; //converting from 0-index to 1-index, adding 1 to get the line after
                     
+                        //finds out how much white space was at these lines before
                         var zoneWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(surfaceLine).split("<")[0];
                         var neumeWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(layerLine).split("<")[0];
+                        
+                        //inserts the new zone and neume lines
                         meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(surfaceLine, [zoneWhiteSpace + zoneStringToAdd]);
                         meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(layerLine, [neumeWhiteSpace + neumeStringToAdd]);
 
                         meiEditor.createHighlights();
 
+                        //moves the editor to the newly entered neume line
                         var searchNeedle = new RegExp("<neume.*" + neumeID, "g");
 
                         var testSearch = editorRef.find(searchNeedle, 
@@ -317,6 +326,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         });
                         return;
                     }
+                    //if the box is not checked...
+
                     //create the fake modal
                     $("#diva-wrapper").append("<div id='lineQueryOverlay'></div>");
                     $("#lineQueryOverlay").offset({'top': $("#diva-wrapper").offset().top, 'left': $("#diva-wrapper").offset().left});
@@ -332,10 +343,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         "<button style='float:right' type='button' class='btn btn-primary' id='lineQuerySubmit'>Create Highlight</button>" +
                         "</div>");
 
+                    //center it
                     $("#lineQuery").center({against: 'parent'});
-
-                    //key listeners to supplement the two button click listeners
-                    $(document).on('keyup', lineQueryKeyListeners);
 
                     //on close for the overlay
                     $("#lineQueryClose").on('click', function()
@@ -367,9 +376,11 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                         $("#lineQueryClose").trigger('click');
 
-                        //add to the document
+                        //finds out how much white space was at these lines before
                         var zoneWhiteSpace = editorRef.session.doc.getLine(zoneStringLine).split("<")[0];
                         var neumeWhiteSpace = editorRef.session.doc.getLine(neumeStringLine).split("<")[0];
+
+                        //inserts the new zone and neume lines
                         editorRef.session.doc.insertLines(zoneStringLine, [zoneWhiteSpace + zoneStringToAdd]);
                         editorRef.session.doc.insertLines(neumeStringLine, [neumeWhiteSpace + neumeStringToAdd]);
 
@@ -384,10 +395,42 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             range: null
                         });
                     });
+
+                    //key listeners to supplement the two button click listeners
+                    $(document).on('keyup', lineQueryKeyListeners);
                 };
 
+                //creates the cover-div object with a specific handler for document.on('mouseup')
+                var initCoverDiv = function(mouseUpHandler)
+                {
+                    $("#editorConsole").append('<div id="cover-div"></div>');
+                    $("#cover-div").height($("#diva-wrapper").height());
+                    $("#cover-div").width($("#diva-wrapper").width());
+                    //if there are no .overlay-box objects, we want this to be NaN so it can't be clicked on.
+                    $("#cover-div").css('z-index', $(".overlay-box").css('z-index') - 1);
+                    $("#cover-div").offset({'top': $("#diva-wrapper").offset().top, 'left': $("#diva-wrapper").offset().left});
+
+                    $("#cover-div").on('mousedown', function(ev)
+                    {
+                        //append the div that will resize as you drag
+                        $("#topbar").append('<div id="drag-div"></div>');
+                        $("#drag-div").css('z-index', $(".overlay-box").css('z-index') + 1);
+                        meiEditorSettings.initDragTop = ev.pageY;
+                        meiEditorSettings.initDragLeft = ev.pageX;
+                        meiEditorSettings.dragActive = true;
+                        $("#drag-div").offset({'top': ev.pageY, 'left':ev.pageX});
+
+                        //as you drag, resize it - separate function as we have two document.mousemoves that we need to unbind separately
+                        $(document).on('mousemove', changeDragSize);
+
+                        $(document).on('mouseup', mouseUpHandler);
+                    });
+                };
+
+                //handles metaKey (ctrl on windows, cmd on mac) and click events.
                 var metaClickHandler = function(eve)
                 {
+                    //unbind everything that could have caused this
                     $(document).unbind('mousemove', changeDragSize);
                     $(document).unbind('mouseup', metaClickHandler);
 
@@ -410,19 +453,29 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             var newBoxTop = centerY - 100;
                             var newBoxBottom = centerY + 100;
 
+                            //create the neume
                             insertNewNeume(newBoxLeft, newBoxTop, newBoxRight, newBoxBottom);
                         }
                     }
+                    //else if we dragged to create a neume
                     else 
                     {
+                        //ignore the JSLint warning
                         var divaInnerObj = $("#1-diva-page-" + meiEditorSettings.divaInstance.getCurrentPageIndex());
+
+                        //left position
                         var draggedBoxLeft = $("#drag-div").offset().left - divaInnerObj.offset().left;
+                        //translated right position (converted to max zoom level)
                         var draggedBoxRight = meiEditorSettings.divaInstance.translateToMaxZoomLevel(draggedBoxLeft + $("#drag-div").outerWidth());
+                        //translated left - we needed the original left to get the right translation, so we translate it now
                         draggedBoxLeft = meiEditorSettings.divaInstance.translateToMaxZoomLevel(draggedBoxLeft);
+
+                        //same vertical
                         var draggedBoxTop = $("#drag-div").offset().top - divaInnerObj.offset().top;
                         var draggedBoxBottom = meiEditorSettings.divaInstance.translateToMaxZoomLevel(draggedBoxTop + $("#drag-div").outerHeight());
                         draggedBoxTop = meiEditorSettings.divaInstance.translateToMaxZoomLevel(draggedBoxTop);
 
+                        //create the neume
                         insertNewNeume(draggedBoxLeft, draggedBoxTop, draggedBoxRight, draggedBoxBottom);
                     }
 
@@ -430,6 +483,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     meiEditorSettings.dragActive = false;
                 };
 
+                //handles shift+drag event (shift+click does nothing at the moment)
                 var shiftClickHandler = function(eve)
                 {
                     $(document).unbind('mousemove', changeDragSize);
@@ -683,8 +737,10 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     meiEditorSettings.neumeObjects = {};
                     var x2js = new X2JS(); //from xml2json.js
                     meiEditorSettings.divaInstance.resetHighlights();
+
+                    //for each linked page
                     for (curKey in meiEditorSettings.divaImagesToMeiFiles)
-                    { //for each page
+                    { 
                         var pageName = meiEditorSettings.divaImagesToMeiFiles[curKey];
                         pageIndex = meiEditorSettings.divaPageList.indexOf(curKey);
                         pageText = meiEditorSettings.pageData[pageName].getSession().doc.getAllLines().join("\n"); //get the information from the page expressed in one string
@@ -733,7 +789,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     //make sure all previous events are unbound
                     $(document).unbind('keyup', resizableKeyListeners);
 
-                    //jQuery UI draggable, when drag stops update the box's position in the document
+                    //jQuery UI resizable, when resize stops update the box's position in the document
                     if(!$(object).data('uiResizable') && !meiEditorSettings.editModeActive)
                     {
                         $(object).resizable({
@@ -747,7 +803,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             {
                                 e.stopPropagation();
                                 e.preventDefault();
-                                checkResizable();
+                                checkResizable(); //check the size and update the icon accordingly
                             },
                             stop: function(e, ui)
                             {
@@ -759,6 +815,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
  
                         checkResizable();
                     }
+                    //jQuery UI draggable, when drag stops update the box's position in the document
                     if(!$(object).data('uiDraggable'))
                     {
                         $(object).draggable({
@@ -785,6 +842,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 {
                     if($(object).length !== 0)
                     {
+                        //return it to normal
                         $(object).draggable('destroy');
                         $(object).resizable('destroy');
                         $(object).css('z-index', $(".overlay-box").css('z-index'));
@@ -792,6 +850,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         $(object).toggleClass('resizableSelected');
                     }
 
+                    //remove overlay and restore key bindings to Diva
                     $("#resizableOverlay").remove();
                     $(document).unbind('keyup', resizableKeyListeners);
                     meiEditorSettings.divaInstance.enableScrollable();
@@ -800,6 +859,11 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     meiEditor.updateCaches();
                 };
 
+                /*
+                    Selects a highlight.
+                    @param divToSelect The highlight to select.
+                    @param findOverride Overrides jumping to the div in the editor pane.
+                */
                 meiEditor.selectHighlight = function(divToSelect, findOverride)
                 {
                     if(!findOverride)
@@ -819,11 +883,13 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     meiEditor.updateCaches();
                 };
 
+                //shortcut to deselect all highlights
                 meiEditor.deselectAllHighlights = function()
                 {
                     meiEditor.deselectHighlight(".selectedHover");
                 };
 
+                //deselects highlights.
                 meiEditor.deselectHighlight = function(divToDeselect)
                 {
                     $(divToDeselect).css('background-color', 'rgba(255, 0, 0, 0.2)');
@@ -831,6 +897,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     meiEditor.updateCaches();
                 };
 
+                //listener for deleting highlights
                 meiEditor.deleteListener = function(e)
                 {
                     if(e.keyCode == 46 || e.keyCode == 8)
@@ -1028,13 +1095,16 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     //only if it's linked
                     if (fileName in meiEditorSettings.divaImagesToMeiFiles)
                     {
+                        //get the active editor page
                         var activeFileName = meiEditorSettings.divaImagesToMeiFiles[fileName];
                         var tabArr = $("#pagesList > li > a");
                         for (curTabIndex in tabArr)
                         {
+                            //find the active file name
                             var curTab = tabArr[curTabIndex];
                             if ($(curTab).text() == activeFileName)
                             {
+                                //switch active
                                 $("#openPages").tabs("option", "active", curTabIndex);
                                 return;
                             }
@@ -1046,15 +1116,18 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                 meiEditor.events.subscribe("NewFile", function(a, fileName)
                 {
+                    //add new files to link-file select
                     $("#selectfile-link").append("<option name='" + fileName + "'>" + fileName + "</option>");
                     meiEditor.reapplyEditorClickListener();
                 });
 
                 meiEditor.events.subscribe("PageWasDeleted", function(pageName)
                 {
+                    //if the page was deleted, see if it was linked
                     var retVal = meiEditor.meiIsLinked(pageName);
                     if (retVal)
                     {
+                        //if it was, remove it from a lot and refresh highlights
                         var imageName = pageName.split(".")[0] + ".tiff";
                         delete meiEditorSettings.divaImagesToMeiFiles[imageName];
                         var dualOptionID = meiEditor.stripFilenameForJQuery(pageName) + "_" + meiEditor.stripFilenameForJQuery(imageName);
@@ -1063,6 +1136,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         meiEditor.createHighlights();
                         $("#resizableOverlay").remove();
                     }
+
+                    //it's automatically removed from all other selects in the main meiEditor.js file
                 });
 
                 meiEditor.events.subscribe("PageEdited", meiEditor.createHighlights);
@@ -1094,6 +1169,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     meiEditor.createHighlights();
                 });
 
+                //when "Unlink selected files" is clicked
                 $("#unlink-files").on('click', function()
                 {
                     var selectedPair = $('#selectUnlink').find(':selected');
@@ -1112,6 +1188,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                 });
 
+                //event listeners are where this code gets too fun
                 $(document).on('click', function(e)
                 {
                     if(!e || !e.target)
@@ -1125,12 +1202,16 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         return;
                     }
                     editor = meiEditorSettings.pageData[pageTitle];
+                    //if the click is on the diva-wrapper instance and the line query overlay doesn't exist
                     if($.contains(document.getElementById("diva-wrapper"), e.target) && ($("#lineQueryOverlay").length < 1))
                     {
+                        //if it's just a plain click on a tile, deselect everything that was selected
                         if($(e.target).hasClass("diva-document-tile"))
                         {
                             meiEditor.deselectAllHighlights();
                         }
+
+                        //we want the delete key to NOT target the editor, so we assign a blank function to it
                         editor.commands.addCommand({   
                             name: "del",
                             bindKey: {win: "Delete", mac: "Delete|Ctrl-D|Shift-Delete"},
@@ -1139,14 +1220,16 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             scrollIntoView: "cursor"
                         });
 
+                        //we want it to target diva, so we reassign deleteListener and backspacePrevent (to prevent the defauly keydown backspace=back in history in chrome)
                         $(document).unbind('keyup', meiEditor.deleteListener);
                         $(document).unbind('keydown', backspacePrevent);
                         $(document).on('keyup', meiEditor.deleteListener);
                         $(document).on('keydown', backspacePrevent);
                     } 
+                    //otherwise (click on the editor or lineQueryOverlay)
                     else
                     { 
-                        //taken from ace.js line 6754, #966bcd
+                        //make ace delete again - taken from ace.js line 6754, commit #966bcd
                         editor.commands.addCommand({   
                             name: "del",
                             bindKey: {win: "Delete", mac: "Delete|Ctrl-D|Shift-Delete"},
@@ -1154,6 +1237,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             multiSelectAction: "forEach",
                             scrollIntoView: "cursor"
                         });
+                        //we don't want these listeners anymore
                         $(document).unbind('keyup', meiEditor.deleteListener);
                         $(document).unbind('keydown', backspacePrevent);
                     }
@@ -1165,35 +1249,11 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     if(e.metaKey && !meiEditorSettings.createModeActive)
                     {
                         meiEditorSettings.createModeActive = true;
-                        $("#editorConsole").append('<div id="cover-div"></div>');
-                        $("#cover-div").height($("#diva-wrapper").height());
-                        $("#cover-div").width($("#diva-wrapper").width());
-                        //if .overlay-box is not created yet, we want this to be NaN so it can't be clicked on.
-                        $("#cover-div").css('z-index', $(".overlay-box").css('z-index') - 1);
-                        $("#cover-div").offset({'top': $("#diva-wrapper").offset().top, 'left': $("#diva-wrapper").offset().left});
-
-                        $("#cover-div").on('mousedown', function(ev)
-                        {
-                            //append the div that will resize as you drag
-                            $("#topbar").append('<div id="drag-div"></div>');
-                            $("#drag-div").css('z-index', $(".overlay-box").css('z-index') + 1);
-                            meiEditorSettings.initDragTop = ev.pageY;
-                            meiEditorSettings.initDragLeft = ev.pageX;
-                            meiEditorSettings.dragActive = true;
-                            $("#drag-div").offset({'top': ev.pageY, 'left':ev.pageX});
-
-                            //as you drag, resize it - separate function as we have two document.mousemoves that we need to unbind separately
-                            $(document).on('mousemove', changeDragSize);
-
-                            $(document).on('mouseup', metaClickHandler);
-                        });
-
+                        initCoverDiv(metaClickHandler);
                     }
                     //if shift key was the key that was put down
                     if(e.shiftKey && !meiEditorSettings.editModeActive)
                     {
-                        //$(document).unbind('keyup', meiEditor.deleteSelection);
-                        //$(document).on('keyup', meiEditor.deleteSelection);
 
                         //if we're currently resizing one and shift key was just pressed, only make it draggable
                         if($(".resizableSelected").length)
@@ -1236,34 +1296,13 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         };
 
                         meiEditorSettings.editModeActive = true;
-                        $("#editorConsole").append('<div id="cover-div"></div>');
-                        $("#cover-div").height($("#diva-wrapper").height());
-                        $("#cover-div").width($("#diva-wrapper").width());
-                        //if .overlay-box is not created yet, we want this to be NaN so it can't be clicked on.
-                        $("#cover-div").css('z-index', $(".overlay-box").css('z-index') - 1);
-                        $("#cover-div").offset({'top': $("#diva-wrapper").offset().top, 'left': $("#diva-wrapper").offset().left});
-
-                        $("#cover-div").on('mousedown', function(ev)
-                        {
-                            //append the div that will resize as you drag
-                            $("#topbar").append('<div id="drag-div"></div>');
-                            $("#drag-div").css('z-index', $(".overlay-box").css('z-index') + 1);
-                            meiEditorSettings.initDragTop = ev.pageY;
-                            meiEditorSettings.initDragLeft = ev.pageX;
-                            meiEditorSettings.dragActive = true;
-                            $("#drag-div").offset({'top': ev.pageY, 'left':ev.pageX});
-
-                            //as you drag, resize it - separate function as we have two document.mousemoves that we need to unbind separately
-                            $(document).on('mousemove', changeDragSize);
-
-                            $(document).on('mouseup', shiftClickHandler);
-                        });
+                        initCoverDiv(shiftClickHandler);
                     }
                 });
 
                 $(document).on('keyup', function(e)
                 {
-                    //if it was the shift key that was released
+                    //if it was the meta key that was released
                     if((!e.metaKey) && meiEditorSettings.createModeActive)
                     {
                         meiEditorSettings.createModeActive = false;
