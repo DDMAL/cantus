@@ -186,6 +186,19 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     });
                 };
 
+                //key handlers for lineQueryOverlay box
+                var lineQueryKeyListeners = function(ev)
+                {
+                    if (ev.keyCode == 27)
+                    {
+                        $("#lineQueryClose").trigger('click');
+                    }
+                    else if (ev.keyCode == 13)
+                    {
+                        $("#lineQuerySubmit").trigger('click');
+                    }
+                };
+
                 //detects whether or not a keypress was the escape key and triggers
                 var resizableKeyListeners = function(ev)
                 {
@@ -196,31 +209,34 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     /*else if ((ev.keyCode) < 41 && (ev.keyCode > 36))
                     {
                         ev.stopPropagation();
-                        preventDefault(ev);
+                        ev.preventDefault();
                         nudgeListeners(ev.keyCode);
                     }*/
                 };   
 
-                var nudgeListeners = function(keyCode)
+                //nudges the current resizable object 1px in a certain direction
+                /*var nudgeListeners = function(keyCode)
                 {
-                    /*object = $(".resizableSelected");
+                    var object = ".resizableSelected";
                     switch(keyCode){
                         case 37:
-                            object.offset({'left': object.offset().left - 1});
+                            $(object).offset({'left': $(object).offset().left - 1});
                             break;
                         case 38:
-                            object.offset({'top': object.offset().top - 1});
+                            $(object).offset({'top': $(object).offset().top - 1});
                             break;
                         case 39:
-                            object.offset({'right': object.offset().left + 1});
+                            $(object).offset({'left': $(object).offset().left + 1});
                             break;
                         case 40:
-                            object.offset({'bottom': object.offset().bottom + 1});
+                            $(object).offset({'top': $(object).offset().top + 1});
                             break;
                         default:
                             break;
-                    }*/
-                };
+                    }
+
+                    meiEditor.updateBox(object);
+                };*/
 
                 var changeDragSize = function(eve)
                 {
@@ -318,10 +334,14 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                     $("#lineQuery").center({against: 'parent'});
 
+                    //key listeners to supplement the two button click listeners
+                    $(document).on('keyup', lineQueryKeyListeners);
+
                     //on close for the overlay
                     $("#lineQueryClose").on('click', function()
                     {
                         $("#lineQueryOverlay").remove();
+                        $(document).unbind('keyup', lineQueryKeyListeners);
                     });
 
                     //on submit for the overlay
@@ -709,6 +729,9 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     $(object).css({'z-index': 150,
                         'background-color': 'rgba(255, 255, 0, 0.5)'});
                     $(object).addClass('resizableSelected');
+
+                    //make sure all previous events are unbound
+                    $(document).unbind('keyup', resizableKeyListeners);
 
                     //jQuery UI draggable, when drag stops update the box's position in the document
                     if(!$(object).data('uiResizable') && !meiEditorSettings.editModeActive)
