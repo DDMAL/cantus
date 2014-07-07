@@ -57,36 +57,38 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 "Update Diva": "update-diva-dropdown",
                 "Clear selection": "clear-selection-dropdown"
             },
-            requiredSettings: ['divaInstance', 'jsonFileLocation'],
             init: function(meiEditor, meiEditorSettings)
             {
+                /*
+                Required settings:
+                    divaInstance: A reference to the Diva object created from initializing Diva.
+                    jsonFileLocation: A link to the .json file retrieved from Diva's process/generateJson.py files
+                */
+
                 if (!("divaInstance" in meiEditorSettings) || !("jsonFileLocation" in meiEditorSettings))
                 {
                     console.error("MEI Editor error: The 'Diva Manager' plugin requires both the 'divaInstance' and 'jsonFileLocation' settings present on intialization.");
                     return false;
                 }
 
-                $.extend(meiEditorSettings, 
+                var globals = 
                 {
-                    divaPageList: [], //list of active pages in Diva
-                    divaImagesToMeiFiles: {}, //keeps track of linked files
-                    neumeObjects: {}, //keeps track of neume objects
-                    curOverlayBox: "",
-                    initDragTop: "",
-                    initDragLeft: "",
-                    dragActive: false,
-                    editModeActive: false,
-                    createModeActive: false,
-                    boxSingleTimeout: "",
-                    boxClickHandler: "",
-                    divaHoldX: "",
-                    divaHoldY: "",
-                    resizeTarget: "",
-                    origDragInfo: {},
-                    highlightedCache: [],
-                    resizableCache: [],
-                    lastClicked: ""
-                });
+                    divaPageList: [],           //list of active pages in Diva
+                    divaImagesToMeiFiles: {},   //keeps track of linked files
+                    neumeObjects: {},           //keeps track of neume objects
+                    initDragTop: "",            //when a drag-div is being created, this stores the mouse's initial Y coordinate
+                    initDragLeft: "",           //when a drag-div is being created, this stores the mouse's initial X coordinate
+                    dragActive: false,          //prevents .overlay-box objects from appearing on mouseover while a drag is occuring
+                    editModeActive: false,      //determines if the shift key is being held down
+                    createModeActive: false,    //determines if the meta key is being held down
+                    boxSingleTimeout: "",       //stores the timeout object for determining if a box was double-clicked or single-clicked
+                    boxClickHandler: "",        //stores the current function to be called when a box is single-clicked; this changes depending on whether or not shift is down
+                    highlightedCache: [],       //cache of highlighted items used to reload display once createHighlights is called
+                    resizableCache: [],         //cache of resizable items used to reload display once createHighlights is called
+                    lastClicked: ""             //determines which delete listener to use by storing which side was last clicked on
+                };
+
+                $.extend(meiEditorSettings, globals);
 
                 meiEditor.addToNavbar("Diva page manager", "diva-manager");
                 $("#dropdown-diva-manager").append("<li><a id='file-link-dropdown'>Link files to Diva images...</a></li>" +
@@ -437,25 +439,22 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     //if this was just a click
                     if ($("#drag-div").width() < 2 && $("#drag-div").height() < 2)
                     {
-                        if (meiEditorSettings.curOverlayBox === '')
-                        {
-                            //get the click
-                            var centerX = eve.pageX;
-                            var centerY = eve.pageY;
+                        //get the click
+                        var centerX = eve.pageX;
+                        var centerY = eve.pageY;
 
-                            var divaInnerObj = $("#1-diva-page-" + meiEditorSettings.divaInstance.getCurrentPageIndex());
-                            centerY = meiEditorSettings.divaInstance.translateToMaxZoomLevel(centerY - divaInnerObj.offset().top);
-                            centerX = meiEditorSettings.divaInstance.translateToMaxZoomLevel(centerX - divaInnerObj.offset().left);
+                        var divaInnerObj = $("#1-diva-page-" + meiEditorSettings.divaInstance.getCurrentPageIndex());
+                        centerY = meiEditorSettings.divaInstance.translateToMaxZoomLevel(centerY - divaInnerObj.offset().top);
+                        centerX = meiEditorSettings.divaInstance.translateToMaxZoomLevel(centerX - divaInnerObj.offset().left);
 
-                            //make a 200*200 box
-                            var newBoxLeft = centerX - 100;
-                            var newBoxRight = centerX + 100;
-                            var newBoxTop = centerY - 100;
-                            var newBoxBottom = centerY + 100;
+                        //make a 200*200 box
+                        var newBoxLeft = centerX - 100;
+                        var newBoxRight = centerX + 100;
+                        var newBoxTop = centerY - 100;
+                        var newBoxBottom = centerY + 100;
 
-                            //create the neume
-                            insertNewNeume(newBoxLeft, newBoxTop, newBoxRight, newBoxBottom);
-                        }
+                        //create the neume
+                        insertNewNeume(newBoxLeft, newBoxTop, newBoxRight, newBoxBottom);
                     }
                     //else if we dragged to create a neume
                     else 
