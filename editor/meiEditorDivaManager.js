@@ -187,13 +187,40 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 };
 
                 //detects whether or not a keypress was the escape key and triggers
-                var detectEscape = function(ev)
+                var resizableKeyListeners = function(ev)
                 {
                     if (ev.keyCode == 27) 
                     { 
                         meiEditor.deselectResizable(".resizableSelected");
                     } 
+                    /*else if ((ev.keyCode) < 41 && (ev.keyCode > 36))
+                    {
+                        ev.stopPropagation();
+                        preventDefault(ev);
+                        nudgeListeners(ev.keyCode);
+                    }*/
                 };   
+
+                var nudgeListeners = function(keyCode)
+                {
+                    /*object = $(".resizableSelected");
+                    switch(keyCode){
+                        case 37:
+                            object.offset({'left': object.offset().left - 1});
+                            break;
+                        case 38:
+                            object.offset({'top': object.offset().top - 1});
+                            break;
+                        case 39:
+                            object.offset({'right': object.offset().left + 1});
+                            break;
+                        case 40:
+                            object.offset({'bottom': object.offset().bottom + 1});
+                            break;
+                        default:
+                            break;
+                    }*/
+                };
 
                 var changeDragSize = function(eve)
                 {
@@ -547,7 +574,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     $(".overlay-box").unbind('hover');
                     $(".overlay-box").unbind('click');
                     $(".overlay-box").unbind('dblclick');
-                    $(document).unbind('keyup', detectEscape);
+                    $(document).unbind('keyup', resizableKeyListeners);
                     $(".overlay-box").unbind('mouseenter');
                     $(document).unbind('mousemove', changeHoverPosition); //stops moving the div
                     $(".overlay-box").unbind('mouseleave');
@@ -645,12 +672,12 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         regions = [];
 
                         xmlns = jsonData['mei']['_xmlns']; //find the xml namespace file
-                        var neume_ulx, neume_uly, neume_width, neume_height, neumeID;
                         neumeArray = jsonData['mei']['music']['body']['mdiv']['pages']['page']['system']['staff']['layer']['neume'];
                         zoneArray = jsonData['mei']['music']['facsimile']['surface']['zone'];
 
                         for (curZoneIndex in zoneArray) //for each "zone" object
                         { 
+                            var neume_ulx, neume_uly, neume_width, neume_height, neumeID; //need to be re-initialized every time
                             curZone = zoneArray[curZoneIndex];
                             zoneID = curZone["_xml:id"];
                             for (curNeumeIndex in neumeArray) //find the corresponding neume - don't think there's a more elegant way in JS
@@ -719,7 +746,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         });
                     }
 
-
                     //this prevents a graphical glitch with Diva
                     $("#diva-wrapper").on('resize', function(e){
                         e.stopPropagation();
@@ -727,7 +753,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     });
 
                     //escape gets you out of this
-                    $(document).keyup(detectEscape);
+                    $(document).on('keyup', resizableKeyListeners);
                     meiEditor.updateCaches();
                 };
 
@@ -744,6 +770,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     }
 
                     $("#resizableOverlay").remove();
+                    $(document).unbind('keyup', resizableKeyListeners);
                     meiEditorSettings.divaInstance.enableScrollable();
                     reapplyBoxListeners();
                     $("#diva-wrapper").unbind('resize');
