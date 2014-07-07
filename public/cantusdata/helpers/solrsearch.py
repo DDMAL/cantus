@@ -4,22 +4,23 @@ import solr
 
 class SolrSearch(object):
     """
-        This class is a helper class for translating between query parameters in a GET
-        request and the format needed to search in Solr.
+        This class is a helper class for translating between query parameters
+        in a GET request and the format needed to search in Solr.
 
         It has three main methods: search, facets, and group_search.
 
-        The search method performs a search. The `parse_request` and `prepare_query` methods
-        are automatically called with the request object when the class is initialized. This
-        filters all the query keys and translates them to Solr.
+        The search method performs a search. The `parse_request` and
+        `prepare_query` methods are automatically called with the request object
+        when the class is initialized. This filters all the query keys and
+        translates them to Solr.
 
         The facets method requests facets from the Solr search server.
 
-        The group_search method performs a search, but can be used to group results on any
-        given field.
+        The group_search method performs a search, but can be used to group
+        results on any given field.
 
-        The private methods in this class (ones beginning in underscores) are helpers that
-        do all the work.
+        The private methods in this class (ones beginning in underscores) are
+        helpers that do all the work.
 
     """
     def __init__(self, request):
@@ -82,3 +83,5 @@ class SolrSearch(object):
             self.prepared_query = u" AND ".join(arr)
         else:
             self.prepared_query = u"*:*"
+
+        print self.prepared_query
