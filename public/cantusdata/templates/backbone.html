@@ -106,7 +106,7 @@
                 </a>
             </h4>
         </div>
-        <div id="collapse-<%= index %>" class="panel-collapse collapse">
+        <div id="collapse-<%= index %>" class="panel-collapse collapse <% if (index === unfoldedChant) { %>in<% } %>">
             <div class="panel-body">
             <% if (chant.marginalia) { %>
             <p><b>Marginalia:</b> <%= chant.marginalia %></p>

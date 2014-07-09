@@ -340,14 +340,24 @@
 
     var ChantCollectionView = CantusAbstractView.extend
     ({
+        /**
+         * The chant that bootstrap has unfolded!
+         */
+        unfoldedChant: undefined,
+
         initialize: function(options)
         {
             _.bindAll(this, 'render');
             this.template = _.template($('#chant-collection-template').html());
-            if (options && options.url)
+            if (options)
             {
-                this.collection = new ChantCollection(options.url);
-                this.collection.fetch();
+                if (options.url)
+                {
+                    // Set the url
+                    this.collection = new ChantCollection(options.url);
+                    this.collection.fetch();
+                }
+                this.setUnfoldedChant(options.chant);
             }
             else
             {
@@ -355,6 +365,19 @@
             }
             // TODO: Figure out why this is still rendering multiple times
             this.listenTo(this.collection, 'sync', this.render);
+        },
+
+        /**
+         * Set the "unfolded" chant.
+         *
+         * @param index 0 to infinity
+         */
+        setUnfoldedChant: function(index)
+        {
+            if (index !== undefined)
+            {
+                this.unfoldedChant = parseInt(index);
+            }
         },
 
         /**
@@ -378,7 +401,8 @@
             // Render out the template
             $(this.el).html(this.template(
                 {
-                    chants: this.collection.toJSON()
+                    chants: this.collection.toJSON(),
+                    unfoldedChant: this.unfoldedChant
                 }
             ));
             globalEventHandler.trigger("renderView");
@@ -684,7 +708,6 @@
         {
             _.bindAll(this, 'render', 'afterFetch', 'assignChants');
             this.template= _.template($('#folio-template').html());
-
             // This can handle situations where the first folio
             // doesn't have a url but subsequent ones do.
             if (options && options.url)
@@ -735,9 +758,12 @@
          */
         afterFetch: function()
         {
-            if (jQuery.isEmptyObject(this.model.toJSON())) {
+            if (jQuery.isEmptyObject(this.model.toJSON()))
+            {
                 this.unAssign('#chant-list');
-            } else {
+            }
+            else
+            {
                 this.assignChants();
                 this.render();
             }
@@ -750,7 +776,6 @@
         {
             // We are going to query this data from SOLR because it's faster.
             // So we need the manuscript siglum and folio name.
-
             // We need to handle the data differently depending on whether
             // we're getting the information from Django or Solr.
             var folio_id;
@@ -794,7 +819,8 @@
          */
         renderChantCollectionView: function()
         {
-            if (this.chantCollectionView !== null) {
+            if (this.chantCollectionView !== null)
+            {
                 this.assign(this.chantCollectionView, '#chant-list');
             }
         }
@@ -1756,7 +1782,6 @@
                     divaView: this.divaView
                 }
             );
-
             // Render every time the model changes...
             this.listenTo(this.manuscript, 'change', this.afterFetch);
             // Switch page when necessary
@@ -1924,6 +1949,7 @@
 
         routes: {
             "" : "manuscripts",
+            "manuscript/:query/?folio=(:folio)&chant=(:chant)": "manuscriptSingle",
             "manuscript/:query/?folio=(:folio)": "manuscriptSingle",
             "manuscript/:query/": "manuscriptSingle",
             "manuscripts/": "manuscripts",
@@ -1956,14 +1982,23 @@
             this.manuscriptsPageView.render();
         },
 
-        manuscriptSingle: function(query, folio)
+        manuscriptSingle: function(query, folio, chant)
         {
+            console.log("Folio:");
+            console.log(folio);
+            console.log("Chant:");
+            console.log(chant);
             this.manuscriptView = new ManuscriptIndividualPageView(
                 {
                     id: query,
                     folio: folio
                 }
             );
+            if (chant !== undefined)
+            {
+//                this.manuscriptView.folioView.
+//                this.manuscriptView.openChantAtIndex(chant);
+            }
             // Fetch the data
             this.manuscriptView.getData();
         },
