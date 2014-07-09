@@ -535,7 +535,10 @@
                 this.setImagePrefixAndSuffix(this.currentFolioName);
             }
             var newImageName = this.imagePrefix + "_" + String(folioCode) + "." + this.imageSuffix;
-            this.$el.data('diva').gotoPageByName(newImageName);
+            if (this.$el.data('diva') !== undefined)
+            {
+                this.$el.data('diva').gotoPageByName(newImageName);
+            }
         },
 
         getFolio: function()
@@ -1468,7 +1471,8 @@
         initialize: function(options)
         {
             _.bindAll(this, 'render', 'updatePage', 'changeQuery',
-                'updatePaginationView');
+                'updatePaginationView', 'registerClickEvents',
+                'buttonClickCallback');
             this.template = _.template($('#search-result-template').html());
             this.currentPage = 1;
             this.model = new SearchResult();
@@ -1481,7 +1485,39 @@
 
             // Query the search result
             this.model.fetch({success: this.updatePaginationView});
+            this.listenTo(this.model, 'sync', this.registerClickEvents);
             this.listenTo(this.model, 'sync', this.render);
+        },
+
+        /**
+         * Register the events for clicking on a search result.
+         */
+        registerClickEvents: function()
+        {
+            // Clear out the events
+            this.events = {};
+            // Menu items
+            console.log(this.$el.selector)
+            for (var i = 0; i < this.model.toJSON().results.length; i++)
+            {
+                console.log(i);
+                this.events["click .search-result-" + i]
+                    = "buttonClickCallback";
+            }
+            // Delegate the new events
+            this.delegateEvents();
+        },
+
+        buttonClickCallback: function(input)
+        {
+            console.log("Search click!");
+            console.log(input);
+            // Figure out which button was clicked on
+            var splitName = input.target.className.split("-");
+            var newIndex = parseInt(splitName[splitName.length - 1]);
+            // Redirect us to the new url!
+            app.navigate(this.model.getFormattedData()[newIndex].url,
+                {trigger: true});
         },
 
         /**

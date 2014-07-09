@@ -23,7 +23,7 @@
         if ($(window).width() < 880)
         {
             var window_width = $(window).width();
-            $('meta[name=viewport]').attr('content','width=880, user-scalable=no');
+            $('meta[name=viewport]').attr('content','width=880, initial-scale=0.54');
         }
     </script>
 </head>
@@ -192,22 +192,22 @@
 <% if (results.length == 0) { %>
     No results.
 <% } %>
-<% _.forEach(results, function(item) { %>
+<% for (var i = 0; i < results.length; i++) { %>
     <tr>
-        <td><a href="<%= item.url %>" ><%= item.name %></a></td>
-        <td><%= item.model %></td>
-        <% if (item.manuscript !== undefined) { %>
-        <td><%= item.manuscript %></td>
+        <td><a href="#" class="search-result-<%= i %>"><%= results[i].name %></a></td>
+        <td><%= results[i].model %></td>
+        <% if (results[i].manuscript !== undefined) { %>
+        <td><%= results[i].manuscript %></td>
         <% } else { %>
         <td></td>
         <% } %>
-        <% if (item.folio !== undefined) { %>
-        <td><%= item.folio %></td>
+        <% if (results[i].folio !== undefined) { %>
+        <td><%= results[i].folio %></td>
         <% } else { %>
         <td></td>
         <% } %>
     </tr>
-<% }); %>
+<% } %>
 </table>
 <div class="pagination"></div>
 </script>
