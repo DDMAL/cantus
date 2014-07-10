@@ -130,16 +130,22 @@
 
         setManuscript: function(manuscript)
         {
+            console.log("Set manuscript:");
+            console.log(manuscript);
             this.manuscript = manuscript;
         },
 
         setFolio: function(folio)
         {
+            console.log("Set folio:");
+            console.log(folio);
             this.folio = folio;
         },
 
         setChant: function(chant)
         {
+            console.log("Set chant:");
+            console.log(chant);
             this.chant = chant;
         },
 
@@ -402,14 +408,15 @@
 
         initialize: function(options)
         {
-            _.bindAll(this, 'render');
+            _.bindAll(this, 'render', 'setUnfoldedChant', 'foldAllChants');
             this.template = _.template($('#chant-collection-template').html());
 
             this.collection = new ChantCollection();
 
-            this.setUnfoldedChant(options.chant);
             // TODO: Figure out why this is still rendering multiple times
             this.listenTo(this.collection, 'sync', this.render);
+            // Set the unfolded chant when the global state changes!
+            this.listenTo(globalEventHandler, 'ChangeChant', this.setUnfoldedChant);
 
             console.log("New ChantCollectionView with options:");
             console.log(options);
@@ -424,10 +431,15 @@
         {
             if (index !== undefined && index !== null)
             {
-                console.log("Setting initial chant to:")
+                console.log("Setting chant to:");
                 console.log(index);
-                this.unfoldedChant = parseInt(index);
+                this.unfoldedChant = parseInt(index) - 1;
             }
+        },
+
+        foldAllChants: function()
+        {
+            this.unfoldedChant = undefined;
         },
 
         /**
@@ -769,11 +781,7 @@
                 this.model = new Folio();
                 this.listenTo(this.model, 'sync', this.afterFetch);
             }
-            this.chantCollectionView = new ChantCollectionView(
-                {
-                    chant: options.chant
-                }
-            );
+            this.chantCollectionView = new ChantCollectionView();
         },
 
         /**
@@ -1577,7 +1585,7 @@
             // Clear out the events
             this.events = {};
             // Menu items
-            console.log(this.$el.selector)
+            console.log(this.$el.selector);
             for (var i = 0; i < this.model.toJSON().results.length; i++)
             {
                 console.log(i);
@@ -1828,11 +1836,7 @@
                     folio: options.folio
                 }
             );
-            this.folioView = new FolioView(
-                {
-                    chant: options.chant
-                }
-            );
+            this.folioView = new FolioView();
             this.searchView = new SearchView();
             this.searchNotationView = new SearchNotationView(
                 {
@@ -1845,6 +1849,11 @@
             this.listenTo(globalEventHandler, "manuscriptChangeFolio", this.updateFolio);
         },
 
+        /**
+         *
+         *
+         * @param chant optional chant index.
+         */
         updateFolio: function()
         {
             var folio = this.divaView.getFolio();
@@ -1856,7 +1865,9 @@
             this.folioView.setUrl(newUrl);
             this.folioView.setCustomNumber(folio);
             this.folioView.update();
+            this.folioView.update();
             globalEventHandler.trigger("ChangeFolio", folio);
+//            globalEventHandler.trigger("ChangeChant", null);
             globalEventHandler.trigger("SilentUrlUpdate");
         },
 
@@ -2051,21 +2062,19 @@
             console.log("Chant:");
             console.log(chant);
 
-            globalEventHandler.trigger("ChangeManuscript", query);
-            globalEventHandler.trigger("ChangeFolio", folio);
-            globalEventHandler.trigger("ChangeChant", chant);
-
             this.manuscriptView = new ManuscriptIndividualPageView(
                 {
                     id: query,
-                    folio: folio,
-                    chant: parseInt(chant) - 1
+                    folio: folio
                 }
             );
             // Fetch the data
             this.manuscriptView.getData();
+
+            globalEventHandler.trigger("ChangeManuscript", query);
             globalEventHandler.trigger("ChangeFolio", folio);
-            globalEventHandler.trigger("SilentUrlUpdate");
+            globalEventHandler.trigger("ChangeChant", chant);
+
         },
 
         search: function(query)
