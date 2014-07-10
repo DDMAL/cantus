@@ -110,6 +110,60 @@
 
     var resizer = new BrowserResizer();
 
+    /**
+     * Handles the global state.  Updates URLs.
+     */
+    var GlobalStateModel = Backbone.Model.extend
+    ({
+        manuscript: undefined,
+        folio: undefined,
+        chant: undefined,
+
+        initialize: function()
+        {
+            _.bindAll(this, "setManuscript", "setFolio", "setChant", "silentUrlUpdate");
+            this.listenTo(globalEventHandler, 'ChangeManuscript', this.setManuscript);
+            this.listenTo(globalEventHandler, 'ChangeFolio', this.setFolio);
+            this.listenTo(globalEventHandler, 'ChangeChant', this.setChant);
+            this.listenTo(globalEventHandler, 'SilentUrlUpdate', this.silentUrlUpdate);
+        },
+
+        setManuscript: function(manuscript)
+        {
+            this.manuscript = manuscript;
+        },
+
+        setFolio: function(folio)
+        {
+            this.folio = folio;
+        },
+
+        setChant: function(chant)
+        {
+            this.chant = chant;
+        },
+
+        getUrl: function()
+        {
+            var composed_url = "manuscript/" + this.manuscript + "/";
+            if (this.folio !== undefined && this.folio !== null)
+            {
+                composed_url = composed_url + "?folio=" + this.folio;
+            }
+            if (this.chant !== undefined && this.chant !== null)
+            {
+                composed_url = composed_url + "&chant=" + this.chant;
+            }
+            return composed_url;
+        },
+
+        silentUrlUpdate: function()
+        {
+            console.log("silentUrlUpdate!");
+            // Don't actually trigger the router!
+            app.navigate(this.getUrl(), {trigger: false});
+        }
+    });
 
     /*
     Models
@@ -1802,6 +1856,8 @@
             this.folioView.setUrl(newUrl);
             this.folioView.setCustomNumber(folio);
             this.folioView.update();
+            globalEventHandler.trigger("ChangeFolio", folio);
+            globalEventHandler.trigger("SilentUrlUpdate");
         },
 
         /**
@@ -1942,6 +1998,8 @@
 
     var Workspace = Backbone.Router.extend
     ({
+        // The global state model
+        globalState: null,
         // Common to all routes
         headerView: null,
         // Only on certain routes
@@ -1964,6 +2022,7 @@
         // We always want the header
         initialize: function()
         {
+            this.globalState = new GlobalStateModel();
             // There is always a header!
             this.headerView = new HeaderView({el:".header"});
             this.headerView.render();
@@ -1991,6 +2050,11 @@
             console.log(folio);
             console.log("Chant:");
             console.log(chant);
+
+            globalEventHandler.trigger("ChangeManuscript", query);
+            globalEventHandler.trigger("ChangeFolio", folio);
+            globalEventHandler.trigger("ChangeChant", chant);
+
             this.manuscriptView = new ManuscriptIndividualPageView(
                 {
                     id: query,
@@ -2000,6 +2064,8 @@
             );
             // Fetch the data
             this.manuscriptView.getData();
+            globalEventHandler.trigger("ChangeFolio", folio);
+            globalEventHandler.trigger("SilentUrlUpdate");
         },
 
         search: function(query)
