@@ -479,9 +479,8 @@
 
         initialize: function()
         {
-            _.bindAll(this, 'render', 'setUnfoldedChant', 'foldAllChants',
-                'unfoldChantCallback', 'foldChantCallback',
-                'afterFetch');
+            _.bindAll(this, 'render', 'setUnfoldedChant', 'unfoldChantCallback',
+                'foldChantCallback', 'afterFetch');
             this.template = _.template($('#chant-collection-template').html());
 
             this.collection = new ChantCollection();
@@ -534,11 +533,6 @@
             }
         },
 
-        foldAllChants: function()
-        {
-            this.unfoldedChant = undefined;
-        },
-
         afterFetch: function()
         {
             // Make a new StateSwitch object that we will use to keep track
@@ -573,7 +567,6 @@
             ));
             globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
-            this.registerEvents();
         },
 
         resetCollection: function()
@@ -1970,6 +1963,7 @@
             this.folioView.setUrl(newUrl);
             this.folioView.setCustomNumber(folio);
             this.folioView.update();
+            // TODO: Figure out why this is here twice.
             this.folioView.update();
             globalEventHandler.trigger("ChangeFolio", folio);
 //            globalEventHandler.trigger("ChangeChant", null);
