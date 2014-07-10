@@ -425,7 +425,7 @@
 
         unfoldChantCallback: function(event){
             // "collapse-1" becomes 1, etc.
-            var chant = parseInt(event.target.id.split('-')[1]);
+            var chant = parseInt(event.target.id.split('-')[1]) + 1;
             globalEventHandler.trigger("ChangeChant", chant);
             globalEventHandler.trigger("SilentUrlUpdate");
         },
