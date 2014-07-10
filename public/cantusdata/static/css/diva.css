@@ -118,14 +118,9 @@
   padding: 8px;
   float: left;
 }
-.diva-tools .diva-tools-left.diva-fullscreen-space {
-  margin-left: 40px;
-}
 .diva-tools .diva-tools-left.in-fullscreen {
-  float: right;
-  padding-top: 10px;
-  text-align: right;
-  clear: both;
+  float: left;
+  clear: none;
 }
 .diva-tools .diva-tools-right {
   float: right;
@@ -180,13 +175,16 @@
   text-align: right;
   padding-right: 4px;
   white-space: nowrap;
+  line-height: 32px;
 }
 .diva-tools .diva-tools-right .diva-page-nav .diva-page-label {
-  padding-top: 2px;
-  padding-right: 2px;
+  float: left;
+  padding-top: 1px;
+  padding-right: 0.5em;
+  line-height: 32px;
 }
 .diva-tools .diva-tools-right .diva-page-nav .diva-goto-form {
-  text-align: right;
+  float: right;
 }
 .diva-tools .diva-tools-right .diva-page-nav .diva-goto-form .diva-input {
   width: 30px;
@@ -200,12 +198,30 @@
   right: 30px;
   z-index: 101;
   width: 210px;
-  padding: 15px 15px 10px 15px;
+  height: 73px;
+  padding: 15px;
   border: 1px solid #dddddd;
   background: #ffffff;
   -webkit-box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.5);
   -moz-box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.5);
   box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.5);
+}
+.diva-tools.diva-fullscreen-tools .diva-buttons-label {
+  margin-top: 5px;
+  padding: 0;
+  float: none;
+}
+.diva-tools.diva-fullscreen-tools .diva-page-nav {
+  float: none;
+  line-height: 1em;
+}
+.diva-tools.diva-fullscreen-tools .diva-page-nav .diva-goto-form {
+  margin-top: 9px;
+}
+.diva-tools.diva-fullscreen-tools .diva-page-nav .diva-page-label {
+  float: none;
+  clear: both;
+  line-height: 1em;
 }
 .diva-outer {
   clear: both;
@@ -274,23 +290,19 @@
   border: 0;
 }
 .diva-fullscreen-icon {
-  position: absolute;
-  z-index: 101;
-  top: 5px;
-  left: 5px;
-  height: 26px;
-  width: 26px;
   cursor: pointer;
-  background: url("../img/fullscreen.png") no-repeat;
+  height: 32px;
+  width: 32px;
+  background-color: #f1f1f1;
+  background-repeat: no-repeat;
+  background-position: center;
+  border: 1px solid #99bbe8;
+  background-image: url("../img/fullscreen.png");
+  border-left: 0px;
+  float: right;
 }
 .diva-fullscreen-icon:hover {
-  background-position: -26px 0;
-}
-.diva-fullscreen-icon.diva-contained {
-  top: 50px;
-}
-.diva-fullscreen-icon.diva-in-fullscreen {
-  position: fixed;
+  background-color: #fdfdfd;
 }
 .diva-link-popup {
   background: #ffffff;
