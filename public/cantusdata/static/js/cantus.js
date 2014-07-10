@@ -349,22 +349,26 @@
         {
             _.bindAll(this, 'render');
             this.template = _.template($('#chant-collection-template').html());
-            if (options)
-            {
-                if (options.url)
-                {
-                    // Set the url
-                    this.collection = new ChantCollection(options.url);
-                    this.collection.fetch();
-                }
-                this.setUnfoldedChant(options.chant);
-            }
-            else
-            {
+//            if (options)
+//            {
+////                if (options.url)
+////                {
+////                    // Set the url
+////                    this.collection = new ChantCollection(options.url);
+////                    this.collection.fetch();
+////                }
+//                this.setUnfoldedChant(options.chant);
+//            }
+//            else
+//            {
                 this.collection = new ChantCollection();
-            }
+//            }
+            this.setUnfoldedChant(options.chant);
             // TODO: Figure out why this is still rendering multiple times
             this.listenTo(this.collection, 'sync', this.render);
+
+            console.log("New ChantCollectionView with options:");
+            console.log(options);
         },
 
         /**
@@ -374,8 +378,10 @@
          */
         setUnfoldedChant: function(index)
         {
-            if (index !== undefined)
+            if (index !== undefined && index !== null)
             {
+                console.log("Setting initial chant to:")
+                console.log(index);
                 this.unfoldedChant = parseInt(index);
             }
         },
@@ -719,7 +725,11 @@
                 this.model = new Folio();
                 this.listenTo(this.model, 'sync', this.afterFetch);
             }
-            this.chantCollectionView = new ChantCollectionView();
+            this.chantCollectionView = new ChantCollectionView(
+                {
+                    chant: options.chant
+                }
+            );
         },
 
         /**
@@ -1762,12 +1772,11 @@
         divaView: null,
         folioView: null,
 
-        initialize: function(options)
-        {
+        initialize: function (options) {
             _.bindAll(this, 'render', 'afterFetch', 'updateFolio');
-            this.template= _.template($('#manuscript-template').html());
+            this.template = _.template($('#manuscript-template').html());
             this.manuscript = new Manuscript(
-                siteUrl + "manuscript/" + this.id + "/");
+                    siteUrl + "manuscript/" + this.id + "/");
             // Build the subviews
             this.divaView = new DivaView(
                 {
@@ -1775,7 +1784,11 @@
                     folio: options.folio
                 }
             );
-            this.folioView = new FolioView();
+            this.folioView = new FolioView(
+                {
+                    chant: options.chant
+                }
+            );
             this.searchView = new SearchView();
             this.searchNotationView = new SearchNotationView(
                 {
@@ -1991,14 +2004,10 @@
             this.manuscriptView = new ManuscriptIndividualPageView(
                 {
                     id: query,
-                    folio: folio
+                    folio: folio,
+                    chant: parseInt(chant) - 1
                 }
             );
-            if (chant !== undefined)
-            {
-//                this.manuscriptView.folioView.
-//                this.manuscriptView.openChantAtIndex(chant);
-            }
             // Fetch the data
             this.manuscriptView.getData();
         },
