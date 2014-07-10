@@ -350,20 +350,9 @@
         {
             _.bindAll(this, 'render');
             this.template = _.template($('#chant-collection-template').html());
-//            if (options)
-//            {
-////                if (options.url)
-////                {
-////                    // Set the url
-////                    this.collection = new ChantCollection(options.url);
-////                    this.collection.fetch();
-////                }
-//                this.setUnfoldedChant(options.chant);
-//            }
-//            else
-//            {
-                this.collection = new ChantCollection();
-//            }
+
+            this.collection = new ChantCollection();
+
             this.setUnfoldedChant(options.chant);
             // TODO: Figure out why this is still rendering multiple times
             this.listenTo(this.collection, 'sync', this.render);
