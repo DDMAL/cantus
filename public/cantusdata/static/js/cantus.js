@@ -1963,8 +1963,6 @@
             this.folioView.setUrl(newUrl);
             this.folioView.setCustomNumber(folio);
             this.folioView.update();
-            // TODO: Figure out why this is here twice.
-            this.folioView.update();
             globalEventHandler.trigger("ChangeFolio", folio);
 //            globalEventHandler.trigger("ChangeChant", null);
             globalEventHandler.trigger("SilentUrlUpdate");
