@@ -406,9 +406,13 @@
          */
         unfoldedChant: undefined,
 
+        events: {
+            'show.bs.collapse': 'unfoldChantCallback'
+        },
+
         initialize: function(options)
         {
-            _.bindAll(this, 'render', 'setUnfoldedChant', 'foldAllChants');
+            _.bindAll(this, 'render', 'setUnfoldedChant', 'foldAllChants', 'test', 'unfoldChantCallback');
             this.template = _.template($('#chant-collection-template').html());
 
             this.collection = new ChantCollection();
@@ -416,10 +420,20 @@
             // TODO: Figure out why this is still rendering multiple times
             this.listenTo(this.collection, 'sync', this.render);
             // Set the unfolded chant when the global state changes!
-            this.listenTo(globalEventHandler, 'ChangeChant', this.setUnfoldedChant);
+            this.listenTo(globalEventHandler, "ChangeChant", this.setUnfoldedChant);
+        },
 
-            console.log("New ChantCollectionView with options:");
-            console.log(options);
+        unfoldChantCallback: function(event){
+            // "collapse-1" becomes 1, etc.
+            var chant = parseInt(event.target.id.split('-')[1]);
+            globalEventHandler.trigger("ChangeChant", chant);
+            globalEventHandler.trigger("SilentUrlUpdate");
+        },
+
+        test: function(input)
+        {
+            console.log("TEST:");
+            console.log(input);
         },
 
         /**
@@ -469,6 +483,7 @@
             ));
             globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
+            this.registerEvents();
         },
 
         resetCollection: function()
