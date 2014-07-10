@@ -172,6 +172,70 @@
     });
 
     /*
+    Helper Objects
+     */
+
+    /**
+    * An object that acts like a big row of switches.  You can call
+    * getValue() to get the index of the first true element.
+    */
+    StateSwitch = Backbone.Model.extend
+    ({
+
+        length: 0,
+        valueArray: undefined,
+
+        initialize: function(length)
+        {
+            this.valueArray = [];
+            this.length = parseInt(length);
+            for (var i = 0; i < this.length; i++)
+            {
+                this.valueArray.push(false);
+            }
+        },
+
+        /**
+         * Set a value.
+         *
+         * @param index int
+         * @param value boolean
+         */
+        setValue: function(index, value)
+        {
+            // Handle out-of-bounds cases
+            if (index < 0)
+            {
+                index = 0
+            }
+            else if (index >= this.length)
+            {
+                index = this.length - 1;
+            }
+            // Set the value
+            this.valueArray[index] = value;
+        },
+
+        /**
+         * Return the index of the true element.
+         *
+         * @returns {*}
+         */
+        getValue: function()
+        {
+            for (var i = 0; i < this.length; i++)
+            {
+                if (this.valueArray[i] === true)
+                {
+                    return i;
+                }
+            }
+            // No elements are true!
+            return undefined
+        }
+    });
+
+    /*
     Models
      */
 
@@ -406,13 +470,18 @@
          */
         unfoldedChant: undefined,
 
+        chantStateSwitch: undefined,
+
         events: {
+            'hidden.bs.collapse': 'foldChantCallback',
             'show.bs.collapse': 'unfoldChantCallback'
         },
 
-        initialize: function(options)
+        initialize: function()
         {
-            _.bindAll(this, 'render', 'setUnfoldedChant', 'foldAllChants', 'test', 'unfoldChantCallback');
+            _.bindAll(this, 'render', 'setUnfoldedChant', 'foldAllChants',
+                'unfoldChantCallback', 'foldChantCallback',
+                'afterFetch');
             this.template = _.template($('#chant-collection-template').html());
 
             this.collection = new ChantCollection();
@@ -423,17 +492,31 @@
             this.listenTo(globalEventHandler, "ChangeChant", this.setUnfoldedChant);
         },
 
-        unfoldChantCallback: function(event){
+        /**
+         * Callback for when a chant is "unfolded" by Bootstrap.
+         *
+         * @param event
+         */
+        unfoldChantCallback: function(event)
+        {
+            console.log(event);
+            console.log("unfoldChantCallback");
             // "collapse-1" becomes 1, etc.
             var chant = parseInt(event.target.id.split('-')[1]) + 1;
-            globalEventHandler.trigger("ChangeChant", chant);
+            this.chantStateSwitch.setValue(chant, true);
+
+            globalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
             globalEventHandler.trigger("SilentUrlUpdate");
         },
 
-        test: function(input)
+        foldChantCallback: function(event)
         {
-            console.log("TEST:");
-            console.log(input);
+            console.log("foldChantCallback");
+            var chant = parseInt(event.target.id.split('-')[1]) + 1;
+            this.chantStateSwitch.setValue(chant, false);
+
+            globalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
+            globalEventHandler.trigger("SilentUrlUpdate");
         },
 
         /**
@@ -456,6 +539,13 @@
             this.unfoldedChant = undefined;
         },
 
+        afterFetch: function()
+        {
+            // Make a new StateSwitch object that we will use to keep track
+            // of the open chant.
+            this.chantStateSwitch = new StateSwitch(this.collection.length)
+        },
+
         /**
          * Set the URL of the collection and fetch the data.
          *
@@ -464,7 +554,7 @@
         setUrl: function(url)
         {
             this.collection.url = url;
-            this.collection.fetch();
+            this.collection.fetch({success: this.afterFetch});
         },
 
         /**
