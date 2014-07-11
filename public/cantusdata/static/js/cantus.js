@@ -1969,7 +1969,6 @@
             this.folioView.setCustomNumber(folio);
             this.folioView.update();
             globalEventHandler.trigger("ChangeFolio", folio);
-//            globalEventHandler.trigger("ChangeChant", null);
             globalEventHandler.trigger("SilentUrlUpdate");
         },
 
