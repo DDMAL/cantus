@@ -39,6 +39,7 @@
     <script>
         function editorInit(divaImageLoc, jsonLoc)
         {
+            $("#loadingScreen").html("The Cantus MEI Editor is loading.");
             jsonFile = 'imagesOut.json';
             //create the diva wrapper and editor
 
@@ -80,65 +81,74 @@
             var meiEditor = new MeiEditor(element, options, plugins);
         }
 
-        var currentSite = document.URL.split('/')[2]; //0 is http:, 1 is blank, 2 is subdomain + domain
-        $.get("http://" + currentSite + "/manuscripts/", undefined, function(e){
-            for(curManuscriptIndex in e)
-            { 
-                $("#manuscriptSelect").append("<option value='" + e[curManuscriptIndex].siglum_slug + "'>" + e[curManuscriptIndex].name + "</option>");
-            }
-        });
-
-        $("#manuscriptSubmit").on('click', function()
-        {
-            var manuscriptNumber = $($("#manuscriptSelect").find(":selected")).attr('value');
-            if(manuscriptNumber == '000')
-            {
-                editorInit("/srv/images/meixBkup", 'imagesOut.json');
-            }
-            else
-            {
-                editorInit("/srv/images/cantus/" + manuscriptNumber, "http://" + currentSite + "/static/" + manuscriptNumber + ".json");
-            }
-        });
-
-        window.onload = function()
-        {
-            //here so I can wait for the diva objects to actually exist
-            $(window).on('allReady', function(e){
-                $(".diva-tools").addClass('diva-toolbar navbar navbar-default');
-                var divaOuterDiff = $("#1-diva-outer").outerHeight() - $("#1-diva-outer").height();
-                var divaOuterWidthDiff = $("#1-diva-outer").outerHeight() - $("#1-diva-outer").height();
-                $(".diva-toolbar").height($("#openPages").offset().top);
-                $(".diva-toolbar").width($("#diva-wrapper").width());
-                $("#diva-wrapper").offset({'top': $("#topbar").outerHeight()});
-                $("#diva-wrapper").height(window.innerHeight - $("#topbar").outerHeight());
-                $(".diva-outer").height(window.innerHeight - $("#topbar").outerHeight() - divaOuterDiff);
-                $("#diva-wrapper").width(window.innerWidth/2 - divaOuterWidthDiff);
-                $(".diva-toolbar").offset({'top': 0, 'left': $("#diva-wrapper").offset().left});
-                $(".diva-page-nav").css({
-                    'padding-right': '0em'
-                });
-                $(".diva-buttons-label").css({
-                    'padding': '7px',
-                    'padding-left': '15px',
-                    'border-top-width': '0px',
-                    'border-bottom-width': '0px'
-                });
-                $(".diva-input").css({
-                    'padding': '5px'
-                });
-                $(".diva-page-label").css({
-                    'margin-top': '5px'
-                });
-                $("#loadingScreen").animate({
-                    'height': '30px',
-                    'line-height': '30px',
-                    'opacity': '0'
-                }, {
-                    duration: 300,
-                    complete: function(){$("#loadingScreen").remove();}
-                });
+        $(window).on('allReady', function(e){
+            $(".diva-tools").addClass('diva-toolbar navbar navbar-default');
+            var divaOuterDiff = $("#1-diva-outer").outerHeight() - $("#1-diva-outer").height();
+            var divaOuterWidthDiff = $("#1-diva-outer").outerHeight() - $("#1-diva-outer").height();
+            $(".diva-toolbar").height($("#openPages").offset().top);
+            $(".diva-toolbar").width($("#diva-wrapper").width());
+            $("#diva-wrapper").offset({'top': $("#topbar").outerHeight()});
+            $("#diva-wrapper").height(window.innerHeight - $("#topbar").outerHeight());
+            $(".diva-outer").height(window.innerHeight - $("#topbar").outerHeight() - divaOuterDiff);
+            $("#diva-wrapper").width(window.innerWidth/2 - divaOuterWidthDiff);
+            $(".diva-toolbar").offset({'top': 0, 'left': $("#diva-wrapper").offset().left});
+            $(".diva-page-nav").css({
+                'padding-right': '0em'
             });
-        };
+            $(".diva-buttons-label").css({
+                'padding': '7px',
+                'padding-left': '15px',
+                'border-top-width': '0px',
+                'border-bottom-width': '0px'
+            });
+            $(".diva-input").css({
+                'padding': '5px'
+            });
+            $(".diva-page-label").css({
+                'margin-top': '5px'
+            });
+            $("#loadingScreen").animate({
+                'height': '30px',
+                'line-height': '30px',
+                'opacity': '0'
+            }, {
+                duration: 300,
+                complete: function(){$("#loadingScreen").remove();}
+            });
+        });
+
+        var docArr = document.URL.split('/'); //0 is http:, 1 is blank, 2 is subdomain + domain, length - 2 is folio to jump to if defined
+        var currentSite = docArr[2];
+        var siglum_slug = docArr[docArr.length - 1].split('?')[1];
+        console.log(docArr[docArr.length - 1], siglum_slug);
+        
+        if(siglum_slug !== undefined && siglum_slug !== "")
+        {
+            editorInit("/srv/images/cantus/" + siglum_slug, "http://" + currentSite + "/static/" + siglum_slug + ".json");
+        }
+        else 
+        {
+            $.get("http://" + currentSite + "/manuscripts/", undefined, function(e){
+                for(curManuscriptIndex in e)
+                { 
+                    $("#manuscriptSelect").append("<option value='" + e[curManuscriptIndex].siglum_slug + "'>" + e[curManuscriptIndex].name + "</option>");
+                }
+            });
+
+            $("#manuscriptSubmit").on('click', function()
+            {
+                var siglum_slug = $($("#manuscriptSelect").find(":selected")).attr('value');
+                if(siglum_slug == '000')
+                {
+                    editorInit("/srv/images/meixBkup", 'imagesOut.json');
+                }
+                else
+                {
+                    editorInit("/srv/images/cantus/" + siglum_slug, "http://" + currentSite + "/static/" + siglum_slug + ".json");
+                    
+                    window.history.replaceState("","", document.URL + "?" + siglum_slug);
+                }
+            });
+        }
     </script>
 </html> 
