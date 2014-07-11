@@ -24,9 +24,20 @@
 
         <script src="meix.js/js/lib/require.js"></script>
         <script src="meix.js/js/local/meiEditorPreloader.js"></script>
-
-        <script>
-        $(function() 
+    </head>
+    <body>
+        <div id="mei-editor"></div>
+        <div id="diva-wrapper"></div>
+        <div id="loadingScreen">
+            <h2>Please choose a manuscript to load:</h2>
+            <select id='manuscriptSelect'>
+                <option value='000'> Sankt Gallen 390 demo </option>
+            </select><br>
+            <button id='manuscriptSubmit'>Load</button>
+        </div>
+    </body>
+    <script>
+        function editorInit(divaImageLoc, jsonLoc)
         {
             jsonFile = 'imagesOut.json';
             //create the diva wrapper and editor
@@ -44,8 +55,8 @@
                 enableGridIcon: false,
                 fixedHeightGrid: false,
                 iipServerURL: "http://diva.simssa.ca/fcgi-bin/iipsrv.fcgi",
-                objectData: jsonFile,
-                imageDir: "/srv/images/meixBkup",
+                objectData: jsonLoc,
+                imageDir: divaImageLoc,
                 enableHighlight: true,
                 viewerWidthPadding: 0,
                 viewerHeightPadding: 0
@@ -67,33 +78,53 @@
             var plugins = ["meiEditorDivaManager.js"];
 
             var meiEditor = new MeiEditor(element, options, plugins);
+        }
+
+        var currentSite = document.URL.split('/')[2]; //0 is http:, 1 is blank, 2 is subdomain + domain
+        $.get("http://" + currentSite + "/manuscripts/", undefined, function(e){
+            for(curManuscriptIndex in e)
+            { 
+                $("#manuscriptSelect").append("<option value='" + e[curManuscriptIndex].siglum_slug + "'>" + e[curManuscriptIndex].name + "</option>");
+            }
+        });
+
+        $("#manuscriptSubmit").on('click', function()
+        {
+            var manuscriptNumber = $($("#manuscriptSelect").find(":selected")).attr('value');
+            if(manuscriptNumber == '000')
+            {
+                editorInit("/srv/images/meixBkup", 'imagesOut.json');
+            }
+            else
+            {
+                editorInit("/srv/images/cantus/" + manuscriptNumber, "http://" + currentSite + "/static/" + manuscriptNumber + ".json");
+            }
         });
 
         window.onload = function()
         {
-            $("#1-diva-tools").addClass('diva-toolbar navbar navbar-default');
             //here so I can wait for the diva objects to actually exist
             $(window).on('allReady', function(e){
+                $(".diva-tools").addClass('diva-toolbar navbar navbar-default');
                 var divaOuterDiff = $("#1-diva-outer").outerHeight() - $("#1-diva-outer").height();
                 var divaOuterWidthDiff = $("#1-diva-outer").outerHeight() - $("#1-diva-outer").height();
                 $(".diva-toolbar").height($("#openPages").offset().top);
                 $(".diva-toolbar").width($("#diva-wrapper").width());
                 $("#diva-wrapper").offset({'top': $("#topbar").outerHeight()});
                 $("#diva-wrapper").height(window.innerHeight - $("#topbar").outerHeight());
-                $("#1-diva-outer").height(window.innerHeight - $("#topbar").outerHeight() - divaOuterDiff);
+                $(".diva-outer").height(window.innerHeight - $("#topbar").outerHeight() - divaOuterDiff);
                 $("#diva-wrapper").width(window.innerWidth/2 - divaOuterWidthDiff);
                 $(".diva-toolbar").offset({'top': 0, 'left': $("#diva-wrapper").offset().left});
                 $(".diva-page-nav").css({
                     'padding-right': '0em'
                 });
-                $(".diva-tools-left").css({'margin-left': '1.4em'});
-                $("#1-diva-zoom-buttons-label").css({
+                $(".diva-buttons-label").css({
                     'padding': '7px',
                     'padding-left': '15px',
                     'border-top-width': '0px',
                     'border-bottom-width': '0px'
                 });
-                $("#1-diva-goto-page-input").css({
+                $(".diva-input").css({
                     'padding': '5px'
                 });
                 $(".diva-page-label").css({
@@ -109,12 +140,5 @@
                 });
             });
         };
-
-        </script>
-    </head>
-    <body>
-        <div id="mei-editor"></div>
-        <div id="diva-wrapper"></div>
-        <div id="loadingScreen">The ACE MEI Editor is loading...</div>
-    </body>
+    </script>
 </html> 

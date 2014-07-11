@@ -14,7 +14,12 @@ body{
 	font-size:16pt;
 	text-align: center;
 	vertical-align: middle;
-	line-height:200px;
+	padding-top:200px;
+}
+#manuscriptSubmit{
+	margin-top:20px;
+	background-color:#222;
+	outline:none;
 }
 #mei-editor{
 	width:50%;
@@ -61,7 +66,7 @@ body{
     z-index:1001;
     position:absolute;
     display:none;
-	width:200px;
+	min-width:200px;
 }
 .overlay-box{
     border: thin black solid;
