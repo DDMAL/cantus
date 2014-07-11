@@ -66,18 +66,22 @@ def solr_index(sender, instance, created, **kwargs):
     if record:
         solrconn.delete(record.results[0]['id'])
     manuscript = instance
-    d = {
-        'type': 'cantusdata_manuscript',
-        'id': str(uuid.uuid4()),
-        'item_id': manuscript.id,
-        'name': manuscript.name,
-        'siglum': manuscript.siglum,
-        'date': manuscript.date,
-        'provenance': manuscript.provenance,
-        'description': manuscript.description
-    }
-    solrconn.add(**d)
-    solrconn.commit()
+    # We only want to index the manuscript if it has chants!
+    if manuscript.chant_count > 0:
+        d = {
+            'type': 'cantusdata_manuscript',
+            'id': str(uuid.uuid4()),
+            'item_id': manuscript.id,
+            'name': manuscript.name,
+            'siglum': manuscript.siglum,
+            'date': manuscript.date,
+            'chant_count': manuscript.chant_count,
+            'folio_count': manuscript.folio_count,
+            'provenance': manuscript.provenance,
+            'description': manuscript.description
+        }
+        solrconn.add(**d)
+        solrconn.commit()
 
 
 @receiver(post_delete, sender=Manuscript)
