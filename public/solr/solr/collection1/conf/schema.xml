@@ -121,6 +121,8 @@
     <field name="manuscript" type="text_general" indexed="true" stored="true"/>
     <field name="manuscript_id" type="int" indexed="true" stored="true"/>
     <field name="manuscript_name_hidden" type="string" indexed="false" stored="true" />
+    <field name="chant_count" type="int" indexed="true" stored="true"/>
+    <field name="folio_count" type="int" indexed="true" stored="true"/>
 
     <field name="marginalia" type="text_general" indexed="true" stored="true"/>
     <field name="folio" type="text_general" indexed="true" stored="true"/>
