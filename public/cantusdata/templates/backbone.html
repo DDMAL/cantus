@@ -91,7 +91,8 @@
 
 <script type="text/template" id="folio-template">
 <h3>Folio <%= number %></h3>
-<div id="chant-list"></div>
+<div id="chant-list">
+</div>
 </script>
 
 <script type="text/template" id="chant-collection-template">
@@ -273,7 +274,6 @@
     <th># Chants</th>
 </tr>
 <% for (var i = 0; i < manuscripts.length; i++) { %>
-<% if (manuscripts[i].chant_count > 0) { %>
 <tr>
     <td><a id="manuscript-list-<%= i %>" href="#" ><%= manuscripts[i].name %></a></td>
     <td><%= manuscripts[i].siglum %></td>
@@ -281,7 +281,6 @@
     <td><%= manuscripts[i].provenance %></td>
     <td><%= manuscripts[i].chant_count %></td>
 </tr>
-<% } %>
 <% } %>
 </table>
 </script>
