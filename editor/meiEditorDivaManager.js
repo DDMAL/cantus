@@ -85,7 +85,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     boxClickHandler: "",        //stores the current function to be called when a box is single-clicked; this changes depending on whether or not shift is down
                     highlightedCache: [],       //cache of highlighted items used to reload display once createHighlights is called
                     resizableCache: [],         //cache of resizable items used to reload display once createHighlights is called
-                    lastClicked: ""             //determines which delete listener to use by storing which side was last clicked on
+                    lastClicked: "",            //determines which delete listener to use by storing which side was last clicked on
+                    highlightHandle: ""         //handler for the highlight event, needs to be committed to memory
                 };
 
                 $.extend(meiEditorSettings, globals);
@@ -773,7 +774,13 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             regions.push({'width': neume_width, 'height': neume_height, 'ulx': neume_ulx, 'uly': neume_uly, 'divID': zoneID});
                         }
                         //at the end of each page, call the highlights
-                        meiEditorSettings.divaInstance.highlightOnPage(pageIndex, regions, undefined, "overlay-box", reapplyBoxListeners);
+                        if(meiEditorSettings.highlightHandle !== "")
+                        {
+                            diva.Events.unsubscribe(meiEditorSettings.highlightHandle);
+                            meiEditorSettings.highlightHandle = "";
+                        }
+                        meiEditorSettings.highlightHandle = diva.Events.subscribe("HighlightCompleted", reapplyBoxListeners);
+                        meiEditorSettings.divaInstance.highlightOnPage(pageIndex, regions, undefined, "overlay-box");
                     }
                 };
 
