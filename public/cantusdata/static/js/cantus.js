@@ -483,6 +483,7 @@
             _.bindAll(this, 'render', 'setUnfoldedChant', 'unfoldChantCallback',
                 'foldChantCallback', 'afterFetch');
             this.template = _.template($('#chant-collection-template').html());
+            this.emptyTemplate = _.template($('#empty-chant-collection-template').html());
 
             this.collection = new ChantCollection();
 
@@ -559,13 +560,23 @@
          */
         render: function()
         {
-            // Render out the template
-            $(this.el).html(this.template(
-                {
-                    chants: this.collection.toJSON(),
-                    unfoldedChant: this.unfoldedChant
-                }
-            ));
+            // TODO: Figure out why this gets called 4 times
+            console.log("Collection:");
+            console.log(this.collection.toJSON());
+            if (this.collection.length === 0)
+            {
+                $(this.el).html(this.emptyTemplate());
+            }
+            else
+            {
+                // Render out the template
+                $(this.el).html(this.template(
+                    {
+                        chants: this.collection.toJSON(),
+                        unfoldedChant: this.unfoldedChant
+                    }
+                ));
+            }
             globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         },
