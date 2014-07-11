@@ -459,6 +459,7 @@
         },
 
         unAssign : function (view, selector) {
+            console.log("Unassign!");
             $(selector).empty();
         }
     });
@@ -918,15 +919,8 @@
          */
         afterFetch: function()
         {
-            if (jQuery.isEmptyObject(this.model.toJSON()))
-            {
-                this.unAssign('#chant-list');
-            }
-            else
-            {
-                this.assignChants();
-                this.render();
-            }
+            this.assignChants();
+            this.render();
         },
 
         /**
