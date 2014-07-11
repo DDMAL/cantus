@@ -13,11 +13,20 @@ class ManuscriptDetailHTMLRenderer(CustomHTMLRenderer):
     template_name = "backbone.html"
 
 
-class ManuscriptList(generics.ListCreateAPIView):
+class ManuscriptHasChantsMixin(object):
+    """
+    This Mixin filters out manuscripts that have no chants.
+    """
+    def get_queryset(self):
+        queryset = Manuscript.objects.all()
+        return queryset.filter(chant_count__gt=0)
+
+
+class ManuscriptList(ManuscriptHasChantsMixin, generics.ListCreateAPIView):
     model = Manuscript
     serializer_class = ManuscriptSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer,
-     ManuscriptListHTMLRenderer)
+                        ManuscriptListHTMLRenderer)
 
 
 class ManuscriptDetail(generics.RetrieveUpdateDestroyAPIView):
