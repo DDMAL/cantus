@@ -184,8 +184,17 @@
 
 <script type="text/template" id="search-template">
 {#<form role="search">#}
-<div class="form-group">
-    <input type="text" class="form-control search-input" placeholder="Search" value="<%= query %>">
+<div class="form-inline">
+    <div class="form-group">
+        <select class="search-field">
+            <option value="all">All Fields:</option>
+            <option value="volpiano">Volpiano:</option>
+            <option value="mode">Mode:</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <input type="text" class="form-control search-input" placeholder="Search" value="<%= query %>">
+    </div>
 </div>
 {#  <button type="submit" class="btn btn-default search-button">Submit</button>#}
 {#</form>#}

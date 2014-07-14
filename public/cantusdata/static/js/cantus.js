@@ -1519,6 +1519,7 @@
          *
          */
         query: null,
+        field: null,
 
         /**
          * Some additional text added to all queries.  For example, you might
@@ -1581,27 +1582,49 @@
          */
         newSearch: function()
         {
+            console.log("newSearch");
+
             // Grab the new search query
             var newQuery = encodeURIComponent($(this.$el.selector
                 + ' .search-input').val());
 
-            if (newQuery !== this.query) {
+            // Grab the field name
+            var fieldSelection = encodeURIComponent($(this.$el.selector
+                + ' .search-field').val());
+
+            if (newQuery !== this.query || fieldSelection !== this.field) {
                 this.query = newQuery;
+                this.field = fieldSelection;
                 if (newQuery === "")
                 {
                     // Empty search, so hide the searchResultView
                     this.searchResultView.hide();
                 }
-                else if (this.queryPostScript !== null)
-                {
-                    // Attach this.queryPostScript if available
-                    this.searchResultView.changeQuery(newQuery + " "
-                        + this.queryPostScript);
-                }
-                else
-                {
-                    // Set the new search results view
-                    this.searchResultView.changeQuery(newQuery);
+                else {
+                    console.log("fieldSelection:");
+                    console.log(fieldSelection);
+
+                    // Append the field selector if necessary!
+                    if (fieldSelection !== "all")
+                    {
+                        newQuery = fieldSelection + ':' + newQuery
+                    }
+
+                    console.log("newQuery:");
+                    console.log(newQuery);
+
+                    if (this.queryPostScript !== null)
+                    {
+                        // Attach this.queryPostScript if available
+                        this.searchResultView.changeQuery(newQuery + " "
+                            + this.queryPostScript);
+                    }
+                    else
+                    {
+                        // Set the new search results view
+                        this.searchResultView.changeQuery(newQuery);
+                    }
+
                 }
                 // app.navigate("/search/?q=" + this.query);
             }
@@ -1617,6 +1640,7 @@
             // Register them
             // this.events["click " + this.$el.selector + ".search-button"] = "newSearch";
             this.events["change .search-input"] = "newSearch";
+            this.events["change .search-field"] = "newSearch";
             this.events["input .search-input"] = "autoNewSearch";
 
             // Delegate the new events
