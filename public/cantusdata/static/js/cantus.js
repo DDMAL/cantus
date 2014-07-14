@@ -662,8 +662,10 @@
         /**
          * Destroy Diva instance.
          */
-        destroy: function()
+        remove: function()
         {
+            // Deal with destroying Diva
+            console.log("Removing DivaView.");
             if (this.$el.data('diva') !== undefined)
             {
                 console.log("Diva defined and about to be destroyed!");
@@ -673,6 +675,19 @@
             {
                 console.log("Diva undefined!");
             }
+
+            // Deal with the event listeners
+            this.stopListening();
+            this.undelegateEvents();
+
+            // Clear the fields
+            this.initialFolio = null;
+            this.currentFolioName = null;
+            this.currentFolioIndex = null;
+            this.imagePrefix = null;
+            this.imageSuffix = null;
+            this.timer = null;
+            this.paintedBoxSet = null;
         },
 
         render: function()
@@ -956,6 +971,15 @@
                 this.listenTo(this.model, 'sync', this.afterFetch);
             }
             this.chantCollectionView = new ChantCollectionView();
+        },
+
+        remove: function()
+        {
+            this.chantCollectionView.remove();
+
+            // Deal with the event listeners
+            this.stopListening();
+            this.undelegateEvents();
         },
 
         /**
@@ -1486,6 +1510,19 @@
             this.registerEvents();
 
             this.listenTo(this.results, "sync", this.resultFetchCallback);
+        },
+
+        remove: function()
+        {
+            this.query = null;
+            this.results = null;
+            this.paginator.remove();
+
+            this.divaView.remove();
+
+            // Deal with the event listeners
+            this.stopListening();
+            this.undelegateEvents();
         },
 
         setManuscript: function(manuscript)
@@ -2039,9 +2076,6 @@
 
         remove: function()
         {
-            // Kill Diva
-            this.divaView.destroy();
-
             // Deal with the event listeners
             this.stopListening();
             this.undelegateEvents();
@@ -2294,7 +2328,6 @@
             globalEventHandler.trigger("ChangeManuscript", query);
             globalEventHandler.trigger("ChangeFolio", folio);
             globalEventHandler.trigger("ChangeChant", chant);
-
         },
 
         search: function(query)
