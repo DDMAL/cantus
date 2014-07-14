@@ -78,6 +78,7 @@ def solr_index(sender, instance, created, **kwargs):
             'item_id': manuscript.id,
             'name': manuscript.name,
             'siglum': manuscript.siglum,
+            'siglum_slug': manuscript.siglum_slug,
             'date': manuscript.date,
             'chant_count': manuscript.chant_count,
             'folio_count': manuscript.folio_count,
