@@ -1608,6 +1608,7 @@
                     if (fieldSelection !== "all")
                     {
                         newQuery = fieldSelection + ':' + newQuery
+                        newQuery = fieldSelection + ': "' + newQuery + '"';
                     }
 
                     console.log("newQuery:");
