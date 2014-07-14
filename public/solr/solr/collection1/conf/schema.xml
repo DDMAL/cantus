@@ -492,7 +492,7 @@
         -->
         <filter class="solr.LowerCaseFilterFactory"/>
 
-        <filter class="solr.NGramFilterFactory" minGramSize="2" maxGramSize="15"/>
+        <filter class="solr.NGramFilterFactory" minGramSize="2" maxGramSize="255"/>
       </analyzer>
       <analyzer type="query">
         <tokenizer class="solr.StandardTokenizerFactory"/>
