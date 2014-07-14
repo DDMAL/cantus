@@ -11,6 +11,8 @@ class ManuscriptSerializer(serializers.HyperlinkedModelSerializer):
     # chant_set = serializers.HyperlinkedRelatedField(many=True, read_only=True,
     #                                             view_name="chant-detail")
     siglum_slug = serializers.Field()
+    plugins = serializers.SlugRelatedField(many=True, read_only=True,
+                                           slug_field='slug')
 
     class Meta:
         model = Manuscript
