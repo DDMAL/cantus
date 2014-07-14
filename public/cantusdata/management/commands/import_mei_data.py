@@ -292,7 +292,7 @@ def MEI2Solr(folder_name):
         #print str(nnotes) + 'notes\n'
 
         # For now it's just Salzinnes!
-        manuscript = "cdn-hsmu-m2149l4"
+        siglum_slug = "cdn-hsmu-m2149l4"
 
         # get and store text
         # if dotext:
@@ -360,7 +360,7 @@ def MEI2Solr(folder_name):
                         {
                             'id': str(uuid.uuid4()),
                             'type': TYPE,
-                            'manuscript': manuscript,
+                            'siglum_slug': siglum_slug,
                             'pagen': int(pagen),
                             'project': int(project_id),
                             'pnames': pnames,
