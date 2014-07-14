@@ -57,14 +57,18 @@ class LiberSearchView(APIView):
 
         q = request.GET.get('q', None)
         stype = request.GET.get('type', None)
+        manuscript = request.GET.get('manuscript', None)
         rows = request.GET.get("rows", "100")
         start = request.GET.get("start", "0")
 
-        results = self.do_query(stype, q, 5, 5)
+        results = self.do_query(manuscript, stype, q, 5, 5)
 
         return Response({'numFound': len(results), 'results': results})
 
-    def do_query(self, qtype, query, zoom_level, max_zoom=4):
+    def do_query(self, manuscript, qtype, query, zoom_level, max_zoom=4):
+        # This will be appended to the search query so that we only get
+        # data from the manuscript that we want!
+        manuscript_query = ' AND siglum_slug:\"{0}\"'.format(manuscript)
 
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
 
@@ -76,9 +80,6 @@ class LiberSearchView(APIView):
             if not search_utils.valid_pitch_sequence(query):
                 raise LiberSearchException("The query you provided is not a valid pitch sequence")
             real_query = query if qtype == 'pnames' else ' OR '.join(search_utils.get_transpositions(query))
-
-            print real_query
-
             query_stmt = 'pnames:{0}'.format(real_query)
         elif qtype == "contour":
             query_stmt = 'contour:{0}'.format(query)
@@ -92,9 +93,15 @@ class LiberSearchView(APIView):
             raise LiberSearchException("Invalid query type provided")
 
         if qtype == "pnames-invariant":
-            response = solrconn.query(query_stmt, score=False, sort="pagen asc", q_op="OR", rows=1000000)
+            print query_stmt + manuscript_query
+            response = solrconn.query(query_stmt + manuscript_query,
+                                      score=False, sort="pagen asc", q_op="OR",
+                                      rows=1000000)
         else:
-            response = solrconn.query(query_stmt, score=False, sort="pagen asc", rows=1000000)
+            print query_stmt + manuscript_query
+            response = solrconn.query(query_stmt + manuscript_query,
+                                      score=False, sort="pagen asc",
+                                      rows=1000000)
         numfound = response.numFound
 
         results = []
