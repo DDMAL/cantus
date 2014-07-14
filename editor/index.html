@@ -39,7 +39,7 @@
     <script>
         function editorInit(divaImageLoc, jsonLoc)
         {
-            $("#loadingScreen").html("The Cantus MEI Editor is loading.");
+            $("#loadingScreen").html("The Cantus MEI Editor is loading...");
             jsonFile = 'imagesOut.json';
             //create the diva wrapper and editor
 
@@ -82,7 +82,7 @@
             var meiEditor = new MeiEditor(element, options, plugins);
         }
 
-        $(window).on('allReady', function(e){
+        $(window).on('meiEditorLoaded', function(e){
             $(".diva-tools").addClass('diva-toolbar navbar navbar-default');
             var divaOuterDiff = $("#1-diva-outer").outerHeight() - $("#1-diva-outer").height();
             var divaOuterWidthDiff = $("#1-diva-outer").outerHeight() - $("#1-diva-outer").height();
