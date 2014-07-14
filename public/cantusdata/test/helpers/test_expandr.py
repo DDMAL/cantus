@@ -36,7 +36,7 @@ class ExpandrFunctionsTestCase(TestCase):
             expected_output = ""
             for character in combination:
                 if character in numbers:
-                    expected_output += "Mode " + str(character) + " "
+                    expected_output += str(character) + " "
                 elif character in symbols:
                     expected_output += (symbols[character] + " ")
                 else:
