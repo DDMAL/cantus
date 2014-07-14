@@ -1456,15 +1456,12 @@
                 this.divaView.paintBoxes([]);
                 this.clearResults("<h4>Please enter a search query.</h4>");
             }
-            else if (this.manuscript !== "cdn-hsmu-m2149l4")
-            {
-                // Right now it's only Salzinnes
-                // this.divaView.paintBoxes([]);
-                this.clearResults("<h4>0 results found for query: " + newQuery + "</h4>");
-            }
             else
             {
-                var composedQuery = siteUrl + "liber-search/?q=" + newQuery + "&type=pnames";
+                var composedQuery = siteUrl + "liber-search/?q=" + newQuery
+                    + "&type=pnames&manuscript=" + this.manuscript;
+                console.log("Composed Query:");
+                console.log(composedQuery);
                 this.results.url = composedQuery;
                 this.results.fetch();
             }
