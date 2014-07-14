@@ -32,9 +32,9 @@ class Chant(models.Model):
     # reference ??
     incipit = models.TextField(blank=True, null=True)
     full_text = models.TextField(blank=True, null=True)
-    concordances = models.ManyToManyField(
-        "cantusdata.Concordance", related_name="concordances",
-        default="empty-concordance")
+    concordances = models.ManyToManyField("cantusdata.Concordance",
+                                          related_name="concordances",
+                                          blank=True)
     # not sure about its type
     volpiano = models.TextField(blank=True, null=True)
     manuscript = models.ForeignKey("cantusdata.Manuscript",
