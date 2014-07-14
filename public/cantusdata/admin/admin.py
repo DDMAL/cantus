@@ -15,7 +15,7 @@ reindex_in_solr.short_description = "ReIndex in Solr"
 
 class ManuscriptAdmin(admin.ModelAdmin):
     actions = [reindex_in_solr]
-    readonly_fields = ('folio_count', 'chant_count',)
+    readonly_fields = ('folio_count', 'chant_count', 'siglum_slug')
 
 
 class ChantAdmin(admin.ModelAdmin):
