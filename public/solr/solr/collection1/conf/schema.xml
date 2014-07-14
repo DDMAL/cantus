@@ -112,6 +112,7 @@
 
     <field name="name" type="text_general" indexed="true" stored="true"/>
     <field name="siglum" type="text_general" indexed="true" stored="true"/>
+    <field name="siglum_slug" type="string" indexed="true" stored="true"/>
     <field name="date" type="string" indexed="true" stored="true"/>
     <field name="provenance" type="text_general" indexed="true" stored="true"/>
     <field name="description" type="text_general" indexed="true" stored="true"/>
