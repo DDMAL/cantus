@@ -235,6 +235,54 @@
         }
     });
 
+    SolrDisjunctiveQueryBuilder = Backbone.Model.extend
+    ({
+        field: undefined,
+        values: [],
+
+        initialize: function(field, values)
+        {
+            this.field = String(field);
+            for (var i = 0; i < values.length; i++)
+            {
+                this.addValue(values[i]);
+            }
+        },
+
+        /**
+         * Add a value to the disjunctive query.
+         *
+         * @param value
+         */
+        addValue: function(value)
+        {
+            this.values.push(String(value));
+        },
+
+        /**
+         * Construct the query.
+         *
+         * @returns {string}
+         */
+        getQuery: function()
+        {
+            var output = field + ": (";
+
+            if (this.values.length > 0)
+            {
+                // The first value
+                output += ('"' + this.values[0] + '"');
+                // The rest
+                for (var i = 1; i < this.values.length; i++)
+                {
+                    output += (' OR "' + this.values[i] + '"');
+                }
+            }
+
+            return output + ")";
+        }
+    });
+
     /*
     Models
      */
@@ -1607,7 +1655,6 @@
                     // Append the field selector if necessary!
                     if (fieldSelection !== "all")
                     {
-                        newQuery = fieldSelection + ':' + newQuery
                         newQuery = fieldSelection + ': "' + newQuery + '"';
                     }
 
