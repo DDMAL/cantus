@@ -659,6 +659,22 @@
             this.setManuscript(options.siglum, options.folio);
         },
 
+        /**
+         * Destroy Diva instance.
+         */
+        destroy: function()
+        {
+            if (this.$el.data('diva') !== undefined)
+            {
+                console.log("Diva defined and about to be destroyed!");
+                this.$el.data('diva').destroy();
+            }
+            else
+            {
+                console.log("Diva undefined!");
+            }
+        },
+
         render: function()
         {
             // It's kind of hacky to doubly-bind the name like this, but I'm
@@ -2021,6 +2037,31 @@
             this.listenTo(globalEventHandler, "manuscriptChangeFolio", this.updateFolio);
         },
 
+        remove: function()
+        {
+            // Kill Diva
+            this.divaView.destroy();
+
+            // Deal with the event listeners
+            this.stopListening();
+            this.undelegateEvents();
+
+            // Remove the subviews
+            this.divaView.remove();
+            this.searchView.remove();
+            this.searchNotationView.remove();
+            this.folioView.remove();
+
+            // Nullify the manuscript model
+            this.manuscript = null;
+
+            // Nullify the views
+            this.divaView = null;
+            this.searchView = null;
+            this.searchNotationView = null;
+            this.folioView = null;
+        },
+
         /**
          *
          *
@@ -2231,6 +2272,15 @@
             console.log(folio);
             console.log("Chant:");
             console.log(chant);
+
+            if (this.manuscriptView !== null)
+            {
+                console.log("Destroying Manuscript View");
+                // We want to make sure that the old view, if it exists, is
+                // completely cleared-out.
+                this.manuscriptView.remove();
+                this.manuscriptView = null;
+            }
 
             this.manuscriptView = new ManuscriptIndividualPageView(
                 {
