@@ -25,6 +25,10 @@ class Manuscript(models.Model):
     description = models.TextField(blank=True, null=True)
     chant_count = models.IntegerField(default=0)
 
+    plugins = models.ManyToManyField("cantusdata.Plugin",
+                                     related_name="plugins",
+                                     blank=True)
+
     def __unicode__(self):
         return u"{0} - {1}".format(self.siglum, self.name)
 
