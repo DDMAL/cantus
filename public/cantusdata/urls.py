@@ -8,7 +8,7 @@ from cantusdata.views.chant import ChantList, ChantDetail
 from cantusdata.views.folio import FolioList, FolioDetail
 from cantusdata.views.concordance import ConcordanceList, ConcordanceDetail
 from cantusdata.views.search import SearchView
-from cantusdata.views.search_notation import SearchNotationView, LiberSearchView
+from cantusdata.views.search_notation import SearchNotationView
 from cantusdata.views.chant_set import FolioChantSetView, ManuscriptChantSetView
 from cantusdata.views.folio_set import ManuscriptFolioSetView
 
@@ -64,7 +64,5 @@ urlpatterns += format_suffix_patterns(
     # Notation search
     url(r'^notation-search/$', SearchNotationView.as_view(),
         name="search-notation-view"),
-    url(r'^liber-search/$', LiberSearchView.as_view(),
-        name="search-liber-view"),
     )
 )
