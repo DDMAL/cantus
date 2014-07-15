@@ -11,8 +11,6 @@ from operator import itemgetter
 
 class NotationException(Exception):
     def __init__(self, message):
-        print "LiberSearchException:"
-        print message
         self.message = message
     def __str__(self):
         return repr(self.message)
@@ -31,7 +29,13 @@ class SearchNotationView(APIView):
         rows = request.GET.get("rows", "100")
         start = request.GET.get("start", "0")
 
-        results = self.do_query(manuscript, stype, q, 5, 5)
+        try:
+            results = self.do_query(manuscript, stype, q, 5, 5)
+        except Exception as e:
+            # Something went wrong in the search
+            print "Exception: {0}".format(e)
+             # So we want an empty list to avoid server error 500
+            results = []
 
         return Response({'numFound': len(results), 'results': results})
 
