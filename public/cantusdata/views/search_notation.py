@@ -1,8 +1,6 @@
-
 from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.renderers import JSONRenderer, JSONPRenderer
 
 from cantusdata.helpers import search_utils
 import solr
@@ -10,45 +8,17 @@ import json
 import types
 from operator import itemgetter
 
-class SearchNotationView(APIView):
 
-    def get(self, request, *args, **kwargs):
-
-        q = request.GET.get('q', None)
-        stype = request.GET.get('type', None)
-        rows = request.GET.get("rows", "100")
-        start = request.GET.get("start", "0")
-
-        q_opt = {}
-        if stype in ("neumes", "intervals"):
-            q = q.replace(" ", "_")
-        elif stype == 'pnames-invariant':
-            stype = "pnames"
-            q = ' OR '.join(search_utils.get_transpositions(q))
-            q_opt = {"q_op": "OR"}
-
-        query = "type:cantusdata_music_notation {0}:{1}".format(stype, q)
-        # return Response(query)
-        solrconn = solr.SolrConnection(settings.SOLR_SERVER)
-        response = solrconn.query(query, sort="folio_t asc", rows=rows,
-                                  start=start, **q_opt)
-
-        # for i, obj in enumerate(response.results):
-        #     print obj
-
-        js = {"result": response.results, "numFound": response.numFound}
-
-        return Response(js)
-
-
-class LiberSearchException(Exception):
+class NotationException(Exception):
     def __init__(self, message):
+        print "LiberSearchException:"
+        print message
         self.message = message
     def __str__(self):
         return repr(self.message)
 
 
-class LiberSearchView(APIView):
+class SearchNotationView(APIView):
     """
     Search algorithm copied over from the Liber Usualis code
     """
@@ -78,7 +48,7 @@ class LiberSearchView(APIView):
             query_stmt = 'neumes:{0}'.format(query.replace(' ', '_'))
         elif qtype == "pnames" or qtype == "pnames-invariant":
             if not search_utils.valid_pitch_sequence(query):
-                raise LiberSearchException("The query you provided is not a valid pitch sequence")
+                raise NotationException("The query you provided is not a valid pitch sequence")
             real_query = query if qtype == 'pnames' else ' OR '.join(search_utils.get_transpositions(query))
             query_stmt = 'pnames:{0}'.format(real_query)
         elif qtype == "contour":
@@ -90,7 +60,7 @@ class LiberSearchView(APIView):
         elif qtype == "incipit":
             query_stmt = "incipit:{0}*".format(query)
         else:
-            raise LiberSearchException("Invalid query type provided")
+            raise NotationException("Invalid query type provided")
 
         if qtype == "pnames-invariant":
             print query_stmt + manuscript_query

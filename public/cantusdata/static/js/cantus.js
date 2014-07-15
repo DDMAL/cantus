@@ -1564,7 +1564,7 @@
                 // Grab the field name
                 this.field = encodeURIComponent($(this.$el.selector
                     + ' .search-field').val());
-                var composedQuery = siteUrl + "liber-search/?q=" + this.query
+                var composedQuery = siteUrl + "notation-search/?q=" + this.query
                     + "&type=" + this.field + "&manuscript=" + this.manuscript;
                 console.log("Composed Query:");
                 console.log(composedQuery);
