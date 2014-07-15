@@ -27,7 +27,7 @@ class Manuscript(models.Model):
 
     plugins = models.ManyToManyField("cantusdata.Plugin",
                                      related_name="plugins",
-                                     blank=True)
+                                     blank=True, null=True)
 
     def __unicode__(self):
         return u"{0} - {1}".format(self.siglum, self.name)
