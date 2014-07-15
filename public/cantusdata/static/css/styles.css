@@ -78,7 +78,12 @@ html {
     margin-top: 0px;
     border-right: 1px solid #CCCCCC;
     border-bottom: 1px solid #CCCCCC;
-    /*background: #FF9900;*/
+}
+
+.diva-tools.diva-fullscreen-tools {
+    width: 260px;
+    height: 120px;
+    padding: 10px;
 }
 
 .diva-outer {
@@ -104,4 +109,19 @@ html {
 
 #search-notation {
     margin-top: 2em;
+}
+
+.diva-input {
+    width: 60px;
+    height: 33px;
+}
+
+#diva-toolbar input {
+    width: 60px;
+    height: 33px;
+    padding: 0px;
+}
+
+#diva-toolbar input[type="submit"] {
+    width: 33px;
 }
