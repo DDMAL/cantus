@@ -145,7 +145,7 @@
     <field name="finalis" type="string" indexed="true" stored="true" multiValued="false" />
     <field name="incipit" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="full_text" type="text_general" indexed="true" stored="true" multiValued="false" />
-    <field name="volpiano" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="volpiano" type="volpiano_general" indexed="true" stored="true" multiValued="false" />
 
      <!-- Fields related to concordances  -->
     <field name="concordance_citation" type="text_general" indexed="true" stored="true" />
@@ -498,6 +498,22 @@
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" />
         <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+        <filter class="solr.LowerCaseFilterFactory"/>
+      </analyzer>
+    </fieldType>
+
+    <!-- A text field for "Volpiano" music notation data. -->
+    <fieldType name="volpiano_general" class="solr.TextField" positionIncrementGap="100">
+      <analyzer type="index">
+        <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="-*" replacement=""/>
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <!-- <filter class="solr.WordDelimiterFilterFactory" splitOnCaseChange="0" splitOnNumerics="0" stemEnglishPossessive="0" catenateAll="1" /> -->
+        <filter class="solr.LowerCaseFilterFactory"/>
+        <filter class="solr.NGramFilterFactory" minGramSize="2" maxGramSize="15"/>
+      </analyzer>
+      <analyzer type="query">
+        <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="-*" replacement=""/>
+        <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
       </analyzer>
     </fieldType>
