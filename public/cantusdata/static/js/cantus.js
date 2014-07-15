@@ -637,6 +637,8 @@
 
     var DivaView = CantusAbstractView.extend
     ({
+        divaInitialized: 0,
+
         // Only used if initial folio
         initialFolio: undefined,
 
@@ -652,10 +654,10 @@
 
         initialize: function(options)
         {
+            console.log("New DivaView");
             _.bindAll(this, 'render', 'storeFolioIndex', 'triggerChange',
                 'storeInitialFolio', 'setGlobalFullScreen', 'reloadPaintedBoxes',
             'zoomToLocation');
-            this.el = "#diva-wrapper";
             this.setManuscript(options.siglum, options.folio);
         },
 
@@ -690,11 +692,14 @@
             this.paintedBoxSet = null;
         },
 
-        render: function()
+        /**
+         * Initialize Diva and subscribe to its events.
+         */
+        initializeDiva: function()
         {
-            // It's kind of hacky to doubly-bind the name like this, but I'm
-            // not aware of any other way to access storeFolioIndex() from the
-            // anonymous function below.
+            console.log("Initializing Diva viewer.");
+            console.log("el:");
+            console.log(this.el);
             var siglum = this.siglum;
             this.$el.diva({
                 toolbarParentSelector: "#diva-toolbar",
@@ -713,6 +718,18 @@
             diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
             diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
             diva.Events.subscribe("ModeDidSwitch", this.setGlobalFullScreen);
+        },
+
+        render: function()
+        {
+            console.log("Render DivaView");
+            // We only want to initialize Diva once!
+            if (!this.divaInitialized)
+            {
+                this.divaInitialized = true;
+                this.initializeDiva();
+            }
+
             globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         },
@@ -2057,6 +2074,7 @@
         folioView: null,
 
         initialize: function (options) {
+            console.log("New ManuscriptIndividualPageView");
             _.bindAll(this, 'render', 'afterFetch', 'updateFolio');
             this.template = _.template($('#manuscript-template').html());
             this.manuscript = new Manuscript(
@@ -2144,13 +2162,14 @@
 
         render: function()
         {
+            console.log("Rendering ManuscriptIndividualPageView");
             $(this.el).html(this.template({
                 manuscript: this.manuscript.toJSON()
             }));
 
             // Render subviews
             if (this.divaView !== undefined) {
-                this.assign(this.divaView, '#diva-wrapper');
+                this.assign(this.divaView, '.diva-wrapper');
             }
             this.renderFolioView();
             this.assign(this.searchView, '#manuscript-search');
