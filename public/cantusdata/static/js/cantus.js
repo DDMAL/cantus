@@ -759,7 +759,6 @@
             {
                 this.initialFolio = String(initialFolio);
             }
-            this.render();
         },
 
         /**
