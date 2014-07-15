@@ -1493,6 +1493,8 @@
     var SearchNotationView = CantusAbstractView.extend
     ({
         query: null,
+        field: null,
+
         results: null,
         divaView: null,
         paginator: null,
@@ -1547,11 +1549,11 @@
 
         newSearch: function()
         {
-            var newQuery = encodeURIComponent($(this.$el.selector
+            // Grab the query
+            this.query  = encodeURIComponent($(this.$el.selector
                 + ' .query-input').val());
-            this.query = newQuery;
             // Handle the empty case
-            if (newQuery === "")
+            if (this.query  === "")
             {
                 // If we pass an empty array, then all boxes are erased.
                 this.divaView.paintBoxes([]);
@@ -1559,8 +1561,11 @@
             }
             else
             {
-                var composedQuery = siteUrl + "liber-search/?q=" + newQuery
-                    + "&type=pnames&manuscript=" + this.manuscript;
+                // Grab the field name
+                this.field = encodeURIComponent($(this.$el.selector
+                    + ' .search-field').val());
+                var composedQuery = siteUrl + "liber-search/?q=" + this.query
+                    + "&type=" + this.field + "&manuscript=" + this.manuscript;
                 console.log("Composed Query:");
                 console.log(composedQuery);
                 this.results.url = composedQuery;
@@ -1608,7 +1613,9 @@
         renderResults: function()
         {
             $(this.$el.selector + ' .note-search-results').html(
-                "<h4>" + this.results.toJSON().numFound + " results found for query: " + this.query + "</h4>"
+                "<h4>" + this.results.toJSON().numFound +
+                    ' results found for query "' + this.field + ':'
+                    + decodeURIComponent(this.query) + '"</h4>'
             );
             this.assign(this.paginator, this.$el.selector + ' .note-pagination');
         }
