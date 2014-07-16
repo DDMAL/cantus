@@ -655,9 +655,8 @@
         initialize: function(options)
         {
             console.log("New DivaView");
-            _.bindAll(this, 'render', 'storeFolioIndex', 'triggerChange',
-                'storeInitialFolio', 'setGlobalFullScreen', 'reloadPaintedBoxes',
-            'zoomToLocation');
+            _.bindAll(this, 'render', 'storeFolioIndex', 'storeInitialFolio',
+                'setGlobalFullScreen', 'reloadPaintedBoxes', 'zoomToLocation');
             this.setManuscript(options.siglum, options.folio);
         },
 
@@ -845,6 +844,7 @@
          */
         storeFolioIndex: function(index, fileName)
         {
+            console.log("storeFolioIndex()");
             if (index != this.currentFolioIndex)
             {
                 this.currentFolioIndex = index;
@@ -855,16 +855,13 @@
                     window.clearTimeout(this.timer);
                 }
 
-                this.timer = window.setTimeout(this.triggerChange, 250);
+                this.timer = window.setTimeout(
+                    function ()
+                    {
+                        globalEventHandler.trigger("manuscriptChangeFolio");
+                    },
+                    250);
             }
-        },
-
-        /**
-         * Trigger the global manuscriptChangeFolio event.
-         */
-        triggerChange: function()
-        {
-            globalEventHandler.trigger("manuscriptChangeFolio");
         },
 
         /**
@@ -2111,6 +2108,9 @@
 
         remove: function()
         {
+            // Remove from the dom
+            this.$el.empty();
+
             // Deal with the event listeners
             this.stopListening();
             this.undelegateEvents();
@@ -2138,6 +2138,7 @@
          */
         updateFolio: function()
         {
+            console.log("updateFolio()");
             var folio = this.divaView.getFolio();
             // Query the folio set at that specific manuscript number
             newUrl =  siteUrl + "folio-set/manuscript/"
@@ -2362,12 +2363,19 @@
             this.manuscriptView.getData();
 
             globalEventHandler.trigger("ChangeManuscript", query);
-            globalEventHandler.trigger("ChangeFolio", folio);
+//            globalEventHandler.trigger("ChangeFolio", folio);
             globalEventHandler.trigger("ChangeChant", chant);
         },
 
         search: function(query)
         {
+            // Delete a search view if it exists
+            if (this.searchView !== null)
+            {
+                this.searchView.remove();
+                this.searchView = null;
+            }
+
             this.searchView = new SearchPageView({query: query});
             this.searchView.render();
         },
