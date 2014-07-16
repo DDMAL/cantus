@@ -1105,6 +1105,8 @@
         events: {
             "click #site-logo": function()
             {
+                // Prevent page from reloading
+                event.preventDefault();
                 app.navigate("/", {trigger: true});
             }
         },
@@ -1184,6 +1186,8 @@
 
         buttonClickCallback: function(input)
         {
+            // Stop the page from auto-reloading
+            event.preventDefault();
             // Figure out which button was pressed
             var button_name = String(input.currentTarget.id);
             var id = button_name.split('-')[button_name.split('-').length - 1];
