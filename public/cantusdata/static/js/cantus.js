@@ -1257,6 +1257,8 @@
 
         buttonClickCallback: function(input)
         {
+            // Prevent page from reloading
+            event.preventDefault();
             // Figure out which button was pressed
             var button_name = String(input.currentTarget.id);
             var id = button_name.split('-')[button_name.split('-').length - 1];

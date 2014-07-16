@@ -70,7 +70,7 @@
 <script type="text/template" id="top-menu-template">
 {#<% _.forEach(items, function(item) { %>#}
 <% for (var i = 0; i < items.length; i++) { %>
-    <li id="top-menu-button-<%= i %>"<% if (items[i].active) { %> class="active" <% } if (items[i].tags) { %><%= items[i].tags %><% } %> ><a href="#"><%= items[i].name %></a></li>
+    <li id="top-menu-button-<%= i %>"<% if (items[i].active) { %> class="active" <% } if (items[i].tags) { %><%= items[i].tags %><% } %> ><a href="<%= items[i].url %>"><%= items[i].name %></a></li>
 <% }%>
 </script>
 
@@ -290,7 +290,7 @@
 </tr>
 <% for (var i = 0; i < manuscripts.length; i++) { %>
 <tr>
-    <td><a id="manuscript-list-<%= i %>" href="#" ><%= manuscripts[i].name %></a></td>
+    <td><a id="manuscript-list-<%= i %>" href="<%= manuscripts[i].url %>" ><%= manuscripts[i].name %></a></td>
     <td><%= manuscripts[i].siglum %></td>
     <td><%= manuscripts[i].date %></td>
     <td><%= manuscripts[i].provenance %></td>
