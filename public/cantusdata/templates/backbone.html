@@ -207,7 +207,7 @@
 <% } %>
 <% for (var i = 0; i < results.length; i++) { %>
     <tr>
-        <td><a href="#" class="search-result-<%= i %>"><%= results[i].name %></a></td>
+        <td><a href="<%= results[i].url %>" class="search-result-<%= i %>"><%= results[i].name %></a></td>
         <td><%= results[i].model %></td>
         <% if (results[i].manuscript !== undefined) { %>
         <td><%= results[i].manuscript %></td>

@@ -1851,6 +1851,8 @@
         {
             console.log("Search click!");
             console.log(input);
+            // Stop the page from auto-reloading
+            event.preventDefault();
             // Figure out which button was clicked on
             var splitName = input.target.className.split("-");
             var newIndex = parseInt(splitName[splitName.length - 1]);
