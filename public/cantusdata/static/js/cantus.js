@@ -637,7 +637,7 @@
 
     var DivaView = CantusAbstractView.extend
     ({
-        divaInitialized: 0,
+        divaInitialized: false,
 
         // Only used if initial folio
         initialFolio: undefined,
@@ -651,6 +651,11 @@
         timer: null,
 
         paintedBoxSet: null,
+
+        // Diva Event handlers
+        viewerLoadEvent: null,
+        pageChangeEvent: null,
+        modeSwitchEvent: null,
 
         initialize: function(options)
         {
@@ -667,20 +672,10 @@
         {
             // Deal with destroying Diva
             console.log("Removing DivaView.");
-            if (this.$el.data('diva') !== undefined)
-            {
-                console.log("Diva defined and about to be destroyed!");
-                this.$el.data('diva').destroy();
-            }
-            else
-            {
-                console.log("Diva undefined!");
-            }
 
             // Deal with the event listeners
             this.stopListening();
             this.undelegateEvents();
-
             // Clear the fields
             this.initialFolio = null;
             this.currentFolioName = null;
@@ -689,6 +684,46 @@
             this.imageSuffix = null;
             this.timer = null;
             this.paintedBoxSet = null;
+            this.viewerLoadEvent = null;
+            this.modeSwitchEvent = null;
+        },
+
+        /**
+         * Destroy the Diva viewer, if it exists.
+         */
+        uninitializeDiva: function()
+        {
+            console.log("Uninitializing Diva.");
+            console.log("Diva initialized: " + this.divaInitialized);
+
+            if (this.divaInitialized)
+            {
+                console.log("Diva already initialized, so we will destroy it.");
+                // Unsubscribe the event handlers
+                if (this.viewerLoadEvent !== null)
+                {
+                    diva.Events.unsubscribe(this.viewerLoadEvent);
+                }
+                if (this.pageChangeEvent !== null)
+                {
+                    diva.Events.unsubscribe(this.pageChangeEvent);
+                }
+                if (this.modeSwitchEvent !== null)
+                {
+                    diva.Events.unsubscribe(this.modeSwitchEvent);
+                }
+
+                console.log("Diva el:");
+                console.log(this.el);
+                console.log(this.$el);
+                console.log("Diva data:");
+//                console.log(this.$el.data('diva').getCurrentPageIndex());
+                console.log("End Diva data.");
+            }
+            else
+            {
+                console.log("Diva not initialized, so we are doing nothing!");
+            }
         },
 
         /**
@@ -714,9 +749,13 @@
                 objectData: "/static/" + siglum + ".json",
                 imageDir: divaImageDirectory + siglum
             });
-            diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
-            diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
-            diva.Events.subscribe("ModeDidSwitch", this.setGlobalFullScreen);
+            console.log("Initialized Diva data:");
+            console.log(this.$el.data());
+            this.viewerLoadEvent = diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
+            this.pageChangeEvent = diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
+            this.modeSwitchEvent = diva.Events.subscribe("ModeDidSwitch", this.setGlobalFullScreen);
+            // Remember that we've initialized diva
+            this.divaInitialized = true;
         },
 
         render: function()
@@ -725,7 +764,6 @@
             // We only want to initialize Diva once!
             if (!this.divaInitialized)
             {
-                this.divaInitialized = true;
                 this.initializeDiva();
             }
 
@@ -847,6 +885,8 @@
             console.log("storeFolioIndex()");
             if (index != this.currentFolioIndex)
             {
+                console.log("storeFolioIndex() actually happening:");
+                console.log(index);
                 this.currentFolioIndex = index;
                 this.currentFolioName = fileName;
 
@@ -1539,7 +1579,10 @@
             this.results = null;
             this.paginator.remove();
 
-            this.divaView.remove();
+            // We don't actually need to call remove() on this again
+            this.divaView = null;
+            this.paginator = null;
+            this.manuscript = null;
 
             // Deal with the event listeners
             this.stopListening();
@@ -2108,18 +2151,16 @@
 
         remove: function()
         {
-            // Remove from the dom
-            this.$el.empty();
-
-            // Deal with the event listeners
-            this.stopListening();
-            this.undelegateEvents();
-
             // Remove the subviews
             this.divaView.remove();
             this.searchView.remove();
             this.searchNotationView.remove();
             this.folioView.remove();
+
+            // Deal with the event listeners
+            this.stopListening();
+            this.undelegateEvents();
+
 
             // Nullify the manuscript model
             this.manuscript = null;
@@ -2129,6 +2170,9 @@
             this.searchView = null;
             this.searchNotationView = null;
             this.folioView = null;
+
+            // Remove from the dom
+            this.$el.empty();
         },
 
         /**
@@ -2349,6 +2393,7 @@
                 console.log("Destroying Manuscript View");
                 // We want to make sure that the old view, if it exists, is
                 // completely cleared-out.
+                this.manuscriptView.divaView.uninitializeDiva();
                 this.manuscriptView.remove();
                 this.manuscriptView = null;
             }
