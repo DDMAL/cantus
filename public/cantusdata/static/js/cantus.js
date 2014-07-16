@@ -1557,7 +1557,8 @@
             this.events = {};
             // Register them
             // this.events["click " + this.$el.selector + ".search-button"] = "newSearch";
-            this.events["click" + this.$el.selector +  " button"] = "newSearch";
+//            this.events["click" + this.$el.selector +  " button"] = "newSearch";
+            this.events["submit"] = "newSearch";
 
             // Delegate the new events
             this.delegateEvents();
@@ -1565,6 +1566,8 @@
 
         newSearch: function()
         {
+            // Stop the page from auto-reloading
+            event.preventDefault();
             // Grab the query
             this.query  = encodeURIComponent($(this.$el.selector
                 + ' .query-input').val());
