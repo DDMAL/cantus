@@ -40,7 +40,10 @@
         function editorInit(divaImageLoc, jsonLoc)
         {
             $("#loadingScreen").html("The Cantus MEI Editor is loading...");
-            
+            var docArr = document.URL.split('/'); //0 is http:, 1 is blank, 2 is subdomain + domain, length - 1 is folio to jump to if it's defined
+            var currentSite = docArr[2];
+            var siglum_slug = docArr[docArr.length - 1].split('?')[1];
+
             //create the diva wrapper and editor
             $('#diva-wrapper').diva(
             {
@@ -70,7 +73,7 @@
                 'meiEditorLocation': 'meix.js/',
                 'validatorLink': 'meix.js/validation/', 
                 'xmllintLocation': 'meix.js/js/lib/xmllint.js',
-                'xmllintServer': 'http://cantus.simssa.ca/nodeLint/',
+                'xmllintServer': 'http://' + currentSite + '/nodeLint/',
                 'divaInstance': divaInstance, 
                 'jsonFileLocation': jsonLoc,
                 'navbarClass': 'navbar navbar-default',
@@ -117,10 +120,6 @@
                 complete: function(){$("#loadingScreen").remove();}
             });
         });
-
-        var docArr = document.URL.split('/'); //0 is http:, 1 is blank, 2 is subdomain + domain, length - 1 is folio to jump to if it's defined
-        var currentSite = docArr[2];
-        var siglum_slug = docArr[docArr.length - 1].split('?')[1];
         
         if(siglum_slug !== undefined && siglum_slug !== "") //if there is a siglum_slug appended to the URL 
         {
