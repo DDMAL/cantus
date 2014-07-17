@@ -1,19 +1,59 @@
 from cantusdata import settings
 from django.core.management.base import BaseCommand
+import solr
+import csv
 
 
 class Command(BaseCommand):
     args = ""
 
     def handle(self, *args, **kwargs):
-
+        solrconn = solr.SolrConnection(settings.SOLR_SERVER)
         # if args and args[0]:
         #     folder_name = args[0]
 
-        MEI2Solr("data_dumps/mei/salz")
+        salz = MEI2Parser("data_dumps/mei/salz", "cdn-hsmu-m2149l4")
+        self.data_to_csv(salz, "data_dumps/mei_csv/salzinnes.csv")
+        self.stdout.write("Comitting data to Solr.")
+        self.data_to_solr(salz, solrconn)
+        # manuscripts.append(MEI2Solr("data_dumps/mei/csg",  "ch-sgs-390"))
+        self.stdout.write("Data successfully imported.")
+
+    def data_to_csv(self, data, path):
+        """
+        Dump the data to a CSV file.
+
+        :param data:
+        :param path:
+        :return:
+        """
+        csv_file = open(path, 'wb')
+        w = csv.DictWriter(csv_file, data[0][0].keys())
+        w.writeheader()
+        for page in data:
+            for row in page:
+                w = csv.DictWriter(csv_file, row.keys())
+                w.writerow(row)
+        csv_file.close()
+
+    def data_to_solr(self, data, solrconn):
+        """
+        Commit the data to Solr.
+
+        :param data:
+        :param solrconn:
+        :return:
+        """
+        for page in data:
+            for row in page:
+                solrconn.add(**row)
+        solrconn.commit()
+
+    def csv_to_data(self, path):
+        pass
 
 
-def MEI2Solr(folder_name):
+def MEI2Parser(folder_name, siglum_slug):
 
     # ================================================================
     # MEI2couchdb.py
@@ -171,11 +211,11 @@ def MEI2Solr(folder_name):
             uly2 = min(ulys[endofsystem:])
             lry1 = max(lrys[:endofsystem])
             lry2 = max(lrys[endofsystem:])
-            return [{"ulx": int(ulx1) ,"uly": int(uly1), "height": abs(uly1 - lry1), "width": abs(ulx1 - lrx1)},{"ulx": int(ulx2) ,"uly": int(uly2), "height": abs(uly2 - lry2), "width": abs(ulx2 - lrx2)}]
+            return [{"ulx": int(ulx1), "uly": int(uly1), "height": abs(uly1 - lry1), "width": abs(ulx1 - lrx1)},{"ulx": int(ulx2) ,"uly": int(uly2), "height": abs(uly2 - lry2), "width": abs(ulx2 - lrx2)}]
         else:
-            uly =  min(ulys)
+            uly = min(ulys)
             lry = max(lrys)
-            return [{"ulx": int(ulx) ,"uly": int(uly), "height": abs(uly - lry), "width": abs(ulx - lrx)}]
+            return [{"ulx": int(ulx), "uly": int(uly), "height": abs(uly - lry), "width": abs(ulx - lrx)}]
 
     def getNeumes(seq, counter):
         """ Given a list of MEI note elements, return a string of the names of the neumes seperated by underscores.
@@ -266,8 +306,8 @@ def MEI2Solr(folder_name):
         return 1
 
 
-    def processMeiFile(ffile, solr_server, shortest_gram, longest_gram):
-        solrconn = solr.SolrConnection(solr_server)
+    def processMeiFile(ffile, shortest_gram, longest_gram):
+        # solrconn = solr.SolrConnection(solr_server)
         print '\nProcessing ' + str(ffile) + '...'
         try:
             meifile = XmlImport.documentFromFile(str(ffile))
@@ -290,9 +330,6 @@ def MEI2Solr(folder_name):
         zones = meifile.getElementsByName('zone')
         nnotes = len(notes) # number of notes in file
         #print str(nnotes) + 'notes\n'
-
-        # For now it's just Salzinnes!
-        siglum_slug = "cdn-hsmu-m2149l4"
 
         # get and store text
         # if dotext:
@@ -377,24 +414,15 @@ def MEI2Solr(folder_name):
         text_file.write("\n")
         text_file.write("###################################### ITER ##############")
         text_file.write("\n")
-        # solrconn.add_many(mydocs)
 
-        iter_id = 0
-        for doc in mydocs:
-            # print "Adding doc {0}".format(iter_id)
-            # print doc
-            solrconn.add(**doc)
-            iter_id += iter_id
-        solrconn.commit()
         systemcache.clear()
         idcache.clear()
 
+        return mydocs
 
-    # if __name__ == '__main__':
+
     #***************************** MEI PROCESSING ****************************
-    solr_server = settings.SOLR_SERVER
-    # args = sys.argv
-    # path = args[1]
+
     path = folder_name
 
     # TEMP
@@ -412,20 +440,13 @@ def MEI2Solr(folder_name):
             if ".mei" in f:
                 meifiles.append(os.path.join(bd, f))
                 print "Adding {0}".format(f)
-            # if not (('uncorr' in f) and os.path.exists(os.path.join(bd,f[0:5]+'corr.mei'))): # if current is uncorr version and corr version exists, don't add to list
-
-            #     meifiles = meifiles + [os.path.join(bd,f)]
 
     meifiles.sort()
-    # couch = couchdb.Server("http://localhost:5984")
-    # textdb = couch['text'] # database for text
 
     # Iterate through each MEI file in directory
+    # This list will represent one manuscript
+    output = []
     for ffile in meifiles:
-        print "ffile"
-        processMeiFile(ffile, solr_server, shortest_gram, longest_gram)
-        # solrconn.commit()
-        # systemcache.clear()
-        # idcache.clear()
-
+        output.append(processMeiFile(ffile, shortest_gram, longest_gram))
     text_file.close()
+    return output
