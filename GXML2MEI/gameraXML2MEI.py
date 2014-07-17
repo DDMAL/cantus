@@ -1,5 +1,6 @@
 import xmlDict
 import sys, os
+import csv
 from pymei import MeiDocument, MeiElement, MeiAttribute, XmlExport
 import random
 from uuid import uuid4
@@ -19,8 +20,15 @@ if len(args) < 1:
     print("You must specify an input directory.")
     sys.exit(-1)'''
 
-fileList = [f for f in os.listdir('.') if (os.path.isfile(f) and f.endswith('.xml'))]
+neumeNames = {}
+with open('ccnames.csv', mode='rU') as infile:
+    reader = csv.reader(infile)
+    neumeNames = {rows[1]:rows[0] for rows in reader}
 
+print neumeNames
+
+fileList = [f for f in os.listdir('.') if (os.path.isfile(f) and f.endswith('.xml'))]
+print fileList
 for xmlFile in fileList:
     fileName = xmlFile[:-4]
     glyph_list = xmlDict.ConvertXmlToDict(xmlFile)['gamera-database']['glyphs']['glyph']
@@ -45,7 +53,14 @@ for xmlFile in fileList:
         neumeIndex = len(neumes) - 1
 
         neumes[neumeIndex].id = generate_MEI_ID()
-        neumes[neumeIndex].addAttribute(MeiAttribute('name', curGlyph['ids']['id']['name']))
+        curNeumeName = curGlyph['ids']['id']['name']
+        splitName = curNeumeName[curNeumeName.find(".") + 1:]
+        if(splitName in neumeNames):
+            neumes[neumeIndex].addAttribute(MeiAttribute('name', neumeNames[splitName]))
+        elif len(splitName) < 3:
+            neumes[neumeIndex].addAttribute(MeiAttribute('name', "Letter " + splitName.upper()))
+        else:
+            neumes[neumeIndex].addAttribute(MeiAttribute('name', splitName))
 
         zones.append(MeiElement('zone'))
         zoneIndex = len(zones) - 1
