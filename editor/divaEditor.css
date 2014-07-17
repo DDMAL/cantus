@@ -33,6 +33,7 @@ body{
 	top:0em;
 	margin-left: 50%;
 	width:50%;
+        height: 100%;
 }
 .modalSubLeft{
 	text-align:center;
@@ -104,6 +105,16 @@ body{
 	vertical-align: middle;
 	color: #FFF;
 }
+.diva-outer {
+    margin-top:45px;
+    height: 100%;
+    border: 0;
+
+}
+.diva-tools {
+    margin-top:0px;
+    width: 100%;
+}
 .diva-goto-form{
 	color: #000;
 }
@@ -117,8 +128,17 @@ body{
 .diva-tools-right {
     float: right;
     width: auto;
-	margin-top:0.5em;
-	margin-right:1.4em;
+    margin-top: .5em;
+    margin-right: 1em;
+    line-height: 18px;
+}
+
+.diva-input {
+    padding: 0 !important;
+}
+
+.diva-tools-right input {
+    padding: 2px 6px;
 }
 
 .zoom-button {
@@ -129,6 +149,7 @@ body{
     width: auto;
     float: right;
     padding-right: 0px;
+    line-height: 27px !important;
 }
 
 .diva-page-label {
