@@ -40,9 +40,8 @@
         function editorInit(divaImageLoc, jsonLoc)
         {
             $("#loadingScreen").html("The Cantus MEI Editor is loading...");
-            jsonFile = 'imagesOut.json';
+            
             //create the diva wrapper and editor
-
             $('#diva-wrapper').diva(
             {
                 adaptivePadding: 0,
@@ -73,7 +72,7 @@
                 'xmllintLocation': 'meix.js/js/lib/xmllint.js',
                 'xmllintServer': 'http://cantus.simssa.ca/nodeLint/',
                 'divaInstance': divaInstance, 
-                'jsonFileLocation': jsonFile,
+                'jsonFileLocation': jsonLoc,
                 'navbarClass': 'navbar navbar-default',
                 'pageTitle': 'Cantus Ultimus'
             };
@@ -83,6 +82,7 @@
         }
 
         $(window).on('meiEditorLoaded', function(e){
+            var meiEditor = $("#mei-editor").data('AceMeiEditor');
             $(".diva-tools").addClass('diva-toolbar navbar navbar-default');
             var divaOuterDiff = $("#1-diva-outer").outerHeight() - $("#1-diva-outer").height();
             var divaOuterWidthDiff = $("#1-diva-outer").outerHeight() - $("#1-diva-outer").height();
@@ -118,35 +118,43 @@
             });
         });
 
-        var docArr = document.URL.split('/'); //0 is http:, 1 is blank, 2 is subdomain + domain, length - 2 is folio to jump to if defined
+        var docArr = document.URL.split('/'); //0 is http:, 1 is blank, 2 is subdomain + domain, length - 1 is folio to jump to if it's defined
         var currentSite = docArr[2];
         var siglum_slug = docArr[docArr.length - 1].split('?')[1];
-        console.log(docArr[docArr.length - 1], siglum_slug);
         
-        if(siglum_slug !== undefined && siglum_slug !== "")
+        if(siglum_slug !== undefined && siglum_slug !== "") //if there is a siglum_slug appended to the URL 
         {
-            editorInit("/srv/images/cantus/" + siglum_slug, "http://" + currentSite + "/static/" + siglum_slug + ".json");
+            editorInit("/srv/images/cantus/" + siglum_slug, "http://" + currentSite + "/static/" + siglum_slug + ".json"); //start the editor based off what it's supposed to be
         }
-        else 
+        else
         {
-            $.get("http://" + currentSite + "/manuscripts/", undefined, function(e){
-                for(curManuscriptIndex in e)
-                { 
-                    $("#manuscriptSelect").append("<option value='" + e[curManuscriptIndex].siglum_slug + "'>" + e[curManuscriptIndex].name + "</option>");
-                }
-            });
+            if (currentSite != "127.0.0.1:8000")
+            { //if we're not development
+                $.get("http://" + currentSite + "/manuscripts/", undefined, function(e)
+                { //we're on production, make an API call to /manuscripts/
+                    for(curManuscriptIndex in e)
+                    { 
+                        //add an option for each manuscript
+                        $("#manuscriptSelect").append("<option value='" + e[curManuscriptIndex].siglum_slug + "'>" + e[curManuscriptIndex].name + "</option>");
+                    }
+                });
+            }
 
             $("#manuscriptSubmit").on('click', function()
             {
+                //when the user selects a manuscript to load
                 var siglum_slug = $($("#manuscriptSelect").find(":selected")).attr('value');
                 if(siglum_slug == '000')
                 {
+                    //if they're loading the six-page demo, that's static and the json file is included
                     editorInit("/srv/images/meixBkup", 'imagesOut.json');
                 }
                 else
                 {
+                    //grab it off the server
                     editorInit("/srv/images/cantus/" + siglum_slug, "http://" + currentSite + "/static/" + siglum_slug + ".json");
                     
+                    //make it look like we changed URLs
                     window.history.replaceState("","", document.URL + "?" + siglum_slug);
                 }
             });

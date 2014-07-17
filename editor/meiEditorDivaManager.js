@@ -1140,7 +1140,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     if (retVal)
                     {
                         //if it was, remove it from a lot and refresh highlights
-                        var imageName = pageName.split(".")[0] + ".tiff";
+                        var imageName = retVal;
                         delete meiEditorSettings.divaImagesToMeiFiles[imageName];
                         var dualOptionID = meiEditor.stripFilenameForJQuery(pageName) + "_" + meiEditor.stripFilenameForJQuery(imageName);
                         $("#" + dualOptionID).remove();
