@@ -17,7 +17,8 @@ class Command(BaseCommand):
             mode = args[0]
             manuscript = args[1]
         else:
-            raise Exception("Please provide arguments for processing mode and manuscript name.")
+            raise Exception("Please provide arguments for processing"
+                            " mode and manuscript name.")
         # Make sure we're working with the right manuscript
         if manuscript == "salzinnes":
             self.stdout.write("Salzinnes manuscript selected.")
@@ -27,6 +28,8 @@ class Command(BaseCommand):
         elif manuscript == "st_gallen_390":
             self.stdout.write("St. Gallen 390 manuscript selected.")
             siglum = "ch-sgs-390"
+            mei_location = "data_dumps/mei/csg-390"
+            csv_location = "data_dumps/mei_csv/csg-390.csv"
         else:
             raise Exception("Please provide manuscript name!")
 
@@ -36,19 +39,19 @@ class Command(BaseCommand):
             self.data_to_csv(data, csv_location)
             self.stdout.write("MEI dumped to CSV.")
         elif mode == "mei_to_solr":
-            self.stdout.write("Comitting MEI to Solr.")
+            self.stdout.write("Committing MEI to Solr.")
             data = MEI2Parser(mei_location, siglum)
             self.data_to_solr(data, solrconn)
-            self.stdout.write("MEI comitted to Solr.")
+            self.stdout.write("MEI committed to Solr.")
         elif mode == "csv_to_solr":
             self.stdout.write("Loading CSV file...")
             data = csv.DictReader(open(csv_location))
             self.stdout.write("Adding CSV to Solr...")
             for row in data:
                 solrconn.add(**row)
-            self.stdout.write("Comitting Solr additions.")
+            self.stdout.write("Committing Solr additions.")
             solrconn.commit()
-            self.stdout.write("CSV comitted to Solr.")
+            self.stdout.write("CSV committed to Solr.")
         else:
             raise Exception("Please provide mode!")
 
