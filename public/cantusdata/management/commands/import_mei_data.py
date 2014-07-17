@@ -9,15 +9,49 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
-        # if args and args[0]:
-        #     folder_name = args[0]
 
-        salz = MEI2Parser("data_dumps/mei/salz", "cdn-hsmu-m2149l4")
-        self.data_to_csv(salz, "data_dumps/mei_csv/salzinnes.csv")
-        self.stdout.write("Comitting data to Solr.")
-        self.data_to_solr(salz, solrconn)
-        # manuscripts.append(MEI2Solr("data_dumps/mei/csg",  "ch-sgs-390"))
-        self.stdout.write("Data successfully imported.")
+        mode = None
+        manuscript = None
+        # Grab the terminal params
+        if args and args[0] and args[1]:
+            mode = args[0]
+            manuscript = args[1]
+        else:
+            raise Exception("Please provide arguments for processing mode and manuscript name.")
+        # Make sure we're working with the right manuscript
+        if manuscript == "salzinnes":
+            self.stdout.write("Salzinnes manuscript selected.")
+            siglum = "cdn-hsmu-m2149l4"
+            mei_location = "data_dumps/mei/salz"
+            csv_location = "data_dumps/mei_csv/salzinnes.csv"
+        elif manuscript == "st_gallen_390":
+            self.stdout.write("St. Gallen 390 manuscript selected.")
+            siglum = "ch-sgs-390"
+        else:
+            raise Exception("Please provide manuscript name!")
+
+        if mode == "mei_to_csv":
+            self.stdout.write("Dumping MEI to CSV.")
+            data = MEI2Parser(mei_location, siglum)
+            self.data_to_csv(data, csv_location)
+            self.stdout.write("MEI dumped to CSV.")
+        elif mode == "mei_to_solr":
+            self.stdout.write("Comitting MEI to Solr.")
+            data = MEI2Parser(mei_location, siglum)
+            self.data_to_solr(data, solrconn)
+            self.stdout.write("MEI comitted to Solr.")
+        elif mode == "csv_to_solr":
+            self.stdout.write("Loading CSV file...")
+            data = csv.DictReader(open(csv_location))
+            self.stdout.write("Adding CSV to Solr...")
+            for row in data:
+                solrconn.add(**row)
+            self.stdout.write("Comitting Solr additions.")
+            solrconn.commit()
+            self.stdout.write("CSV comitted to Solr.")
+        else:
+            raise Exception("Please provide mode!")
+
 
     def data_to_csv(self, data, path):
         """
@@ -36,6 +70,7 @@ class Command(BaseCommand):
                 w.writerow(row)
         csv_file.close()
 
+
     def data_to_solr(self, data, solrconn):
         """
         Commit the data to Solr.
@@ -48,9 +83,6 @@ class Command(BaseCommand):
             for row in page:
                 solrconn.add(**row)
         solrconn.commit()
-
-    def csv_to_data(self, path):
-        pass
 
 
 def MEI2Parser(folder_name, siglum_slug):
