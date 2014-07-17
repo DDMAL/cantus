@@ -37,12 +37,13 @@
         </div>
     </body>
     <script>
+        var docArr = document.URL.split('/'); //0 is http:, 1 is blank, 2 is subdomain + domain, length - 1 is folio to jump to if it's defined
+        var currentSite = docArr[2];
+        var siglum_slug = docArr[docArr.length - 1].split('?')[1];
+        
         function editorInit(divaImageLoc, jsonLoc)
         {
             $("#loadingScreen").html("The Cantus MEI Editor is loading...");
-            var docArr = document.URL.split('/'); //0 is http:, 1 is blank, 2 is subdomain + domain, length - 1 is folio to jump to if it's defined
-            var currentSite = docArr[2];
-            var siglum_slug = docArr[docArr.length - 1].split('?')[1];
 
             //create the diva wrapper and editor
             $('#diva-wrapper').diva(
