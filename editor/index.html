@@ -79,7 +79,8 @@
                 'jsonFileLocation': jsonLoc,
                 'navbarClass': 'navbar navbar-default',
                 'pageTitle': 'Cantus Ultimus',
-                'siglum_slug': sig_slug
+                'siglum_slug': sig_slug,
+                'currentSite': currentSite
             };
             var plugins = ["meiEditorDivaManager.js"];
 
@@ -101,7 +102,7 @@
         
         if(siglum_slug !== undefined && siglum_slug !== "") //if there is a siglum_slug appended to the URL 
         {
-            editorInit("/srv/images/cantus/" + siglum_slug, "http://" + currentSite + "/static/" + siglum_slug + ".json", siglum_slug); //start the editor based off what it's supposed to be
+            editorInit("/srv/images/cantus/" + siglum_slug, "http://" + currentSite + "/static/" + siglum_slug + ".json", currentSite, siglum_slug); //start the editor based off what it's supposed to be
         }
         else
         {
@@ -129,7 +130,7 @@
                 else
                 {
                     //grab it off the server
-                    editorInit("/srv/images/cantus/" + siglum_slug, "http://" + currentSite + "/static/" + siglum_slug + ".json", siglum_slug);
+                    editorInit("/srv/images/cantus/" + siglum_slug, "http://" + currentSite + "/static/" + siglum_slug + ".json", currentSite, siglum_slug);
                     
                     //make it look like we changed URLs
                     window.history.replaceState("","", document.URL + "?" + siglum_slug);

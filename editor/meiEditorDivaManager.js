@@ -64,9 +64,9 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     divaInstance: A reference to the Diva object created from initializing Diva.
                     jsonFileLocation: A link to the .json file retrieved from Diva's process/generateJson.py files
                 */
-                if (!("divaInstance" in meiEditorSettings) || !("jsonFileLocation" in meiEditorSettings) || !("siglum_slug" in meiEditorSettings))
+                if (!("divaInstance" in meiEditorSettings) || !("jsonFileLocation" in meiEditorSettings) || !("siglum_slug" in meiEditorSettings) || !("currentSite" in meiEditorSettings))
                 {
-                    console.error("MEI Editor error: The 'Diva Manager' plugin requires the 'divaInstance', 'jsonFileLocation', and 'siglum_slug' settings present on intialization.");
+                    console.error("MEI Editor error: The 'Diva Manager' plugin requires the 'divaInstance', 'jsonFileLocation', 'currentSite', and 'siglum_slug' settings present on intialization.");
                     return false;
                 }
 
@@ -166,7 +166,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     "<button id='unlink-files'>Unlink selected files</button>" + 
                     "</div>");
 
-                $.get("http://dev-cantus.simssa.ca/mei/" + meiEditorSettings.siglum_slug + "/", "", function(data)
+                $.get("http://" + currentSite + "/mei/" + meiEditorSettings.siglum_slug + "/", "", function(data)
                 {
                     var pageNames = [];
                     var dataArr = data.split("\n");
@@ -201,10 +201,9 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     $("#serverLoadModal-primary").on('click', function()
                     {
                         var pageName = $("#selecthosted-file").find(':selected').text();
-                        console.log(pageName);
-                        $.get("http://dev-cantus.simssa.ca/mei/" + meiEditorSettings.siglum_slug + "/" + pageName, "", function(data)
+                        $.get("http://" + currentSite + "/mei/" + meiEditorSettings.siglum_slug + "/" + pageName, "", function(data)
                         {
-                            console.log(data);
+                            meiEditor.addFileToProject(data, pageName);
                         });
                         $("#serverLoadModal-close").trigger('click');
                     });
