@@ -64,10 +64,9 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     divaInstance: A reference to the Diva object created from initializing Diva.
                     jsonFileLocation: A link to the .json file retrieved from Diva's process/generateJson.py files
                 */
-
-                if (!("divaInstance" in meiEditorSettings) || !("jsonFileLocation" in meiEditorSettings))
+                if (!("divaInstance" in meiEditorSettings) || !("jsonFileLocation" in meiEditorSettings) || !("siglum_slug" in meiEditorSettings) || !("currentSite" in meiEditorSettings))
                 {
-                    console.error("MEI Editor error: The 'Diva Manager' plugin requires both the 'divaInstance' and 'jsonFileLocation' settings present on intialization.");
+                    console.error("MEI Editor error: The 'Diva Manager' plugin requires the 'divaInstance', 'jsonFileLocation', 'currentSite', and 'siglum_slug' settings present on intialization.");
                     return false;
                 }
 
@@ -99,6 +98,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     "<li><a id='clear-selection-dropdown'>Clear selection</a></li>" +
                     "<li><a id='estimate-dropdown'>Estimate line numbers:<span style='float:right'><input type='checkbox' id='estimateBox'></span></a></li>" + 
                     "<li><a id='manuscript-dropdown'>Edit a different manuscript...</a></li>");
+                $("#dropdown-file-upload").append("<li><a id='server-load-dropdown'>Load file from server...</a></li>");
                 $("#help-dropdown").append("<li><a id='diva-manager-help'>Diva page manager</a></li>");
 
                 $("#file-link-dropdown").on('click', function()
@@ -131,6 +131,10 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     e.stopPropagation();
                 });
 
+                $("#server-load-dropdown").on('click', function(e){
+                    $("#serverLoadModal").modal();
+                });
+
                 $("#diva-manager-help").on('click', function()
                 {
                     $("#divaHelpModal").modal();
@@ -161,6 +165,52 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     "<select id='selectUnlink'></select><br>" + 
                     "<button id='unlink-files'>Unlink selected files</button>" + 
                     "</div>");
+
+                if(currentSite !== "127.0.0.1:8000")
+                {
+                    $.get("http://" + currentSite + "/mei/" + meiEditorSettings.siglum_slug + "/", "", function(data)
+                    {
+                        var pageNames = [];
+                        var dataArr = data.split("\n");
+                        var dataLength = dataArr.length;
+                        while (dataLength--)
+                        {
+                            //that is not empty
+                            if (!dataArr[dataLength])
+                            {
+                                continue;
+                            }
+
+                            //find a link
+                            var foundLink = dataArr[dataLength].match(/<a href=".*">/g);
+
+                            if (foundLink)
+                            {
+                                //strip the outside, make sure it has ".rng"
+                                linkText = foundLink[0].slice(9, -2);
+                                if(linkText.match(/mei/))
+                                {
+                                    pageNames.push(foundLink[0].slice(9, -2));
+                                }
+                            }
+                        }
+
+                        createModal(meiEditorSettings.element, "serverLoadModal", false,
+                            "Select a hosted file:<br>" +
+                            createSelect("hosted-file", pageNames, true),
+                            "Load");
+
+                        $("#serverLoadModal-primary").on('click', function()
+                        {
+                            var pageName = $("#selecthosted-file").find(':selected').text();
+                            $.get("http://" + currentSite + "/mei/" + meiEditorSettings.siglum_slug + "/" + pageName, "", function(data)
+                            {
+                                meiEditor.addFileToProject(data, pageName);
+                            });
+                            $("#serverLoadModal-close").trigger('click');
+                        });
+                    });
+                }
 
                 createModal(meiEditorSettings.element, "divaHelpModal", false,
                     "<h4>Help for 'Diva Page Manager' menu:</h4>" + 
@@ -748,13 +798,19 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     for (curKey in meiEditorSettings.divaImagesToMeiFiles)
                     { 
                         var pageName = meiEditorSettings.divaImagesToMeiFiles[curKey];
+                        var neumeArray = [];
                         pageIndex = meiEditorSettings.divaPageList.indexOf(curKey);
                         pageText = meiEditorSettings.pageData[pageName].getSession().doc.getAllLines().join("\n"); //get the information from the page expressed in one string
                         jsonData = x2js.xml_str2json(pageText); //turn this into a JSON "dict"
                         regions = [];
 
                         xmlns = jsonData['mei']['_xmlns']; //find the xml namespace file
-                        neumeArray = jsonData['mei']['music']['body']['mdiv']['pages']['page']['system']['staff']['layer']['neume'];
+                        try{
+                            neumeArray = jsonData['mei']['music']['body']['mdiv']['pages']['page']['system']['staff']['layer']['neume'];
+                        }
+                        catch(TypeError){
+                            neumeArray = jsonData['mei']['music']['body']['mdiv']['score']['section']['staff']['layer']['neume'];
+                        }
                         zoneArray = jsonData['mei']['music']['facsimile']['surface']['zone'];
 
                         for (curZoneIndex in zoneArray) //for each "zone" object
@@ -1059,7 +1115,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 meiEditor.reapplyEditorClickListener = function()
                 {
                     //commented out as per issue #36
-                    /*$(".aceEditorPane").on('click', function()
+                    $(".aceEditorPane").on('click', function()
                     {
                         var activeTab = meiEditor.getActivePanel().text();
                         if (meiEditor.meiIsLinked(activeTab))
@@ -1081,7 +1137,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                                 }
                             }
                         }
-                    });*/
+                    });
                 };
 
                 $.ajax( //this grabs the json file to get an meiEditor-local list of the image filepaths
@@ -1096,7 +1152,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             fileNameOriginal = data.pgs[curPage].f; //original file name
                             meiEditorSettings.divaPageList.push(fileNameOriginal);
                             $("#selectdiva-link").append("<option name='"+fileNameOriginal+"'>" + fileNameOriginal + "</option>");
-                            $("#selecthosted-file").append("<option name='"+fileNameOriginal.split('.')[0]+".mei'>" + fileNameOriginal.split('.')[0] + ".mei</option>");
                         }
                     }
                 });
@@ -1122,6 +1177,10 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             }
                         }
                     }
+
+                    //change selected diva page to make some selects easier
+                    $("#selecthosted-file").val(fileName);
+                    $("#selectdiva-link").val(fileName);
                 });
 
                 diva.Events.subscribe("HighlightCompleted", meiEditor.reloadFromCaches);
