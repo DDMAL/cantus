@@ -34,7 +34,7 @@ class SearchNotationView(APIView):
         except Exception as e:
             # Something went wrong in the search
             print "Exception: {0}".format(e)
-             # So we want an empty list to avoid server error 500
+            # So we want an empty list to avoid server error 500
             results = []
 
         return Response({'numFound': len(results), 'results': results})
@@ -83,8 +83,11 @@ class SearchNotationView(APIView):
 
         # get only the longest ngram in the results
         if qtype == "neumes":
-            notegrams_num = search_utils.get_neumes_length(query)
-            response = [r for r in response if len(r['pnames']) == notegrams_num]
+            if manuscript == "ch-sgs-390":
+                pass
+            else:
+                notegrams_num = search_utils.get_neumes_length(query)
+                response = [r for r in response if len(r['pnames']) == notegrams_num]
 
         for d in response:
             page_number = d['pagen']
