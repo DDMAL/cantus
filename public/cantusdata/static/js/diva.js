@@ -153,7 +153,7 @@ window.divaPlugins = [];
             verticalOffset: 0,          // See horizontalOffset
             verticalPadding: 0,         // Either the fixed padding or adaptive padding
             widthProportion: 0,         // Stores the original proportion between parentSelector.width and window.width
-            viewerXOffset: 0,           // Distance between left edge of viewer and document left edge (used for double-click zooming)
+            viewerXOffset: 0,           // Distance between left edge of window and viewer left edge (used for double-click zooming)
             viewerYOffset: 0            // Like viewerXOffset but for the top edges
         };
 
@@ -841,7 +841,7 @@ window.divaPlugins = [];
             verticalOffset = (typeof verticalOffset !== 'undefined') ? verticalOffset : 0;
             horizontalOffset = (typeof horizontalOffset !== 'undefined') ? horizontalOffset: 0;
             var desiredLeft = (settings.maxWidths[settings.zoomLevel] - settings.panelWidth) / 2 + settings.horizontalPadding + horizontalOffset;
- 
+
             // y - vertical offset from the center of the relevant page if y hash parameter is present
             var yParam = parseInt($.getHashParam('y' + settings.hashParamSuffix), 10);
             var pageHeight = settings.heightAbovePages[pageIndex + 1] - settings.heightAbovePages[pageIndex] - settings.verticalPadding;
@@ -1367,7 +1367,7 @@ window.divaPlugins = [];
 
             //if parent is body, base these sizes off the window
             if (settings.divaIsFullWindow)
-            {     
+            {
                 parentWidth = $(window).innerWidth();
                 parentHeight = $(window).innerHeight();
             }
@@ -1389,36 +1389,35 @@ window.divaPlugins = [];
                 $(settings.parentSelector).width(parentWidth * settings.widthProportion);
             }
 
-            //grab useful data about the parent
-            var parentOffset = $(settings.parentSelector).offset();
-            var parentYOffset = parentOffset.top;
-            var parentXOffset = parentOffset.left;
-
             //reset the offset variables to make them accurate in the case that they've changed
-            var outerOffset = $(settings.outerSelector).offset();
-            settings.viewerYOffset = outerOffset.top - parentYOffset;
-            settings.viewerXOffset = outerOffset.left - parentXOffset;
+            var viewerOffset = $(settings.outerSelector).offset();
+            settings.viewerXOffset = viewerOffset.left;
+            settings.viewerYOffset = viewerOffset.top;
 
             //calculate the new height based off the proportions
             var heightBorderPixels = parseInt($(settings.outerSelector).css('border-top-width')) + parseInt($(settings.outerSelector).css('border-bottom-width'));
             parentHeight = $(settings.parentSelector).height();
-            newHeight = parentHeight - settings.viewerYOffset - heightBorderPixels;
+            var parentYOffset = $(settings.parentSelector).offset().top;
+            var newHeight = (settings.enableAutoHeight) ? parentHeight - settings.viewerYOffset + parentYOffset - heightBorderPixels : $(settings.outerSelector).outerHeight();
 
             //calculate the new width
             var widthBorderPixels = parseInt($(settings.outerSelector).css('border-left-width')) + parseInt($(settings.outerSelector).css('border-right-width'));
             parentWidth = $(settings.parentSelector).width();
 
+            var newWidth;
             if (settings.enableAutoWidth)
                 newWidth = parentWidth - (settings.viewerWidthPadding * 2) - widthBorderPixels - settings.scrollbarWidth;
             else
-                newWidth = $(settings.outerSelector).width() - settings.scrollbarWidth;
+                newWidth = $(settings.outerSelector).width() - settings.scrollbarWidth - widthBorderPixels;
 
             //if either have changed, reflect that visually
             if (newWidth !== settings.panelWidth || newHeight !== settings.panelHeight)
             {
                 // outer width
-                $(settings.outerSelector).height(newHeight);
-                $(settings.outerSelector).width(newWidth + settings.scrollbarWidth);
+                if (settings.enableAutoHeight)
+                    $(settings.outerSelector).height(newHeight);
+                if (settings.enableAutoWidth)
+                    $(settings.outerSelector).width(newWidth + settings.scrollbarWidth);
                 // inner width
                 settings.panelWidth = newWidth;
                 settings.panelHeight = newHeight;
@@ -1622,7 +1621,7 @@ window.divaPlugins = [];
                         $(settings.outerSelector).scrollTop(settings.topScrollSoFar - settings.panelHeight);
                         return false;
                     }
- 
+
                     // Up arrow - scroll up
                     if (settings.enableKeyScroll && event.keyCode === upArrowKey)
                     {
@@ -1643,7 +1642,7 @@ window.divaPlugins = [];
                         $(settings.outerSelector).scrollLeft(settings.leftScrollSoFar - settings.arrowScrollAmount);
                         return false;
                     }
- 
+
                     // Right arrow - scroll right
                     if (settings.enableKeyScroll && event.keyCode === rightArrowKey)
                     {
@@ -2163,7 +2162,7 @@ window.divaPlugins = [];
                         adjustMobileWebkitDims();
                     }
                     else if (settings.divaIsFullWindow)
-                    {     
+                    {
                         //so we shall use window instead
                         settings.widthProportion = $(settings.parentSelector).width() / $(window).innerWidth();
                         // Do not overflow the window in the event that the initial CSS height is greater than the initial window size
@@ -2177,11 +2176,6 @@ window.divaPlugins = [];
                         settings.heightProportion = $(settings.parentSelector).height() / $(settings.parentSelector).parent().innerHeight();
                         adjustBrowserDims();
                     }
-
-                    // Calculate the viewer x and y offsets
-                    var viewerOffset = $(settings.outerSelector).offset();
-                    settings.viewerXOffset = viewerOffset.left;
-                    settings.viewerYOffset = viewerOffset.top;
 
                     // Set padding
                     if (settings.enableAutoWidth)
@@ -2679,7 +2673,7 @@ window.divaPlugins = [];
                 }
             }
         };
- 
+
         // Re-enables document dragging, scrolling (by keyboard if set), and zooming by double-clicking
         this.enableScrollable = function()
         {
@@ -2733,6 +2727,9 @@ window.divaPlugins = [];
 
             // Remove any additional styling on the parent element
             $(settings.parentSelector).removeAttr('style').removeAttr('class');
+
+            // Clear the Events cache
+            diva.Events.unsubscribeAll();
         };
     };
 
