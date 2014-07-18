@@ -64,7 +64,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     divaInstance: A reference to the Diva object created from initializing Diva.
                     jsonFileLocation: A link to the .json file retrieved from Diva's process/generateJson.py files
                 */
-
                 if (!("divaInstance" in meiEditorSettings) || !("jsonFileLocation" in meiEditorSettings) || !("siglum_slug" in meiEditorSettings))
                 {
                     console.error("MEI Editor error: The 'Diva Manager' plugin requires the 'divaInstance', 'jsonFileLocation', and 'siglum_slug' settings present on intialization.");
@@ -169,7 +168,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                 $.get("http://dev-cantus.simssa.ca/mei/" + meiEditorSettings.siglum_slug + "/", "", function(data)
                 {
-                    console.log(data);
                     var pageNames = [];
                     var dataArr = data.split("\n");
                     var dataLength = dataArr.length;
@@ -188,26 +186,29 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         {
                             //strip the outside, make sure it has ".rng"
                             linkText = foundLink[0].slice(9, -2);
-                            if(linkText.match(/rng/))
+                            if(linkText.match(/mei/))
                             {
                                 pageNames.push(foundLink[0].slice(9, -2));
                             }
                         }
                     }
+
                     createModal(meiEditorSettings.element, "serverLoadModal", false,
                         "Select a hosted file:<br>" +
                         createSelect("hosted-file", pageNames, true),
                         "Load");
-                });
 
-                $("#serverLoadModal-primary").on('click', function()
-                {
-                    var pageName = $("#selecthosted-file").find(':selected').text();
-                    console.log(pageName);
-                    $.get("http://dev-cantus.simssa.ca/mei/" + meiEditorSettings.siglum_slug + "/" + pageName, "", function(data)
+                    $("#serverLoadModal-primary").on('click', function()
                     {
-                        console.log(data);
+                        var pageName = $("#selecthosted-file").find(':selected').text();
+                        console.log(pageName);
+                        $.get("http://dev-cantus.simssa.ca/mei/" + meiEditorSettings.siglum_slug + "/" + pageName, "", function(data)
+                        {
+                            console.log(data);
+                        });
+                        $("#serverLoadModal-close").trigger('click');
                     });
+
                 });
 
                 createModal(meiEditorSettings.element, "divaHelpModal", false,
