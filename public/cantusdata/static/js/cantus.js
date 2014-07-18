@@ -554,7 +554,7 @@
             var chant = parseInt(event.target.id.split('-')[1]) + 1;
             this.chantStateSwitch.setValue(chant, true);
 
-            globalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
+//            globalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
             globalEventHandler.trigger("SilentUrlUpdate");
         },
 
@@ -564,7 +564,7 @@
             var chant = parseInt(event.target.id.split('-')[1]) + 1;
             this.chantStateSwitch.setValue(chant, false);
 
-            globalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
+//            globalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
             globalEventHandler.trigger("SilentUrlUpdate");
         },
 
@@ -595,7 +595,7 @@
          *
          * @param url
          */
-        setUrl: function(url)
+        setUrl: function(url, unfoldedChant)
         {
             this.collection.url = url;
             this.collection.fetch({success: this.afterFetch});
@@ -622,6 +622,7 @@
                     {
                         chants: this.collection.toJSON(),
                         unfoldedChant: this.unfoldedChant
+//                        unfoldedChant: undefined
                     }
                 ));
             }
@@ -2188,6 +2189,8 @@
             newUrl =  siteUrl + "folio-set/manuscript/"
                       + this.manuscript.toJSON().id + "/"
                       + folio + "/";
+            console.log(folio);
+            console.log(newUrl);
             // Rebuild the folio View
             this.folioView.setUrl(newUrl);
             this.folioView.setCustomNumber(folio);
@@ -2409,7 +2412,7 @@
 
             globalEventHandler.trigger("ChangeManuscript", query);
 //            globalEventHandler.trigger("ChangeFolio", folio);
-            globalEventHandler.trigger("ChangeChant", chant);
+//            globalEventHandler.trigger("ChangeChant", chant);
         },
 
         search: function(query)
