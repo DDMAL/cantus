@@ -796,13 +796,19 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     for (curKey in meiEditorSettings.divaImagesToMeiFiles)
                     { 
                         var pageName = meiEditorSettings.divaImagesToMeiFiles[curKey];
+                        var neumeArray = [];
                         pageIndex = meiEditorSettings.divaPageList.indexOf(curKey);
                         pageText = meiEditorSettings.pageData[pageName].getSession().doc.getAllLines().join("\n"); //get the information from the page expressed in one string
                         jsonData = x2js.xml_str2json(pageText); //turn this into a JSON "dict"
                         regions = [];
 
                         xmlns = jsonData['mei']['_xmlns']; //find the xml namespace file
-                        neumeArray = jsonData['mei']['music']['body']['mdiv']['pages']['page']['system']['staff']['layer']['neume'];
+                        try{
+                            neumeArray = jsonData['mei']['music']['body']['mdiv']['pages']['page']['system']['staff']['layer']['neume'];
+                        }
+                        catch(TypeError){
+                            neumeArray = jsonData['mei']['music']['body']['mdiv']['score']['section']['staff']['layer']['neume'];
+                        }
                         zoneArray = jsonData['mei']['music']['facsimile']['surface']['zone'];
 
                         for (curZoneIndex in zoneArray) //for each "zone" object
