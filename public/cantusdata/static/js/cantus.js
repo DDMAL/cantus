@@ -84,7 +84,7 @@
             {
                 $('.diva-outer').css("height",
                         $("#content-container").height() - 75);
-                $('.diva-outer').css("width", $("#diva-toolbar").width());
+//                $('.diva-outer').css("width", $("#diva-toolbar").width());
                 // $('.diva-inner').css("width", $("#diva-toolbar").width());
             }
         },

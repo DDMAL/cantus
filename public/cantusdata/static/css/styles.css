@@ -31,9 +31,7 @@ html {
 .cantus-container {
     width: 100%;
     padding: 0 30px 0 30px;
-    /*height: 400px;*/
     overflow: hidden;
-    /*overflow-y: scroll;*/
 }
 
 #diva-wrapper {
@@ -75,7 +73,7 @@ html {
 .diva-tools {
     height: 75px;
     padding: 20px;
-    margin-top: 0px;
+    margin-top: 0;
     border-right: 1px solid #CCCCCC;
     border-bottom: 1px solid #CCCCCC;
 }
@@ -88,8 +86,8 @@ html {
 
 .diva-outer {
     width: 100%;
-    margin-left: 0px;
-    margin-right: 0px;
+    margin-left: 0;
+    margin-right: 0;
     border: none;
     border-right: 1px solid #CCCCCC;
 }
@@ -100,7 +98,7 @@ html {
 
 .diva-tools-left {
     float: left;
-    width: 50%;
+    /*width: 40%;*/
 }
 
 #manuscript-search {
