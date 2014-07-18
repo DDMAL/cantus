@@ -1150,7 +1150,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             fileNameOriginal = data.pgs[curPage].f; //original file name
                             meiEditorSettings.divaPageList.push(fileNameOriginal);
                             $("#selectdiva-link").append("<option name='"+fileNameOriginal+"'>" + fileNameOriginal + "</option>");
-                            $("#selecthosted-file").append("<option name='"+fileNameOriginal.split('.')[0]+".mei'>" + fileNameOriginal.split('.')[0] + ".mei</option>");
                         }
                     }
                 });
