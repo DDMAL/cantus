@@ -65,9 +65,9 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     jsonFileLocation: A link to the .json file retrieved from Diva's process/generateJson.py files
                 */
 
-                if (!("divaInstance" in meiEditorSettings) || !("jsonFileLocation" in meiEditorSettings))
+                if (!("divaInstance" in meiEditorSettings) || !("jsonFileLocation" in meiEditorSettings) || !("siglum_slug" in meiEditorSettings))
                 {
-                    console.error("MEI Editor error: The 'Diva Manager' plugin requires both the 'divaInstance' and 'jsonFileLocation' settings present on intialization.");
+                    console.error("MEI Editor error: The 'Diva Manager' plugin requires the 'divaInstance', 'jsonFileLocation', and 'siglum_slug' settings present on intialization.");
                     return false;
                 }
 
@@ -99,6 +99,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     "<li><a id='clear-selection-dropdown'>Clear selection</a></li>" +
                     "<li><a id='estimate-dropdown'>Estimate line numbers:<span style='float:right'><input type='checkbox' id='estimateBox'></span></a></li>" + 
                     "<li><a id='manuscript-dropdown'>Edit a different manuscript...</a></li>");
+                $("#dropdown-file-upload").append("<li><a id='server-load-dropdown'>Load file from server...</a></li>");
                 $("#help-dropdown").append("<li><a id='diva-manager-help'>Diva page manager</a></li>");
 
                 $("#file-link-dropdown").on('click', function()
@@ -131,6 +132,10 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     e.stopPropagation();
                 });
 
+                $("#server-load-dropdown").on('click', function(e){
+                    $("#serverLoadModal").modal();
+                });
+
                 $("#diva-manager-help").on('click', function()
                 {
                     $("#divaHelpModal").modal();
@@ -161,6 +166,49 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     "<select id='selectUnlink'></select><br>" + 
                     "<button id='unlink-files'>Unlink selected files</button>" + 
                     "</div>");
+
+                $.get("http://dev-cantus.simssa.ca/mei/" + meiEditorSettings.siglum_slug + "/", "", function(data)
+                {
+                    console.log(data);
+                    var pageNames = [];
+                    var dataArr = data.split("\n");
+                    var dataLength = dataArr.length;
+                    while (dataLength--)
+                    {
+                        //that is not empty
+                        if (!dataArr[dataLength])
+                        {
+                            continue;
+                        }
+
+                        //find a link
+                        var foundLink = dataArr[dataLength].match(/<a href=".*">/g);
+
+                        if (foundLink)
+                        {
+                            //strip the outside, make sure it has ".rng"
+                            linkText = foundLink[0].slice(9, -2);
+                            if(linkText.match(/rng/))
+                            {
+                                pageNames.push(foundLink[0].slice(9, -2));
+                            }
+                        }
+                    }
+                    createModal(meiEditorSettings.element, "serverLoadModal", false,
+                        "Select a hosted file:<br>" +
+                        createSelect("hosted-file", pageNames, true),
+                        "Load");
+                });
+
+                $("#serverLoadModal-primary").on('click', function()
+                {
+                    var pageName = $("#selecthosted-file").find(':selected').text();
+                    console.log(pageName);
+                    $.get("http://dev-cantus.simssa.ca/mei/" + meiEditorSettings.siglum_slug + "/" + pageName, "", function(data)
+                    {
+                        console.log(data);
+                    });
+                });
 
                 createModal(meiEditorSettings.element, "divaHelpModal", false,
                     "<h4>Help for 'Diva Page Manager' menu:</h4>" + 
@@ -1122,6 +1170,10 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             }
                         }
                     }
+
+                    //change selected diva page to make some selects easier
+                    $("#selecthosted-file").val(fileName);
+                    $("#selectdiva-link").val(fileName);
                 });
 
                 diva.Events.subscribe("HighlightCompleted", meiEditor.reloadFromCaches);

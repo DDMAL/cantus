@@ -10,6 +10,7 @@
         <link rel="stylesheet" href="diva.js/build/css/diva.min.css" />
         <link rel="stylesheet" href="meix.js/css/meiEditor.css" />
         <link rel="stylesheet" href="divaEditor.css" />
+        <link rel="Shortcut Icon" href="/favicon.ico">
 
         <!--foreign libraries -->
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" ></script>
@@ -41,7 +42,7 @@
         var currentSite = docArr[2];
         var siglum_slug = docArr[docArr.length - 1].split('?')[1];
         
-        function editorInit(divaImageLoc, jsonLoc)
+        function editorInit(divaImageLoc, jsonLoc, sig_slug)
         {
             $("#loadingScreen").html("The Cantus MEI Editor is loading...");
 
@@ -77,7 +78,8 @@
                 'divaInstance': divaInstance, 
                 'jsonFileLocation': jsonLoc,
                 'navbarClass': 'navbar navbar-default',
-                'pageTitle': 'Cantus Ultimus'
+                'pageTitle': 'Cantus Ultimus',
+                'siglum_slug': sig_slug
             };
             var plugins = ["meiEditorDivaManager.js"];
 
@@ -87,30 +89,6 @@
         $(window).on('meiEditorLoaded', function(e){
             var meiEditor = $("#mei-editor").data('AceMeiEditor');
             $(".diva-tools").addClass('diva-toolbar navbar navbar-default');
-//            var divaOuterDiff = $("#1-diva-outer").outerHeight() - $("#1-diva-outer").height();
-//            var divaOuterWidthDiff = $("#1-diva-outer").outerHeight() - $("#1-diva-outer").height();
-//            $(".diva-toolbar").height($("#openPages").offset().top);
-//            $(".diva-toolbar").width($("#diva-wrapper").width());
-//            $("#diva-wrapper").offset({'top': $("#topbar").outerHeight()});
-//            $("#diva-wrapper").height(window.innerHeight - $("#topbar").outerHeight());
-//            $(".diva-outer").height(window.innerHeight - $("#topbar").outerHeight() - divaOuterDiff);
-//            $("#diva-wrapper").width(window.innerWidth/2 - divaOuterWidthDiff);
-//            $(".diva-toolbar").offset({'top': 0, 'left': $("#diva-wrapper").offset().left});
-//            $(".diva-page-nav").css({
-//                'padding-right': '0em'
-//            });
-//            $(".diva-buttons-label").css({
-//                'padding': '7px',
-//                'padding-left': '15px',
-//                'border-top-width': '0px',
-//                'border-bottom-width': '0px'
-//            });
-//            $(".diva-input").css({
-//                'padding': '5px'
-//            });
-//            $(".diva-page-label").css({
-//                'margin-top': '5px'
-//            });
             $("#loadingScreen").animate({
                 'height': '30px',
                 'line-height': '30px',
@@ -146,12 +124,12 @@
                 if(siglum_slug == '000')
                 {
                     //if they're loading the six-page demo, that's static and the json file is included
-                    editorInit("/srv/images/meixBkup", 'imagesOut.json');
+                    editorInit("/srv/images/meixBkup", 'imagesOut.json', 'ch-sgs-0390');
                 }
                 else
                 {
                     //grab it off the server
-                    editorInit("/srv/images/cantus/" + siglum_slug, "http://" + currentSite + "/static/" + siglum_slug + ".json");
+                    editorInit("/srv/images/cantus/" + siglum_slug, "http://" + currentSite + "/static/" + siglum_slug + ".json", siglum_slug);
                     
                     //make it look like we changed URLs
                     window.history.replaceState("","", document.URL + "?" + siglum_slug);
