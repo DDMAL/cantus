@@ -82,6 +82,7 @@
                 'siglum_slug': sig_slug,
                 'currentSite': currentSite
             };
+
             var plugins = ["meiEditorDivaManager.js"];
 
             var meiEditor = new MeiEditor(element, options, plugins);
@@ -125,7 +126,7 @@
                 if(siglum_slug == '000')
                 {
                     //if they're loading the six-page demo, that's static and the json file is included
-                    editorInit("/srv/images/meixBkup", 'imagesOut.json', 'ch-sgs-0390');
+                    editorInit("/srv/images/meixBkup", 'imagesOut.json', currentSite, 'ch-sgs-0390');
                 }
                 else
                 {

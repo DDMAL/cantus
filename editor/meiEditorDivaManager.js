@@ -166,49 +166,51 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     "<button id='unlink-files'>Unlink selected files</button>" + 
                     "</div>");
 
-                $.get("http://" + currentSite + "/mei/" + meiEditorSettings.siglum_slug + "/", "", function(data)
+                if(currentSite !== "127.0.0.1:8000")
                 {
-                    var pageNames = [];
-                    var dataArr = data.split("\n");
-                    var dataLength = dataArr.length;
-                    while (dataLength--)
+                    $.get("http://" + currentSite + "/mei/" + meiEditorSettings.siglum_slug + "/", "", function(data)
                     {
-                        //that is not empty
-                        if (!dataArr[dataLength])
+                        var pageNames = [];
+                        var dataArr = data.split("\n");
+                        var dataLength = dataArr.length;
+                        while (dataLength--)
                         {
-                            continue;
-                        }
-
-                        //find a link
-                        var foundLink = dataArr[dataLength].match(/<a href=".*">/g);
-
-                        if (foundLink)
-                        {
-                            //strip the outside, make sure it has ".rng"
-                            linkText = foundLink[0].slice(9, -2);
-                            if(linkText.match(/mei/))
+                            //that is not empty
+                            if (!dataArr[dataLength])
                             {
-                                pageNames.push(foundLink[0].slice(9, -2));
+                                continue;
+                            }
+
+                            //find a link
+                            var foundLink = dataArr[dataLength].match(/<a href=".*">/g);
+
+                            if (foundLink)
+                            {
+                                //strip the outside, make sure it has ".rng"
+                                linkText = foundLink[0].slice(9, -2);
+                                if(linkText.match(/mei/))
+                                {
+                                    pageNames.push(foundLink[0].slice(9, -2));
+                                }
                             }
                         }
-                    }
 
-                    createModal(meiEditorSettings.element, "serverLoadModal", false,
-                        "Select a hosted file:<br>" +
-                        createSelect("hosted-file", pageNames, true),
-                        "Load");
+                        createModal(meiEditorSettings.element, "serverLoadModal", false,
+                            "Select a hosted file:<br>" +
+                            createSelect("hosted-file", pageNames, true),
+                            "Load");
 
-                    $("#serverLoadModal-primary").on('click', function()
-                    {
-                        var pageName = $("#selecthosted-file").find(':selected').text();
-                        $.get("http://" + currentSite + "/mei/" + meiEditorSettings.siglum_slug + "/" + pageName, "", function(data)
+                        $("#serverLoadModal-primary").on('click', function()
                         {
-                            meiEditor.addFileToProject(data, pageName);
+                            var pageName = $("#selecthosted-file").find(':selected').text();
+                            $.get("http://" + currentSite + "/mei/" + meiEditorSettings.siglum_slug + "/" + pageName, "", function(data)
+                            {
+                                meiEditor.addFileToProject(data, pageName);
+                            });
+                            $("#serverLoadModal-close").trigger('click');
                         });
-                        $("#serverLoadModal-close").trigger('click');
                     });
-
-                });
+                }
 
                 createModal(meiEditorSettings.element, "divaHelpModal", false,
                     "<h4>Help for 'Diva Page Manager' menu:</h4>" + 
@@ -1113,7 +1115,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 meiEditor.reapplyEditorClickListener = function()
                 {
                     //commented out as per issue #36
-                    /*$(".aceEditorPane").on('click', function()
+                    $(".aceEditorPane").on('click', function()
                     {
                         var activeTab = meiEditor.getActivePanel().text();
                         if (meiEditor.meiIsLinked(activeTab))
@@ -1135,7 +1137,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                                 }
                             }
                         }
-                    });*/
+                    });
                 };
 
                 $.ajax( //this grabs the json file to get an meiEditor-local list of the image filepaths
