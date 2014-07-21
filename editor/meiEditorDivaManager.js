@@ -289,18 +289,19 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     { 
                         meiEditor.deselectResizable(".resizableSelected");
                     } 
-                    /*else if ((ev.keyCode) < 41 && (ev.keyCode > 36))
+                    else if ((ev.keyCode) < 41 && (ev.keyCode > 36))
                     {
                         ev.stopPropagation();
                         ev.preventDefault();
                         nudgeListeners(ev.keyCode);
-                    }*/
+                    }
                 };   
 
                 //nudges the current resizable object 1px in the direction of the keycode
-                /*var nudgeListeners = function(keyCode)
+                var nudgeListeners = function(keyCode)
                 {
                     var object = ".resizableSelected";
+
                     switch(keyCode){
                         case 37:
                             $(object).offset({'left': $(object).offset().left - 1});
@@ -317,9 +318,9 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         default:
                             break;
                     }
-
+                    
                     meiEditor.updateBox(object);
-                };*/
+                };
 
                 //updates the size of the drag-div box (spawned on shift/meta+drag)
                 var changeDragSize = function(eve)
@@ -768,9 +769,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                     //keep the whitespace intact at the beginning
                     meiEditorSettings.pageData[pageTitle].session.doc.replace(searchRange, line);
-
-                    //regenerate the highlights, reset the listeners, reselect the same box
-                    meiEditor.createHighlights();
                 };
 
                 /*
@@ -945,6 +943,9 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     reapplyBoxListeners();
                     $("#diva-wrapper").unbind('resize');
                     meiEditor.updateCaches();
+                    
+                    //regenerate the highlights, reset the listeners, reselect the same box
+                    meiEditor.createHighlights();
                 };
 
                 /*
