@@ -238,11 +238,12 @@
     SolrDisjunctiveQueryBuilder = Backbone.Model.extend
     ({
         field: undefined,
-        values: [],
+        values: undefined,
 
         initialize: function(field, values)
         {
             this.field = String(field);
+            this.values = [];
             for (var i = 0; i < values.length; i++)
             {
                 this.addValue(values[i]);
@@ -266,7 +267,7 @@
          */
         getQuery: function()
         {
-            var output = field + ": (";
+            var output = this.field + ": (";
 
             if (this.values.length > 0)
             {
@@ -1791,7 +1792,8 @@
                 // Render with the new template
                 // this.render();
                 $(this.$el.selector  + " .input-section").html(
-                    this.searchFormTemplates[String(this.field)]({query: this.query}));
+                    this.searchFormTemplates[String(this.field)](
+                        {query: this.query}));
             }
 
             // We want to fire off a search
@@ -1829,7 +1831,14 @@
                     // Append the field selector if necessary!
                     if (fieldSelection !== "all")
                     {
-                        newQuery = fieldSelection + ': "' + newQuery + '"';
+                        console.log(newQuery);
+                        // Split the query into multiple things
+                        queryList = decodeURIComponent(newQuery).split(",");
+                        console.log(queryList);
+                        var disjunctive = new SolrDisjunctiveQueryBuilder(fieldSelection, queryList);
+                        newQuery = disjunctive.getQuery();
+                        console.log(newQuery);
+//                        newQuery = fieldSelection + ': "' + newQuery + '"';
                     }
 
                     // console.log("newQuery:");
