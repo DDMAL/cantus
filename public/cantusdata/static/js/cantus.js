@@ -1709,7 +1709,7 @@
          *
          */
         query: null,
-        field: null,
+        field: "all",
 
         /**
          * Some additional text added to all queries.  For example, you might
@@ -1717,19 +1717,30 @@
          * you would set this.queryPostScript to "AND type:cantusdata_chant".
          */
         queryPostScript: null,
-
         timer: null,
 
         // Subviews
         searchResultView: null,
+
+        // Search template dictionary
+        currentSearchFormTemplate: "all",
+        searchFormTemplates: {},
 
         events: {},
 
         initialize: function(options)
         {
             _.bindAll(this, 'render', 'newSearch', 'autoNewSearch',
-                'registerEvents');
+                'changeSearchField', 'registerEvents');
             this.template= _.template($('#search-template').html());
+
+            // The search form templates
+            this.searchFormTemplates['all'] = _.template(
+                $('#search-all-template').html());
+            this.searchFormTemplates['mode'] = _.template(
+                $('#search-mode-template').html());
+            this.searchFormTemplates['volpiano'] = this.searchFormTemplates['all'];
+
             // If not supplied, the query is blank
             if (options !== undefined)
             {
@@ -1764,6 +1775,27 @@
         setQueryPostScript: function(postScript)
         {
             this.queryPostScript = String(postScript);
+        },
+
+        changeSearchField: function()
+        {
+            // Grab the field name
+            var newField = encodeURIComponent($(this.$el.selector
+                + ' .search-field').val());
+
+            // We want to make sure that we aren't just loading the same template again
+            if (this.searchFormTemplates[newField] !== this.searchFormTemplates[this.field])
+            {
+                // Store the field
+                this.field = newField;
+                // Render with the new template
+                // this.render();
+                $(this.$el.selector  + " .input-section").html(
+                    this.searchFormTemplates[String(this.field)]({query: this.query}));
+            }
+
+            // We want to fire off a search
+            this.newSearch();
         },
 
         /**
@@ -1830,7 +1862,7 @@
             // Register them
             // this.events["click " + this.$el.selector + ".search-button"] = "newSearch";
             this.events["change .search-input"] = "newSearch";
-            this.events["change .search-field"] = "newSearch";
+            this.events["change .search-field"] = "changeSearchField";
             this.events["input .search-input"] = "autoNewSearch";
 
             // Delegate the new events
@@ -1854,7 +1886,16 @@
         render: function()
         {
             this.registerEvents();
-            $(this.el).html(this.template({query: this.query}));
+            $(this.el).html(this.template());
+            if (this.field in this.searchFormTemplates)
+            {
+                $(this.$el.selector  + " .input-section").html(
+                    this.searchFormTemplates[this.field]({query: this.query}));
+            }
+            else
+            {
+                $(this.$el.selector  + " .input-section").html("Error!");
+            }
             // Render subviews
             $(this.$el.selector + ' .search-results').html("SEARCH RESULT VIEW!");
             this.assign(this.searchResultView, this.$el.selector + ' .search-results');

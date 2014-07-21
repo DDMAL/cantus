@@ -181,6 +181,30 @@
 <div id="search"></div>
 </script>
 
+<script type="text/template" id="search-mode-template">
+    {# Mode input #}
+<select multiple class="form-control mode-input search-input">
+    <option>Mode 1</option>
+    <option>Mode 2</option>
+    <option>Mode 3</option>
+    <option>Mode 4</option>
+    <option>Mode 5</option>
+    <option>Mode 6</option>
+    <option>Mode 7</option>
+    <option>Mode 8</option>
+    <option>No Music</option>
+    <option>Responsory (simple)</option>
+    <option>Uncertain</option>
+    <option>Responsory (special)</option>
+    <option>Chant in Transposition</option>
+</select>
+</script>
+
+<script type="text/template" id="search-all-template">
+{# Regular text input #}
+<input type="text" class="form-control search-input" placeholder="Search" value="<%= query %>">
+</script>
+
 <script type="text/template" id="search-template">
 {#<form role="search">#}
 <div class="form-inline">
@@ -188,92 +212,10 @@
         <select class="form-control search-field">
             <option value="all">All Fields:</option>
             <option value="volpiano">Volpiano:</option>
+            <option value="mode">Mode:</option>
         </select>
     </div>
-    <div class="form-group">
-        <input type="text" class="form-control search-input" placeholder="Search" value="<%= query %>">
-    </div>
-{#    <div class="mode-search form-group">#}
-{#        <h5>Mode Filter</h5>#}
-{#        <div class="checkbox">#}
-{#            <label>#}
-{#                <input type="checkbox" value="1">#}
-{#                Mode 1#}
-{#            </label>#}
-{#        </div>#}
-{#        <div class="checkbox">#}
-{#            <label>#}
-{#                <input type="checkbox" value="2">#}
-{#                Mode 2#}
-{#            </label>#}
-{#        </div>#}
-{#        <div class="checkbox">#}
-{#            <label>#}
-{#                <input type="checkbox" value="3">#}
-{#                Mode 3#}
-{#            </label>#}
-{#        </div>#}
-{#        <div class="checkbox">#}
-{#            <label>#}
-{#                <input type="checkbox" value="4">#}
-{#                Mode 4#}
-{#            </label>#}
-{#        </div>#}
-{#        <div class="checkbox">#}
-{#            <label>#}
-{#                <input type="checkbox" value="5">#}
-{#                Mode 5#}
-{#            </label>#}
-{#        </div>#}
-{#        <div class="checkbox">#}
-{#            <label>#}
-{#                <input type="checkbox" value="6">#}
-{#                Mode 6#}
-{#            </label>#}
-{#        </div>#}
-{#        <div class="checkbox">#}
-{#            <label>#}
-{#                <input type="checkbox" value="7">#}
-{#                Mode 7#}
-{#            </label>#}
-{#        </div>#}
-{#        <div class="checkbox">#}
-{#            <label>#}
-{#                <input type="checkbox" value="8">#}
-{#                Mode 8#}
-{#            </label>#}
-{#        </div>#}
-{#        <div class="checkbox">#}
-{#            <label>#}
-{#                <input type="checkbox" value="No music">#}
-{#                No music#}
-{#            </label>#}
-{#        </div>#}
-{#        <div class="checkbox">#}
-{#            <label>#}
-{#                <input type="checkbox" value="Responsory (simple)">#}
-{#                Responsory (simple)#}
-{#            </label>#}
-{#        </div>#}
-{#        <div class="checkbox">#}
-{#            <label>#}
-{#                <input type="checkbox" value="Uncertain">#}
-{#                Uncertain#}
-{#            </label>#}
-{#        </div>#}
-{#        <div class="checkbox">#}
-{#            <label>#}
-{#                <input type="checkbox" value="Responsory (special)">#}
-{#                Responsory (special)#}
-{#            </label>#}
-{#        </div>#}
-{#        <div class="checkbox">#}
-{#            <label>#}
-{#                <input type="checkbox" value="Chant in Transposition">#}
-{#                Chant in Transposition#}
-{#            </label>#}
-{#        </div>#}
-{#    </div>#}
+    <div class="form-group input-section"></div>
 </div>
 {#  <button type="submit" class="btn btn-default search-button">Submit</button>#}
 {#</form>#}
