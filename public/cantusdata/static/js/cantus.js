@@ -130,22 +130,22 @@
 
         setManuscript: function(manuscript)
         {
-            console.log("Set manuscript:");
-            console.log(manuscript);
+            // console.log("Set manuscript:");
+            // console.log(manuscript);
             this.manuscript = manuscript;
         },
 
         setFolio: function(folio)
         {
-            console.log("Set folio:");
-            console.log(folio);
+            // console.log("Set folio:");
+            // console.log(folio);
             this.folio = folio;
         },
 
         setChant: function(chant)
         {
-            console.log("Set chant:");
-            console.log(chant);
+            // console.log("Set chant:");
+            // console.log(chant);
             this.chant = chant;
         },
 
@@ -165,7 +165,7 @@
 
         silentUrlUpdate: function()
         {
-            console.log("silentUrlUpdate!");
+            // console.log("silentUrlUpdate!");
             // Don't actually trigger the router!
             app.navigate(this.getUrl(), {trigger: false});
         }
@@ -507,13 +507,18 @@
         },
 
         unAssign : function (view, selector) {
-            console.log("Unassign!");
+            // console.log("Unassign!");
             $(selector).empty();
         }
     });
 
     var ChantCollectionView = CantusAbstractView.extend
     ({
+        /**
+         * Useful switch if you want different functionality on initial load.
+         */
+        alreadyLoaded: false,
+
         /**
          * The chant that bootstrap has unfolded!
          */
@@ -539,6 +544,8 @@
             this.listenTo(this.collection, 'sync', this.render);
             // Set the unfolded chant when the global state changes!
             this.listenTo(globalEventHandler, "ChangeChant", this.setUnfoldedChant);
+
+            this.alreadyLoaded = 0;
         },
 
         /**
@@ -548,8 +555,8 @@
          */
         unfoldChantCallback: function(event)
         {
-            console.log(event);
-            console.log("unfoldChantCallback");
+            // console.log(event);
+            // console.log("unfoldChantCallback");
             // "collapse-1" becomes 1, etc.
             var chant = parseInt(event.target.id.split('-')[1]) + 1;
             this.chantStateSwitch.setValue(chant, true);
@@ -560,7 +567,7 @@
 
         foldChantCallback: function(event)
         {
-            console.log("foldChantCallback");
+            // console.log("foldChantCallback");
             var chant = parseInt(event.target.id.split('-')[1]) + 1;
             this.chantStateSwitch.setValue(chant, false);
 
@@ -577,8 +584,8 @@
         {
             if (index !== undefined && index !== null)
             {
-                console.log("Setting chant to:");
-                console.log(index);
+                // console.log("Setting chant to:");
+                // console.log(index);
                 this.unfoldedChant = parseInt(index) - 1;
             }
         },
@@ -595,10 +602,20 @@
          *
          * @param url
          */
-        setUrl: function(url)
+        setUrl: function(url, unfoldedChant)
         {
             this.collection.url = url;
             this.collection.fetch({success: this.afterFetch});
+            // Reset the chant if this isn't the initial load
+            if (this.alreadyLoaded) {
+                this.unfoldedChant = undefined;
+                globalEventHandler.trigger("ChangeChant", undefined);
+                globalEventHandler.trigger("SilentUrlUpdate");
+            }
+            else
+            {
+                this.alreadyLoaded = true;
+            }
         },
 
         /**
@@ -609,8 +626,8 @@
         render: function()
         {
             // TODO: Figure out why this gets called 4 times
-            console.log("Collection:");
-            console.log(this.collection.toJSON());
+            // console.log("Collection:");
+            // console.log(this.collection.toJSON());
             if (this.collection.length === 0)
             {
                 $(this.el).html(this.emptyTemplate());
@@ -659,7 +676,7 @@
 
         initialize: function(options)
         {
-            console.log("New DivaView");
+            // console.log("New DivaView");
             _.bindAll(this, 'render', 'storeFolioIndex', 'storeInitialFolio',
                 'setGlobalFullScreen', 'reloadPaintedBoxes', 'zoomToLocation');
             this.setManuscript(options.siglum, options.folio);
@@ -671,7 +688,7 @@
         remove: function()
         {
             // Deal with destroying Diva
-            console.log("Removing DivaView.");
+            // console.log("Removing DivaView.");
 
             // Deal with the event listeners
             this.stopListening();
@@ -693,12 +710,12 @@
          */
         uninitializeDiva: function()
         {
-            console.log("Uninitializing Diva.");
-            console.log("Diva initialized: " + this.divaInitialized);
+            // console.log("Uninitializing Diva.");
+            // console.log("Diva initialized: " + this.divaInitialized);
 
             if (this.divaInitialized)
             {
-                console.log("Diva already initialized, so we will destroy it.");
+                // console.log("Diva already initialized, so we will destroy it.");
                 // Unsubscribe the event handlers
                 if (this.viewerLoadEvent !== null)
                 {
@@ -713,16 +730,16 @@
                     diva.Events.unsubscribe(this.modeSwitchEvent);
                 }
 
-                console.log("Diva el:");
-                console.log(this.el);
-                console.log(this.$el);
-                console.log("Diva data:");
-//                console.log(this.$el.data('diva').getCurrentPageIndex());
-                console.log("End Diva data.");
+                // console.log("Diva el:");
+                // console.log(this.el);
+                // console.log(this.$el);
+                // console.log("Diva data:");
+//                // console.log(this.$el.data('diva').getCurrentPageIndex());
+                // console.log("End Diva data.");
             }
             else
             {
-                console.log("Diva not initialized, so we are doing nothing!");
+                // console.log("Diva not initialized, so we are doing nothing!");
             }
         },
 
@@ -731,9 +748,9 @@
          */
         initializeDiva: function()
         {
-            console.log("Initializing Diva viewer.");
-            console.log("el:");
-            console.log(this.el);
+            // console.log("Initializing Diva viewer.");
+            // console.log("el:");
+            // console.log(this.el);
             var siglum = this.siglum;
             this.$el.diva({
                 toolbarParentSelector: "#diva-toolbar",
@@ -749,8 +766,8 @@
                 objectData: "/static/" + siglum + ".json",
                 imageDir: divaImageDirectory + siglum
             });
-            console.log("Initialized Diva data:");
-            console.log(this.$el.data());
+            // console.log("Initialized Diva data:");
+            // console.log(this.$el.data());
             this.viewerLoadEvent = diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
             this.pageChangeEvent = diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
             this.modeSwitchEvent = diva.Events.subscribe("ModeDidSwitch", this.setGlobalFullScreen);
@@ -760,7 +777,7 @@
 
         render: function()
         {
-            console.log("Render DivaView");
+            // console.log("Render DivaView");
             // We only want to initialize Diva once!
             if (!this.divaInitialized)
             {
@@ -882,11 +899,11 @@
          */
         storeFolioIndex: function(index, fileName)
         {
-            console.log("storeFolioIndex()");
+            // console.log("storeFolioIndex()");
             if (index != this.currentFolioIndex)
             {
-                console.log("storeFolioIndex() actually happening:");
-                console.log(index);
+                // console.log("storeFolioIndex() actually happening:");
+                // console.log(index);
                 this.currentFolioIndex = index;
                 this.currentFolioName = fileName;
 
@@ -1631,8 +1648,8 @@
                     + ' .search-field').val());
                 var composedQuery = siteUrl + "notation-search/?q=" + this.query
                     + "&type=" + this.field + "&manuscript=" + this.manuscript;
-                console.log("Composed Query:");
-                console.log(composedQuery);
+                // console.log("Composed Query:");
+                // console.log(composedQuery);
                 this.results.url = composedQuery;
                 this.results.fetch();
             }
@@ -1755,7 +1772,7 @@
          */
         newSearch: function()
         {
-            console.log("newSearch");
+            // console.log("newSearch");
 
             // Grab the new search query
             var newQuery = encodeURIComponent($(this.$el.selector
@@ -1774,8 +1791,8 @@
                     this.searchResultView.hide();
                 }
                 else {
-                    console.log("fieldSelection:");
-                    console.log(fieldSelection);
+                    // console.log("fieldSelection:");
+                    // console.log(fieldSelection);
 
                     // Append the field selector if necessary!
                     if (fieldSelection !== "all")
@@ -1783,8 +1800,8 @@
                         newQuery = fieldSelection + ': "' + newQuery + '"';
                     }
 
-                    console.log("newQuery:");
-                    console.log(newQuery);
+                    // console.log("newQuery:");
+                    // console.log(newQuery);
 
                     if (this.queryPostScript !== null)
                     {
@@ -1882,10 +1899,10 @@
             // Clear out the events
             this.events = {};
             // Menu items
-            console.log(this.$el.selector);
+            // console.log(this.$el.selector);
             for (var i = 0; i < this.model.toJSON().results.length; i++)
             {
-                console.log(i);
+                // console.log(i);
                 this.events["click .search-result-" + i]
                     = "buttonClickCallback";
             }
@@ -1895,8 +1912,8 @@
 
         buttonClickCallback: function(input)
         {
-            console.log("Search click!");
-            console.log(input);
+            // console.log("Search click!");
+            // console.log(input);
             // Stop the page from auto-reloading
             event.preventDefault();
             // Figure out which button was clicked on
@@ -2124,7 +2141,7 @@
         folioView: null,
 
         initialize: function (options) {
-            console.log("New ManuscriptIndividualPageView");
+            // console.log("New ManuscriptIndividualPageView");
             _.bindAll(this, 'render', 'afterFetch', 'updateFolio');
             this.template = _.template($('#manuscript-template').html());
             this.manuscript = new Manuscript(
@@ -2182,12 +2199,14 @@
          */
         updateFolio: function()
         {
-            console.log("updateFolio()");
+            // console.log("updateFolio()");
             var folio = this.divaView.getFolio();
             // Query the folio set at that specific manuscript number
             newUrl =  siteUrl + "folio-set/manuscript/"
                       + this.manuscript.toJSON().id + "/"
                       + folio + "/";
+            // console.log(folio);
+            // console.log(newUrl);
             // Rebuild the folio View
             this.folioView.setUrl(newUrl);
             this.folioView.setCustomNumber(folio);
@@ -2217,7 +2236,7 @@
 
         render: function()
         {
-            console.log("Rendering ManuscriptIndividualPageView");
+            // console.log("Rendering ManuscriptIndividualPageView");
             $(this.el).html(this.template({
                 manuscript: this.manuscript.toJSON()
             }));
@@ -2383,14 +2402,14 @@
 
         manuscriptSingle: function(query, folio, chant)
         {
-            console.log("Folio:");
-            console.log(folio);
-            console.log("Chant:");
-            console.log(chant);
+            // console.log("Folio:");
+            // console.log(folio);
+            // console.log("Chant:");
+            // console.log(chant);
 
             if (this.manuscriptView !== null)
             {
-                console.log("Destroying Manuscript View");
+                // console.log("Destroying Manuscript View");
                 // We want to make sure that the old view, if it exists, is
                 // completely cleared-out.
                 this.manuscriptView.divaView.uninitializeDiva();

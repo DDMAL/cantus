@@ -153,6 +153,7 @@ Allows you to highlight regions of a page image
                 */
                 divaInstance.highlightOnPage = function(pageIdx, regions, colour, divClass)
                 {
+                    console.log("divaInstance.highlightOnPage");
                     if (typeof colour === 'undefined')
                     {
                         colour = 'rgba(255, 0, 0, 0.2)';

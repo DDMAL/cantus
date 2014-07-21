@@ -58,7 +58,11 @@ def get_neumes_length(neumes):
     neumes = neumes.lower().split(' ')
     length = 0
     for neume in neumes:
-        length += lengths[neume]
+        if lengths.has_key(neume):
+            length += lengths[neume]
+        else:
+            # In case their is a type of neume that we don't recognize!
+            length += 1
 
     return length
 

@@ -17,15 +17,15 @@
     <script src="/static/js/plugins/canvas.js"></script>
 
 {#    <meta content='width=960, initial-scale=2' name='viewport'/>#}
-    <meta name="viewport" content="width=device-width" />
+{#    <meta name="viewport" content="width=device-width" />#}
     <link rel="icon" type="image/ico" href="/static/img/favicon.ico">
-    <script>
-        if ($(window).width() < 880)
-        {
-            var window_width = $(window).width();
-            $('meta[name=viewport]').attr('content','width=880, initial-scale=0.54');
-        }
-    </script>
+{#    <script>#}
+{#        if ($(window).width() < 880)#}
+{#        {#}
+{#            var window_width = $(window).width();#}
+{#            $('meta[name=viewport]').attr('content','width=880, initial-scale=0.54');#}
+{#        }#}
+{#    </script>#}
 </head>
 <body>
     <div id="header-container">
@@ -193,6 +193,87 @@
     <div class="form-group">
         <input type="text" class="form-control search-input" placeholder="Search" value="<%= query %>">
     </div>
+{#    <div class="mode-search form-group">#}
+{#        <h5>Mode Filter</h5>#}
+{#        <div class="checkbox">#}
+{#            <label>#}
+{#                <input type="checkbox" value="1">#}
+{#                Mode 1#}
+{#            </label>#}
+{#        </div>#}
+{#        <div class="checkbox">#}
+{#            <label>#}
+{#                <input type="checkbox" value="2">#}
+{#                Mode 2#}
+{#            </label>#}
+{#        </div>#}
+{#        <div class="checkbox">#}
+{#            <label>#}
+{#                <input type="checkbox" value="3">#}
+{#                Mode 3#}
+{#            </label>#}
+{#        </div>#}
+{#        <div class="checkbox">#}
+{#            <label>#}
+{#                <input type="checkbox" value="4">#}
+{#                Mode 4#}
+{#            </label>#}
+{#        </div>#}
+{#        <div class="checkbox">#}
+{#            <label>#}
+{#                <input type="checkbox" value="5">#}
+{#                Mode 5#}
+{#            </label>#}
+{#        </div>#}
+{#        <div class="checkbox">#}
+{#            <label>#}
+{#                <input type="checkbox" value="6">#}
+{#                Mode 6#}
+{#            </label>#}
+{#        </div>#}
+{#        <div class="checkbox">#}
+{#            <label>#}
+{#                <input type="checkbox" value="7">#}
+{#                Mode 7#}
+{#            </label>#}
+{#        </div>#}
+{#        <div class="checkbox">#}
+{#            <label>#}
+{#                <input type="checkbox" value="8">#}
+{#                Mode 8#}
+{#            </label>#}
+{#        </div>#}
+{#        <div class="checkbox">#}
+{#            <label>#}
+{#                <input type="checkbox" value="No music">#}
+{#                No music#}
+{#            </label>#}
+{#        </div>#}
+{#        <div class="checkbox">#}
+{#            <label>#}
+{#                <input type="checkbox" value="Responsory (simple)">#}
+{#                Responsory (simple)#}
+{#            </label>#}
+{#        </div>#}
+{#        <div class="checkbox">#}
+{#            <label>#}
+{#                <input type="checkbox" value="Uncertain">#}
+{#                Uncertain#}
+{#            </label>#}
+{#        </div>#}
+{#        <div class="checkbox">#}
+{#            <label>#}
+{#                <input type="checkbox" value="Responsory (special)">#}
+{#                Responsory (special)#}
+{#            </label>#}
+{#        </div>#}
+{#        <div class="checkbox">#}
+{#            <label>#}
+{#                <input type="checkbox" value="Chant in Transposition">#}
+{#                Chant in Transposition#}
+{#            </label>#}
+{#        </div>#}
+{#    </div>#}
 </div>
 {#  <button type="submit" class="btn btn-default search-button">Submit</button>#}
 {#</form>#}
@@ -305,8 +386,6 @@
     <div class="col-xs-8">
         <div class="row">
             <div id="diva-toolbar"></div>
-        </div>
-        <div class="row">
             <div class="diva-wrapper"></div>
         </div>
     </div>
