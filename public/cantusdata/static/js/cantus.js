@@ -668,8 +668,6 @@
 
         timer: null,
 
-        paintedBoxSet: null,
-
         // Diva Event handlers
         viewerLoadEvent: null,
         pageChangeEvent: null,
@@ -679,7 +677,7 @@
         {
             // console.log("New DivaView");
             _.bindAll(this, 'render', 'storeFolioIndex', 'storeInitialFolio',
-                'setGlobalFullScreen', 'reloadPaintedBoxes', 'zoomToLocation');
+                'setGlobalFullScreen', 'zoomToLocation');
             this.setManuscript(options.siglum, options.folio);
         },
 
@@ -688,9 +686,6 @@
          */
         remove: function()
         {
-            // Deal with destroying Diva
-            // console.log("Removing DivaView.");
-
             // Deal with the event listeners
             this.stopListening();
             this.undelegateEvents();
@@ -701,7 +696,6 @@
             this.imagePrefix = null;
             this.imageSuffix = null;
             this.timer = null;
-            this.paintedBoxSet = null;
             this.viewerLoadEvent = null;
             this.modeSwitchEvent = null;
         },
@@ -711,12 +705,8 @@
          */
         uninitializeDiva: function()
         {
-            // console.log("Uninitializing Diva.");
-            // console.log("Diva initialized: " + this.divaInitialized);
-
             if (this.divaInitialized)
             {
-                // console.log("Diva already initialized, so we will destroy it.");
                 // Unsubscribe the event handlers
                 if (this.viewerLoadEvent !== null)
                 {
@@ -730,17 +720,6 @@
                 {
                     diva.Events.unsubscribe(this.modeSwitchEvent);
                 }
-
-                // console.log("Diva el:");
-                // console.log(this.el);
-                // console.log(this.$el);
-                // console.log("Diva data:");
-//                // console.log(this.$el.data('diva').getCurrentPageIndex());
-                // console.log("End Diva data.");
-            }
-            else
-            {
-                // console.log("Diva not initialized, so we are doing nothing!");
             }
         },
 
@@ -749,9 +728,6 @@
          */
         initializeDiva: function()
         {
-            // console.log("Initializing Diva viewer.");
-            // console.log("el:");
-            // console.log(this.el);
             var siglum = this.siglum;
             this.$el.diva({
                 toolbarParentSelector: "#diva-toolbar",
@@ -767,8 +743,6 @@
                 objectData: "/static/" + siglum + ".json",
                 imageDir: divaImageDirectory + siglum
             });
-            // console.log("Initialized Diva data:");
-            // console.log(this.$el.data());
             this.viewerLoadEvent = diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
             this.pageChangeEvent = diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
             this.modeSwitchEvent = diva.Events.subscribe("ModeDidSwitch", this.setGlobalFullScreen);
@@ -778,7 +752,6 @@
 
         render: function()
         {
-            // console.log("Render DivaView");
             // We only want to initialize Diva once!
             if (!this.divaInitialized)
             {
@@ -903,8 +876,6 @@
             // console.log("storeFolioIndex()");
             if (index != this.currentFolioIndex)
             {
-                // console.log("storeFolioIndex() actually happening:");
-                // console.log(index);
                 this.currentFolioIndex = index;
                 this.currentFolioName = fileName;
 
@@ -931,8 +902,6 @@
          */
         paintBoxes: function(boxSet)
         {
-            // Store the boxes for repainting later
-            this.paintedBoxSet = boxSet;
             this.$el.data('diva').resetHighlights();
 
             // Use the Diva highlight plugin to draw the boxes
@@ -967,14 +936,6 @@
                     pageList[j], // The page number
                     highlightsByPageHash[pageList[j]] // List of boxes
                 );
-            }
-        },
-
-        reloadPaintedBoxes: function()
-        {
-            if (this.paintedBoxSet !== null)
-            {
-                this.paintBoxes(this.paintedBoxSet);
             }
         },
 
@@ -1620,8 +1581,6 @@
             // Clear out the events
             this.events = {};
             // Register them
-            // this.events["click " + this.$el.selector + ".search-button"] = "newSearch";
-//            this.events["click" + this.$el.selector +  " button"] = "newSearch";
             this.events["submit"] = "newSearch";
 
             // Delegate the new events
@@ -1649,8 +1608,6 @@
                     + ' .search-field').val());
                 var composedQuery = siteUrl + "notation-search/?q=" + this.query
                     + "&type=" + this.field + "&manuscript=" + this.manuscript;
-                // console.log("Composed Query:");
-                // console.log(composedQuery);
                 this.results.url = composedQuery;
                 this.results.fetch();
             }
