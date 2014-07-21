@@ -228,7 +228,7 @@
         }
     });
 
-    SolrDisjunctiveQueryBuilder = Backbone.Model.extend
+    var SolrDisjunctiveQueryBuilder = Backbone.Model.extend
     ({
         field: undefined,
         values: undefined,
