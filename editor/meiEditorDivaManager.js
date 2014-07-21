@@ -63,6 +63,49 @@ function findKeyIn(needle, haystack)
     return false;
 }
 
+function createDefaultMEIString(){
+
+    meiString = '<?xml version="1.0" encoding="UTF-8"?>' +
+    '<mei xmlns="http://www.music-encoding.org/ns/mei" xml:id="' + genUUID() + '" meiversion="2013">\n' +
+    '  <meiHead xml:id="' + genUUID() + '">\n' +
+    '    <fileDesc xml:id="' + genUUID() + '">\n' +
+    '      <titleStmt xml:id="' + genUUID() + '">\n' +
+    '        <title xml:id="' + genUUID() + '"/>\n' +
+    '      </titleStmt>\n' +
+    '      <pubStmt xml:id="' + genUUID() + '">\n' +
+    '        <date xml:id="' + genUUID() + '"/>\n' +
+    '      </pubStmt>\n' +
+    '    </fileDesc>\n' +
+    '    <encodingDesc xml:id="' + genUUID() + '">\n' +
+    '      <projectDesc xml:id="' + genUUID() + '">\n' +
+    '        <p xml:id="' + genUUID() + '"/>\n' +
+    '      </projectDesc>\n' +
+    '    </encodingDesc>\n' +
+    '  </meiHead>\n' +
+    '  <music xml:id="' + genUUID() + '">\n' +
+    '    <facsimile xml:id="' + genUUID() + '">\n' +
+    '      <surface xml:id="' + genUUID() + '">\n' +
+    '      </surface>\n' +
+    '    </facsimile>\n' +
+    '    <body xml:id="' + genUUID() + '">\n' +
+    '      <mdiv xml:id="' + genUUID() + '">\n' +
+    '        <pages xml:id="' + genUUID() + '">\n' +
+    '          <page xml:id="' + genUUID() + '">\n' +
+    '            <system xml:id="' + genUUID() + '">\n' +
+    '              <staff xml:id="' + genUUID() + '">\n' +
+    '                <layer xml:id="' + genUUID() + '">\n' +
+    '                </layer>\n' +
+    '              </staff>\n' +
+    '            </system>\n' +
+    '          </page>\n' +
+    '        </pages>\n' +
+    '      </mdiv>\n' +
+    '    </body>\n' +
+    '  </music>\n' +
+    '</mei>';
+    return meiString;
+}
+
 require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.center.min'], function(){
 
 (function ($)
@@ -121,7 +164,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     "<li><a id='update-diva-dropdown'>Update Diva</a></li>" +
                     "<li><a id='clear-selection-dropdown'>Clear selection</a></li>" +
                     "<li><a id='estimate-dropdown'>Estimate line numbers:<span style='float:right'><input type='checkbox' id='estimateBox'></span></a></li>");
-                $("#dropdown-file-upload").append("<li><a id='server-load-dropdown'>Load file from server...</a></li>" + 
+                $("#dropdown-file-upload").append("<li><a id='default-mei-dropdown'>Create default St. Gallen file</a></li>" +
+                    "<li><a id='server-load-dropdown'>Load file from server...</a></li>" + 
                     "<li><a id='manuscript-dropdown'>Close project</a></li>");
                 $("#help-dropdown").append("<li><a id='diva-manager-help'>Diva page manager</a></li>");
 
@@ -167,6 +211,11 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 $("#manuscript-dropdown").on('click', function()
                 {
                     window.location = document.URL.split("?")[0];
+                });
+
+                $("#default-mei-dropdown").on('click', function()
+                {
+                    meiEditor.addDefaultPage(createDefaultMEIString());
                 });
 
                 createModal(meiEditorSettings.element, "fileLinkModal", false, 
@@ -253,6 +302,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     "<br><li>To resize or move a highlight, double-click on it.</li>" +
                     "<li style='margin-left:0.25in'>Click and drag on the edge of the highlight to resize it.</li>" +
                     "<li style='margin-left:0.25in'>Click and drag on the centre of the highlight or with the shift key down to move it.</li>" +
+                    "<li style='margin-left:0.25in'>Pressing an arrow key will move a box slightly in the direction of the arrow.</li>" +
                     "<li style='margin-left:0.25in'>Press the 'Escape' key to leave resize/move mode.</li>" +
                     "<br><li>Press the 'delete' key on your keyboard to delete all selected highlights and the MEI lines associated with them.</li>");
 
