@@ -130,22 +130,16 @@
 
         setManuscript: function(manuscript)
         {
-            // console.log("Set manuscript:");
-            // console.log(manuscript);
             this.manuscript = manuscript;
         },
 
         setFolio: function(folio)
         {
-            // console.log("Set folio:");
-            // console.log(folio);
             this.folio = folio;
         },
 
         setChant: function(chant)
         {
-            // console.log("Set chant:");
-            // console.log(chant);
             this.chant = chant;
         },
 
@@ -165,7 +159,6 @@
 
         silentUrlUpdate: function()
         {
-            // console.log("silentUrlUpdate!");
             // Don't actually trigger the router!
             app.navigate(this.getUrl(), {trigger: false});
         }
@@ -509,7 +502,6 @@
         },
 
         unAssign : function (view, selector) {
-            // console.log("Unassign!");
             $(selector).empty();
         }
     });
@@ -557,8 +549,6 @@
          */
         unfoldChantCallback: function(event)
         {
-            // console.log(event);
-            // console.log("unfoldChantCallback");
             // "collapse-1" becomes 1, etc.
             var chant = parseInt(event.target.id.split('-')[1]) + 1;
             this.chantStateSwitch.setValue(chant, true);
@@ -569,7 +559,6 @@
 
         foldChantCallback: function(event)
         {
-            // console.log("foldChantCallback");
             var chant = parseInt(event.target.id.split('-')[1]) + 1;
             this.chantStateSwitch.setValue(chant, false);
 
@@ -586,8 +575,6 @@
         {
             if (index !== undefined && index !== null)
             {
-                // console.log("Setting chant to:");
-                // console.log(index);
                 this.unfoldedChant = parseInt(index) - 1;
             }
         },
@@ -628,8 +615,6 @@
         render: function()
         {
             // TODO: Figure out why this gets called 4 times
-            // console.log("Collection:");
-            // console.log(this.collection.toJSON());
             if (this.collection.length === 0)
             {
                 $(this.el).html(this.emptyTemplate());
@@ -676,7 +661,6 @@
 
         initialize: function(options)
         {
-            // console.log("New DivaView");
             _.bindAll(this, 'render', 'storeFolioIndex', 'storeInitialFolio',
                 'setGlobalFullScreen', 'zoomToLocation');
             this.setManuscript(options.siglum, options.folio);
@@ -874,7 +858,6 @@
          */
         storeFolioIndex: function(index, fileName)
         {
-            // console.log("storeFolioIndex()");
             if (index != this.currentFolioIndex)
             {
                 this.currentFolioIndex = index;
@@ -1766,16 +1749,12 @@
          */
         newSearch: function()
         {
-            // console.log("newSearch");
-
             // Grab the new search query
             var newQuery = encodeURIComponent($(this.$el.selector
                 + ' .search-input').val());
-
             // Grab the field name
             var fieldSelection = encodeURIComponent($(this.$el.selector
                 + ' .search-field').val());
-
             if (newQuery !== this.query || fieldSelection !== this.field) {
                 this.query = newQuery;
                 this.field = fieldSelection;
@@ -1785,25 +1764,14 @@
                     this.searchResultView.hide();
                 }
                 else {
-                    // console.log("fieldSelection:");
-                    // console.log(fieldSelection);
-
                     // Append the field selector if necessary!
                     if (fieldSelection !== "all")
                     {
-                        console.log(newQuery);
                         // Split the query into multiple things
                         queryList = decodeURIComponent(newQuery).split(",");
-                        console.log(queryList);
                         var disjunctive = new SolrDisjunctiveQueryBuilder(fieldSelection, queryList);
                         newQuery = disjunctive.getQuery();
-                        console.log(newQuery);
-//                        newQuery = fieldSelection + ': "' + newQuery + '"';
                     }
-
-                    // console.log("newQuery:");
-                    // console.log(newQuery);
-
                     if (this.queryPostScript !== null)
                     {
                         // Attach this.queryPostScript if available
@@ -1910,10 +1878,8 @@
             // Clear out the events
             this.events = {};
             // Menu items
-            // console.log(this.$el.selector);
             for (var i = 0; i < this.model.toJSON().results.length; i++)
             {
-                // console.log(i);
                 this.events["click .search-result-" + i]
                     = "buttonClickCallback";
             }
@@ -1923,8 +1889,6 @@
 
         buttonClickCallback: function(input)
         {
-            // console.log("Search click!");
-            // console.log(input);
             // Stop the page from auto-reloading
             event.preventDefault();
             // Figure out which button was clicked on
@@ -1942,7 +1906,6 @@
          */
         changeQuery: function(query, field)
         {
-            console.log("changeQuery: ", query, field);
             this.currentPage = 1;
             this.model.setQuery(query);
             this.query = String(query);
@@ -2159,7 +2122,6 @@
         folioView: null,
 
         initialize: function (options) {
-            // console.log("New ManuscriptIndividualPageView");
             _.bindAll(this, 'render', 'afterFetch', 'updateFolio');
             this.template = _.template($('#manuscript-template').html());
             this.manuscript = new Manuscript(
@@ -2217,14 +2179,11 @@
          */
         updateFolio: function()
         {
-            // console.log("updateFolio()");
             var folio = this.divaView.getFolio();
             // Query the folio set at that specific manuscript number
             newUrl =  siteUrl + "folio-set/manuscript/"
                       + this.manuscript.toJSON().id + "/"
                       + folio + "/";
-            // console.log(folio);
-            // console.log(newUrl);
             // Rebuild the folio View
             this.folioView.setUrl(newUrl);
             this.folioView.setCustomNumber(folio);
@@ -2254,7 +2213,6 @@
 
         render: function()
         {
-            // console.log("Rendering ManuscriptIndividualPageView");
             $(this.el).html(this.template({
                 manuscript: this.manuscript.toJSON()
             }));
@@ -2420,14 +2378,8 @@
 
         manuscriptSingle: function(query, folio, chant)
         {
-            // console.log("Folio:");
-            // console.log(folio);
-            // console.log("Chant:");
-            // console.log(chant);
-
             if (this.manuscriptView !== null)
             {
-                // console.log("Destroying Manuscript View");
                 // We want to make sure that the old view, if it exists, is
                 // completely cleared-out.
                 this.manuscriptView.divaView.uninitializeDiva();
