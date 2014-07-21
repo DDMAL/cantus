@@ -515,10 +515,9 @@
     var ChantCollectionView = CantusAbstractView.extend
     ({
         /**
-         * The number of times the collection has been loaded. Useful if you want
-         * different functionality on initial load.
+         * Useful switch if you want different functionality on initial load.
          */
-        timesLoaded: 0,
+        alreadyLoaded: false,
 
         /**
          * The chant that bootstrap has unfolded!
@@ -546,7 +545,7 @@
             // Set the unfolded chant when the global state changes!
             this.listenTo(globalEventHandler, "ChangeChant", this.setUnfoldedChant);
 
-            this.timesLoaded = 0;
+            this.alreadyLoaded = 0;
         },
 
         /**
@@ -608,12 +607,15 @@
             this.collection.url = url;
             this.collection.fetch({success: this.afterFetch});
             // Reset the chant if this isn't the initial load
-            if (this.timesLoaded > 0) {
+            if (this.alreadyLoaded) {
                 this.unfoldedChant = undefined;
                 globalEventHandler.trigger("ChangeChant", undefined);
                 globalEventHandler.trigger("SilentUrlUpdate");
             }
-            this.timesLoaded++;
+            else
+            {
+                this.alreadyLoaded = true;
+            }
         },
 
         /**
@@ -637,7 +639,6 @@
                     {
                         chants: this.collection.toJSON(),
                         unfoldedChant: this.unfoldedChant
-//                        unfoldedChant: undefined
                     }
                 ));
             }
