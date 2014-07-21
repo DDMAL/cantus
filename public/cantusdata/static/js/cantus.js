@@ -1741,6 +1741,8 @@
             this.searchFormTemplates['mode'] = _.template(
                 $('#search-mode-template').html());
             this.searchFormTemplates['volpiano'] = this.searchFormTemplates['all'];
+            this.searchFormTemplates['feast'] = this.searchFormTemplates['all'];
+            this.searchFormTemplates['office'] = this.searchFormTemplates['all'];
 
             // If not supplied, the query is blank
             if (options !== undefined)

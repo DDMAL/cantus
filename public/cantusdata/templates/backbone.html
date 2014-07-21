@@ -183,7 +183,7 @@
 
 <script type="text/template" id="search-mode-template">
     {# Mode input #}
-<select multiple class="form-control mode-input search-input">
+<select multiple class="form-control search-input">
     <option value="1">Mode 1</option>
     <option value="2">Mode 2</option>
     <option value="3">Mode 3</option>
@@ -200,6 +200,24 @@
 </select>
 </script>
 
+{#<script type="text/template" id="search-office-template">#}
+{#<select multiple class="form-control search-input">#}
+{#    <option>Matins</option>#}
+{#    <option>Mode 2</option>#}
+{#    <option>Mode 3</option>#}
+{#</select>#}
+{#</script>#}
+
+{#<script type="text/template" id="search-feast-template">#}
+{#<select multiple class="form-control search-input">#}
+{#    <option value="1">Mode 1</option>#}
+{#    <option value="2">Mode 2</option>#}
+{#    <option value="3">Mode 3</option>#}
+{#    <option value="4">Mode 4</option>#}
+{#    <option value="5">Mode 5</option>#}
+{#</select>#}
+{#</script>#}
+
 <script type="text/template" id="search-all-template">
 {# Regular text input #}
 <input type="text" class="form-control search-input" placeholder="Search" value="<%= query %>">
@@ -213,6 +231,8 @@
             <option value="all">All Fields:</option>
             <option value="volpiano">Volpiano:</option>
             <option value="mode">Mode:</option>
+            <option value="feast">Feast:</option>
+            <option value="office">Office:</option>
         </select>
     </div>
     <div class="form-group input-section"></div>
