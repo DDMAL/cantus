@@ -257,6 +257,13 @@
         <% } else { %>
         <td></td>
         <% } %>
+        <% if (searchType == "volpiano") { %>
+            <% if (results[i].volpiano !== undefined) { %>
+            <td class="volpiano"><%= results[i].volpiano %></td>
+            <% } else { %>
+            <td></td>
+            <% } %>
+        <% } %>
         <% if (results[i].folio !== undefined) { %>
         <td><%= results[i].folio %></td>
         <% } else { %>

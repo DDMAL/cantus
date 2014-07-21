@@ -415,6 +415,7 @@
                         // We have stored the manuscript name in Solr
                         newElement.manuscript = current.manuscript_name_hidden;
                         newElement.folio = current.folio;
+                        newElement.volpiano = current.volpiano;
                         newElement.url = "/manuscript/" + current.manuscript_id
                             + "/?folio=" + current.folio
                             + "&chant=" + current.sequence;
@@ -1807,12 +1808,12 @@
                     {
                         // Attach this.queryPostScript if available
                         this.searchResultView.changeQuery(newQuery + " "
-                            + this.queryPostScript);
+                            + this.queryPostScript, this.field);
                     }
                     else
                     {
                         // Set the new search results view
-                        this.searchResultView.changeQuery(newQuery);
+                        this.searchResultView.changeQuery(newQuery, this.field);
                     }
 
                 }
@@ -1878,6 +1879,7 @@
         currentPage: null,
         paginationView: null,
         query: null,
+        field: null,
 
         initialize: function(options)
         {
@@ -1938,11 +1940,13 @@
          *
          * @param query string
          */
-        changeQuery: function(query)
+        changeQuery: function(query, field)
         {
+            console.log("changeQuery: ", query, field);
             this.currentPage = 1;
             this.model.setQuery(query);
-            this.query = query;
+            this.query = String(query);
+            this.field = String(field);
             this.model.fetch({success: this.updatePaginationView});
         },
 
@@ -1980,7 +1984,12 @@
             // Only render if the model is defined
             if (this.model !== undefined)
             {
-                $(this.el).html(this.template({results: this.model.getFormattedData()}));
+                $(this.el).html(this.template(
+                    {
+                        searchType: this.field,
+                        results: this.model.getFormattedData()
+                    }
+                ));
                 if (this.model.getFormattedData().length !== 0 && this.paginationView !== null)
                 {
                     this.assign(this.paginationView, this.$el.selector + " .pagination");
