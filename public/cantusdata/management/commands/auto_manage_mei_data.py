@@ -10,7 +10,7 @@ class Command(BaseCommand):
     args = ""
 
     mei_data_locations = {
-        'st_gallen_390': "data_dumps/mei/csg-390",
+        # 'st_gallen_390': "data_dumps/mei/csg-390",
         # 'st_gallen_391': None,
         'salzinnes': "data_dumps/mei/salz"
     }
