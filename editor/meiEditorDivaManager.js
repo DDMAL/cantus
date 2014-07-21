@@ -39,6 +39,30 @@ function genUUID()
     lut[d3&0xff]+lut[d3>>8&0xff]+lut[d3>>16&0xff]+lut[d3>>24&0xff];
 }
 
+function findKeyIn(needle, haystack)
+{
+    for(curItem in haystack)
+    {
+        if(curItem == needle)
+        {
+            return haystack[curItem];
+        }
+        else if(typeof(haystack[curItem]) === "object")
+        {
+            var found = findKeyIn(needle, haystack[curItem]);
+            if(found)
+            {
+                return found;
+            }
+            else
+            {
+                continue;
+            }
+        }
+    }
+    return false;
+}
+
 require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.center.min'], function(){
 
 (function ($)
@@ -799,39 +823,35 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     { 
                         var pageName = meiEditorSettings.divaImagesToMeiFiles[curKey];
                         var neumeArray = [];
-                        pageIndex = meiEditorSettings.divaPageList.indexOf(curKey);
-                        pageText = meiEditorSettings.pageData[pageName].getSession().doc.getAllLines().join("\n"); //get the information from the page expressed in one string
-                        jsonData = x2js.xml_str2json(pageText); //turn this into a JSON "dict"
-                        regions = [];
+                        var pageIndex = meiEditorSettings.divaPageList.indexOf(curKey);
+                        var pageText = meiEditorSettings.pageData[pageName].getSession().doc.getAllLines().join("\n"); //get the information from the page expressed in one string
+                        var jsonData = x2js.xml_str2json(pageText); //turn this into a JSON "dict"
+                        var regions = [];
 
                         xmlns = jsonData['mei']['_xmlns']; //find the xml namespace file
-                        try{
-                            neumeArray = jsonData['mei']['music']['body']['mdiv']['pages']['page']['system']['staff']['layer']['neume'];
-                        }
-                        catch(TypeError){
-                            neumeArray = jsonData['mei']['music']['body']['mdiv']['score']['section']['staff']['layer']['neume'];
-                        }
-                        zoneArray = jsonData['mei']['music']['facsimile']['surface']['zone'];
 
-                        for (curZoneIndex in zoneArray) //for each "zone" object
-                        { 
+                        neumeArray = findKeyIn('neume', jsonData);
+                        zoneArray = findKeyIn('zone', jsonData);
+
+                        for (curNeumeIndex in neumeArray)
+                        {
                             var neume_ulx, neume_uly, neume_width, neume_height, neumeID; //need to be re-initialized every time
-                            curZone = zoneArray[curZoneIndex];
-                            zoneID = curZone["_xml:id"];
-                            for (curNeumeIndex in neumeArray) //find the corresponding neume - don't think there's a more elegant way in JS
-                            { 
-                                if (neumeArray[curNeumeIndex]["_facs"] == zoneID)
+                            curNeume = neumeArray[curNeumeIndex];
+                            zoneID = curNeume["_facs"];
+                            for(curZoneIndex in zoneArray)
+                            {
+                                if(zoneArray[curZoneIndex]["_xml:id"] == zoneID)
                                 {
-                                    curNeume = neumeArray[curNeumeIndex]; //assemble the info on the neume
-                                    neumeID = curNeume["_xml:id"];
+                                    curZone = zoneArray[curZoneIndex]; //assemble the info on the neume
                                     meiEditorSettings.neumeObjects[zoneID] = curNeume['_name'];
                                     neume_ulx = curZone._ulx;
                                     neume_uly = curZone._uly;
                                     neume_width = curZone._lrx - neume_ulx;
                                     neume_height = curZone._lry - neume_uly;
-                                    break;
+                                    break;      
                                 }
                             }
+
                             //add it to regions
                             regions.push({'width': neume_width, 'height': neume_height, 'ulx': neume_ulx, 'uly': neume_uly, 'divID': zoneID});
                         }
