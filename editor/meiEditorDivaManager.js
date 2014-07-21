@@ -39,6 +39,73 @@ function genUUID()
     lut[d3&0xff]+lut[d3>>8&0xff]+lut[d3>>16&0xff]+lut[d3>>24&0xff];
 }
 
+function findKeyIn(needle, haystack)
+{
+    for(curItem in haystack)
+    {
+        if(curItem == needle)
+        {
+            return haystack[curItem];
+        }
+        else if(typeof(haystack[curItem]) === "object")
+        {
+            var found = findKeyIn(needle, haystack[curItem]);
+            if(found)
+            {
+                return found;
+            }
+            else
+            {
+                continue;
+            }
+        }
+    }
+    return false;
+}
+
+function createDefaultMEIString(){
+
+    meiString = '<?xml version="1.0" encoding="UTF-8"?>' +
+    '<mei xmlns="http://www.music-encoding.org/ns/mei" xml:id="' + genUUID() + '" meiversion="2013">\n' +
+    '  <meiHead xml:id="' + genUUID() + '">\n' +
+    '    <fileDesc xml:id="' + genUUID() + '">\n' +
+    '      <titleStmt xml:id="' + genUUID() + '">\n' +
+    '        <title xml:id="' + genUUID() + '"/>\n' +
+    '      </titleStmt>\n' +
+    '      <pubStmt xml:id="' + genUUID() + '">\n' +
+    '        <date xml:id="' + genUUID() + '"/>\n' +
+    '      </pubStmt>\n' +
+    '    </fileDesc>\n' +
+    '    <encodingDesc xml:id="' + genUUID() + '">\n' +
+    '      <projectDesc xml:id="' + genUUID() + '">\n' +
+    '        <p xml:id="' + genUUID() + '"/>\n' +
+    '      </projectDesc>\n' +
+    '    </encodingDesc>\n' +
+    '  </meiHead>\n' +
+    '  <music xml:id="' + genUUID() + '">\n' +
+    '    <facsimile xml:id="' + genUUID() + '">\n' +
+    '      <surface xml:id="' + genUUID() + '">\n' +
+    '      </surface>\n' +
+    '    </facsimile>\n' +
+    '    <body xml:id="' + genUUID() + '">\n' +
+    '      <mdiv xml:id="' + genUUID() + '">\n' +
+    '        <pages xml:id="' + genUUID() + '">\n' +
+    '          <page xml:id="' + genUUID() + '">\n' +
+    '            <system xml:id="' + genUUID() + '">\n' +
+    '              <staff xml:id="' + genUUID() + '">\n' +
+    '                <layer xml:id="' + genUUID() + '">\n' +
+    '                </layer>\n' +
+    '              </staff>\n' +
+    '            </system>\n' +
+    '          </page>\n' +
+    '        </pages>\n' +
+    '      </mdiv>\n' +
+    '    </body>\n' +
+    '  </music>\n' +
+    '</mei>';
+    return meiString;
+}
+
 require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.center.min'], function(){
 
 (function ($)
@@ -97,7 +164,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     "<li><a id='update-diva-dropdown'>Update Diva</a></li>" +
                     "<li><a id='clear-selection-dropdown'>Clear selection</a></li>" +
                     "<li><a id='estimate-dropdown'>Estimate line numbers:<span style='float:right'><input type='checkbox' id='estimateBox'></span></a></li>");
-                $("#dropdown-file-upload").append("<li><a id='server-load-dropdown'>Load file from server...</a></li>" + 
+                $("#dropdown-file-upload").append("<li><a id='default-mei-dropdown'>Create default St. Gallen file</a></li>" +
+                    "<li><a id='server-load-dropdown'>Load file from server...</a></li>" + 
                     "<li><a id='manuscript-dropdown'>Close project</a></li>");
                 $("#help-dropdown").append("<li><a id='diva-manager-help'>Diva page manager</a></li>");
 
@@ -143,6 +211,11 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 $("#manuscript-dropdown").on('click', function()
                 {
                     window.location = document.URL.split("?")[0];
+                });
+
+                $("#default-mei-dropdown").on('click', function()
+                {
+                    meiEditor.addDefaultPage(createDefaultMEIString());
                 });
 
                 createModal(meiEditorSettings.element, "fileLinkModal", false, 
@@ -229,6 +302,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     "<br><li>To resize or move a highlight, double-click on it.</li>" +
                     "<li style='margin-left:0.25in'>Click and drag on the edge of the highlight to resize it.</li>" +
                     "<li style='margin-left:0.25in'>Click and drag on the centre of the highlight or with the shift key down to move it.</li>" +
+                    "<li style='margin-left:0.25in'>Pressing an arrow key will move a box slightly in the direction of the arrow.</li>" +
                     "<li style='margin-left:0.25in'>Press the 'Escape' key to leave resize/move mode.</li>" +
                     "<br><li>Press the 'delete' key on your keyboard to delete all selected highlights and the MEI lines associated with them.</li>");
 
@@ -265,18 +339,19 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     { 
                         meiEditor.deselectResizable(".resizableSelected");
                     } 
-                    /*else if ((ev.keyCode) < 41 && (ev.keyCode > 36))
+                    else if ((ev.keyCode) < 41 && (ev.keyCode > 36))
                     {
                         ev.stopPropagation();
                         ev.preventDefault();
                         nudgeListeners(ev.keyCode);
-                    }*/
+                    }
                 };   
 
                 //nudges the current resizable object 1px in the direction of the keycode
-                /*var nudgeListeners = function(keyCode)
+                var nudgeListeners = function(keyCode)
                 {
                     var object = ".resizableSelected";
+
                     switch(keyCode){
                         case 37:
                             $(object).offset({'left': $(object).offset().left - 1});
@@ -293,9 +368,9 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         default:
                             break;
                     }
-
+                    
                     meiEditor.updateBox(object);
-                };*/
+                };
 
                 //updates the size of the drag-div box (spawned on shift/meta+drag)
                 var changeDragSize = function(eve)
@@ -395,7 +470,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                     //create the contents of the modal
                     $("#lineQueryOverlay").append("<div id='lineQuery'>" +
-                        "<h4>Enter desired line numbers for the zone and neume objects:</h4>" +
+                        "<h4>Enter MEI line numbers to insert zone and neume objects:</h4>" +
                         "Zone line number: <input type='text' id='zoneLineInput'><br>" +
                         "Neume line number: <input type='text' id='neumeLineInput'><br>" +
                         "<button style='float:right' type='button' class='btn btn-default' id='lineQueryClose'>Close</button>" +
@@ -744,9 +819,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                     //keep the whitespace intact at the beginning
                     meiEditorSettings.pageData[pageTitle].session.doc.replace(searchRange, line);
-
-                    //regenerate the highlights, reset the listeners, reselect the same box
-                    meiEditor.createHighlights();
                 };
 
                 /*
@@ -799,39 +871,35 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     { 
                         var pageName = meiEditorSettings.divaImagesToMeiFiles[curKey];
                         var neumeArray = [];
-                        pageIndex = meiEditorSettings.divaPageList.indexOf(curKey);
-                        pageText = meiEditorSettings.pageData[pageName].getSession().doc.getAllLines().join("\n"); //get the information from the page expressed in one string
-                        jsonData = x2js.xml_str2json(pageText); //turn this into a JSON "dict"
-                        regions = [];
+                        var pageIndex = meiEditorSettings.divaPageList.indexOf(curKey);
+                        var pageText = meiEditorSettings.pageData[pageName].getSession().doc.getAllLines().join("\n"); //get the information from the page expressed in one string
+                        var jsonData = x2js.xml_str2json(pageText); //turn this into a JSON "dict"
+                        var regions = [];
 
                         xmlns = jsonData['mei']['_xmlns']; //find the xml namespace file
-                        try{
-                            neumeArray = jsonData['mei']['music']['body']['mdiv']['pages']['page']['system']['staff']['layer']['neume'];
-                        }
-                        catch(TypeError){
-                            neumeArray = jsonData['mei']['music']['body']['mdiv']['score']['section']['staff']['layer']['neume'];
-                        }
-                        zoneArray = jsonData['mei']['music']['facsimile']['surface']['zone'];
 
-                        for (curZoneIndex in zoneArray) //for each "zone" object
-                        { 
+                        neumeArray = findKeyIn('neume', jsonData);
+                        zoneArray = findKeyIn('zone', jsonData);
+
+                        for (curNeumeIndex in neumeArray)
+                        {
                             var neume_ulx, neume_uly, neume_width, neume_height, neumeID; //need to be re-initialized every time
-                            curZone = zoneArray[curZoneIndex];
-                            zoneID = curZone["_xml:id"];
-                            for (curNeumeIndex in neumeArray) //find the corresponding neume - don't think there's a more elegant way in JS
-                            { 
-                                if (neumeArray[curNeumeIndex]["_facs"] == zoneID)
+                            curNeume = neumeArray[curNeumeIndex];
+                            zoneID = curNeume["_facs"];
+                            for(curZoneIndex in zoneArray)
+                            {
+                                if(zoneArray[curZoneIndex]["_xml:id"] == zoneID)
                                 {
-                                    curNeume = neumeArray[curNeumeIndex]; //assemble the info on the neume
-                                    neumeID = curNeume["_xml:id"];
+                                    curZone = zoneArray[curZoneIndex]; //assemble the info on the neume
                                     meiEditorSettings.neumeObjects[zoneID] = curNeume['_name'];
                                     neume_ulx = curZone._ulx;
                                     neume_uly = curZone._uly;
                                     neume_width = curZone._lrx - neume_ulx;
                                     neume_height = curZone._lry - neume_uly;
-                                    break;
+                                    break;      
                                 }
                             }
+
                             //add it to regions
                             regions.push({'width': neume_width, 'height': neume_height, 'ulx': neume_ulx, 'uly': neume_uly, 'divID': zoneID});
                         }
@@ -925,6 +993,9 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     reapplyBoxListeners();
                     $("#diva-wrapper").unbind('resize');
                     meiEditor.updateCaches();
+                    
+                    //regenerate the highlights, reset the listeners, reselect the same box
+                    meiEditor.createHighlights();
                 };
 
                 /*
