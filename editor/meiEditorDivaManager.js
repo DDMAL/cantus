@@ -152,7 +152,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     highlightedCache: [],       //cache of highlighted items used to reload display once createHighlights is called
                     resizableCache: [],         //cache of resizable items used to reload display once createHighlights is called
                     lastClicked: "",            //determines which delete listener to use by storing which side was last clicked on
-                    highlightHandle: ""         //handler for the highlight event, needs to be committed to memory
+                    highlightHandle: "",        //handler for the highlight event, needs to be committed to memory
+                    activeNeumeChoices: []      //list of neumes present on the active page to choose from when creating new zones
                 };
 
                 $.extend(meiEditorSettings, globals);
@@ -324,7 +325,15 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 {
                     if (ev.keyCode == 27)
                     {
-                        $("#lineQueryClose").trigger('click');
+                        if($("#neumeNameInput").autocomplete("instance"))
+                        {   
+                            $("#neumeNameInput").autocomplete("disable");
+                        } 
+                        else 
+                        {
+                            $("#lineQueryClose").trigger('click');
+                            $("#neumeNameInput").autocomplete("destroy");
+                        }
                     }
                     else if (ev.keyCode == 13)
                     {
@@ -416,11 +425,12 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                     //generate the element strings
                     var zoneStringToAdd = '<zone xml:id="' + zoneID + '" ulx="' + ulx + '" uly="' + uly + '" lrx="' + lrx + '" lry="' + lry + '"/>';
-                    var neumeStringToAdd = '<neume xml:id="' + neumeID + '" facs="' + zoneID + '"/>';
+                    var neumeStringToAdd = '<neume xml:id="' + neumeID + '" facs="' + zoneID + '"'; //not closed so name can be added
                     
                     //if the "estimate line numbers" dropdown box is checked, it will make its best guess and automatically insert them
                     if($("#estimateBox").is(":checked"))
                     {
+                        neumeStringToAdd += ' name=""/>';
                         var chosenDoc = meiEditor.getActivePanel().text();
                         var editorRef = meiEditorSettings.pageData[chosenDoc];
 
@@ -473,9 +483,14 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         "<h4>Enter MEI line numbers to insert zone and neume objects:</h4>" +
                         "Zone line number: <input type='text' id='zoneLineInput'><br>" +
                         "Neume line number: <input type='text' id='neumeLineInput'><br>" +
+                        "Neume name: <input type='text' id='neumeNameInput'><br>" +
                         "<button style='float:right' type='button' class='btn btn-default' id='lineQueryClose'>Close</button>" +
                         "<button style='float:right' type='button' class='btn btn-primary' id='lineQuerySubmit'>Create Highlight</button>" +
                         "</div>");
+
+                    $("#neumeNameInput").autocomplete({
+                        source: meiEditorSettings.activeNeumeChoices
+                    });
 
                     //center it
                     $("#lineQuery").center({against: 'parent'});
@@ -490,6 +505,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     //on submit for the overlay
                     $("#lineQuerySubmit").on('click', function()
                     {             
+                        neumeStringToAdd += ' name="' + $("#neumeNameInput").val() + '"/>';
                         var chosenDoc = meiEditor.getActivePanel().text();
                         var editorRef = meiEditorSettings.pageData[chosenDoc];
                         var lineCount = editorRef.getSession().doc.getLength();
@@ -1261,6 +1277,26 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     //add new files to link-file select
                     $("#selectfile-link").append("<option name='" + fileName + "'>" + fileName + "</option>");
                     meiEditor.reapplyEditorClickListener();
+                });
+
+                meiEditor.events.subscribe("ActivePageChanged", function(pageName)
+                {
+                    var lineArr = meiEditorSettings.pageData[pageName].getSession().doc.getAllLines();
+                    for(curLine in lineArr)
+                    {
+                        if(lineArr[curLine].match(/<neume/g))
+                        {
+                            var neumeNameString = lineArr[curLine].match(/name=".*" /g);
+                            var neumeNameSliced = neumeNameString[0].slice(6, -2);
+                            if (meiEditorSettings.activeNeumeChoices.indexOf(neumeNameSliced) == -1)
+                            {
+                                meiEditorSettings.activeNeumeChoices.push(neumeNameSliced);
+                            }
+                        }
+                    }
+                    console.log(meiEditorSettings.activeNeumeChoices);
+
+                    //also have diva automatically scroll
                 });
 
                 meiEditor.events.subscribe("PageWasDeleted", function(pageName)
