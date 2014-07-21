@@ -395,7 +395,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                     //create the contents of the modal
                     $("#lineQueryOverlay").append("<div id='lineQuery'>" +
-                        "<h4>Enter desired line numbers for the zone and neume objects:</h4>" +
+                        "<h4>Enter MEI line numbers to insert zone and neume objects:</h4>" +
                         "Zone line number: <input type='text' id='zoneLineInput'><br>" +
                         "Neume line number: <input type='text' id='neumeLineInput'><br>" +
                         "<button style='float:right' type='button' class='btn btn-default' id='lineQueryClose'>Close</button>" +
