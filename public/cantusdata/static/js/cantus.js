@@ -1,8 +1,8 @@
 (function($){
 
-    const siteUrl = "/";
-    const iipImageServerUrl = "http://cantus.simssa.ca/";
-    const divaImageDirectory = "/srv/images/cantus/";
+    var siteUrl = "/";
+    var iipImageServerUrl = "http://cantus.simssa.ca/";
+    var divaImageDirectory = "/srv/images/cantus/";
 
     // Global Event Handler for global events
     var globalEventHandler = {};
@@ -199,7 +199,7 @@
             // Handle out-of-bounds cases
             if (index < 0)
             {
-                index = 0
+                index = 0;
             }
             else if (index >= this.length)
             {
@@ -224,7 +224,7 @@
                 }
             }
             // No elements are true!
-            return undefined
+            return undefined;
         }
     });
 
@@ -440,7 +440,7 @@
         {
             return {
                 results: []
-            }
+            };
         }
     });
 
@@ -460,7 +460,7 @@
 
         defaults: function()
         {
-            return []
+            return [];
         }
     });
 
@@ -583,13 +583,14 @@
         {
             // Make a new StateSwitch object that we will use to keep track
             // of the open chant.
-            this.chantStateSwitch = new StateSwitch(this.collection.length)
+            this.chantStateSwitch = new StateSwitch(this.collection.length);
         },
 
         /**
          * Set the URL of the collection and fetch the data.
          *
          * @param url
+         * @param unfoldedChant
          */
         setUrl: function(url, unfoldedChant)
         {
@@ -858,7 +859,7 @@
          */
         storeFolioIndex: function(index, fileName)
         {
-            if (index != this.currentFolioIndex)
+            if (index !== this.currentFolioIndex)
             {
                 this.currentFolioIndex = index;
                 this.currentFolioName = fileName;
@@ -924,7 +925,10 @@
         },
 
         /**
-         * Zoom Diva to a locatiom.
+         * Zoom Diva to a location
+         * 
+         * @param {type} box
+         * @returns null
          */
         zoomToLocation: function(box)
         {
@@ -971,6 +975,12 @@
         // Subviews
         chantCollectionView: null,
 
+        /**
+         * 
+         * 
+         * @param {type} options
+         * @returns null
+         */
         initialize: function(options)
         {
             _.bindAll(this, 'render', 'afterFetch', 'assignChants');
@@ -1903,6 +1913,7 @@
          * Set the model's query string and fetch results from the restful API.
          *
          * @param query string
+         * @param field string
          */
         changeQuery: function(query, field)
         {
@@ -2173,9 +2184,8 @@
         },
 
         /**
-         *
-         *
-         * @param chant optional chant index.
+         * 
+         * @returns {undefined}
          */
         updateFolio: function()
         {
