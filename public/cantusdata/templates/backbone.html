@@ -252,10 +252,12 @@
     <tr>
         <td><a href="<%= results[i].url %>" class="search-result-<%= i %>"><%= results[i].name %></a></td>
         <td><%= results[i].model %></td>
-        <% if (results[i].manuscript !== undefined) { %>
-        <td><%= results[i].manuscript %></td>
-        <% } else { %>
-        <td></td>
+        <% if (showManuscriptName === true) { %>
+            <% if (results[i].manuscript !== undefined) { %>
+            <td><%= results[i].manuscript %></td>
+            <% } else { %>
+            <td></td>
+            <% } %>
         <% } %>
         <% if (searchType == "volpiano") { %>
             <% if (results[i].volpiano !== undefined) { %>

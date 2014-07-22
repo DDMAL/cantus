@@ -1118,7 +1118,7 @@
             _.bindAll(this, 'render');
             this.template= _.template($('#header-template').html());
             // The search view that we will shove into the modal box
-            this.searchView = new SearchView();
+            this.searchView = new SearchView({showManuscriptName: true});
             // The modal box for the search pop-up
             this.searchModalView = new ModalView({title: "Search", view: this.searchView});
             // Create the TopMenuView with all of its options
@@ -1673,6 +1673,10 @@
             this.searchFormTemplates['volpiano'] = this.searchFormTemplates['all'];
             this.searchFormTemplates['feast'] = this.searchFormTemplates['all'];
             this.searchFormTemplates['office'] = this.searchFormTemplates['all'];
+
+            // This will be populated in a minute
+            var searchResultViewOptions = {};
+
             // If not supplied, the query is blank
             if (options !== undefined)
             {
@@ -1685,14 +1689,19 @@
                 {
                     this.query = "";
                 }
+                // Add the query to the search result
+                searchResultViewOptions.query = this.query;
                 // Is there a query post script?
                 if (options.queryPostScript !== undefined)
                 {
                     this.setQueryPostScript(options.queryPostScript);
                 }
+                if (options.showManuscriptName !== undefined)
+                {
+                    searchResultViewOptions.showManuscriptName = options.showManuscriptName;
+                }
             }
-            //Date to use for checking timestamps
-            this.searchResultView = new SearchResultView({query: this.query});
+            this.searchResultView = new SearchResultView(searchResultViewOptions);
         },
 
         /**
@@ -1820,6 +1829,7 @@
 
     var SearchResultView = CantusAbstractView.extend
     ({
+        showManuscriptName: null,
         pageSize: 10,
         currentPage: null,
         paginationView: null,
@@ -1839,6 +1849,11 @@
             {
                 this.model.setQuery(options.query);
                 this.query = options.query;
+            }
+            if (options.showManuscriptName !== undefined)
+            {
+                // The client might not want to see the manuscript name
+                this.showManuscriptName = options.showManuscriptName;
             }
 
             // Query the search result
@@ -1925,8 +1940,10 @@
             // Only render if the model is defined
             if (this.model !== undefined)
             {
+                console.log("Showmanuscriptname: ", this.showManuscriptName)
                 $(this.el).html(this.template(
                     {
+                        showManuscriptName: this.showManuscriptName,
                         searchType: this.field,
                         results: this.model.getFormattedData()
                     }
@@ -2112,7 +2129,7 @@
                 }
             );
             this.folioView = new FolioView();
-            this.searchView = new SearchView();
+            this.searchView = new SearchView({showManuscriptName: false});
             this.searchNotationView = new SearchNotationView(
                 {
                     divaView: this.divaView
@@ -2277,7 +2294,12 @@
             _.bindAll(this, 'render');
             this.template= _.template($('#search-page-template').html());
             // Initialize the subviews
-            this.searchView = new SearchView({query: options.query});
+            this.searchView = new SearchView(
+                {
+                    query: options.query,
+                    showManuscriptName: true
+                }
+            );
         },
 
         render: function()
@@ -2370,7 +2392,7 @@
         search: function(query)
         {
             // Delete a search view if it exists
-            if (this.searchView !== null)
+            if (this.searchView !== null && this.searchView !== undefined)
             {
                 this.searchView.remove();
                 this.searchView = null;
