@@ -937,8 +937,6 @@
             var desiredPage = box.p;
             var zoomLevel = this.$el.data('diva').getZoomLevel();
 
-            // Zoom in
-            // this.$el.data('diva').setZoomLevel(zoomLevel);
             // Now jump to that page
             this.$el.data('diva').gotoPageByNumber(desiredPage);
             // Get the height above top for that box
@@ -1132,11 +1130,6 @@
                             url: "/",
                             active: false
                         },
-//                        {
-//                            name: "Manuscripts",
-//                            url: "/manuscripts/",
-//                            active: false
-//                        },
                         {
                             name: "Search",
                             tags: 'data-toggle="modal" data-target="#myModal"',
@@ -1199,11 +1192,7 @@
             var new_url = this.items[id].url;
             var old_url = Backbone.history.fragment;
             // Only route to the new URL if it really is a new url!
-            if (new_url === "#" || new_url.trim('/') === old_url.trim('/'))
-            {
-                return;
-            }
-            else
+            if (!(new_url === "#" || new_url.trim('/') === old_url.trim('/')))
             {
                 app.navigate(this.items[id].url, {trigger: true});
                 this.setActiveButton(id);
@@ -1466,6 +1455,7 @@
                     this.endPage = this.currentPage + ((this.maxWidth / 2) | 0);
                 }
             }
+
             this.render();
             // We have to register the events every time we render
             this.registerEvents();
@@ -1536,7 +1526,6 @@
             this.results = new CantusAbstractModel();
             this.paginator = new PaginationView({name: "notation-paginator"});
             this.registerEvents();
-
             this.listenTo(this.results, "sync", this.resultFetchCallback);
         },
 
@@ -1545,12 +1534,10 @@
             this.query = null;
             this.results = null;
             this.paginator.remove();
-
             // We don't actually need to call remove() on this again
             this.divaView = null;
             this.paginator = null;
             this.manuscript = null;
-
             // Deal with the event listeners
             this.stopListening();
             this.undelegateEvents();
@@ -1570,7 +1557,6 @@
             this.events = {};
             // Register them
             this.events["submit"] = "newSearch";
-
             // Delegate the new events
             this.delegateEvents();
         },
@@ -1679,7 +1665,6 @@
             _.bindAll(this, 'render', 'newSearch', 'autoNewSearch',
                 'changeSearchField', 'registerEvents');
             this.template= _.template($('#search-template').html());
-
             // The search form templates
             this.searchFormTemplates['all'] = _.template(
                 $('#search-all-template').html());
@@ -1688,7 +1673,6 @@
             this.searchFormTemplates['volpiano'] = this.searchFormTemplates['all'];
             this.searchFormTemplates['feast'] = this.searchFormTemplates['all'];
             this.searchFormTemplates['office'] = this.searchFormTemplates['all'];
-
             // If not supplied, the query is blank
             if (options !== undefined)
             {
@@ -1707,12 +1691,8 @@
                     this.setQueryPostScript(options.queryPostScript);
                 }
             }
-
             //Date to use for checking timestamps
             this.searchResultView = new SearchResultView({query: this.query});
-
-            // Re-register events if this.el changes
-//            this.listenTo(this, "change", this.registerEvents);
         },
 
         /**
@@ -1730,19 +1710,16 @@
             // Grab the field name
             var newField = encodeURIComponent($(this.$el.selector
                 + ' .search-field').val());
-
             // We want to make sure that we aren't just loading the same template again
             if (this.searchFormTemplates[newField] !== this.searchFormTemplates[this.field])
             {
                 // Store the field
                 this.field = newField;
                 // Render with the new template
-                // this.render();
                 $(this.$el.selector  + " .input-section").html(
                     this.searchFormTemplates[String(this.field)](
                         {query: this.query}));
             }
-
             // We want to fire off a search
             this.newSearch();
         },
@@ -1787,9 +1764,7 @@
                         // Set the new search results view
                         this.searchResultView.changeQuery(newQuery, this.field);
                     }
-
                 }
-                // app.navigate("/search/?q=" + this.query);
             }
         },
 
@@ -1801,11 +1776,9 @@
             // Clear out the events
             this.events = {};
             // Register them
-            // this.events["click " + this.$el.selector + ".search-button"] = "newSearch";
             this.events["change .search-input"] = "newSearch";
             this.events["change .search-field"] = "changeSearchField";
             this.events["input .search-input"] = "autoNewSearch";
-
             // Delegate the new events
             this.delegateEvents();
         },
@@ -2158,21 +2131,16 @@
             this.searchView.remove();
             this.searchNotationView.remove();
             this.folioView.remove();
-
             // Deal with the event listeners
             this.stopListening();
             this.undelegateEvents();
-
-
             // Nullify the manuscript model
             this.manuscript = null;
-
             // Nullify the views
             this.divaView = null;
             this.searchView = null;
             this.searchNotationView = null;
             this.folioView = null;
-
             // Remove from the dom
             this.$el.empty();
         },
@@ -2287,11 +2255,6 @@
             {
                 this.assign(this.manuscriptCollectionView, '.manuscript-list');
             }
-            else
-            {
-
-//                this.assign(this.loadingAlertView, '.manuscript-list');
-            }
             globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
@@ -2401,7 +2364,6 @@
             this.manuscriptView.getData();
 
             globalEventHandler.trigger("ChangeManuscript", query);
-//            globalEventHandler.trigger("ChangeFolio", folio);
             globalEventHandler.trigger("ChangeChant", chant);
         },
 
