@@ -76,16 +76,10 @@
 
         setDivaSize: function()
         {
-            if (this.divaFullScreen === true)
-            {
-                // $('.diva-inner').css("width", $(window).width());
-            }
-            else
+            if (!this.divaFullScreen)
             {
                 $('.diva-outer').css("height",
                         $("#content-container").height() - 75);
-//                $('.diva-outer').css("width", $("#diva-toolbar").width());
-                // $('.diva-inner').css("width", $("#diva-toolbar").width());
             }
         },
 
