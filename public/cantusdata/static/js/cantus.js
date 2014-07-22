@@ -76,7 +76,7 @@
 
         setDivaSize: function()
         {
-            if (!this.divaFullScreen)
+            if (this.divaFullScreen !== true)
             {
                 $('.diva-outer').css("height",
                         $("#content-container").height() - 75);
