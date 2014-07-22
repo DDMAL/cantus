@@ -165,7 +165,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     "<li><a id='update-diva-dropdown'>Update Diva</a></li>" +
                     "<li><a id='clear-selection-dropdown'>Clear selection</a></li>" +
                     "<li><a id='estimate-dropdown'>Estimate line numbers:<span style='float:right'><input type='checkbox' id='estimateBox'></span></a></li>");
-                $("#dropdown-file-upload").append("<li><a id='default-mei-dropdown'>Create default St. Gallen file</a></li>" +
+                $("#dropdown-file-upload").append("<li><a id='default-mei-dropdown'>Create default MEI file</a></li>" +
                     "<li><a id='server-load-dropdown'>Load file from server...</a></li>" + 
                     "<li><a id='manuscript-dropdown'>Close project</a></li>");
                 $("#help-dropdown").append("<li><a id='diva-manager-help'>Diva page manager</a></li>");
