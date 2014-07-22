@@ -1635,6 +1635,7 @@
         }
     });
 
+
     var SearchView = CantusAbstractView.extend
     ({
         /**
@@ -1653,6 +1654,7 @@
 
         // Subviews
         searchResultView: null,
+        showManuscriptName: true,
 
         // Search template dictionary
         currentSearchFormTemplate: "all",
@@ -1674,9 +1676,6 @@
             this.searchFormTemplates['feast'] = this.searchFormTemplates['all'];
             this.searchFormTemplates['office'] = this.searchFormTemplates['all'];
 
-            // This will be populated in a minute
-            var searchResultViewOptions = {};
-
             // If not supplied, the query is blank
             if (options !== undefined)
             {
@@ -1689,19 +1688,18 @@
                 {
                     this.query = "";
                 }
-                // Add the query to the search result
-                searchResultViewOptions.query = this.query;
                 // Is there a query post script?
                 if (options.queryPostScript !== undefined)
                 {
                     this.setQueryPostScript(options.queryPostScript);
                 }
-                if (options.showManuscriptName !== undefined)
-                {
-                    searchResultViewOptions.showManuscriptName = options.showManuscriptName;
-                }
             }
-            this.searchResultView = new SearchResultView(searchResultViewOptions);
+            this.searchResultView = new SearchResultView(
+                {
+                    query: this.query,
+                    showManuscriptName: this.showManuscriptName
+                }
+            );
         },
 
         /**
@@ -1826,6 +1824,18 @@
             return this.trigger('render', this);
         }
     });
+
+     /**
+     * A special kind of search that exists within some particular manuscript.
+     */
+    var InternalSearchView = SearchView.extend
+    (
+        {
+            showManuscriptName: false
+        }
+    );
+
+
 
     var SearchResultView = CantusAbstractView.extend
     ({
@@ -2129,7 +2139,7 @@
                 }
             );
             this.folioView = new FolioView();
-            this.searchView = new SearchView({showManuscriptName: false});
+            this.searchView = new InternalSearchView();
             this.searchNotationView = new SearchNotationView(
                 {
                     divaView: this.divaView
