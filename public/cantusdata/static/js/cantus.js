@@ -25,7 +25,7 @@
         {
             _.bindAll(this, 'timedQuerySetAll', 'setAll', 'setContainerHeight',
                 'setScrollableHeight', 'setManuscriptContentContainerHeight',
-            'setDivaSize', 'setDivaFullScreen');
+            'setDivaSize', 'setDivaFullScreen', 'setViewPortSize');
             var self = this;
             $(window).resize(function()
             {
@@ -38,6 +38,9 @@
                 function(){this.setDivaFullScreen(true);});
             this.listenTo(globalEventHandler, "divaNotFullScreen",
                 function(){this.setDivaFullScreen(false);});
+
+            // We also want to do stuff when the viewport is rotated
+            this.listenTo($(window), "orientationchange", this.setViewPortSize);
         },
 
         /**
