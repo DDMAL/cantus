@@ -1,9 +1,17 @@
 import uuid
+from music21.pitch import STEPREF
 import os
 from cantusdata import settings
 from django.core.management.base import BaseCommand
 import solr
 import csv
+
+# import math
+from music21.interval import convertSemitoneToSpecifierGeneric
+#import time
+# from pymei.Import import convert
+from pymei import XmlImport
+# import sys
 
 
 class Command(BaseCommand):
@@ -37,12 +45,17 @@ class Command(BaseCommand):
 
         if mode == "mei_to_csv":
             self.stdout.write("Dumping MEI to CSV.")
-            data = MEI2Parser(mei_location, siglum)
+            parser = MEI2Parser(mei_location, siglum)
+            data = parser.parse()
             self.data_to_csv(data, csv_location)
             self.stdout.write("MEI dumped to CSV.")
         elif mode == "mei_to_solr":
             self.stdout.write("Committing MEI to Solr.")
-            data = MEI2Parser(mei_location, siglum)
+            if (manuscript == "st_gallen_390"):
+                parser = GallenMEI2Parser(mei_location, siglum)
+            else:
+                parser = MEI2Parser(mei_location, siglum)
+            data = parser.parse()
             self.data_to_solr(data, solrconn)
             self.stdout.write("MEI committed to Solr.")
         elif mode == "csv_to_solr":
@@ -344,52 +357,39 @@ class CSVParser():
         height = lry - uly
         return [{'width': width, 'ulx': ulx, 'uly': uly, 'height': height}]
 
-
 ###################### Direct MEI Parser #################################
 
 
-def MEI2Parser(folder_name, siglum_slug):
+class MEI2Parser():
 
-    # ================================================================
-    # MEI2couchdb.py
-    #
-    # Usage: python MEI2couchdb directory shortest_gram longest_gram dotext
-    # where directory is the path to the directory containing MEI files to munge in to the couch
-    #       shortest_gram and longest_gram are integers in the range 2--10 defining which dbs to add to
-    #       dotext is 0 if you don't want to process text
-    #
-    # Given a directory containing MEI files, this script iterates through all the MEI files
-    # and saves a new CouchDB document for each location (bounding box) on the page that we might want to
-    # highlight in our web application. We consider all pitch sequences 2--10 notes long. Pitch
-    # sequences of different lengths are stored in separate CouchDB databases. Originally we were
-    # storing one document per n-gram and then adding to a growing array of locations (box coordinates)
-    # as instances of the same pitch sequence were found. To allow for page range filtering (and improved data access), we
-    # modified our organization to store a separate doocument for each location. This means that
-    # several documents can have the same pitch sequence, but with different locations. If a pitch sequence
-    # spans two systems, two seperate bounding boxes are stored in the same document.
-    #
-    # Throughout this script, ulx and uly stand for upper left x and y coordinates respectively and lrx and lry stand for lower right coordinates.
-    # These values define the pixels on the original page image that should be highlighted for a given item (sequence of neumes, line of text, etc.)
-    #
-    # Author: Jessica Thompson
-    # Last modified June 2011
-    #
-    # ================================================================
-    import solr
-    import uuid
-    # import math
-    from music21.interval import convertSemitoneToSpecifierGeneric
-    #import time
-    # from pymei.Import import convert
-    from pymei import XmlImport
-    import os
-    # import sys
+    """
+    MEI2couchdb.py
 
-    import logging
+    Usage: python MEI2couchdb directory shortest_gram longest_gram dotext
+    where directory is the path to the directory containing MEI files to munge in to the couch
+          shortest_gram and longest_gram are integers in the range 2--10 defining which dbs to add to
+          dotext is 0 if you don't want to process text
 
-    logging.basicConfig(filename='errors.log', format='%(asctime)-6s: %(name)s - %(levelname)s - %(message)s')
-    lg = logging.getLogger('meisearch')
-    lg.setLevel(logging.DEBUG)
+    Given a directory containing MEI files, this script iterates through all the MEI files
+    and saves a new CouchDB document for each location (bounding box) on the page that we might want to
+    highlight in our web application. We consider all pitch sequences 2--10 notes long. Pitch
+    sequences of different lengths are stored in separate CouchDB databases. Originally we were
+    storing one document per n-gram and then adding to a growing array of locations (box coordinates)
+    as instances of the same pitch sequence were found. To allow for page range filtering (and improved data access), we
+    modified our organization to store a separate doocument for each location. This means that
+    several documents can have the same pitch sequence, but with different locations. If a pitch sequence
+    spans two systems, two seperate bounding boxes are stored in the same document.
+
+    Throughout this script, ulx and uly stand for upper left x and y coordinates respectively and lrx and lry stand for lower right coordinates.
+    These values define the pixels on the original page image that should be highlighted for a given item (sequence of neumes, line of text, etc.)
+
+    Author: Jessica Thompson
+
+    Made object-oriented by Andrew Fogarty.
+    """
+
+    folder_name = None
+    siglum_slug = None
 
     systemcache = {}
     idcache = {}
@@ -415,10 +415,17 @@ def MEI2Parser(folder_name, siglum_slug):
     text_file = open("output_log.txt", "w")
 
 
+    ##### Constructor #####
+
+    def __init__(self, folder_name, siglum_slug):
+        self.folder_name = folder_name
+        self.siglum_slug = siglum_slug
+
+
     #*****************************FUNCTIONS*******************************
 
 
-    def convertStepToPs(step, oct):
+    def convertStepToPs(self, step, oct):
         '''
         REMOVED FROM MUSIC21, so added here. -- AH
 
@@ -443,18 +450,19 @@ def MEI2Parser(folder_name, siglum_slug):
         return ps
 
 
-    def findbyID(llist, mid, meifile):
-        """ Returns the object in llist that has the given id. Used for finding zone.
-            pymei function get_by_facs can be used instead, but this one is faster.
+    def findbyID(self, llist, mid, meifile):
+        """ Returns the object in llist that has the given id. Used for finding
+        zone. pymei function get_by_facs can be used instead, but this one is
+        faster.
         """
-        if mid in idcache:
-            return idcache[mid]
+        if mid in self.idcache:
+            return self.idcache[mid]
         else:
             # idcache[mid] = llist[(i for i, obj in enumerate(llist) if obj.id == mid).next()]
-            idcache[mid] = meifile.getElementById(mid)
-            return idcache[mid]
+            self.idcache[mid] = meifile.getElementById(mid)
+            return self.idcache[mid]
 
-    def getLocation(seq, meifile, zones):
+    def getLocation(self, seq, meifile, zones):
         """ Given a sequence of notes and the corresponding MEI Document, calculates
         and returns the json formatted list of  locations (box coordinates) to be
         stored for an instance of a pitch sequence in our CouchDB.  If the sequence
@@ -465,41 +473,41 @@ def MEI2Parser(folder_name, siglum_slug):
         lrys = []
         twosystems=0
         endofsystem = len(seq)-1
-        if seq[0].getId() not in systemcache:
-            systemcache[seq[0].getId()] = meifile.lookBack(seq[0], "sb")
+        if seq[0].getId() not in self.systemcache:
+            self.systemcache[seq[0].getId()] = meifile.lookBack(seq[0], "sb")
             # systemcache[seq[0]] = meifile.get_system(seq[0])
-        if seq[endofsystem].getId() not in systemcache:
-            systemcache[seq[endofsystem].getId()] = meifile.lookBack(seq[endofsystem], "sb")
+        if seq[endofsystem].getId() not in self.systemcache:
+            self.systemcache[seq[endofsystem].getId()] = meifile.lookBack(seq[endofsystem], "sb")
             # systemcache[seq[endofsystem]] = meifile.get_system(seq[endofsystem])
 
-        if systemcache[seq[0].getId()] != systemcache[seq[endofsystem].getId()]: #then the sequence spans two systems and we must store two seperate locations to highlight
+        if self.systemcache[seq[0].getId()] != self.systemcache[seq[endofsystem].getId()]: #then the sequence spans two systems and we must store two seperate locations to highlight
             twosystems=1
             for i in range(1,len(seq)):
-                if seq[i-1].getId() not in systemcache:
-                    systemcache[seq[i-1].getId()] = meifile.lookBack(seq[i-1], "sb")
-                if seq[i] not in systemcache:
-                    systemcache[seq[i].getId()] = meifile.lookBack(seq[i], "sb")
+                if seq[i-1].getId() not in self.systemcache:
+                    self.systemcache[seq[i-1].getId()] = meifile.lookBack(seq[i-1], "sb")
+                if seq[i] not in self.systemcache:
+                    self.systemcache[seq[i].getId()] = meifile.lookBack(seq[i], "sb")
 
                 # find the last note on the first system and the first note on the second system
-                if systemcache[seq[i-1].getId()] != systemcache[seq[i].getId()]:
+                if self.systemcache[seq[i-1].getId()] != self.systemcache[seq[i].getId()]:
                     endofsystem = i # this will be the index of the first note on second system
                     # ulx1 = int(meifile.get_by_facs(seq[0].parent.parent.facs)[0].ulx)
                     # lrx1 = int(meifile.get_by_facs(seq[i-1].parent.parent.facs)[0].lrx)
                     # ulx2 = int(meifile.get_by_facs(seq[i].parent.parent.facs)[0].ulx)
                     # lrx2 = int(meifile.get_by_facs(seq[-1].parent.parent.facs)[0].lrx)
-                    ulx1 =  int(findbyID(zones, seq[0].parent.parent.getAttribute("facs").value, meifile).getAttribute("ulx").value)
-                    lrx1 =  int(findbyID(zones, seq[i-1].parent.parent.getAttribute("facs").value, meifile).getAttribute("lrx").value)
-                    ulx2 =  int(findbyID(zones, seq[i].parent.parent.getAttribute("facs").value, meifile).getAttribute("ulx").value)
-                    lrx2 =  int(findbyID(zones, seq[-1].parent.parent.getAttribute("facs").value, meifile).getAttribute("lrx").value)
+                    ulx1 =  int(self.findbyID(zones, seq[0].parent.parent.getAttribute("facs").value, meifile).getAttribute("ulx").value)
+                    lrx1 =  int(self.findbyID(zones, seq[i-1].parent.parent.getAttribute("facs").value, meifile).getAttribute("lrx").value)
+                    ulx2 =  int(self.findbyID(zones, seq[i].parent.parent.getAttribute("facs").value, meifile).getAttribute("ulx").value)
+                    lrx2 =  int(self.findbyID(zones, seq[-1].parent.parent.getAttribute("facs").value, meifile).getAttribute("lrx").value)
         else: # the sequence is contained in one system and only one box needs to be highlighted
-            ulx =  int(findbyID(zones, seq[0].parent.parent.getAttribute("facs").value, meifile).getAttribute("ulx").value)
-            lrx =  int(findbyID(zones, seq[-1].parent.parent.getAttribute("facs").value, meifile).getAttribute("lrx").value)
+            ulx =  int(self.findbyID(zones, seq[0].parent.parent.getAttribute("facs").value, meifile).getAttribute("ulx").value)
+            lrx =  int(self.findbyID(zones, seq[-1].parent.parent.getAttribute("facs").value, meifile).getAttribute("lrx").value)
             # ulx = int(meifile.get_by_facs(seq[0].parent.parent.facs)[0].ulx)
             # lrx = int(meifile.get_by_facs(seq[-1].parent.parent.facs)[0].lrx)
 
         for note in seq:
-            ulys.append(int(findbyID(zones, note.parent.parent.getAttribute("facs").value, meifile).getAttribute("uly").value))
-            lrys.append(int(findbyID(zones, note.parent.parent.getAttribute("facs").value, meifile).getAttribute("lry").value))
+            ulys.append(int(self.findbyID(zones, note.parent.parent.getAttribute("facs").value, meifile).getAttribute("uly").value))
+            lrys.append(int(self.findbyID(zones, note.parent.parent.getAttribute("facs").value, meifile).getAttribute("lry").value))
 
         if twosystems:
             uly1 = min(ulys[:endofsystem])
@@ -512,7 +520,7 @@ def MEI2Parser(folder_name, siglum_slug):
             lry = max(lrys)
             return [{"ulx": int(ulx), "uly": int(uly), "height": abs(uly - lry), "width": abs(ulx - lrx)}]
 
-    def getNeumes(seq, counter):
+    def getNeumes(self, seq, counter):
         """ Given a list of MEI note elements, return a string of the names of the neumes seperated by underscores.
         """
         neumes = str(seq[0].parent.parent.getAttribute('name').value)
@@ -521,7 +529,7 @@ def MEI2Parser(folder_name, siglum_slug):
                 neumes = neumes + '_' + str(seq[k].parent.parent.getAttribute('name').value)
         return neumes
 
-    def getPitchNames(seq):
+    def getPitchNames(self, seq):
         """ Given a list of MEI note elements, return the tuple [pnames, midipitch] where pnames is a string of the
         pitch names of the given notes (no octave information) and midipitch is a list of the midi values for those
         same pitches. Music21's convertStepToPs function is used to get midi pitch values.
@@ -530,10 +538,10 @@ def MEI2Parser(folder_name, siglum_slug):
         midipitch = []
         for note in seq:
             pnames.append(note.getAttribute("pname").value[0]) # a string of pitch names e.g. 'gbd'
-            midipitch.append(int(convertStepToPs(str(note.getAttribute("pname").value[0]), int(note.getAttribute("oct").value))))
+            midipitch.append(int(self.convertStepToPs(str(note.getAttribute("pname").value[0]), int(note.getAttribute("oct").value))))
         return [str("".join(pnames)), midipitch]
 
-    def getIntervals(semitones, pnames):
+    def getIntervals(self, semitones, pnames):
         """ Get quality (major, minor, etc.) invariant interval name and direction
         for example, an ascending major second and an ascending minor second will
         both be encoded as 'u2'. the only tritone to occur is between b and f, in
@@ -569,7 +577,7 @@ def MEI2Parser(folder_name, siglum_slug):
 
         return "_".join(intervals)
 
-    def getContour(semitones):
+    def getContour(self, semitones):
         """ Given a list of integers defining the size and direction of a series of
         musical intervals in semitones, this function encodes the contour of the
         melody with Parsons code for musical contour where u=up, d=down, r=repeat.
@@ -584,24 +592,35 @@ def MEI2Parser(folder_name, siglum_slug):
                contour = contour + 'd' # down
         return contour
 
-    def storeText(lines, zones, textdb):
-        """ For each line of text in the list "lines", this function gets the
-        corresponding box coordinates and saves the  line as a doc in the "text"
-        database.
-        """
-        for line in lines:
-            text = line.value
-            facs = str(line.getAttribute('facs').value)
-            zone = findbyID(zones, facs)
-            ulx = int(zone.ulx)
-            uly = int(zone.uly)
-            lrx = int(zone.lrx)
-            lry = int(zone.lry)
-            textdb.save({'pagen': pagen, 'text': text, 'location': {"ulx": ulx ,"uly": uly, "height": abs(uly - lry), "width": abs(ulx - lrx)}})
-        return 1
+    # def storeText(self, lines, zones, textdb):
+    #     """ For each line of text in the list "lines", this function gets the
+    #     corresponding box coordinates and saves the  line as a doc in the "text"
+    #     database.
+    #     """
+    #     for line in lines:
+    #         text = line.value
+    #         facs = str(line.getAttribute('facs').value)
+    #         zone = self.findbyID(zones, facs)
+    #         ulx = int(zone.ulx)
+    #         uly = int(zone.uly)
+    #         lrx = int(zone.lrx)
+    #         lry = int(zone.lry)
+    #         textdb.save(
+    #             {
+    #                 'pagen': pagen,
+    #                 'text': text,
+    #                 'location': {
+    #                     "ulx": ulx,
+    #                     "uly": uly,
+    #                     "height": abs(uly - lry),
+    #                     "width": abs(ulx - lrx)
+    #                 }
+    #             }
+    #         )
+    #     return 1
 
 
-    def processMeiFile(ffile, shortest_gram, longest_gram):
+    def processMeiFile(self, ffile, shortest_gram, longest_gram):
         """
         Process the MEI file.
 
@@ -615,7 +634,6 @@ def MEI2Parser(folder_name, siglum_slug):
             meifile = XmlImport.documentFromFile(str(ffile))
         except Exception, e:
             print "E: ", e
-            lg.debug("Could not process file {0}. Threw exception: {1}".format(ffile, e))
             print "Whoops!"
 
         print "ffile:"
@@ -667,14 +685,14 @@ def MEI2Parser(folder_name, siglum_slug):
                     # if ffile == "/Volumes/Copland/Users/ahankins/Documents/code/testing/Liber_Usualis_Final_Output/0012/0012_corr.mei":
                     #     pdb.set_trace()
 
-                    location = getLocation(seq, meifile, zones)
+                    location = self.getLocation(seq, meifile, zones)
                     #print 'location: ' + str(location)
 
                     # get neumes
-                    neumes = getNeumes(seq, i)
+                    neumes = self.getNeumes(seq, i)
 
                     # get pitch names
-                    [pnames, midipitch] = getPitchNames(seq)
+                    [pnames, midipitch] = self.getPitchNames(seq)
 
                     # get semitones
                     # calculate difference between each adjacent entry in midipitch list
@@ -693,18 +711,18 @@ def MEI2Parser(folder_name, siglum_slug):
                     # thus the tritone is never encoded as such and will always
                     # be represented as either a fifth or a fourth, depending
                     # on inversion
-                    intervals = getIntervals(semitones, pnames)
+                    intervals = self.getIntervals(semitones, pnames)
 
                     # get contour - encode with Parsons code for musical contour
-                    contour = getContour(semitones)
+                    contour = self.getContour(semitones)
                     # save new document
                     mydocs.append(
                         {
                             'id': str(uuid.uuid4()),
-                            'type': TYPE,
-                            'siglum_slug': siglum_slug,
+                            'type': "cantusdata_music_notation",
+                            'siglum_slug': self.siglum_slug,
                             'pagen': int(pagen),
-                            'project': int(project_id),
+                            # 'project': int(project_id),
                             'pnames': pnames,
                             'neumes': neumes,
                             'contour': contour,
@@ -715,43 +733,128 @@ def MEI2Parser(folder_name, siglum_slug):
                     )
             else:
                 print 'page ' + str(pagen) + ' already processed\n'
-        text_file.write(mydocs.__str__())
-        text_file.write("\n")
-        text_file.write("###################################### ITER ##############")
-        text_file.write("\n")
 
-        systemcache.clear()
-        idcache.clear()
+        self.systemcache.clear()
+        self.idcache.clear()
 
         return mydocs
 
 
     #***************************** MEI PROCESSING ****************************
 
-    path = folder_name
+    def parse(self):
 
-    # TEMP
-    shortest_gram = 2
-    longest_gram = 10
+        path = self.folder_name
 
-    # Generate list of files to process, preferring human-corrected MEI files
-    meifiles = []
-    for bd, dn, fn in os.walk(path):
-        if ".git" in bd:
-            continue
-        for f in fn:
-            if f.startswith("."):
+        # TEMP
+        shortest_gram = 2
+        longest_gram = 10
+
+        # Generate list of files to process, preferring human-corrected MEI files
+        meifiles = []
+        for bd, dn, fn in os.walk(path):
+            if ".git" in bd:
                 continue
-            if ".mei" in f:
-                meifiles.append(os.path.join(bd, f))
-                print "Adding {0}".format(f)
+            for f in fn:
+                if f.startswith("."):
+                    continue
+                if ".mei" in f:
+                    meifiles.append(os.path.join(bd, f))
+                    print "Adding {0}".format(f)
 
-    meifiles.sort()
+        meifiles.sort()
 
-    # Iterate through each MEI file in directory
-    # This list will represent one manuscript
-    output = []
-    for ffile in meifiles:
-        output.append(processMeiFile(ffile, shortest_gram, longest_gram))
-    text_file.close()
-    return output
+        # Iterate through each MEI file in directory
+        # This list will represent one manuscript
+        output = []
+        for ffile in meifiles:
+            output.append(self.processMeiFile(ffile, shortest_gram, longest_gram))
+        return output
+
+
+class GallenMEI2Parser(MEI2Parser):
+    """
+    Some customizations to MEI2Parser() so that it works with the St. Gallen
+    spec.
+    """
+    def processMeiFile(self, ffile, shortest_gram, longest_gram):
+        """
+        Process the MEI file.
+
+        :param ffile:
+        :param shortest_gram: int representing shortest gram length
+        :param longest_gram: int representing longest gram length
+        :return: list of dictionaries
+        """
+        print '\nProcessing ' + str(ffile) + '...'
+        try:
+            meifile = XmlImport.documentFromFile(str(ffile))
+        except Exception, e:
+            print "E: ", e
+            print "Whoops!"
+
+        print "ffile:"
+        print ffile
+
+        page = meifile.getElementsByName('page')
+
+        pagen = str(ffile).split('_')[len(str(ffile).split('_')) - 1].split('.')[0]
+
+        # We are going
+        notes = meifile.getElementsByName('neume')
+        print "notes:"
+        print notes
+
+        return "lol"
+
+        zones = meifile.getElementsByName('zone')
+        nnotes = len(notes) # number of notes in file
+
+        mydocs = []
+
+        for i in range(shortest_gram, longest_gram+1):
+            lrows = 0 #comment out this line if you want to process files that aren't already in the couch
+            if lrows == 0:
+                print "Processing pitch sequences... "
+                for j in range(0, nnotes-i):
+                    seq = notes[j:j+i]
+
+                    location = self.getLocation(seq, meifile, zones)
+
+                    # get neumes
+                    neumes = self.getNeumes(seq, i)
+
+                    # get pitch names
+                    [pnames, midipitch] = self.getPitchNames(seq)
+
+                    # get semitones
+                    # calculate difference between each adjacent entry in midipitch list
+                    semitones = [m-n for n, m in zip(midipitch[:-1], midipitch[1:])]
+                    str_semitones = str(semitones)[1:-1] # string will be stored instead of array for easy searching
+                    str_semitones = str_semitones.replace(', ', '_')
+
+                    intervals = self.getIntervals(semitones, pnames)
+                    contour = self.getContour(semitones)
+                    # save new document
+                    mydocs.append(
+                        {
+                            'id': str(uuid.uuid4()),
+                            'type': "cantusdata_music_notation",
+                            'siglum_slug': self.siglum_slug,
+                            'pagen': int(pagen),
+                            # 'project': int(project_id),
+                            'pnames': pnames,
+                            'neumes': neumes,
+                            'contour': contour,
+                            'semitones': str_semitones,
+                            'intervals': intervals,
+                            'location': str(location)
+                        }
+                    )
+            else:
+                print 'page ' + str(pagen) + ' already processed\n'
+
+        self.systemcache.clear()
+        self.idcache.clear()
+
+        return mydocs
