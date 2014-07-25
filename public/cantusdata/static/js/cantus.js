@@ -54,6 +54,7 @@
             this.setContainerHeight();
             this.setManuscriptContentContainerHeight();
             this.setDivaSize();
+            this.setViewPortSize();
         },
 
         setContainerHeight: function()
@@ -80,6 +81,18 @@
             {
                 $('.diva-outer').css("height",
                         $("#content-container").height() - 75);
+            }
+        },
+
+        setViewPortSize: function()
+        {
+            if ($(window).width() < 880)
+            {
+                var window_width = $(window).width();
+                var window_height = $(window).height();
+                var computed_height = 880 * (window_height / window_width);
+                var zoom_factor = 880 / window_width;
+                $('meta[name=viewport]').attr('content','width=880, height=' + computed_height + 'initial-scale=' + zoom_factor + ', user-scalable=no');
             }
         },
 

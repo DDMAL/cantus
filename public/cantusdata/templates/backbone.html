@@ -16,19 +16,8 @@
     <script src="/static/js/plugins/highlight.js"></script>
     <script src="/static/js/plugins/canvas.js"></script>
 
-{#    <meta content='width=960, initial-scale=2' name='viewport'/>#}
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/ico" href="/static/img/favicon.ico">
-    <script>
-        if ($(window).width() < 880)
-        {
-            var window_width = $(window).width();
-            var window_height = $(window).height();
-            var computed_height = 880 * (window_height / window_width);
-            var zoom_factor = 880 / window_width;
-            $('meta[name=viewport]').attr('content','width=880, height=' + computed_height + 'initial-scale=' + zoom_factor + ', user-scalable=no');
-        }
-    </script>
 </head>
 <body>
     <div id="header-container">
