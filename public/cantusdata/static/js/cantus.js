@@ -815,7 +815,7 @@
          * @param imageName Some image name, ex: "folio_001.jpg"
          * @returns string "001"
          */
-        imageNameToFolio: function (imageName)
+        imageNameToFolio: function(imageName)
         {
             var splitFolioName = String(imageName).split('.')[0].split('_');
             return splitFolioName[splitFolioName.length - 1];
@@ -826,7 +826,7 @@
          *
          * @param imageName
          */
-        setImagePrefixAndSuffix: function (imageName)
+        setImagePrefixAndSuffix: function(imageName)
         {
             // Suffix is usually just ".jpeg" or whatever...
             this.imageSuffix = String(imageName).split('.')[1];
