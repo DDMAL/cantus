@@ -49,7 +49,10 @@ class SearchNotationView(APIView):
         query = query.lower()
 
         if qtype == "neumes":
-            query_stmt = 'neumes:{0}'.format(query.replace(' ', '_'))
+            query_stmt = 'neumes:"{0}"'.format(
+                # query
+                query.replace(' ', '_')
+            )
         elif qtype == "pnames" or qtype == "pnames-invariant":
             if not search_utils.valid_pitch_sequence(query):
                 raise NotationException("The query you provided is not a valid pitch sequence")
@@ -69,12 +72,12 @@ class SearchNotationView(APIView):
         if qtype == "pnames-invariant":
             print query_stmt + manuscript_query
             response = solrconn.query(query_stmt + manuscript_query,
-                                      score=False, sort="pagen asc", q_op="OR",
+                                      score=False, sort="folio asc", q_op="OR",
                                       rows=1000000)
         else:
             print query_stmt + manuscript_query
             response = solrconn.query(query_stmt + manuscript_query,
-                                      score=False, sort="pagen asc",
+                                      score=False, sort="folio asc",
                                       rows=1000000)
         numfound = response.numFound
 
@@ -90,7 +93,7 @@ class SearchNotationView(APIView):
                 response = [r for r in response if len(r['pnames']) == notegrams_num]
 
         for d in response:
-            page_number = d['pagen']
+            page_number = d['folio']
             locations = json.loads(d['location'].replace("'", '"'))
 
             if isinstance(locations, types.DictType):
