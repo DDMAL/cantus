@@ -521,7 +521,8 @@ class MEI2Parser():
             return [{"ulx": int(ulx), "uly": int(uly), "height": abs(uly - lry), "width": abs(ulx - lrx)}]
 
     def getNeumes(self, seq, counter):
-        """ Given a list of MEI note elements, return a string of the names of the neumes seperated by underscores.
+        """ Given a list of MEI note elements, return a string of the names of
+        the neumes seperated by underscores.
         """
         neumes = str(seq[0].parent.parent.getAttribute('name').value)
         for k in range(1, counter):
@@ -773,6 +774,75 @@ class MEI2Parser():
 
 
 class GallenMEI2Parser(MEI2Parser):
+
+    def getNeumes(self, seq, counter):
+        """ Given a list of MEI note elements, return a string of the names of
+        the neumes seperated by underscores.
+        """
+        neumes = str(seq[0].getAttribute('name').value)
+        for k in range(1, counter):
+            if seq[k].id != seq[k-1].id:
+                neumes = neumes + '_' + str(seq[k].getAttribute('name').value)
+        return neumes
+
+    def getLocation(self, seq, meifile, zones):
+        """ Given a sequence of notes and the corresponding MEI Document, calculates
+        and returns the json formatted list of  locations (box coordinates) to be
+        stored for an instance of a pitch sequence in our CouchDB.  If the sequence
+        is contained in a single system, only one location will be stored. If the
+        sequence spans two systems, a list of two locations will be stored.
+        """
+        ulys = []
+        lrys = []
+        twosystems=0
+        endofsystem = len(seq)-1
+        if seq[0].getId() not in self.systemcache:
+            self.systemcache[seq[0].getId()] = meifile.lookBack(seq[0], "sb")
+            # systemcache[seq[0]] = meifile.get_system(seq[0])
+        if seq[endofsystem].getId() not in self.systemcache:
+            self.systemcache[seq[endofsystem].getId()] = meifile.lookBack(seq[endofsystem], "sb")
+            # systemcache[seq[endofsystem]] = meifile.get_system(seq[endofsystem])
+
+        if self.systemcache[seq[0].getId()] != self.systemcache[seq[endofsystem].getId()]: #then the sequence spans two systems and we must store two seperate locations to highlight
+            twosystems=1
+            for i in range(1,len(seq)):
+                if seq[i-1].getId() not in self.systemcache:
+                    self.systemcache[seq[i-1].getId()] = meifile.lookBack(seq[i-1], "sb")
+                if seq[i] not in self.systemcache:
+                    self.systemcache[seq[i].getId()] = meifile.lookBack(seq[i], "sb")
+
+                # find the last note on the first system and the first note on the second system
+                if self.systemcache[seq[i-1].getId()] != self.systemcache[seq[i].getId()]:
+                    endofsystem = i # this will be the index of the first note on second system
+                    # ulx1 = int(meifile.get_by_facs(seq[0].parent.parent.facs)[0].ulx)
+                    # lrx1 = int(meifile.get_by_facs(seq[i-1].parent.parent.facs)[0].lrx)
+                    # ulx2 = int(meifile.get_by_facs(seq[i].parent.parent.facs)[0].ulx)
+                    # lrx2 = int(meifile.get_by_facs(seq[-1].parent.parent.facs)[0].lrx)
+                    ulx1 =  int(self.findbyID(zones, seq[0].getAttribute("facs").value, meifile).getAttribute("ulx").value)
+                    lrx1 =  int(self.findbyID(zones, seq[i-1].getAttribute("facs").value, meifile).getAttribute("lrx").value)
+                    ulx2 =  int(self.findbyID(zones, seq[i].getAttribute("facs").value, meifile).getAttribute("ulx").value)
+                    lrx2 =  int(self.findbyID(zones, seq[-1].getAttribute("facs").value, meifile).getAttribute("lrx").value)
+        else: # the sequence is contained in one system and only one box needs to be highlighted
+            ulx =  int(self.findbyID(zones, seq[0].getAttribute("facs").value, meifile).getAttribute("ulx").value)
+            lrx =  int(self.findbyID(zones, seq[-1].getAttribute("facs").value, meifile).getAttribute("lrx").value)
+            # ulx = int(meifile.get_by_facs(seq[0].parent.parent.facs)[0].ulx)
+            # lrx = int(meifile.get_by_facs(seq[-1].parent.parent.facs)[0].lrx)
+
+        for note in seq:
+            ulys.append(int(self.findbyID(zones, note.getAttribute("facs").value, meifile).getAttribute("uly").value))
+            lrys.append(int(self.findbyID(zones, note.getAttribute("facs").value, meifile).getAttribute("lry").value))
+
+        if twosystems:
+            uly1 = min(ulys[:endofsystem])
+            uly2 = min(ulys[endofsystem:])
+            lry1 = max(lrys[:endofsystem])
+            lry2 = max(lrys[endofsystem:])
+            return [{"ulx": int(ulx1), "uly": int(uly1), "height": abs(uly1 - lry1), "width": abs(ulx1 - lrx1)},{"ulx": int(ulx2) ,"uly": int(uly2), "height": abs(uly2 - lry2), "width": abs(ulx2 - lrx2)}]
+        else:
+            uly = min(ulys)
+            lry = max(lrys)
+            return [{"ulx": int(ulx), "uly": int(uly), "height": abs(uly - lry), "width": abs(ulx - lrx)}]
+
     """
     Some customizations to MEI2Parser() so that it works with the St. Gallen
     spec.
@@ -797,60 +867,46 @@ class GallenMEI2Parser(MEI2Parser):
         print ffile
 
         page = meifile.getElementsByName('page')
-
         pagen = str(ffile).split('_')[len(str(ffile).split('_')) - 1].split('.')[0]
 
         # We are going
-        notes = meifile.getElementsByName('neume')
-        print "notes:"
-        print notes
+        neumes = meifile.getElementsByName('neume')
 
-        return "lol"
+        # print dir(neumes[0])
+        # for note in neumes:
+        #     print note.getAttributes()
 
         zones = meifile.getElementsByName('zone')
-        nnotes = len(notes) # number of notes in file
+        n_neumes = len(neumes) # number of notes in file
+        print("n_neumes: {0}, shortest_gram: {1}, longest_gram: {2}".format(n_neumes, shortest_gram, longest_gram))
 
         mydocs = []
 
         for i in range(shortest_gram, longest_gram+1):
-            lrows = 0 #comment out this line if you want to process files that aren't already in the couch
+            # comment out this line if you want to process files that aren't
+            # already in the couch
+            lrows = 0
             if lrows == 0:
                 print "Processing pitch sequences... "
-                for j in range(0, nnotes-i):
-                    seq = notes[j:j+i]
-
+                for j in range(0, n_neumes-i):
+                    seq = neumes[j:j+i]
                     location = self.getLocation(seq, meifile, zones)
-
                     # get neumes
-                    neumes = self.getNeumes(seq, i)
+                    n_gram_neumes = self.getNeumes(seq, i)
 
-                    # get pitch names
-                    [pnames, midipitch] = self.getPitchNames(seq)
+                    new_doc = {
+                        'id': str(uuid.uuid4()),
+                        'type': "cantusdata_music_notation",
+                        'siglum_slug': self.siglum_slug,
+                        'pagen': int(pagen),
+                        'neumes': n_gram_neumes,
+                        'location': str(location)
+                    }
 
-                    # get semitones
-                    # calculate difference between each adjacent entry in midipitch list
-                    semitones = [m-n for n, m in zip(midipitch[:-1], midipitch[1:])]
-                    str_semitones = str(semitones)[1:-1] # string will be stored instead of array for easy searching
-                    str_semitones = str_semitones.replace(', ', '_')
+                    print new_doc
 
-                    intervals = self.getIntervals(semitones, pnames)
-                    contour = self.getContour(semitones)
                     # save new document
-                    mydocs.append(
-                        {
-                            'id': str(uuid.uuid4()),
-                            'type': "cantusdata_music_notation",
-                            'siglum_slug': self.siglum_slug,
-                            'pagen': int(pagen),
-                            # 'project': int(project_id),
-                            'pnames': pnames,
-                            'neumes': neumes,
-                            'contour': contour,
-                            'semitones': str_semitones,
-                            'intervals': intervals,
-                            'location': str(location)
-                        }
-                    )
+                    mydocs.append(new_doc)
             else:
                 print 'page ' + str(pagen) + ' already processed\n'
 
