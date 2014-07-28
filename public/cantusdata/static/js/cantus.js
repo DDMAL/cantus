@@ -905,23 +905,30 @@
         {
             this.$el.data('diva').resetHighlights();
 
+            // Grab the array of page filenames straight from Diva.
+            var pageFilenameArray = this.$el.data('diva').getFilenames();
+
             // Use the Diva highlight plugin to draw the boxes
             var highlightsByPageHash = {};
             var pageList = [];
 
             for (var i = 0; i < boxSet.length; i++)
             {
-                var page = boxSet[i].p - 1; // The page
+                // Translate folio to Diva page
+                var folioCode = boxSet[i].p;
+                var pageFilename = this.imagePrefix + "_" + folioCode + ".jp2";
+                console.log("pageFilename: ", pageFilename);
+                var pageIndex = pageFilenameArray.indexOf(pageFilename);
+                console.log("pageIndex: ", pageIndex);
 
-                if (highlightsByPageHash[page] === undefined)
+                if (highlightsByPageHash[pageIndex] === undefined)
                 {
                     // Add page to the hash
-                    highlightsByPageHash[page] = [];
-                    pageList.push(page);
-
+                    highlightsByPageHash[pageIndex] = [];
+                    pageList.push(pageIndex);
                 }
                 // Page is in the hash, so we add to it.
-                highlightsByPageHash[page].push
+                highlightsByPageHash[pageIndex].push
                 ({
                     'width': boxSet[i].w,
                     'height': boxSet[i].h,
@@ -956,8 +963,14 @@
 
             // Now figure out the page that box is on
             var divaOuter = this.$el.data('diva').getSettings().outerSelector;
-            var desiredPage = box.p;
             var zoomLevel = this.$el.data('diva').getZoomLevel();
+
+            // Grab the array of page filenames straight from Diva.
+            var pageFilenameArray = this.$el.data('diva').getFilenames();
+            var folioCode = box.p;
+            var pageFilename = this.imagePrefix + "_" + folioCode + ".jp2";
+            console.log("pageFilename: ", pageFilename);
+            var desiredPage = pageFilenameArray.indexOf(pageFilename) + 1;
 
             // Now jump to that page
             this.$el.data('diva').gotoPageByNumber(desiredPage);
