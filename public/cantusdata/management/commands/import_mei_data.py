@@ -892,7 +892,11 @@ class GallenMEI2Parser(MEI2Parser):
                     seq = neumes[j:j+i]
                     location = self.getLocation(seq, meifile, zones)
                     # get neumes
-                    n_gram_neumes = self.getNeumes(seq, i)
+                    n_gram_neumes = self.getNeumes(seq, i).lower()
+                    n_gram_neumes_no_punctuation = n_gram_neumes.replace(
+                        '_', ' ').translate( string.maketrans("", ""),
+                                             string.punctuation).replace(' ',
+                                                                         '_')
 
                     new_doc = {
                         'id': str(uuid.uuid4()),
