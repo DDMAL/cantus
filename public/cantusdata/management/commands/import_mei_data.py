@@ -5,6 +5,7 @@ from cantusdata import settings
 from django.core.management.base import BaseCommand
 import solr
 import csv
+import string
 
 # import math
 from music21.interval import convertSemitoneToSpecifierGeneric
@@ -45,7 +46,10 @@ class Command(BaseCommand):
 
         if mode == "mei_to_csv":
             self.stdout.write("Dumping MEI to CSV.")
-            parser = MEI2Parser(mei_location, siglum)
+            if (manuscript == "st_gallen_390"):
+                parser = GallenMEI2Parser(mei_location, siglum)
+            else:
+                parser = MEI2Parser(mei_location, siglum)
             data = parser.parse()
             self.data_to_csv(data, csv_location)
             self.stdout.write("MEI dumped to CSV.")
@@ -138,12 +142,12 @@ class CSVParser():
         data_lists = {}
         # The parser prefers a list format
         for row in data:
-            page_num = int(row['pagen']) + 4
-            if not data_lists.has_key(page_num):
+            folio = row['folio']
+            if not data_lists.has_key(folio):
                 # Add an list for the page
-                data_lists[page_num] = []
+                data_lists[folio] = []
             # Append a new element to the list
-            data_lists[page_num].append({
+            data_lists[folio].append({
                 'ulx': row['ulx'],
                 'uly': row['uly'],
                 'neume': row['neume'],
@@ -155,7 +159,7 @@ class CSVParser():
         output = []
         for page in data_lists.keys():
             print data_lists[page]
-            output.append(self.processMeiFile(page, data_lists[page],
+            output.append(self.processMeiFile(folio, data_lists[page],
                                               shortest_gram, longest_gram))
         return output
 
@@ -263,7 +267,7 @@ class CSVParser():
             lry = max(lrys)
             return [{"ulx": int(ulx), "uly": int(uly), "height": abs(uly - lry), "width": abs(ulx - lrx)}]
 
-    def processMeiFile(self, page_number, data_lists, shortest_gram, longest_gram):
+    def processMeiFile(self, folio, data_lists, shortest_gram, longest_gram):
         """
         Process the MEI file.
 
@@ -330,7 +334,7 @@ class CSVParser():
                             'id': str(uuid.uuid4()),
                             'type': "cantusdata_music_notation",
                             'siglum_slug': self.siglum_slug,
-                            'pagen': page_number,
+                            'pagen': folio,
                             # 'project': int(project_id),
                             # 'pnames': pnames,
                             'neumes': neumes,
@@ -341,7 +345,7 @@ class CSVParser():
                         }
                     )
             else:
-                print 'page {0} already processed\n'.format(page_number)
+                print 'page {0} already processed\n'.format(folio)
 
         self.systemcache.clear()
         self.idcache.clear()
@@ -722,7 +726,7 @@ class MEI2Parser():
                             'id': str(uuid.uuid4()),
                             'type': "cantusdata_music_notation",
                             'siglum_slug': self.siglum_slug,
-                            'pagen': int(pagen),
+                            'folio': pagen,
                             # 'project': int(project_id),
                             'pnames': pnames,
                             'neumes': neumes,
@@ -882,6 +886,7 @@ class GallenMEI2Parser(MEI2Parser):
 
         mydocs = []
 
+
         for i in range(shortest_gram, longest_gram+1):
             # comment out this line if you want to process files that aren't
             # already in the couch
@@ -902,8 +907,8 @@ class GallenMEI2Parser(MEI2Parser):
                         'id': str(uuid.uuid4()),
                         'type': "cantusdata_music_notation",
                         'siglum_slug': self.siglum_slug,
-                        'pagen': int(pagen),
-                        'neumes': n_gram_neumes,
+                        'folio': pagen,
+                        'neumes': n_gram_neumes_no_punctuation,
                         'location': str(location)
                     }
 
