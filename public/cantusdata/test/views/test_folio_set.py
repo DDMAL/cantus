@@ -19,7 +19,7 @@ class ManuscriptFolioSetViewTestCase(APITestCase):
                           ' "item_id": "1", "type": "cantusdata_folio"}]'
         # We want to remove the version id and unique id because they're always
         # different.
-        self.assertEqual(remove_all_solr_metadata(response.content),
+        self.assertJSONEqual(remove_all_solr_metadata(response.content),
                          expected_string)
 
     def test_get_specific_folio(self):
@@ -28,11 +28,11 @@ class ManuscriptFolioSetViewTestCase(APITestCase):
         expected_string = '{"manuscript_id": 3, "number": "123",' \
                           ' "item_id": "1", "type": "cantusdata_folio"}'
         # Empty response is just square brackets
-        self.assertEqual(remove_all_solr_metadata(response.content),
+        self.assertJSONEqual(remove_all_solr_metadata(response.content),
                          expected_string)
 
     def test_get_empty_folio(self):
         response = self.client.get("/folio-set/manuscript/3/66666666666/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Empty response is just square brackets
-        self.assertEqual(response.content, "[]")
+        self.assertJSONEqual(response.content, "[]")

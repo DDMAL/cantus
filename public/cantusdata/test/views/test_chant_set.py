@@ -27,7 +27,7 @@ class FolioChantSetViewTestCase(APITestCase):
                           ' "position": ""}]'
         # We want to remove the version id and unique id because they're always
         # different.
-        self.assertEqual(remove_all_solr_metadata(response.content),
+        self.assertJSONEqual(remove_all_solr_metadata(response.content),
                          expected_string)
 
 
@@ -56,7 +56,7 @@ class ManuscriptChantSetTestCase(APITestCase):
                           ' "position": ""}]'
         # We want to remove the version id and unique id because they're always
         # different.
-        self.assertEqual(remove_all_solr_metadata(response.content),
+        self.assertJSONEqual(remove_all_solr_metadata(response.content),
                          expected_string)
 
     def test_get_empty_chant(self):
@@ -64,4 +64,4 @@ class ManuscriptChantSetTestCase(APITestCase):
         # Test that we get a response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Empty response is just square brackets
-        self.assertEqual(response.content, "[]")
+        self.assertJSONEqual(response.content, "[]")
