@@ -10,11 +10,12 @@ def remove_unique_id(response_string):
     """
     return re.sub(r' ?"id": "[a-z\d-]*",?', '', response_string)
 
-def remove_version_id(response_string):
+def remove_number(response_string, parameter_name):
     """
-    Remove version numbers from solr responses.
+    Remove numbers from solr responses.
 
     :param response_string:
     :return: string
     """
-    return re.sub(r' ?"_version_": [\d]*,?', '', response_string)
+    return re.sub(r' ?"{0}": [\d\.]*,?'.format(parameter_name),
+                  '', response_string)
