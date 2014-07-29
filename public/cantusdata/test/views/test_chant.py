@@ -19,8 +19,7 @@ class ChantViewTestCase(APITestCase):
     def test_get_detail(self):
         # Grab the first manuscript that exists
         chant = Chant.objects.get(cantus_id="1234")
-        if not chant:
-            self.fail("No chants loading!")
+        self.assertIsNotNone(chant)
         response = self.client.get("/chant/{0}/".format(chant.id))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
