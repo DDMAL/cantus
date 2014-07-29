@@ -11,7 +11,7 @@ class Plugin(models.Model):
 
     @property
     def slug(self):
-        return slugify(self.name)
+        return slugify(u"{0}".format(self.name))
 
     def __unicode__(self):
         return u"{0}".format(self.name)
