@@ -1,4 +1,5 @@
 (function($){
+    "use strict";
 
     var siteUrl = "/";
     var iipImageServerUrl = "http://cantus.simssa.ca/";
@@ -306,73 +307,73 @@
 
     var Chant = CantusAbstractModel.extend
     ({
-//        defaults: function()
-//        {
-//            return {
-//                marginalia: "the marginalia",
-//                folio: "the folio",
-//                sequence:"the sequence",
-//                cantus_id: "the cantus id",
-//                feast: "the feast",
-//                office: "the office",
-//                genre: "the genre",
-//                lit_position: "the lit position",
-//                mode: "the mode",
-//                differentia: "the differentia",
-//                finalis: "the finalis",
-//                incipit: "the incipit",
-//                full_text: "Quite a nice chant!",
-//                concordances: [],
-//                volpiano: "the volpiano",
-//                manuscript: "the manuscript"
-//            }
-//        }
+        //defaults: function()
+        //{
+        //    return {
+        //        marginalia: "the marginalia",
+        //        folio: "the folio",
+        //        sequence:"the sequence",
+        //        cantus_id: "the cantus id",
+        //        feast: "the feast",
+        //        office: "the office",
+        //        genre: "the genre",
+        //        lit_position: "the lit position",
+        //        mode: "the mode",
+        //        differentia: "the differentia",
+        //        finalis: "the finalis",
+        //        incipit: "the incipit",
+        //        full_text: "Quite a nice chant!",
+        //        concordances: [],
+        //        volpiano: "the volpiano",
+        //        manuscript: "the manuscript"
+        //    }
+        //}
     });
 
-//    var Concordance = CantusAbstractModel.extend
-//    ({
-////        defaults: function()
-////        {
-////            return {
-////                letter_code: "ZZZ",
-////                institution_city: "Montreal",
-////                instutition_name: "DDMAL",
-////                library_manuscript_name: "No Name",
-////                date: "Right now",
-////                location: "Montreal",
-////                rism_code: "ABC1234"
-////            }
-////        }
-//    });
+    //    var Concordance = CantusAbstractModel.extend
+    //    ({
+    ////        defaults: function()
+    ////        {
+    ////            return {
+    ////                letter_code: "ZZZ",
+    ////                institution_city: "Montreal",
+    ////                instutition_name: "DDMAL",
+    ////                library_manuscript_name: "No Name",
+    ////                date: "Right now",
+    ////                location: "Montreal",
+    ////                rism_code: "ABC1234"
+    ////            }
+    ////        }
+    //    });
 
     var Folio = CantusAbstractModel.extend
     ({
-//        defaults: function()
-//        {
-//            return {
-//                number: "000",
-//                manuscript: null,
-//                chant_count: 0,
-//                chant_set: []
-//            }
-//        }
+        //defaults: function()
+        //{
+        //    return {
+        //        number: "000",
+        //        manuscript: null,
+        //        chant_count: 0,
+        //        chant_set: []
+        //    }
+        //}
     });
 
     var Manuscript = CantusAbstractModel.extend
     ({
-//        defaults: function()
-//        {
-//            return {
-//                url: "#",
-//                name: "Test Name",
-//                siglum: "Test Siglum",
-//                siglum_slug: "#",
-//                date: "Tomorrow",
-//                provenance: "Test provenance",
-//                description: "This is a nice manuscript...",
-//                chant_count: 5
-//            };
-//        }
+        //defaults: function()
+        //{
+        //    return {
+        //        url: "#",
+        //        name: "Test Name",
+        //        siglum: "Test Siglum",
+        //        siglum_slug: "#",
+        //        date: "Tomorrow",
+        //        provenance: "Test provenance",
+        //        description: "This is a nice manuscript...",
+        //        chant_count: 5
+        //    };
+        //}
     });
 
     /**
@@ -400,7 +401,7 @@
         {
             var output = [];
 
-            _.each(this.toJSON().results, function(current)
+            _.each(this.get("results"), function(current)
             {
                 var newElement = {};
                 // Remove "cantusdata_" from the type string
@@ -413,8 +414,7 @@
                     case "manuscript":
                         newElement.name = current.name;
                         // Build the url
-                        newElement.url = "/" + newElement.model
-                            + "/" + current.item_id + "/";
+                        newElement.url = "/" + newElement.model + "/" + current.item_id + "/";
                         break;
 
                     case "chant":
@@ -430,15 +430,13 @@
                     case "concordance":
                         newElement.name = current.name;
                         // Build the url
-                        newElement.url = "/" + newElement.model
-                            + "/" + current.item_id + "/";
+                        newElement.url = "/" + newElement.model + "/" + current.item_id + "/";
                         break;
 
                     case "folio":
                         newElement.name = current.name;
                         // Build the url
-                        newElement.url = "/" + newElement.model
-                            + "/" + current.item_id + "/";
+                        newElement.url = "/" + newElement.model + "/" + current.item_id + "/";
                         break;
                 }
                 output.push(newElement);
@@ -1076,13 +1074,13 @@
             // We need to handle the data differently depending on whether
             // we're getting the information from Django or Solr.
             var folio_id;
-            if (this.model.toJSON().item_id)
+            if (this.model.get("item_id"))
             {
-                folio_id = this.model.toJSON().item_id;
+                folio_id = this.model.get("item_id");
             }
             else
             {
-               folio_id = this.model.toJSON().id;
+               folio_id = this.model.get("id");
             }
 
             if (folio_id !== undefined)
@@ -1269,7 +1267,7 @@
             // Clear out the events
             this.events = {};
             // Menu items
-            for (var i = 0; i < this.collection.toJSON().length; i++)
+            for (var i = 0; i < this.collection.length; i++)
             {
                 this.events["click #manuscript-list-" + i] = "buttonClickCallback";
             }
@@ -1613,13 +1611,13 @@
 
         resultFetchCallback: function()
         {
-            this.divaView.paintBoxes(this.results.toJSON().results);
+            this.divaView.paintBoxes(this.results.get("results"));
             // We need a new paginator
             this.paginator = new PaginationView(
                 {
                     name: "notation-paginator",
                     currentPage: 1,
-                    elementCount: this.results.toJSON().numFound,
+                    elementCount: this.results.get("numFound"),
                     pageSize: 1
                 }
             );
@@ -1633,7 +1631,7 @@
         zoomToResult: function()
         {
             var newIndex = this.paginator.getPage() - 1;
-            this.divaView.zoomToLocation(this.results.toJSON().results[newIndex]);
+            this.divaView.zoomToLocation(this.results.get("results")[newIndex]);
         },
 
         render: function() {
@@ -1651,7 +1649,7 @@
         renderResults: function()
         {
             $(this.$el.selector + ' .note-search-results').html(
-                "<h4>" + this.results.toJSON().numFound +
+                "<h4>" + this.results.get("numFound") +
                     ' results found for query "' + this.field + ':' + decodeURIComponent(this.query) + '"</h4>'
             );
             this.assign(this.paginator, this.$el.selector + ' .note-pagination');
@@ -1897,7 +1895,7 @@
             // Clear out the events
             this.events = {};
             // Menu items
-            for (var i = 0; i < this.model.toJSON().results.length; i++)
+            for (var i = 0; i < this.model.get("results").length; i++)
             {
                 this.events["click .search-result-" + i] = "buttonClickCallback";
             }
@@ -1941,7 +1939,7 @@
                 {
                     name: "search",
                     currentPage: this.currentPage,
-                    elementCount: this.model.toJSON().numFound,
+                    elementCount: this.model.get("numFound"),
                     pageSize: this.pageSize
                 }
             );
@@ -2195,7 +2193,7 @@
         {
             var folio = this.divaView.getFolio();
             // Query the folio set at that specific manuscript number
-            var newUrl =  siteUrl + "folio-set/manuscript/" + this.manuscript.toJSON().id + "/" + folio + "/";
+            var newUrl =  siteUrl + "folio-set/manuscript/" + this.manuscript.get("id") + "/" + folio + "/";
             // Rebuild the folio View
             this.folioView.setUrl(newUrl);
             this.folioView.setCustomNumber(folio);
@@ -2215,7 +2213,7 @@
         afterFetch: function()
         {
             // Set the search view to only search this manuscript
-            this.searchView.setQueryPostScript(' AND manuscript:"' + this.manuscript.toJSON().siglum + '"');
+            this.searchView.setQueryPostScript(' AND manuscript:"' + this.manuscript.get("siglum") + '"');
             // TODO: Diva is being initialized twice!!!!!!!
             this.divaView.setManuscript(this.manuscript.get("siglum_slug"));
             this.searchNotationView.setManuscript(this.manuscript.get("siglum_slug"));
