@@ -74,8 +74,7 @@
         setManuscriptContentContainerHeight: function()
         {
             $('#manuscript-data-container').css("height",
-                    $("#content-container").height()
-                            - $("#manuscript-title-container").height());
+                    $("#content-container").height() - $("#manuscript-title-container").height());
         },
 
         setDivaSize: function()
@@ -188,7 +187,7 @@
     * An object that acts like a big row of switches.  You can call
     * getValue() to get the index of the first true element.
     */
-    StateSwitch = Backbone.Model.extend
+    var StateSwitch = Backbone.Model.extend
     ({
 
         length: 0,
@@ -330,21 +329,21 @@
 //        }
     });
 
-    var Concordance = CantusAbstractModel.extend
-    ({
-//        defaults: function()
-//        {
-//            return {
-//                letter_code: "ZZZ",
-//                institution_city: "Montreal",
-//                instutition_name: "DDMAL",
-//                library_manuscript_name: "No Name",
-//                date: "Right now",
-//                location: "Montreal",
-//                rism_code: "ABC1234"
-//            }
-//        }
-    });
+//    var Concordance = CantusAbstractModel.extend
+//    ({
+////        defaults: function()
+////        {
+////            return {
+////                letter_code: "ZZZ",
+////                institution_city: "Montreal",
+////                instutition_name: "DDMAL",
+////                library_manuscript_name: "No Name",
+////                date: "Right now",
+////                location: "Montreal",
+////                rism_code: "ABC1234"
+////            }
+////        }
+//    });
 
     var Folio = CantusAbstractModel.extend
     ({
@@ -425,9 +424,7 @@
                         newElement.manuscript = current.manuscript_name_hidden;
                         newElement.folio = current.folio;
                         newElement.volpiano = current.volpiano;
-                        newElement.url = "/manuscript/" + current.manuscript_id
-                            + "/?folio=" + current.folio
-                            + "&chant=" + current.sequence;
+                        newElement.url = "/manuscript/" + current.manuscript_id + "/?folio=" + current.folio + "&chant=" + current.sequence;
                         break;
 
                     case "concordance":
@@ -485,15 +482,15 @@
         model: Chant
     });
 
-    var ConcordanceCollection = CantusAbstractCollection.extend
-    ({
-        model: Concordance
-    });
-
-    var FolioCollection = CantusAbstractCollection.extend
-    ({
-        model: Folio
-    });
+//    var ConcordanceCollection = CantusAbstractCollection.extend
+//    ({
+//        model: Concordance
+//    });
+//
+//    var FolioCollection = CantusAbstractCollection.extend
+//    ({
+//        model: Folio
+//    });
 
     var ManuscriptCollection = CantusAbstractCollection.extend
     ({
@@ -515,11 +512,11 @@
          */
         assign : function (view, selector) {
             view.setElement(selector).render();
-        },
-
-        unAssign : function (view, selector) {
-            $(selector).empty();
         }
+
+//        unAssign : function (view, selector) {
+//            $(selector).empty();
+//        }
     });
 
     var ChantCollectionView = CantusAbstractView.extend
@@ -606,9 +603,8 @@
          * Set the URL of the collection and fetch the data.
          *
          * @param url
-         * @param unfoldedChant
          */
-        setUrl: function(url, unfoldedChant)
+        setUrl: function(url)
         {
             this.collection.url = url;
             this.collection.fetch({success: this.afterFetch});
@@ -948,10 +944,9 @@
         },
 
         /**
-         * Zoom Diva to a location
-         * 
-         * @param {type} box
-         * @returns null
+         * Zoom Diva to a location.
+         *
+         * @param box
          */
         zoomToLocation: function(box)
         {
@@ -978,16 +973,12 @@
             var boxTop = this.$el.data('diva').translateFromMaxZoomLevel(box.y);
             var currentScrollTop = parseInt($(divaOuter).scrollTop(), 10);
 
-            var topMarginConsiderations = this.$el.data('diva').getSettings().averageHeights[zoomLevel]
-                * this.$el.data('diva').getSettings().adaptivePadding;
-             var leftMarginConsiderations = this.$el.data('diva').getSettings().averageWidths[zoomLevel]
-                * this.$el.data('diva').getSettings().adaptivePadding;
-             $(divaOuter).scrollTop(boxTop + currentScrollTop -
-                ($(divaOuter).height() / 2) + (box.h / 2) + topMarginConsiderations);
+            var topMarginConsiderations = this.$el.data('diva').getSettings().averageHeights[zoomLevel] * this.$el.data('diva').getSettings().adaptivePadding;
+             var leftMarginConsiderations = this.$el.data('diva').getSettings().averageWidths[zoomLevel] * this.$el.data('diva').getSettings().adaptivePadding;
+             $(divaOuter).scrollTop(boxTop + currentScrollTop - ($(divaOuter).height() / 2) + (box.h / 2) + topMarginConsiderations);
             // Now get the horizontal scroll
             var boxLeft = this.$el.data('diva').translateFromMaxZoomLevel(box.x);
-            $(divaOuter).scrollLeft(boxLeft - ($(divaOuter).width() / 2)
-                + (box.w / 2) + leftMarginConsiderations);
+            $(divaOuter).scrollLeft(boxLeft - ($(divaOuter).width() / 2) + (box.w / 2) + leftMarginConsiderations);
             // Will include the padding between pages for best results
         }
     });
@@ -1241,7 +1232,10 @@
          */
         setActiveButton: function(index)
         {
-            if (index === this.activeButton) return;
+            if (index === this.activeButton)
+            {
+                return;
+            }
             this.items[this.activeButton].active = false;
             this.activeButton = index;
             this.items[this.activeButton].active = true;
@@ -1295,11 +1289,7 @@
             var oldUrl = Backbone.history.fragment;
 
             // Only route to the new URL if it really is a new url!
-            if (newUrl === "#" || newUrl.trim('/') === oldUrl.trim('/'))
-            {
-                return;
-            }
-            else
+            if (!(newUrl === "#" || newUrl.trim('/') === oldUrl.trim('/')))
             {
                 app.navigate(newUrl, {trigger: true});
             }
@@ -1406,7 +1396,10 @@
             // Clear out the events
             this.events = {};
             // No binding if there are no elements
-            if (this.elementCount === 0) return;
+            if (this.elementCount === 0)
+            {
+                return;
+            }
             // Backwards
             if (this.currentPage > 1)
             {
@@ -1591,7 +1584,7 @@
             // Clear out the events
             this.events = {};
             // Register them
-            this.events["submit"] = "newSearch";
+            this.events.submit = "newSearch";
             // Delegate the new events
             this.delegateEvents();
         },
@@ -1601,8 +1594,7 @@
             // Stop the page from auto-reloading
             event.preventDefault();
             // Grab the query
-            this.query  = encodeURIComponent($(this.$el.selector
-                + ' .query-input').val());
+            this.query  = encodeURIComponent($(this.$el.selector + ' .query-input').val());
             // Handle the empty case
             if (this.query  === "")
             {
@@ -1613,11 +1605,8 @@
             else
             {
                 // Grab the field name
-                this.field = encodeURIComponent($(this.$el.selector
-                    + ' .search-field').val());
-                var composedQuery = siteUrl + "notation-search/?q=" + this.query
-                    + "&type=" + this.field + "&manuscript=" + this.manuscript;
-                this.results.url = composedQuery;
+                this.field = encodeURIComponent($(this.$el.selector + ' .search-field').val());
+                this.results.url = siteUrl + "notation-search/?q=" + this.query + "&type=" + this.field + "&manuscript=" + this.manuscript;
                 this.results.fetch();
             }
         },
@@ -1663,8 +1652,7 @@
         {
             $(this.$el.selector + ' .note-search-results').html(
                 "<h4>" + this.results.toJSON().numFound +
-                    ' results found for query "' + this.field + ':'
-                    + decodeURIComponent(this.query) + '"</h4>'
+                    ' results found for query "' + this.field + ':' + decodeURIComponent(this.query) + '"</h4>'
             );
             this.assign(this.paginator, this.$el.selector + ' .note-pagination');
         }
@@ -1703,13 +1691,11 @@
                 'changeSearchField', 'registerEvents');
             this.template= _.template($('#search-template').html());
             // The search form templates
-            this.searchFormTemplates['all'] = _.template(
-                $('#search-all-template').html());
-            this.searchFormTemplates['mode'] = _.template(
-                $('#search-mode-template').html());
-            this.searchFormTemplates['volpiano'] = this.searchFormTemplates['all'];
-            this.searchFormTemplates['feast'] = this.searchFormTemplates['all'];
-            this.searchFormTemplates['office'] = this.searchFormTemplates['all'];
+            this.searchFormTemplates.all = _.template( $('#search-all-template').html());
+            this.searchFormTemplates.mode = _.template( $('#search-mode-template').html());
+            this.searchFormTemplates.volpiano = this.searchFormTemplates.all;
+            this.searchFormTemplates.feast = this.searchFormTemplates.all;
+            this.searchFormTemplates.office = this.searchFormTemplates.all;
 
             // If not supplied, the query is blank
             if (options !== undefined)
@@ -1750,8 +1736,7 @@
         changeSearchField: function()
         {
             // Grab the field name
-            var newField = encodeURIComponent($(this.$el.selector
-                + ' .search-field').val());
+            var newField = encodeURIComponent($(this.$el.selector + ' .search-field').val());
             // We want to make sure that we aren't just loading the same template again
             if (this.searchFormTemplates[newField] !== this.searchFormTemplates[this.field])
             {
@@ -1773,11 +1758,9 @@
         newSearch: function()
         {
             // Grab the new search query
-            var newQuery = encodeURIComponent($(this.$el.selector
-                + ' .search-input').val());
+            var newQuery = encodeURIComponent($(this.$el.selector + ' .search-input').val());
             // Grab the field name
-            var fieldSelection = encodeURIComponent($(this.$el.selector
-                + ' .search-field').val());
+            var fieldSelection = encodeURIComponent($(this.$el.selector + ' .search-field').val());
             if (newQuery !== this.query || fieldSelection !== this.field) {
                 this.query = newQuery;
                 this.field = fieldSelection;
@@ -1791,15 +1774,14 @@
                     if (fieldSelection !== "all")
                     {
                         // Split the query into multiple things
-                        queryList = decodeURIComponent(newQuery).split(",");
+                        var queryList = decodeURIComponent(newQuery).split(",");
                         var disjunctive = new SolrDisjunctiveQueryBuilder(fieldSelection, queryList);
                         newQuery = disjunctive.getQuery();
                     }
                     if (this.queryPostScript !== null)
                     {
                         // Attach this.queryPostScript if available
-                        this.searchResultView.changeQuery(newQuery + " "
-                            + this.queryPostScript, this.field);
+                        this.searchResultView.changeQuery(newQuery + " " + this.queryPostScript, this.field);
                     }
                     else
                     {
@@ -1917,8 +1899,7 @@
             // Menu items
             for (var i = 0; i < this.model.toJSON().results.length; i++)
             {
-                this.events["click .search-result-" + i]
-                    = "buttonClickCallback";
+                this.events["click .search-result-" + i] = "buttonClickCallback";
             }
             // Delegate the new events
             this.delegateEvents();
@@ -1975,8 +1956,7 @@
             // Grab the page
             this.currentPage = this.paginationView.getPage();
             // Rebuild the model with a modified query
-            this.model.setQuery(this.query + "&start="
-                + (this.pageSize * (this.currentPage - 1)));
+            this.model.setQuery(this.query + "&start=" + (this.pageSize * (this.currentPage - 1)));
             this.model.fetch();
         },
 
@@ -1985,7 +1965,7 @@
             // Only render if the model is defined
             if (this.model !== undefined)
             {
-                console.log("Showmanuscriptname: ", this.showManuscriptName)
+                console.log("Showmanuscriptname: ", this.showManuscriptName);
                 $(this.el).html(this.template(
                     {
                         showManuscriptName: this.showManuscriptName,
@@ -2046,67 +2026,67 @@
         }
     });
 
-    /**
-     * A generic loading bar.
-     *
-     * @type {*|void}
-     */
-    var LoadingBarView = CantusAbstractView.extend
-    ({
-        label: null,
-        completion: 0,
-
-        initialize: function(options)
-        {
-            _.bindAll(this, 'render');
-            this.template = _.template($('#loading-bar-template').html());
-
-            if (options !== undefined)
-            {
-                if (options.label !== undefined)
-                {
-                    this.label = String(options.label);
-                }
-                if (options.completion !== undefined)
-                {
-                    this.completion = this.setCompletion(options.completion);
-                }
-            }
-        },
-
-        /**
-         * Set the completion value.
-         *
-         * @param completion
-         */
-        setCompletion: function(completion)
-        {
-            if (parseInt(completion) < 0)
-            {
-                this.completion = 0;
-            }
-            else if (parseInt(completion) > 100)
-            {
-                this.completion = 100;
-            }
-            else {
-                this.completion = parseInt(completion);
-            }
-            this.render();
-        },
-
-        render: function()
-        {
-            $(this.el).html(this.template(
-                {
-                    label: this.label,
-                    completion: this.completion
-                }
-            ));
-            globalEventHandler.trigger("renderView");
-            return this.trigger('render', this);
-        }
-    });
+//    /**
+//     * A generic loading bar.
+//     *
+//     * @type {*|void}
+//     */
+//    var LoadingBarView = CantusAbstractView.extend
+//    ({
+//        label: null,
+//        completion: 0,
+//
+//        initialize: function(options)
+//        {
+//            _.bindAll(this, 'render');
+//            this.template = _.template($('#loading-bar-template').html());
+//
+//            if (options !== undefined)
+//            {
+//                if (options.label !== undefined)
+//                {
+//                    this.label = String(options.label);
+//                }
+//                if (options.completion !== undefined)
+//                {
+//                    this.completion = this.setCompletion(options.completion);
+//                }
+//            }
+//        },
+//
+//        /**
+//         * Set the completion value.
+//         *
+//         * @param completion
+//         */
+//        setCompletion: function(completion)
+//        {
+//            if (parseInt(completion) < 0)
+//            {
+//                this.completion = 0;
+//            }
+//            else if (parseInt(completion) > 100)
+//            {
+//                this.completion = 100;
+//            }
+//            else {
+//                this.completion = parseInt(completion);
+//            }
+//            this.render();
+//        },
+//
+//        render: function()
+//        {
+//            $(this.el).html(this.template(
+//                {
+//                    label: this.label,
+//                    completion: this.completion
+//                }
+//            ));
+//            globalEventHandler.trigger("renderView");
+//            return this.trigger('render', this);
+//        }
+//    });
 
     /*
     Page Views
@@ -2119,7 +2099,7 @@
      */
     var IndexPageView = CantusAbstractView.extend
     ({
-        el: $('#view-goes-here'),
+        el: '#view-goes-here',
 
         events: {
             "click #manuscripts-hero-button" : function()
@@ -2150,7 +2130,7 @@
      */
     var ManuscriptIndividualPageView = CantusAbstractView.extend
     ({
-        el: $('#view-goes-here'),
+        el: '#view-goes-here',
 
         id: null,
         manuscript: null,
@@ -2215,9 +2195,7 @@
         {
             var folio = this.divaView.getFolio();
             // Query the folio set at that specific manuscript number
-            newUrl =  siteUrl + "folio-set/manuscript/"
-                      + this.manuscript.toJSON().id + "/"
-                      + folio + "/";
+            var newUrl =  siteUrl + "folio-set/manuscript/" + this.manuscript.toJSON().id + "/" + folio + "/";
             // Rebuild the folio View
             this.folioView.setUrl(newUrl);
             this.folioView.setCustomNumber(folio);
@@ -2237,8 +2215,7 @@
         afterFetch: function()
         {
             // Set the search view to only search this manuscript
-            this.searchView.setQueryPostScript(' AND manuscript:"'
-                + this.manuscript.toJSON().siglum + '"');
+            this.searchView.setQueryPostScript(' AND manuscript:"' + this.manuscript.toJSON().siglum + '"');
             // TODO: Diva is being initialized twice!!!!!!!
             this.divaView.setManuscript(this.manuscript.get("siglum_slug"));
             this.searchNotationView.setManuscript(this.manuscript.get("siglum_slug"));
@@ -2278,7 +2255,7 @@
      */
     var ManuscriptsPageView = CantusAbstractView.extend
     ({
-        el: $('#view-goes-here'),
+        el: '#view-goes-here',
 
         loaded: false,
 
@@ -2329,7 +2306,7 @@
      */
     var SearchPageView = CantusAbstractView.extend
     ({
-        el: $('#view-goes-here'),
+        el: '#view-goes-here',
 
         // Subviews
         searchView: null,
