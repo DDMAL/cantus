@@ -124,8 +124,6 @@
         }
     });
 
-    var resizer = new BrowserResizer();
-
     /**
      * Handles the global state.  Updates URLs.
      */
@@ -2348,6 +2346,8 @@
         manuscriptsPageView: null,
         manuscriptView: null,
         searchPageView: null,
+        // Browser resizer
+        resizer: null,
 
         routes: {
             "" : "manuscripts",
@@ -2372,6 +2372,8 @@
             this.indexView = new IndexPageView();
             // Same with manuscripts page
             this.manuscriptsPageView = new ManuscriptsPageView();
+            // Get the resizer going
+            this.resizer = new BrowserResizer();
         },
 
         index: function()
