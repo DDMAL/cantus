@@ -25,7 +25,7 @@ class ExpandrFunctionsTestCase(TestCase):
 
     def test_expand_mode(self):
         # Number and symbol ordering is important
-        numbers = [1,2,3,4,5,6,7,8]
+        numbers = [1, 2, 3, 4, 5, 6, 7, 8]
         symbol_keys = ["*", "r", "?", "S", "T"]
         symbols = {"*": "No music", "r": "Responsory (simple)",
                    "?": "Uncertain", "S": "Responsory (special)",
@@ -63,6 +63,15 @@ class ExpandrFunctionsTestCase(TestCase):
         self.assertEquals(expandr.expand_genre("M"), "Miscellaneous")
         self.assertEquals(expandr.expand_genre("G"), "Mass chants")
         self.assertEquals(expandr.expand_genre("Z"), "Error")
+
+    def test_expand_differentia(self):
+        self.assertEquals(expandr.expand_differentia("?"), "Uncertain")
+        self.assertEquals(expandr.expand_differentia("*"), "No differentia")
+        # Test that whitespace is stripped
+        self.assertEquals(expandr.expand_differentia("  ?  "), "Uncertain")
+        self.assertEquals(expandr.expand_differentia("    *   "), "No differentia")
+        # Test all other cases
+        self.assertEquals(expandr.expand_differentia("Normal string"), "Normal string")
 
     def test_expand_office(self):
         self.assertEquals(expandr.expand_office("V"), "First Vespers")
