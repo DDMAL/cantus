@@ -18,7 +18,6 @@ class Chant(models.Model):
 
     marginalia = models.CharField(max_length=255, blank=True, null=True)
     folio = models.ForeignKey("cantusdata.Folio", blank=True, null=True)
-    # sequence can't be blank or null.
     sequence = models.PositiveSmallIntegerField()
     cantus_id = models.CharField(max_length=50, blank=True, null=True)
     feast = models.CharField(max_length=255, blank=True, null=True)
@@ -28,14 +27,11 @@ class Chant(models.Model):
     mode = models.CharField(max_length=255, blank=True, null=True)
     differentia = models.CharField(max_length=255, blank=True, null=True)
     finalis = models.CharField(max_length=255, blank=True, null=True)
-    # masterChant ??
-    # reference ??
     incipit = models.TextField(blank=True, null=True)
     full_text = models.TextField(blank=True, null=True)
     concordances = models.ManyToManyField("cantusdata.Concordance",
                                           related_name="concordances",
                                           blank=True)
-    # not sure about its type
     volpiano = models.TextField(blank=True, null=True)
     manuscript = models.ForeignKey("cantusdata.Manuscript",
                                    related_name="chants")
