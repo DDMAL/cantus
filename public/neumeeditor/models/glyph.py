@@ -1,5 +1,8 @@
 from django.db import models
+from neumeeditor.models.name import Name
 from neumeeditor.models.style import Style
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
 
 class Glyph(models.Model):
@@ -7,9 +10,21 @@ class Glyph(models.Model):
         app_label = "neumeeditor"
         # ordering = ['name']
 
-    # names = models.ManyToOneRel("neumeeditor.Name", related_name="names")
     style = models.ForeignKey(Style)
-    image = None
+    # image = None
 
-    # def __unicode__(self):e
-    #     return u"{0}".format(self.names)
+    def test(self):
+        self.name_set.clear()
+
+
+@receiver(pre_delete, sender=Glyph)
+def pre_glyph_delete(sender, instance, **kwargs):
+    """
+    When a glyph is deleted, we delete its names, too!
+
+    :param sender:Glyph
+    :param instance:
+    :param kwargs:
+    :return:
+    """
+    Name.objects.filter(glyph=sender).delete()
