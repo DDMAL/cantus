@@ -2,7 +2,7 @@ from django.db import models
 from neumeeditor.models.neume_style import NeumeStyle
 
 
-class Neume(models.Model):
+class Glyph(models.Model):
     class Meta:
         app_label = "neumeeditor"
         ordering = ['name']
