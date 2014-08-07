@@ -1,4 +1,6 @@
 from django.conf.urls import patterns, include, url
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from neumeeditor.views.name import NameList, NameDetail
 from neumeeditor.views.style import StyleList, StyleDetail
@@ -83,3 +85,6 @@ urlpatterns += format_suffix_patterns(
         name="style-detail")
     )
 )
+
+# Handle media
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
