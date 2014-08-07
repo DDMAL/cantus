@@ -1,8 +1,6 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
-
 from rest_framework.urlpatterns import format_suffix_patterns
-
 from cantusdata.views.manuscript import ManuscriptList, ManuscriptDetail
 from cantusdata.views.chant import ChantList, ChantDetail
 from cantusdata.views.folio import FolioList, FolioDetail
@@ -11,6 +9,7 @@ from cantusdata.views.search import SearchView
 from cantusdata.views.search_notation import SearchNotationView
 from cantusdata.views.chant_set import FolioChantSetView, ManuscriptChantSetView
 from cantusdata.views.folio_set import ManuscriptFolioSetView
+from neumeeditor.views.glyph import GlyphDetail, GlyphList
 
 
 urlpatterns = []
@@ -64,5 +63,13 @@ urlpatterns += format_suffix_patterns(
     # Notation search
     url(r'^notation-search/$', SearchNotationView.as_view(),
         name="search-notation-view"),
+
+    ###########################
+    # NeumeEditor Application #
+    ###########################
+
+    url(r'^neumeeditor/glyphs/$', GlyphList.as_view(), name="glyph-list"),
+    url(r'^neumeeditor/glyph/(?P<pk>[0-9]+)/$', GlyphDetail.as_view(),
+        name="glyph-detail")
     )
 )
