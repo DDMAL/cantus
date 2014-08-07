@@ -1,5 +1,7 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
+from neumeeditor.views.name import NameList, NameDetail
+from neumeeditor.views.style import StyleList, StyleDetail
 from rest_framework.urlpatterns import format_suffix_patterns
 from cantusdata.views.manuscript import ManuscriptList, ManuscriptDetail
 from cantusdata.views.chant import ChantList, ChantDetail
@@ -70,6 +72,14 @@ urlpatterns += format_suffix_patterns(
 
     url(r'^neumeeditor/glyphs/$', GlyphList.as_view(), name="glyph-list"),
     url(r'^neumeeditor/glyph/(?P<pk>[0-9]+)/$', GlyphDetail.as_view(),
-        name="glyph-detail")
+        name="glyph-detail"),
+
+    url(r'^neumeeditor/name/$', NameList.as_view(), name="name-list"),
+    url(r'^neumeeditor/name/(?P<pk>[0-9]+)/$', NameDetail.as_view(),
+        name="name-detail"),
+
+    url(r'^neumeeditor/style/$', StyleList.as_view(), name="style-list"),
+    url(r'^neumeeditor/style/(?P<pk>[0-9]+)/$', StyleDetail.as_view(),
+        name="style-detail")
     )
 )
