@@ -16,6 +16,17 @@ class Glyph(models.Model):
     def test(self):
         self.name_set.clear()
 
+    def __unicode__(self):
+        output = u""
+        name_count = self.name_set.count()
+        index = 0
+        for name in self.name_set.all():
+            output += u"{0}".format(name.string)
+            index += 1
+            if index < name_count:
+                output += u", "
+        return output
+
 
 @receiver(pre_delete, sender=Glyph)
 def pre_glyph_delete(sender, instance, **kwargs):
