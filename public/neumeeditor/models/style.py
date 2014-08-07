@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class NeumeStyle(models.Model):
+class Style(models.Model):
     class Meta:
         app_label = "neumeeditor"
         ordering = ['name']

@@ -1,3 +1,3 @@
-from neume_style import NeumeStyle
+from style import Style
 from glyph import Glyph
 from name import Name
