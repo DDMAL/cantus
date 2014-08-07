@@ -1,15 +1,27 @@
 from django.contrib import admin
-from neumeeditor.models.neume import Neume
+from neumeeditor.models import Name
+from neumeeditor.models.glyph import Glyph
 from neumeeditor.models.neume_style import NeumeStyle
 
 
-class NeumeAdmin(admin.ModelAdmin):
-    pass
+class NameInline(admin.TabularInline):
+    model = Name
+
+
+class GlyphAdmin(admin.ModelAdmin):
+    inlines = [
+        NameInline
+    ]
 
 
 class NeumeStyleAdmin(admin.ModelAdmin):
     pass
 
 
-admin.site.register(Neume, NeumeAdmin)
+# class NameAdmin(admin.ModelAdmin):
+#     pass
+
+
+admin.site.register(Glyph, GlyphAdmin)
 admin.site.register(NeumeStyle, NeumeStyleAdmin)
+# admin.site.register(Name, NameAdmin)
