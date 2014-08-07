@@ -18,10 +18,10 @@ class StyleAdmin(admin.ModelAdmin):
     pass
 
 
-# class NameAdmin(admin.ModelAdmin):
-#     pass
+class NameAdmin(admin.ModelAdmin):
+    pass
 
 
 admin.site.register(Glyph, GlyphAdmin)
 admin.site.register(Style, StyleAdmin)
-# admin.site.register(Name, NameAdmin)
+admin.site.register(Name, NameAdmin)
