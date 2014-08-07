@@ -5,10 +5,10 @@ from neumeeditor.models.neume_style import NeumeStyle
 class Glyph(models.Model):
     class Meta:
         app_label = "neumeeditor"
-        ordering = ['name']
+        # ordering = ['name']
 
-    name = models.CharField(max_length=128, blank=False, null=False)
+    # names = models.ManyToOneRel("neumeeditor.Name", related_name="names")
     style = models.ForeignKey(NeumeStyle)
 
-    def __unicode__(self):
-        return u"{0}".format(self.name)
+    # def __unicode__(self):e
+    #     return u"{0}".format(self.names)
