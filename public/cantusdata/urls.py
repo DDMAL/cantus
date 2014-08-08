@@ -2,6 +2,7 @@ from django.conf.urls import patterns, include, url
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from neumeeditor.helpers.authentication import ObtainExpiringAuthToken
 from neumeeditor.views.name import NameList, NameDetail
 from neumeeditor.views.style import StyleList, StyleDetail
 from neumeeditor.views.user import UserList, UserDetail
@@ -98,4 +99,4 @@ urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 # Auth
 urlpatterns += patterns('',
                         url(r'^neumeeditor/auth/',
-                            'rest_framework.authtoken.views.obtain_auth_token'))
+                            ObtainExpiringAuthToken.as_view()))
