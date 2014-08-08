@@ -10,16 +10,13 @@ class NameList(generics.ListCreateAPIView):
     model = Name
     serializer_class = NameSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer)
-
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
-
 
 
 class NameDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Name
     serializer_class = NameSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer)
-
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)

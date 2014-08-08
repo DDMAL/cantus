@@ -10,7 +10,6 @@ class GlyphList(generics.ListCreateAPIView):
     model = Glyph
     serializer_class = GlyphSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer)
-
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
@@ -19,6 +18,5 @@ class GlyphDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Glyph
     serializer_class = GlyphSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer)
-
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)

@@ -10,16 +10,13 @@ class StyleList(generics.ListCreateAPIView):
     model = Style
     serializer_class = StyleSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer)
-
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
-
 
 
 class StyleDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Style
     serializer_class = StyleSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer)
-
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
