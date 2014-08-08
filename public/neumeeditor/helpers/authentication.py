@@ -1,11 +1,8 @@
+from datetime import timedelta
 from django.contrib.auth import tokens
 from django.utils.datetime_safe import datetime
 from rest_framework.authentication import TokenAuthentication
-from rest_framework import exceptions, status
-from rest_framework.authtoken.models import Token
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.response import Response
-from datetime import timedelta
+from rest_framework import exceptions
 import pytz
 
 
@@ -26,15 +23,3 @@ class ExpiringTokenAuthentication(TokenAuthentication):
         if token.created < utc_now - timedelta(days=self.max_age_days):
             raise exceptions.AuthenticationFailed('Token has expired')
         return token.user, tokens
-
-
-class ObtainExpiringAuthToken(ObtainAuthToken):
-    def post(self, request):
-        serializer = self.serializer_class(data=request.DATA)
-        if serializer.is_valid():
-            token, created = Token.objects.get_or_create(user=serializer.object['user'])
-            if not created:
-                token.created = datetime.utcnow()
-                token.save()
-            return Response({'token': token.key})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
