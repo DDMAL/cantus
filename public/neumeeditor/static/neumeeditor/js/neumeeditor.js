@@ -47,8 +47,19 @@
 
         var Glyph = Backbone.Model.extend({
 
-            getNameCollection: function() {
-
+            /**
+             * Get a collection containing the Glyph's names.
+             *
+             * @returns {Backbone.Collection}
+             */
+            getNameCollection: function()
+            {
+                var output = new Backbone.Collection();
+                for (var nameUrl in this.get("name_set"))
+                {
+                    output.add([{url: String(nameUrl)}]);
+                }
+                return output;
             }
         });
 
