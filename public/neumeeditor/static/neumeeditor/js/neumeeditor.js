@@ -45,6 +45,10 @@
 
         var Name = Backbone.Model.extend({});
 
+        var NameCollection = Backbone.Collection.extend({
+            model: Name
+        });
+
         var Glyph = Backbone.Model.extend({
 
             /**
@@ -54,7 +58,7 @@
              */
             getNameCollection: function()
             {
-                var output = new Backbone.Collection();
+                var output = new NameCollection();
                 for (var nameUrl in this.get("name_set"))
                 {
                     output.add([{url: String(nameUrl)}]);
