@@ -114,10 +114,15 @@
          * View for editing a single name object.
          */
         var EditSingleNameView = Backbone.Marionette.ItemView.extend({
+
             tagName: "form",
+
             template: _.template($('#edit-single-name-template').html()),
+
             modelEvents: { "change": "render" },
+
             events: { "submit": "submit" },
+
             submit: function(event) {
                 // Prevent default functionality
                 event.preventDefault();
