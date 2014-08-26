@@ -123,8 +123,8 @@
                 event.preventDefault();
                 // Grab values from the form fields
                 this.model.set({
-                    string: $(".name-string-input").val(),
-                    short_code: $(".name-short-code-input").val()
+                    string: String(this.$("input[name='string']").val()),
+                    short_code: String(this.$("input[name='short_code']").val())
                 });
                 this.model.save();
             }
