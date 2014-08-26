@@ -1,6 +1,31 @@
 (function($){
     "use strict";
 
+    // Enable CRSF in sync
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    var csrftoken = getCookie('csrftoken');
+    var oldSync = Backbone.sync;
+    Backbone.sync = function(method, model, options){
+        options.beforeSend = function(xhr){
+            xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
+        };
+        return oldSync(method, model, options);
+    };
+
     var App = new Backbone.Marionette.Application();
 
     App.on('initialize:before', function(options)
@@ -43,7 +68,14 @@
            template: _.template("<a href='<%-path%>'><%-path%></a>")
         });
 
-        var Name = Backbone.Model.extend({});
+        var Name = Backbone.Model.extend({
+            initialize: function(options)
+            {
+                this.url = String(options.url);
+            },
+
+            defaults: {string: "", short_code: ""}
+        });
 
         var NameCollection = Backbone.Collection.extend({
             model: Name
@@ -51,18 +83,29 @@
 
         var Glyph = Backbone.Model.extend({
 
+            initialize: function(options)
+            {
+                this.url = String(options.url);
+            },
+
             /**
              * Get a collection containing the Glyph's names.
              *
-             * @returns {Backbone.Collection}
+             * @returns {NameCollection}
              */
             getNameCollection: function()
             {
                 var output = new NameCollection();
-                for (var nameUrl in this.get("name_set"))
+                var nameArray = this.get("name_set");
+                console.log(nameArray);
+                for (var i = 0; i < nameArray.length; i++)
                 {
-                    output.add([{url: String(nameUrl)}]);
+                    console.log(String(nameArray[i]));
+                    var nameModel = new Name({url: String(nameArray[i])});
+                    output.add(nameModel);
+                    nameModel.fetch();
                 }
+                console.log(output.toJSON());
                 return output;
             }
         });
@@ -72,7 +115,19 @@
          */
         var EditSingleNameView = Backbone.Marionette.ItemView.extend({
             tagName: "form",
-            template: _.template($('#edit-single-name-template').html())
+            template: _.template($('#edit-single-name-template').html()),
+            modelEvents: { "change": "render" },
+            events: { "submit": "submit" },
+            submit: function(event) {
+                // Prevent default functionality
+                event.preventDefault();
+                // Grab values from the form fields
+                this.model.set({
+                    string: $(".name-string-input").val(),
+                    short_code: $(".name-short-code-input").val()
+                });
+                this.model.save();
+            }
         });
 
         var EditNamesView = Backbone.Marionette.CollectionView.extend({
@@ -88,23 +143,29 @@
             template: _.template("")
         });
 
+        var EditSingleGlyphView = Backbone.Marionette.ItemView.extend({
+
+        });
+
         var ListView = Backbone.Marionette.CollectionView.extend({
             tagName: 'ul',
             childView: SingleLink
         });
 
-        var list = new Backbone.Collection([
-            {path: 'http://google.com'},
-            {path: 'http://mojotech.com'},
-        ]);
+        var glyph = new Glyph({url: "http://localhost:8000/neumeeditor/glyph/1/"});
+
 
         this.start = function()
         {
             console.log("Starting...");
-            (new EditNamesView({
-                collection: list,
-                el: '.link-area'
-            })).render();
+            glyph.fetch({success: function(){
+                var glyphNames = glyph.getNameCollection();
+                console.log(glyphNames);
+                (new EditNamesView({
+                    collection: glyphNames,
+                    el: '.link-area'
+                })).render();
+            }});
         };
 
 
