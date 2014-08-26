@@ -126,7 +126,20 @@
                     string: String(this.$("input[name='string']").val()),
                     short_code: String(this.$("input[name='short_code']").val())
                 });
-                this.model.save();
+                var successDiv = this.$(".status-message");
+                this.model.save(null,
+                    {
+                        success: function() {
+                            console.log("Success.");
+                            console.log(successDiv);
+                            successDiv.html("Name saved successfully.");
+                        },
+                        error: function() {
+                            successDiv.html("Error saving name.");
+                        }
+                    }
+                );
+
             }
         });
 
