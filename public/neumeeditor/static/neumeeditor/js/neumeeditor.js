@@ -65,10 +65,9 @@
     App.module("glyphEdit", function(myModule, App, Backbone, Marionette, $, _){
         this.startWithParent = true;
 
-        var SingleLink = Backbone.Marionette.ItemView.extend({
-           tagName: "li",
-           template: _.template("<a href='<%-path%>'><%-path%></a>")
-        });
+        /*
+        Models
+         */
 
         var Name = Backbone.Model.extend({
             initialize: function(options)
@@ -99,10 +98,6 @@
             }
         });
 
-        var NameCollection = Backbone.Collection.extend({
-            model: Name
-        });
-
         var Glyph = Backbone.Model.extend({
 
             initialize: function(options)
@@ -130,6 +125,28 @@
                 console.log(output.toJSON());
                 return output;
             }
+        });
+
+
+        /*
+        Collections
+         */
+
+        var NameCollection = Backbone.Collection.extend({
+            model: Name
+        });
+
+
+        /*
+        Views
+         */
+
+        /**
+         * View for looking at a single glyph object.
+         */
+        var SingleGlyphView = Backbone.Marionette.ItemView.extend({
+            tagName: "li",
+            template: _.template("")
         });
 
         /**
@@ -174,7 +191,7 @@
                         },
                         error: function() {
                             that.ui.statusDiv.html("Error saving name.");
-                        }e
+                        }
                     }
                 );
             },
@@ -209,6 +226,7 @@
             {
                 console.log("SAVE CALLBACK:");
                 // Remove model from this collection
+                console.log(child.model);
                 this.collection.remove(child.model);
                 this.collection.add(new Name());
                 // Create a new blank model
@@ -220,22 +238,9 @@
             }
         });
 
-        /**
-         * View for looking at a single glyph object.
+        /*
+        Execution Code
          */
-        var SingleGlyph = Backbone.Marionette.ItemView.extend({
-            tagName: "li",
-            template: _.template("")
-        });
-
-        var EditSingleGlyphView = Backbone.Marionette.ItemView.extend({
-
-        });
-
-        var ListView = Backbone.Marionette.CollectionView.extend({
-            tagName: 'ul',
-            childView: SingleLink
-        });
 
         var glyph = new Glyph({url: "http://localhost:8000/neumeeditor/glyph/1/"});
 
