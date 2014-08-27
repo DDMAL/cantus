@@ -6,3 +6,4 @@ class Image(models.Model):
         app_label = "neumeeditor"
 
     image_file = models.ImageField(null=True)
+    glyph = models.ForeignKey("neumeeditor.Glyph", null=True)
