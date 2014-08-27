@@ -1,6 +1,8 @@
 (function($){
     "use strict";
 
+    var SITE_URL = "http://localhost:8000/neumeeditor/";
+
     // Enable CRSF in sync
     function getCookie(name) {
         var cookieValue = null;
@@ -71,10 +73,30 @@
         var Name = Backbone.Model.extend({
             initialize: function(options)
             {
-                this.url = String(options.url);
+                if (this.url !== undefined)
+                {
+                    this.url = String(options.url);
+                }
+                else
+                {
+                    this.url = SITE_URL + "names/";
+                }
             },
 
-            defaults: {string: "", short_code: ""}
+            defaults: {
+                string: "",
+                short_code: ""
+            },
+
+            /**
+             * Set the Name's glyph based on the ID int.
+             *
+             * @param id
+             */
+            setGlyph: function(id)
+            {
+                this.set("glyph", SITE_URL + "glyph/" + String(id) + "/");
+            }
         });
 
         var NameCollection = Backbone.Collection.extend({
@@ -119,11 +141,21 @@
 
             template: _.template($('#edit-single-name-template').html()),
 
-            modelEvents: { "change": "render" },
+            modelEvents: {
+                "change": "render"
+            },
 
-            events: { "submit": "submit" },
+            events: {
+                "submit": "submitModel",
+                "click button[name='delete']": "destroyModel"
+            },
 
-            submit: function(event) {
+            ui: {
+                statusDiv: ".status-message"
+            },
+
+            submitModel: function(event)
+            {
                 // Prevent default functionality
                 event.preventDefault();
                 // Grab values from the form fields
@@ -131,26 +163,61 @@
                     string: String(this.$("input[name='string']").val()),
                     short_code: String(this.$("input[name='short_code']").val())
                 });
-                var successDiv = this.$(".status-message");
+                var that = this;
                 this.model.save(null,
                     {
                         success: function() {
                             console.log("Success.");
-                            console.log(successDiv);
-                            successDiv.html("Name saved successfully.");
+                            console.log(that.ui.statusDiv);
+                            that.ui.statusDiv.html("Name saved successfully.");
+                            return that.trigger("submit");
                         },
                         error: function() {
-                            successDiv.html("Error saving name.");
-                        }
+                            that.ui.statusDiv.html("Error saving name.");
+                        }e
                     }
                 );
+            },
 
+            destroyModel: function()
+            {
+                console.log("Delete name.");
+                event.preventDefault();
+                this.model.destroy();
+                return this.trigger("destroy");
             }
         });
 
-        var EditNamesView = Backbone.Marionette.CollectionView.extend({
-            tagName: 'ul',
-            childView: EditSingleNameView
+        var EditNamesView = Backbone.Marionette.CompositeView.extend({
+            childView: EditSingleNameView,
+
+            itemViewContainer: "ul",
+            template: "#edit-name-collection-template"
+        });
+
+        var CreateNamesView = Backbone.Marionette.CompositeView.extend({
+            childView: EditSingleNameView,
+
+            itemViewContainer: "ul",
+            template: "#create-name-collection-template",
+
+            childEvents: {
+                "submit": "save"
+            },
+
+            save: function(child)
+            {
+                console.log("SAVE CALLBACK:");
+                // Remove model from this collection
+                this.collection.remove(child.model);
+                this.collection.add(new Name());
+                // Create a new blank model
+//                var newName = new Name({url:"http://localhost:8000/neumeeditor/names/"});
+//                newName.setGlyph(1);
+//                this.collection.add(newName);
+                child.model.reset();
+                child.model.setGlyph(1);
+            }
         });
 
         /**
@@ -172,6 +239,26 @@
 
         var glyph = new Glyph({url: "http://localhost:8000/neumeeditor/glyph/1/"});
 
+        var emptyNameCollection = new NameCollection();
+        emptyNameCollection.add(new Name(
+            {
+                url: "http://localhost:8000/neumeeditor/names/",
+                glyph: "http://localhost:8000/neumeeditor/glyph/1/"
+            }
+        ));
+        emptyNameCollection.add(new Name(
+            {
+                url: "http://localhost:8000/neumeeditor/names/",
+                glyph: "http://localhost:8000/neumeeditor/glyph/1/"
+            }
+        ));
+        emptyNameCollection.add(new Name(
+            {
+                url: "http://localhost:8000/neumeeditor/names/",
+                glyph: "http://localhost:8000/neumeeditor/glyph/1/"
+            }
+        ));
+        console.log(emptyNameCollection.toJSON());
 
         this.start = function()
         {
@@ -182,6 +269,12 @@
                 (new EditNamesView({
                     collection: glyphNames,
                     el: '.link-area'
+                })).render();
+
+                (new CreateNamesView({
+                    createdCollection: glyphNames,
+                    collection: emptyNameCollection,
+                    el: '.link-area2'
                 })).render();
             }});
         };
