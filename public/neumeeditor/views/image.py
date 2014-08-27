@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer, JSONPRenderer
 
 
-class NameList(generics.ListCreateAPIView):
+class ImageList(generics.ListCreateAPIView):
     model = Image
     serializer_class = ImageSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer)
@@ -16,7 +16,7 @@ class NameList(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
 
 
-class NameDetail(generics.RetrieveUpdateDestroyAPIView):
+class ImageDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Image
     serializer_class = ImageSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer)
