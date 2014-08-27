@@ -2,6 +2,7 @@ from django.conf.urls import patterns, include, url
 from django.conf import settings
 from django.conf.urls.static import static
 from neumeeditor.views.authentication import ObtainExpiringAuthToken
+from neumeeditor.views.image import ImageList, ImageDetail
 from neumeeditor.views.main import neumeeditor_home, neumeeditor_api_root
 from neumeeditor.views.name import NameList, NameDetail
 from neumeeditor.views.style import StyleList, StyleDetail
@@ -24,6 +25,10 @@ urlpatterns += format_suffix_patterns(
              url(r'^names/$', NameList.as_view(), name="name-list"),
              url(r'^name/(?P<pk>[0-9]+)/$', NameDetail.as_view(),
                  name="name-detail"),
+
+             url(r'^images/$', ImageList.as_view(), name="image-list"),
+             url(r'^image/(?P<pk>[0-9]+)/$', ImageDetail.as_view(),
+                 name="image-detail"),
 
              url(r'^styles/$', StyleList.as_view(), name="style-list"),
              url(r'^style/(?P<pk>[0-9]+)/$', StyleDetail.as_view(),
