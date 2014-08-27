@@ -11,7 +11,6 @@ class Glyph(models.Model):
         # ordering = ['name']
 
     style = models.ForeignKey(Style)
-    image = models.ImageField(null=True)
 
     def test(self):
         self.name_set.clear()
