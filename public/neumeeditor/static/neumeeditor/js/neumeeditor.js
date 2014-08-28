@@ -100,11 +100,9 @@
                 {
                     this.url = String(options.url);
                 }
-                else
-                {
-                    this.url = SITE_URL + "names/";
-                }
             },
+
+            url: SITE_URL + "names/",
 
             defaults: {
                 string: "",
