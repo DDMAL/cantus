@@ -178,6 +178,48 @@
         Views
          */
 
+        var CreateImagesView = Backbone.Marionette.CompositeView.extend({
+
+            childView: CreateSingleNameView,
+            childViewContainer: ".name-list",
+            template: "#upload-image-template",
+
+            childEvents: {
+                "submit": "save"
+            },
+
+            save: function(child)
+            {
+                console.log("SAVE CALLBACK:");
+            }
+        });
+
+        var EditSingleImageView = Backbone.Marionette.ItemView.extend({
+            tagName: "div",
+            template: _.template($('#edit-single-image-template').html()),
+            modelEvents: {
+                "change": "render"
+            },
+            events: {
+                "click button[name='delete']": "destroyModel"
+            },
+            ui: {
+                statusDiv: ".status-message"
+            },
+
+            destroyModel: function()
+            {
+                console.log("Delete name.");
+                event.preventDefault();
+                this.model.destroy();
+                return this.trigger("destroy");
+            }
+        });
+
+        var EditImagesView = Backbone.Marionette.CollectionView.extend({
+            childView: EditSingleImageView
+        });
+
         /**
          * View for looking at a single glyph object.
          */
