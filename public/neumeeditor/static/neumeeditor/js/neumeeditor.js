@@ -81,6 +81,18 @@
         Models
          */
 
+        var Image = Backbone.Model.extend({
+            initialize: function(options)
+            {
+            },
+
+            url: SITE_URL + "images/",
+
+            defaults: {
+
+            }
+        });
+
         var Name = Backbone.Model.extend({
             initialize: function(options)
             {
