@@ -163,14 +163,19 @@
                 var output = new CollectionType();
                 var urlList = this.get(String(attributeName));
                 console.log(urlList);
+                var newModel;
+                var test = function() {
+                    console.log("Test lol:");
+                    console.log(newModel);
+                };
                 for (var i = 0; i < urlList.length; i++)
                 {
                     console.log(String(urlList[i]));
-                    var newModel = new ItemType({url: String(urlList[i])});
+                    newModel = new ItemType({url: String(urlList[i])});
                     output.add(newModel);
-                    newModel.fetch();
+                    newModel.fetch({success: test});
                 }
-                console.log(output.toJSON());
+                console.log("GetCollection Output:");
                 return output;
             }
         });
@@ -193,7 +198,7 @@
         Views
          */
 
-        var CreateImagesView = Backbone.Marionette.CompositeView.extend({
+        var CreateImagesView = Backbone.Marionette.ItemView.extend({
 
             childView: CreateSingleNameView,
             childViewContainer: ".name-list",
@@ -206,20 +211,33 @@
             save: function(child)
             {
                 console.log("SAVE CALLBACK:");
+            },
+
+            onRender: function()
+            {
+//                this.$(".dropzone").dropzone();
             }
         });
 
         var EditSingleImageView = Backbone.Marionette.ItemView.extend({
             tagName: "div",
+
             template: _.template($('#edit-single-image-template').html()),
+
             modelEvents: {
                 "change": "render"
             },
+
             events: {
                 "click button[name='delete']": "destroyModel"
             },
-            ui: {
-                statusDiv: ".status-message"
+
+            serializeData: function()
+            {
+                return {
+                    "image_file": this.model.get("image_file"),
+                    "image_file_absolute": this.model.getAbsoluteImageFile()
+                };
             },
 
             destroyModel: function()
@@ -231,8 +249,11 @@
             }
         });
 
-        var EditImagesView = Backbone.Marionette.CollectionView.extend({
-            childView: EditSingleImageView
+        var EditImagesView = Backbone.Marionette.CompositeView.extend({
+            childView: EditSingleImageView,
+
+            childViewContainer: ".images",
+            template: "#edit-image-collection-template"
         });
 
         /**
@@ -321,13 +342,21 @@
 
             initialize: function(options)
             {
+                var emptyName = new Name();
+
                 if(options)
                 {
                     if (options.createdCollection)
                     {
                         this.createdCollection = options.createdCollection;
                     }
+                    if (options.glyphId)
+                    {
+                        emptyName.setGlyph(parseInt(options.glyphId));
+                    }
                 }
+                this.collection = new NameCollection();
+                this.collection.add(emptyName);
             },
 
             childView: CreateSingleNameView,
@@ -363,18 +392,27 @@
             console.log("Starting...");
             glyph.fetch({success: function(){
                 var glyphNames = glyph.getCollection("name_set", NameCollection, Name);
+                var glyphImages = glyph.getCollection("image_set", ImageCollection, Image);
                 console.log(glyphNames);
                 (new EditNamesView({
                     collection: glyphNames,
-                    el: '.link-area'
+                    el: '.names-area'
                 })).render();
 
                 (new CreateNamesView({
+                    glyphId: glyph.get("id"),
                     createdCollection: glyphNames,
-                    collection: emptyNameCollection,
-                    el: '.link-area2'
+                    el: '.name-create-area'
                 })).render();
 
+                (new CreateImagesView({
+                    el: '.image-upload-area'
+                })).render();
+
+                (new EditImagesView({
+                    collection: glyphImages,
+                    el: '.images-area'
+                })).render();
 
             }});
         };
