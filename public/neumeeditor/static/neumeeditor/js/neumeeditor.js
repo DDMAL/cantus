@@ -89,7 +89,7 @@
             url: SITE_URL + "images/",
 
             defaults: {
-
+                image_file: ""
             }
         });
 
