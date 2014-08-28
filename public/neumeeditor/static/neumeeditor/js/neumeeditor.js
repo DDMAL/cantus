@@ -138,19 +138,22 @@
             /**
              * Get a collection containing the Glyph's names.
              *
-             * @returns {NameCollection}
+             * @param attributeName
+             * @param CollectionType
+             * @param ItemType
+             * @returns {CollectionType}
              */
             getCollection: function(attributeName, CollectionType, ItemType)
             {
                 var output = new CollectionType();
-                var nameArray = this.get(String(attributeName));
-                console.log(nameArray);
-                for (var i = 0; i < nameArray.length; i++)
+                var urlList = this.get(String(attributeName));
+                console.log(urlList);
+                for (var i = 0; i < urlList.length; i++)
                 {
-                    console.log(String(nameArray[i]));
-                    var nameModel = new ItemType({url: String(nameArray[i])});
-                    output.add(nameModel);
-                    nameModel.fetch();
+                    console.log(String(urlList[i]));
+                    var newModel = new ItemType({url: String(urlList[i])});
+                    output.add(newModel);
+                    newModel.fetch();
                 }
                 console.log(output.toJSON());
                 return output;
