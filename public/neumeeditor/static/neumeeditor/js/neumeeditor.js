@@ -95,6 +95,16 @@
 
             defaults: {
                 image_file: ""
+            },
+
+            /**
+             * Get the absolute url to the image file.
+             *
+             * @returns {string}
+             */
+            getAbsoluteImageFile: function()
+            {
+                return STATIC_URL + this.get("image_file").split("./")[1];
             }
         });
 
