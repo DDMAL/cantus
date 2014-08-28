@@ -1,7 +1,15 @@
 (function($){
     "use strict";
 
+    /*
+    Global Variables
+     */
+
     var SITE_URL = "http://localhost:8000/neumeeditor/";
+
+    /*
+    Boilerplate Code
+     */
 
     // Enable CRSF in sync
     function getCookie(name) {
@@ -27,6 +35,10 @@
         };
         return oldSync(method, model, options);
     };
+
+    /*
+    App initialization
+     */
 
     var App = new Backbone.Marionette.Application();
 
@@ -72,7 +84,7 @@
         var Name = Backbone.Model.extend({
             initialize: function(options)
             {
-                if (this.url !== undefined)
+                if (options !== undefined && options.url !== undefined)
                 {
                     this.url = String(options.url);
                 }
@@ -95,6 +107,14 @@
             setGlyph: function(id)
             {
                 this.set("glyph", SITE_URL + "glyph/" + String(id) + "/");
+            },
+
+            /**
+             * Set the model url to its url attribute.
+             */
+            transferUrl: function()
+            {
+                this.url = this.get("url");
             }
         });
 
@@ -149,6 +169,11 @@
             template: _.template("")
         });
 
+        var EditSingleGlyphView = Backbone.Marionette.CompositeView.extend({
+            tagName: "li",
+            template: _.template("#edit-single-glyph-template")
+        });
+
         /**
          * View for editing a single name object.
          */
@@ -187,10 +212,12 @@
                             console.log("Success.");
                             console.log(that.ui.statusDiv);
                             that.ui.statusDiv.html("Name saved successfully.");
+                            that.ui.statusDiv.fadeOut(2500);
                             return that.trigger("submit");
                         },
                         error: function() {
                             that.ui.statusDiv.html("Error saving name.");
+                            that.ui.statusDiv.fadeOut(2500);
                         }
                     }
                 );
@@ -205,17 +232,33 @@
             }
         });
 
+        var CreateSingleNameView = EditSingleNameView.extend({
+            template: _.template($('#create-single-name-template').html()),
+        });
+
         var EditNamesView = Backbone.Marionette.CompositeView.extend({
             childView: EditSingleNameView,
 
-            itemViewContainer: "ul",
+            childViewContainer: ".name-list",
             template: "#edit-name-collection-template"
         });
 
         var CreateNamesView = Backbone.Marionette.CompositeView.extend({
-            childView: EditSingleNameView,
 
-            itemViewContainer: "ul",
+            initialize: function(options)
+            {
+                if(options)
+                {
+                    if (options.createdCollection)
+                    {
+                        this.createdCollection = options.createdCollection;
+                    }
+                }
+            },
+
+            childView: CreateSingleNameView,
+
+            childViewContainer: ".name-list",
             template: "#create-name-collection-template",
 
             childEvents: {
@@ -227,14 +270,11 @@
                 console.log("SAVE CALLBACK:");
                 // Remove model from this collection
                 console.log(child.model);
+                // Set the new URL
+                child.model.transferUrl();
+                this.createdCollection.add(child.model);
                 this.collection.remove(child.model);
                 this.collection.add(new Name());
-                // Create a new blank model
-//                var newName = new Name({url:"http://localhost:8000/neumeeditor/names/"});
-//                newName.setGlyph(1);
-//                this.collection.add(newName);
-                child.model.reset();
-                child.model.setGlyph(1);
             }
         });
 
