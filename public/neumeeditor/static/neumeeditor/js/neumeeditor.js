@@ -291,18 +291,6 @@
                 glyph: "http://localhost:8000/neumeeditor/glyph/1/"
             }
         ));
-        emptyNameCollection.add(new Name(
-            {
-                url: "http://localhost:8000/neumeeditor/names/",
-                glyph: "http://localhost:8000/neumeeditor/glyph/1/"
-            }
-        ));
-        emptyNameCollection.add(new Name(
-            {
-                url: "http://localhost:8000/neumeeditor/names/",
-                glyph: "http://localhost:8000/neumeeditor/glyph/1/"
-            }
-        ));
         console.log(emptyNameCollection.toJSON());
 
         this.start = function()
