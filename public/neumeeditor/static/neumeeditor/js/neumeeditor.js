@@ -85,6 +85,10 @@
         var Image = Backbone.Model.extend({
             initialize: function(options)
             {
+                if (options !== undefined && options.url !== undefined)
+                {
+                    this.url = String(options.url);
+                }
             },
 
             url: SITE_URL + "images/",
