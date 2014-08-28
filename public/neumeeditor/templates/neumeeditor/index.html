@@ -18,12 +18,43 @@
     <div id="content">
         Content
     </div>
-    <div class="names-area"></div>
-    <div class="name-create-area"></div>
+    <div class="col-md-6">
+        <div class="name-create-area"></div>
+        <div class="names-area"></div>
+    </div>
+    <div class="col-md-6">
+        <div class="image-upload-area"></div>
+        <div class="images-area"></div>
+    </div>
 </div>
 
 <script type="text/template" id="upload-image-template">
-    <div class="dropzone"></div>
+    <div class="row">
+        <h3>Upload Images</h3>
+        <div class="dropzone"></div>
+    </div>
+</script>
+
+<script type="text/template" id="edit-image-collection-template">
+    <div class="row">
+        <h3>Images</h3>
+        <div class="images"></div>
+    </div>
+</script>
+
+<script type="text/template" id="edit-single-image-template">
+<div class="row">
+    <div class="col-xs-3">
+        <img src="<%= image_file_absolute %>" class="thumbnail img-responsive"/>
+    </div>
+    <div class="col-xs-7">
+        <%= image_file %>
+    </div>
+    <div class="col-xs-1">
+        <button name="delete" class="btn btn-default" type="button">Delete</button>
+    </div>
+</div>
+<hr/>
 </script>
 
 <script type="text/template" id="edit-single-glyph-template">
@@ -83,20 +114,16 @@
 </script>
 
 <script type="text/template" id="edit-name-collection-template">
-    <div class="col-md-6">
-        <div class='collection'>
-            <h3>Edit Existing Names</h3>
-            <div class="name-list"></div>
-        </div>
+    <div class='collection'>
+        <h3>Edit Existing Names</h3>
+        <div class="name-list"></div>
     </div>
 </script>
 
 <script type="text/template" id="create-name-collection-template">
-    <div class="col-md-6">
-        <div class='collection'>
-            <h3>Create New Names</h3>
-            <div class="name-list"></div>
-        </div>
+    <div class='collection'>
+        <h3>Create New Names</h3>
+        <div class="name-list"></div>
     </div>
 </script>
 
