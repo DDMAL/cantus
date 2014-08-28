@@ -140,15 +140,15 @@
              *
              * @returns {NameCollection}
              */
-            getNameCollection: function()
+            getCollection: function(attributeName, CollectionType, ItemType)
             {
-                var output = new NameCollection();
-                var nameArray = this.get("name_set");
+                var output = new CollectionType();
+                var nameArray = this.get(String(attributeName));
                 console.log(nameArray);
                 for (var i = 0; i < nameArray.length; i++)
                 {
                     console.log(String(nameArray[i]));
-                    var nameModel = new Name({url: String(nameArray[i])});
+                    var nameModel = new ItemType({url: String(nameArray[i])});
                     output.add(nameModel);
                     nameModel.fetch();
                 }
@@ -311,7 +311,7 @@
         {
             console.log("Starting...");
             glyph.fetch({success: function(){
-                var glyphNames = glyph.getNameCollection();
+                var glyphNames = glyph.getCollection("name_set", NameCollection, Name);
                 console.log(glyphNames);
                 (new EditNamesView({
                     collection: glyphNames,
@@ -323,6 +323,8 @@
                     collection: emptyNameCollection,
                     el: '.link-area2'
                 })).render();
+
+
             }});
         };
 
