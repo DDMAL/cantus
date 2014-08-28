@@ -292,7 +292,7 @@
         });
 
         var CreateSingleNameView = EditSingleNameView.extend({
-            template: _.template($('#create-single-name-template').html()),
+            template: _.template($('#create-single-name-template').html())
         });
 
         var EditNamesView = Backbone.Marionette.CompositeView.extend({
