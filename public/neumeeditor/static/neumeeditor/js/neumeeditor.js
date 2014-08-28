@@ -166,6 +166,10 @@
             model: Name
         });
 
+        var ImageCollection = Backbone.Collection.extend({
+            model: Image
+        });
+
 
         /*
         Views
