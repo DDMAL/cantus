@@ -178,22 +178,17 @@
             {
                 var output = new CollectionType();
                 var urlList = this.get(String(attributeName));
-                console.log(urlList);
                 var newModel;
-                var test = function() {
-                    console.log("Test lol:");
-                    console.log(newModel);
-                };
+
                 for (var i = 0; i < urlList.length; i++)
                 {
-                    console.log(String(urlList[i]));
                     newModel = new ItemType({url: String(urlList[i])});
                     output.add(newModel);
-                    newModel.fetch({success: test});
+                    newModel.fetch({success: function(){output.sort();}});
                 }
-                console.log("GetCollection Output:");
+
                 return output;
-            },
+            }
         });
 
 
