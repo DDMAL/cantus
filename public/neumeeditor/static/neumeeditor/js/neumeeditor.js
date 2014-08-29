@@ -306,13 +306,13 @@
                         success: function() {
                             console.log("Success.");
                             console.log(that.ui.statusDiv);
-                            that.ui.statusDiv.html("Name saved successfully.");
-                            that.ui.statusDiv.fadeOut(2500);
+                            that.ui.statusDiv.html("<p>Name saved successfully.</p>");
+                            that.ui.statusDiv.find("p").fadeOut(2500);
                             return that.trigger("submit");
                         },
                         error: function() {
-                            that.ui.statusDiv.html("Error saving name.");
-                            that.ui.statusDiv.fadeOut(2500);
+                            that.ui.statusDiv.html("<p>Error saving name.<p>");
+                            that.ui.statusDiv.find("p").fadeOut(2500);
                         }
                     }
                 );
