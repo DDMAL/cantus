@@ -216,7 +216,6 @@
 
         var CreateImagesView = Backbone.Marionette.ItemView.extend({
             createdCollection: undefined,
-            glyphId: undefined,
             childView: CreateSingleNameView,
             childViewContainer: ".name-list",
             template: "#upload-image-template",
@@ -232,6 +231,7 @@
                     if (options.glyphId)
                     {
                         this.glyphId = getAbsoluteGlyphUrl(options.glyphId);
+                        console.log("DECLARING GLYPH ID: ", this);
                     }
                 }
             },
@@ -262,32 +262,27 @@
                         headers: {
                             "X-CSRFToken": csrftoken
                         },
-//                        params: {
-//                            glyph: this.glyphId
-//                        }
+                        params: {
+                            glyph: this.glyphId
+                        }
                     }
                 );
-                this.dropzone.on("success", this.createImageModel);
-            },
-
-            /**
-             * Create and save an image model with the given attributes
-             *
-             * @param attributes
-             * @param file
-             */
-            createImageModel: function(file, attributes)
-            {
-                console.log("Creating image model...");
-                console.log(attributes);
-                var newModel = new Image({url: attributes.url});
-                newModel.set(attributes);
-                console.log("childviewcontainer: ", this.childViewContainer);
-                newModel.set("glyph", this.glyphId);
-                console.log(this.createdCollection);
-                this.createdCollection.add(newModel);
-                newModel.save();
-                console.log(newModel);
+                var that = this;
+                this.listenTo(this.dropzone, "success",
+                    function(file, attributes)
+                    {
+                        console.log("Creating image model...", that);
+                        console.log(attributes);
+                        var newModel = new Image({url: attributes.url});
+                        newModel.set(attributes);
+                        console.log("childviewcontainer: ", that.childViewContainer);
+                        newModel.set("glyph", that.glyphId);
+                        console.log(that.createdCollection);
+                        that.createdCollection.add(newModel);
+                        newModel.save();
+                        console.log(newModel);
+                    }
+                );
             }
         });
 
@@ -478,6 +473,7 @@
                 })).render();
 
                 (new CreateImagesView({
+                    glyphId: 1,
                     createdCollection: glyphImages,
                     el: '.image-upload-area'
                 })).render();
