@@ -120,7 +120,7 @@
              */
             getAbsoluteImageFile: function()
             {
-                return STATIC_URL + this.get("image_file").split("./")[1];
+                return STATIC_URL + this.get("image_file");
             }
         });
 
