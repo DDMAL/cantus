@@ -202,11 +202,23 @@
          */
 
         var NameCollection = Backbone.Collection.extend({
-            model: Name
+            model: Name,
+
+            comparator: function(name)
+            {
+                // Newest names first
+                return 0 - parseInt(name.get("id"));
+            }
         });
 
         var ImageCollection = Backbone.Collection.extend({
-            model: Image
+            model: Image,
+
+            comparator: function(image)
+            {
+                // Newest names first
+                return 0 - parseInt(image.get("id"));
+            }
         });
 
 
@@ -273,6 +285,7 @@
                     {
                         console.log("Creating image model...", that);
                         console.log(attributes);
+                        console.log(file);
                         var newModel = new Image({url: attributes.url});
                         newModel.set(attributes);
                         console.log("childviewcontainer: ", that.childViewContainer);
