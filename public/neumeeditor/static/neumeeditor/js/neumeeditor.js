@@ -38,6 +38,22 @@
     };
 
     /*
+    Static functions
+     */
+
+    /**
+     * Get the absolute url for a given glyph id.
+     *
+     * @static
+     * @param id {int}
+     * @returns {string}
+     */
+    function getAbsoluteGlyphUrl(id)
+    {
+        return SITE_URL + "glyph/" + String(parseInt(id)) + "/";
+    }
+
+    /*
     App initialization
      */
 
