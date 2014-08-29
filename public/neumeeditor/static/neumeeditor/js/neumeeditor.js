@@ -147,7 +147,7 @@
              */
             setGlyph: function(id)
             {
-                this.set("glyph", SITE_URL + "glyph/" + String(id) + "/");
+                this.set("glyph", getAbsoluteGlyphUrl(id));
             },
 
             /**
