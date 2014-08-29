@@ -193,7 +193,7 @@
                 }
                 console.log("GetCollection Output:");
                 return output;
-            }
+            },
         });
 
 
@@ -215,13 +215,33 @@
          */
 
         var CreateImagesView = Backbone.Marionette.ItemView.extend({
-
+            createdCollection: undefined,
+            glyphId: undefined,
             childView: CreateSingleNameView,
             childViewContainer: ".name-list",
             template: "#upload-image-template",
 
+            initialize: function(options)
+            {
+                if(options)
+                {
+                    if (options.createdCollection)
+                    {
+                        this.createdCollection = options.createdCollection;
+                    }
+                    if (options.glyphId)
+                    {
+                        this.glyphId = getAbsoluteGlyphUrl(options.glyphId);
+                    }
+                }
+            },
+
             childEvents: {
                 "submit": "save"
+            },
+
+            ui: {
+                "dropzone": ".dropzone"
             },
 
             save: function(child)
@@ -231,7 +251,43 @@
 
             onRender: function()
             {
-//                this.$(".dropzone").dropzone();
+                console.log("Uploader render.");
+                console.log(this.glyphId);
+                this.dropzone = new Dropzone(this.ui.dropzone.selector,
+                        {
+                        url: SITE_URL + "images/",
+                        autoProcessQueue: true,
+                        paramName: "image_file",
+                        acceptedFiles: "image/*",
+                        headers: {
+                            "X-CSRFToken": csrftoken
+                        },
+//                        params: {
+//                            glyph: this.glyphId
+//                        }
+                    }
+                );
+                this.dropzone.on("success", this.createImageModel);
+            },
+
+            /**
+             * Create and save an image model with the given attributes
+             *
+             * @param attributes
+             * @param file
+             */
+            createImageModel: function(file, attributes)
+            {
+                console.log("Creating image model...");
+                console.log(attributes);
+                var newModel = new Image({url: attributes.url});
+                newModel.set(attributes);
+                console.log("childviewcontainer: ", this.childViewContainer);
+                newModel.set("glyph", this.glyphId);
+                console.log(this.createdCollection);
+                this.createdCollection.add(newModel);
+                newModel.save();
+                console.log(newModel);
             }
         });
 
@@ -422,6 +478,7 @@
                 })).render();
 
                 (new CreateImagesView({
+                    createdCollection: glyphImages,
                     el: '.image-upload-area'
                 })).render();
 
