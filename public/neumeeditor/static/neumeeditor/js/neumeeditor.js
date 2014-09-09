@@ -178,13 +178,15 @@
             {
                 var output = new CollectionType();
                 var urlList = this.get(String(attributeName));
-                var newModel;
+                // If we don't encapsulate sort() in a function then we get errors on load.
+                var sortOutput = function() {output.sort();};
 
+                var newModel;
                 for (var i = 0; i < urlList.length; i++)
                 {
                     newModel = new ItemType({url: String(urlList[i])});
                     output.add(newModel);
-                    newModel.fetch({success: output.sort});
+                    newModel.fetch({success: sortOutput});
                 }
 
                 return output;
@@ -267,6 +269,7 @@
                         paramName: "image_file",
                         acceptedFiles: "image/*",
                         headers: {
+                            // We need to include the CSRF token again
                             "X-CSRFToken": csrftoken
                         },
                         params: {
