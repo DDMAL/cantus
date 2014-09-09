@@ -123,6 +123,7 @@
             this.setDivaSize();
         }
     });
+    
 
     /**
      * Handles the global state.  Updates URLs.
@@ -173,6 +174,7 @@
 
         silentUrlUpdate: function()
         {
+            console.log("silentUrlUpdate()");
             // Don't actually trigger the router!
             app.navigate(this.getUrl(), {trigger: false});
         }
@@ -558,21 +560,25 @@
          */
         unfoldChantCallback: function(event)
         {
+            console.log("unfoldChantCallback() begin.");
             // "collapse-1" becomes 1, etc.
             var chant = parseInt(event.target.id.split('-')[1]) + 1;
             this.chantStateSwitch.setValue(chant, true);
 
             globalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
             globalEventHandler.trigger("SilentUrlUpdate");
+            console.log("unfoldChantCallback() end.");
         },
 
         foldChantCallback: function(event)
         {
+            console.log("foldChantCallback() begin.");
             var chant = parseInt(event.target.id.split('-')[1]) + 1;
             this.chantStateSwitch.setValue(chant, false);
 
             globalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
             globalEventHandler.trigger("SilentUrlUpdate");
+            console.log("foldChantCallback() end.");
         },
 
         /**
@@ -602,18 +608,22 @@
          */
         setUrl: function(url)
         {
+            console.log("setUrl() begin.");
             this.collection.url = url;
             this.collection.fetch({success: this.afterFetch});
             // Reset the chant if this isn't the initial load
-            if (this.alreadyLoaded) {
+            if (this.alreadyLoaded === true) {
                 this.unfoldedChant = undefined;
                 globalEventHandler.trigger("ChangeChant", undefined);
+                // If we don't update the URL then the chant persists when we
+                // change the folio...
                 globalEventHandler.trigger("SilentUrlUpdate");
             }
             else
             {
                 this.alreadyLoaded = true;
             }
+            console.log("setUrl() end.");
         },
 
         /**
@@ -670,9 +680,11 @@
 
         initialize: function(options)
         {
+            console.log("Initialize Diva View begin.");
             _.bindAll(this, 'render', 'storeFolioIndex', 'storeInitialFolio',
                 'setGlobalFullScreen', 'zoomToLocation');
             this.setManuscript(options.siglum, options.folio);
+            console.log("Initialize Diva View end.");
         },
 
         /**
@@ -746,6 +758,7 @@
 
         render: function()
         {
+            console.log("Diva render() begin.");
             // We only want to initialize Diva once!
             if (!this.divaInitialized)
             {
@@ -753,6 +766,7 @@
             }
 
             globalEventHandler.trigger("renderView");
+            console.log("Diva render() end.");
             return this.trigger('render', this);
         },
 
@@ -788,6 +802,7 @@
          */
         storeInitialFolio: function()
         {
+            console.log("storeInitialFolio() begin.");
             // If there exists a client-defined initial folio
             if (this.initialFolio !== undefined)
             {
@@ -856,7 +871,13 @@
          */
         storeFolioIndex: function(index, fileName)
         {
-            if (index !== this.currentFolioIndex)
+            console.log("storeFolioIndex() begin.");
+            // The first time it's ever called
+            if (this.initialFolio === undefined) {
+                this.initialFolio = 0;
+            }
+            // Not the first time
+            else if (index !== this.currentFolioIndex)
             {
                 this.currentFolioIndex = index;
                 this.currentFolioName = fileName;
@@ -873,6 +894,7 @@
                     },
                     250);
             }
+            console.log("storeFolioIndex() end.");
         },
 
         /**
@@ -2133,6 +2155,7 @@
          */
         updateFolio: function()
         {
+            console.log("updateFolio() begin.");
             var folio = this.divaView.getFolio();
             // Query the folio set at that specific manuscript number
             var newUrl =  siteUrl + "folio-set/manuscript/" + this.manuscript.get("id") + "/" + folio + "/";
@@ -2142,6 +2165,7 @@
             this.folioView.update();
             globalEventHandler.trigger("ChangeFolio", folio);
             globalEventHandler.trigger("SilentUrlUpdate");
+            console.log("updateFolio() end.");
         },
 
         /**
