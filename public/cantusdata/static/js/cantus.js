@@ -799,18 +799,7 @@
             this.storeFolioIndex(number, name);
             // Store the image prefix for later
             this.setImagePrefixAndSuffix(name);
-        },
-
-        /**
-         * Takes an image file name and returns the folio code.
-         *
-         * @param imageName Some image name, ex: "folio_001.jpg"
-         * @returns string "001"
-         */
-        imageNameToFolio: function(imageName)
-        {
-            var splitFolioName = String(imageName).split('.')[0].split('_');
-            return splitFolioName[splitFolioName.length - 1];
+            console.log("storeInitialFolio() end.");
         },
 
         /**
