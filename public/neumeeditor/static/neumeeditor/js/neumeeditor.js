@@ -61,21 +61,26 @@
 
     App.on('initialize:before', function(options)
     {
-        options.anotherThing = true; // Add more data to your options
+        // options.anotherThing = true; // Add more data to your options
     });
     App.on('initialize:after', function(options)
     {
-        console.log('Initialization Finished');
+        // console.log('Initialization Finished');
     });
     App.on('start', function(options)
     {
-        Backbone.history.start(); // Great time to do this
+        // Get history going
+        Backbone.history.start();
     });
 
     // Create a region. It will control what's in the #container element.
     App.container = new Backbone.Marionette.Region
     ({
         el: "#container"
+    });
+
+    App.addRegions({
+        container: "#container"
     });
 
     // Add a view to the region. It will automatically render immediately.
@@ -94,9 +99,11 @@
     App.module("glyphEdit", function(myModule, App, Backbone, Marionette, $, _){
         this.startWithParent = true;
 
-        /*
+        /*  
+        ------------------------------------------------------
         Models
-         */
+        ------------------------------------------------------
+        */
 
         var Image = Backbone.Model.extend({
             initialize: function(options)
@@ -194,9 +201,11 @@
         });
 
 
-        /*
+        /*  
+        ------------------------------------------------------
         Collections
-         */
+        ------------------------------------------------------
+        */
 
         var NameCollection = Backbone.Collection.extend({
             model: Name,
@@ -219,8 +228,14 @@
         });
 
 
-        /*
+        /*  
+        ------------------------------------------------------
         Views
+        ------------------------------------------------------
+        */
+
+        /*
+        Item Views
          */
 
         var CreateImagesView = Backbone.Marionette.ItemView.extend({
@@ -297,6 +312,10 @@
             }
         });
 
+        var CreateSingleNameView = EditSingleNameView.extend({
+            template: _.template($('#create-single-name-template').html())
+        });
+
         var EditSingleImageView = Backbone.Marionette.ItemView.extend({
             tagName: "div",
 
@@ -325,26 +344,6 @@
                 this.model.destroy();
                 return this.trigger("destroy");
             }
-        });
-
-        var EditImagesView = Backbone.Marionette.CompositeView.extend({
-            childView: EditSingleImageView,
-
-            childViewContainer: ".images",
-            template: "#edit-image-collection-template"
-        });
-
-        /**
-         * View for looking at a single glyph object.
-         */
-        var SingleGlyphView = Backbone.Marionette.ItemView.extend({
-            tagName: "li",
-            template: _.template("")
-        });
-
-        var EditSingleGlyphView = Backbone.Marionette.CompositeView.extend({
-            tagName: "li",
-            template: _.template("#edit-single-glyph-template")
         });
 
         /**
@@ -405,16 +404,17 @@
             }
         });
 
-        var CreateSingleNameView = EditSingleNameView.extend({
-            template: _.template($('#create-single-name-template').html())
+        /**
+         * View for looking at a single glyph object.
+         */
+        var SingleGlyphView = Backbone.Marionette.ItemView.extend({
+            tagName: "li",
+            template: _.template("")
         });
 
-        var EditNamesView = Backbone.Marionette.CompositeView.extend({
-            childView: EditSingleNameView,
-
-            childViewContainer: ".name-list",
-            template: "#edit-name-collection-template"
-        });
+        /*
+        Composite Views
+        */
 
         var CreateNamesView = Backbone.Marionette.CompositeView.extend({
 
@@ -459,9 +459,30 @@
             }
         });
 
-        /*
+        var EditNamesView = Backbone.Marionette.CompositeView.extend({
+            childView: EditSingleNameView,
+
+            childViewContainer: ".name-list",
+            template: "#edit-name-collection-template"
+        });
+
+        var EditImagesView = Backbone.Marionette.CompositeView.extend({
+            childView: EditSingleImageView,
+
+            childViewContainer: ".images",
+            template: "#edit-image-collection-template"
+        });
+
+        var EditSingleGlyphView = Backbone.Marionette.CompositeView.extend({
+            tagName: "li",
+            template: _.template("#edit-single-glyph-template")
+        });
+
+        /*  
+        ------------------------------------------------------
         Execution Code
-         */
+        ------------------------------------------------------
+        */
 
         var glyph = new Glyph({url: "http://localhost:8000/neumeeditor/glyph/1/"});
 
