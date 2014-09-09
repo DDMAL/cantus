@@ -79,9 +79,9 @@
         el: "#container"
     });
 
-    App.addRegions({
-        container: "#container"
-    });
+    // App.addRegions({
+    //     container: "#container"
+    // });
 
     // Add a view to the region. It will automatically render immediately.
     //    region.show(new MyView());
@@ -238,84 +238,6 @@
         Item Views
          */
 
-        var CreateImagesView = Backbone.Marionette.ItemView.extend({
-            createdCollection: undefined,
-            childView: CreateSingleNameView,
-            childViewContainer: ".name-list",
-            template: "#upload-image-template",
-
-            initialize: function(options)
-            {
-                if(options)
-                {
-                    if (options.createdCollection)
-                    {
-                        this.createdCollection = options.createdCollection;
-                    }
-                    if (options.glyphId)
-                    {
-                        this.glyphId = getAbsoluteGlyphUrl(options.glyphId);
-                        console.log("DECLARING GLYPH ID: ", this);
-                    }
-                }
-            },
-
-            childEvents: {
-                "submit": "save"
-            },
-
-            ui: {
-                "dropzone": ".dropzone"
-            },
-
-            save: function(child)
-            {
-                console.log("SAVE CALLBACK:");
-            },
-
-            onRender: function()
-            {
-                console.log("Uploader render.");
-                console.log(this.glyphId);
-                this.dropzone = new Dropzone(this.ui.dropzone.selector,
-                        {
-                        url: SITE_URL + "images/",
-                        autoProcessQueue: true,
-                        paramName: "image_file",
-                        acceptedFiles: "image/*",
-                        headers: {
-                            // We need to include the CSRF token again
-                            "X-CSRFToken": csrftoken
-                        },
-                        params: {
-                            glyph: this.glyphId
-                        }
-                    }
-                );
-                var that = this;
-                this.listenTo(this.dropzone, "success",
-                    function(file, attributes)
-                    {
-                        console.log("Creating image model...", that);
-                        console.log(attributes);
-                        console.log(file);
-                        var newModel = new Image({url: attributes.url});
-                        newModel.set(attributes);
-                        console.log("childviewcontainer: ", that.childViewContainer);
-                        newModel.set("glyph", that.glyphId);
-                        console.log(that.createdCollection);
-                        that.createdCollection.add(newModel);
-                        newModel.save();
-                        console.log(newModel);
-                    }
-                );
-            }
-        });
-
-        var CreateSingleNameView = EditSingleNameView.extend({
-            template: _.template($('#create-single-name-template').html())
-        });
-
         var EditSingleImageView = Backbone.Marionette.ItemView.extend({
             tagName: "div",
 
@@ -412,6 +334,86 @@
             template: _.template("")
         });
 
+        var CreateImagesView = Backbone.Marionette.ItemView.extend({
+            createdCollection: undefined,
+            childView: CreateSingleNameView,
+            childViewContainer: ".name-list",
+            template: "#upload-image-template",
+
+            initialize: function(options)
+            {
+                if(options)
+                {
+                    if (options.createdCollection)
+                    {
+                        this.createdCollection = options.createdCollection;
+                    }
+                    if (options.glyphId)
+                    {
+                        this.glyphId = getAbsoluteGlyphUrl(options.glyphId);
+                        console.log("DECLARING GLYPH ID: ", this);
+                    }
+                }
+            },
+
+            childEvents: {
+                "submit": "save"
+            },
+
+            ui: {
+                "dropzone": ".dropzone"
+            },
+
+            save: function(child)
+            {
+                console.log("SAVE CALLBACK:");
+            },
+
+            onRender: function()
+            {
+                console.log("DROPZONE DIV:");
+                console.log(this.ui.dropzone);
+                console.log("Uploader render.");
+                console.log(this.glyphId);
+                this.dropzone = new Dropzone(this.ui.dropzone.selector,
+                        {
+                        url: SITE_URL + "images/",
+                        autoProcessQueue: true,
+                        paramName: "image_file",
+                        acceptedFiles: "image/*",
+                        headers: {
+                            // We need to include the CSRF token again
+                            "X-CSRFToken": csrftoken
+                        },
+                        params: {
+                            glyph: this.glyphId
+                        }
+                    }
+                );
+                var that = this;
+                this.listenTo(this.dropzone, "success",
+                    function(file, attributes)
+                    {
+                        console.log("Creating image model...", that);
+                        console.log(attributes);
+                        console.log(file);
+                        var newModel = new Image({url: attributes.url});
+                        newModel.set(attributes);
+                        console.log("childviewcontainer: ", that.childViewContainer);
+                        newModel.set("glyph", that.glyphId);
+                        console.log(that.createdCollection);
+                        that.createdCollection.add(newModel);
+                        newModel.save();
+                        console.log(newModel);
+                    }
+                );
+            }
+        });
+
+        var CreateSingleNameView = EditSingleNameView.extend({
+            template: _.template($('#create-single-name-template').html())
+        });
+
         /*
         Composite Views
         */
@@ -478,6 +480,25 @@
             template: _.template("#edit-single-glyph-template")
         });
 
+        /*
+        Layout Views
+        */
+
+        var AppLayoutView = Backbone.Marionette.LayoutView.extend({
+            template: "#edit-glyph-template",
+
+            /*
+            These regions correspond to template areas. They will be populated with
+            sub views.
+            */
+            regions: {
+                namesArea: ".names-area",
+                nameCreateArea: ".name-create-area",
+                imageUploadArea: ".image-upload-area",
+                imagesEditArea: ".images-area"
+            }
+        });
+
         /*  
         ------------------------------------------------------
         Execution Code
@@ -486,34 +507,61 @@
 
         var glyph = new Glyph({url: "http://localhost:8000/neumeeditor/glyph/1/"});
 
+        var editor = new AppLayoutView();
+
         this.start = function()
         {
+            // Render the LayoutView
+            App.container.show(editor);
+
             console.log("Starting...");
             glyph.fetch({success: function(){
                 var glyphNames = glyph.getCollection("name_set", NameCollection, Name);
                 var glyphImages = glyph.getCollection("image_set", ImageCollection, Image);
                 console.log(glyphNames);
-                (new EditNamesView({
-                    collection: glyphNames,
-                    el: '.names-area'
-                })).render();
+                // (new EditNamesView({
+                //     collection: glyphNames,
+                //     el: '.names-area'
+                // })).render();
 
-                (new CreateNamesView({
-                    glyphId: glyph.get("id"),
-                    createdCollection: glyphNames,
-                    el: '.name-create-area'
-                })).render();
+                // (new CreateNamesView({
+                //     glyphId: glyph.get("id"),
+                //     createdCollection: glyphNames,
+                //     el: '.name-create-area'
+                // })).render();
 
-                (new CreateImagesView({
-                    glyphId: 1,
-                    createdCollection: glyphImages,
-                    el: '.image-upload-area'
-                })).render();
+                // (new CreateImagesView({
+                //     glyphId: 1,
+                //     createdCollection: glyphImages,
+                //     el: '.image-upload-area'
+                // })).render();
 
-                (new EditImagesView({
-                    collection: glyphImages,
-                    el: '.images-area'
-                })).render();
+                // (new EditImagesView({
+                //     collection: glyphImages,
+                //     el: '.images-area'
+                // })).render();
+
+                editor.namesArea.show(new EditNamesView({collection: glyphNames}));
+
+                editor.nameCreateArea.show(
+                    new CreateNamesView({
+                        glyphId: glyph.get("id"),
+                        createdCollection: glyphNames
+                    })
+                );
+
+                editor.imagesEditArea.show(
+                    new EditImagesView({
+                        collection: glyphImages
+                    })
+                );
+
+                editor.imageUploadArea.show(
+                    new CreateImagesView({
+                        glyphId: 1,
+                        createdCollection: glyphImages
+                    })
+                );
 
             }});
         };
