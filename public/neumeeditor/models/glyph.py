@@ -12,9 +12,6 @@ class Glyph(models.Model):
 
     style = models.ForeignKey(Style)
 
-    def test(self):
-        self.name_set.clear()
-
     def __unicode__(self):
         output = u""
         name_count = self.name_set.count()
