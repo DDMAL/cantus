@@ -184,7 +184,7 @@
                 {
                     newModel = new ItemType({url: String(urlList[i])});
                     output.add(newModel);
-                    newModel.fetch({success: function(){output.sort();}});
+                    newModel.fetch({success: output.sort});
                 }
 
                 return output;
