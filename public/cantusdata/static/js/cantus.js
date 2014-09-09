@@ -976,6 +976,22 @@
             var boxLeft = this.$el.data('diva').translateFromMaxZoomLevel(box.x);
             $(divaOuter).scrollLeft(boxLeft - ($(divaOuter).width() / 2) + (box.w / 2) + leftMarginConsiderations);
             // Will include the padding between pages for best results
+        },
+
+        /*
+        DivaView helpers
+         */
+
+        /**
+         * Takes an image file name and returns the folio code.
+         *
+         * @param imageName Some image name, ex: "folio_001.jpg"
+         * @returns string "001"
+         */
+        imageNameToFolio: function(imageName)
+        {
+            var splitFolioName = String(imageName).split('.')[0].split('_');
+            return splitFolioName[splitFolioName.length - 1];
         }
     });
 
