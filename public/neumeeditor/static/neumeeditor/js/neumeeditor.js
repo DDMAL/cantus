@@ -73,15 +73,10 @@
         Backbone.history.start();
     });
 
-    // Create a region. It will control what's in the #container element.
-    App.container = new Backbone.Marionette.Region
-    ({
-        el: "#container"
+    App.addRegions({
+        container: "#content",
+        navigation: "#navigation"
     });
-
-    // App.addRegions({
-    //     container: "#container"
-    // });
 
     // Add a view to the region. It will automatically render immediately.
     //    region.show(new MyView());
@@ -91,6 +86,46 @@
 
     // Close out the view and display nothing in #container.
     //    region.close();
+
+    App.module("mainMenu", function(mymodule, App, Backbone, Marionette, $, _) {
+        this.startWithParent = true;
+
+        /**
+         * A generic link
+         */
+        var Link = Backbone.Model.extend({
+            defaults: {
+                url: "#",
+                text: "Link"
+            }
+        });
+
+        /**
+         * The main menu.
+         */
+        var MainMenuView = Backbone.Marionette.CompositeView.extend({
+            childView: SingleMainMenuLinkView,
+            childViewContainer: ".navbar-left",
+            template: "#main-menu-template"
+        });
+
+        /** 
+         * A link on the main menu.
+         */
+        var SingleMainMenuLinkView = Backbone.Marionette.ItemView.extend({
+            template: "single-main-menu-link-template"
+        });
+
+        /*
+        Execution Code
+        */
+        var menuLinks = new Backbone.Collection();
+        menuLinks.add(new Link());
+        menuLinks.add(new Link());
+        menuLinks.add(new Link());
+        var menu = new MainMenuView({collection: menuLinks});
+        App.navigation.show(menu);
+    });
 
     App.module("authentication", function(myModule, App, Backbone, Marionette, $, _){
         this.startWithParent = false;
@@ -197,6 +232,10 @@
                 }
 
                 return output;
+            },
+
+            defaults: {
+                id: 0
             }
         });
 
@@ -326,13 +365,13 @@
             }
         });
 
-        /**
-         * View for looking at a single glyph object.
-         */
-        var SingleGlyphView = Backbone.Marionette.ItemView.extend({
-            tagName: "li",
-            template: _.template("")
-        });
+        // /**
+        //  * View for looking at a single glyph object.
+        //  */
+        // var SingleGlyphView = Backbone.Marionette.ItemView.extend({
+        //     tagName: "li",
+        //     template: _.template("")
+        // });
 
         var CreateImagesView = Backbone.Marionette.ItemView.extend({
             createdCollection: undefined,
@@ -480,6 +519,7 @@
             template: _.template("#edit-single-glyph-template")
         });
 
+
         /*
         Layout Views
         */
@@ -496,7 +536,12 @@
                 nameCreateArea: ".name-create-area",
                 imageUploadArea: ".image-upload-area",
                 imagesEditArea: ".images-area"
+            },
+
+            modelEvents: {
+                "change": "render"
             }
+
         });
 
         /*  
@@ -507,7 +552,7 @@
 
         var glyph = new Glyph({url: "http://localhost:8000/neumeeditor/glyph/1/"});
 
-        var editor = new AppLayoutView();
+        var editor = new AppLayoutView({model: glyph});
 
         this.start = function()
         {
@@ -516,6 +561,9 @@
 
             console.log("Starting...");
             glyph.fetch({success: function(){
+
+                console.log(editor.model);
+
                 var glyphNames = glyph.getCollection("name_set", NameCollection, Name);
                 var glyphImages = glyph.getCollection("image_set", ImageCollection, Image);
                 console.log(glyphNames);
