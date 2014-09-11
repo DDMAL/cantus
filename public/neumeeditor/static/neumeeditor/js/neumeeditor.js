@@ -87,6 +87,140 @@
     // Close out the view and display nothing in #container.
     //    region.close();
 
+
+    /*  
+    ------------------------------------------------------
+    Models
+    ------------------------------------------------------
+    */
+
+    var Image = Backbone.Model.extend({
+        initialize: function(options)
+        {
+            if (options !== undefined && options.url !== undefined)
+            {
+                this.url = String(options.url);
+            }
+        },
+
+        url: SITE_URL + "images/",
+
+        defaults: {
+            image_file: ""
+        },
+
+        /**
+         * Get the absolute url to the image file.
+         *
+         * @returns {string}
+         */
+        getAbsoluteImageFile: function()
+        {
+            return STATIC_URL + this.get("image_file");
+        }
+    });
+
+    var Name = Backbone.Model.extend({
+        initialize: function(options)
+        {
+            if (options !== undefined && options.url !== undefined)
+            {
+                this.url = String(options.url);
+            }
+        },
+
+        url: SITE_URL + "names/",
+
+        defaults: {
+            string: "",
+            short_code: ""
+        },
+
+        /**
+         * Set the Name's glyph based on the ID int.
+         *
+         * @param id
+         */
+        setGlyph: function(id)
+        {
+            this.set("glyph", getAbsoluteGlyphUrl(id));
+        },
+
+        /**
+         * Set the model url to its url attribute.
+         */
+        transferUrl: function()
+        {
+            this.url = this.get("url");
+        }
+    });
+
+    var Glyph = Backbone.Model.extend({
+
+        initialize: function(options)
+        {
+            this.url = String(options.url);
+        },
+
+        /**
+         * Get a collection containing the Glyph's names.
+         *
+         * @param attributeName
+         * @param CollectionType
+         * @param ItemType
+         * @returns {CollectionType}
+         */
+        getCollection: function(attributeName, CollectionType, ItemType)
+        {
+            var output = new CollectionType();
+            var urlList = this.get(String(attributeName));
+            // If we don't encapsulate sort() in a function then we get errors on load.
+            var sortOutput = function() {output.sort();};
+
+            var newModel;
+            for (var i = 0; i < urlList.length; i++)
+            {
+                newModel = new ItemType({url: String(urlList[i])});
+                output.add(newModel);
+                newModel.fetch({success: sortOutput});
+            }
+
+            return output;
+        },
+
+        defaults: {
+            id: 0
+        }
+    });
+
+
+    /*  
+    ------------------------------------------------------
+    Collections
+    ------------------------------------------------------
+    */
+
+    var NameCollection = Backbone.Collection.extend({
+        model: Name,
+
+        comparator: function(name)
+        {
+            // Newest names first
+            return 0 - parseInt(name.get("id"));
+        }
+    });
+
+    var ImageCollection = Backbone.Collection.extend({
+        model: Image,
+
+        comparator: function(image)
+        {
+            // Newest names first
+            return 0 - parseInt(image.get("id"));
+        }
+    });
+
+
     App.module("mainMenu", function(mymodule, App, Backbone, Marionette, $, _) {
         this.startWithParent = true;
 
@@ -134,138 +268,6 @@
 
     App.module("glyphEdit", function(myModule, App, Backbone, Marionette, $, _){
         this.startWithParent = true;
-
-        /*  
-        ------------------------------------------------------
-        Models
-        ------------------------------------------------------
-        */
-
-        var Image = Backbone.Model.extend({
-            initialize: function(options)
-            {
-                if (options !== undefined && options.url !== undefined)
-                {
-                    this.url = String(options.url);
-                }
-            },
-
-            url: SITE_URL + "images/",
-
-            defaults: {
-                image_file: ""
-            },
-
-            /**
-             * Get the absolute url to the image file.
-             *
-             * @returns {string}
-             */
-            getAbsoluteImageFile: function()
-            {
-                return STATIC_URL + this.get("image_file");
-            }
-        });
-
-        var Name = Backbone.Model.extend({
-            initialize: function(options)
-            {
-                if (options !== undefined && options.url !== undefined)
-                {
-                    this.url = String(options.url);
-                }
-            },
-
-            url: SITE_URL + "names/",
-
-            defaults: {
-                string: "",
-                short_code: ""
-            },
-
-            /**
-             * Set the Name's glyph based on the ID int.
-             *
-             * @param id
-             */
-            setGlyph: function(id)
-            {
-                this.set("glyph", getAbsoluteGlyphUrl(id));
-            },
-
-            /**
-             * Set the model url to its url attribute.
-             */
-            transferUrl: function()
-            {
-                this.url = this.get("url");
-            }
-        });
-
-        var Glyph = Backbone.Model.extend({
-
-            initialize: function(options)
-            {
-                this.url = String(options.url);
-            },
-
-            /**
-             * Get a collection containing the Glyph's names.
-             *
-             * @param attributeName
-             * @param CollectionType
-             * @param ItemType
-             * @returns {CollectionType}
-             */
-            getCollection: function(attributeName, CollectionType, ItemType)
-            {
-                var output = new CollectionType();
-                var urlList = this.get(String(attributeName));
-                // If we don't encapsulate sort() in a function then we get errors on load.
-                var sortOutput = function() {output.sort();};
-
-                var newModel;
-                for (var i = 0; i < urlList.length; i++)
-                {
-                    newModel = new ItemType({url: String(urlList[i])});
-                    output.add(newModel);
-                    newModel.fetch({success: sortOutput});
-                }
-
-                return output;
-            },
-
-            defaults: {
-                id: 0
-            }
-        });
-
-
-        /*  
-        ------------------------------------------------------
-        Collections
-        ------------------------------------------------------
-        */
-
-        var NameCollection = Backbone.Collection.extend({
-            model: Name,
-
-            comparator: function(name)
-            {
-                // Newest names first
-                return 0 - parseInt(name.get("id"));
-            }
-        });
-
-        var ImageCollection = Backbone.Collection.extend({
-            model: Image,
-
-            comparator: function(image)
-            {
-                // Newest names first
-                return 0 - parseInt(image.get("id"));
-            }
-        });
 
 
         /*  
