@@ -220,6 +220,21 @@
         }
     });
 
+    var GlyphCollection = Backbone.Collection.extend({
+        model: Glyph,
+
+        initialize: function(options)
+        {
+            this.url = String(options.url);
+        },
+
+        comparator: function(image)
+        {
+            // Newest names first
+            return 0 - parseInt(image.get("id"));
+        }        
+    });
+
 
     App.module("mainMenu", function(mymodule, App, Backbone, Marionette, $, _) {
         this.startWithParent = true;
@@ -266,8 +281,87 @@
         this.startWithParent = false;
     });
 
-    App.module("glyphEdit", function(myModule, App, Backbone, Marionette, $, _){
+    App.module("glyphList", function(myModule, App, Backbone, Marionette, $, _){
         this.startWithParent = true;
+
+        /*
+        Item Views
+        */
+
+        var ImageView = Backbone.Marionette.ItemView.extend({
+            template: "#single-image-template"
+        });
+
+        var NameView = Backbone.Marionette.ItemView.extend({
+            template: "#single-name-template"
+        });
+
+        var NameCollectionView = Backbone.Marionette.CollectionView.extend({
+            childView: NameView
+        });
+
+        var GlyphView = Backbone.Marionette.LayoutView.extend({
+            template: "#glyph-template",
+            tagName: "tr"
+        });
+
+        var GlyphCompositeView = Backbone.Marionette.CompositeView.extend({
+            childView: GlyphView,
+
+            childViewContainer: "tbody",
+            template: "#glyph-collection-template"
+        });
+
+        // /*
+        // Layout Views
+        // */
+
+        // var GlyphListLayoutView = Backbone.Marionette.LayoutView.extend({
+        //     template: "#edit-glyph-template",
+
+        //     /*
+        //     These regions correspond to template areas. They will be populated with
+        //     sub views.
+        //     */
+        //     regions: {
+        //         namesArea: ".names-area",
+        //         nameCreateArea: ".name-create-area",
+        //         imageUploadArea: ".image-upload-area",
+        //         imagesEditArea: ".images-area"
+        //     },
+
+        //     modelEvents: {
+        //         "change": "render"
+        //     }
+
+        // });
+
+        /*  
+        ------------------------------------------------------
+        Execution Code
+        ------------------------------------------------------
+        */
+
+        var glyphCollection = new GlyphCollection({url: "http://localhost:8000/neumeeditor/glyphs/"});
+
+        // var glyph = new GlyphListLayoutView({model: glyph});
+        var glyphCompositeView = new GlyphCompositeView({collection: glyphCollection});
+
+        this.start = function()
+        {
+            App.container.show(glyphCompositeView);
+
+            console.log("Starting...");
+            glyphCollection.fetch({success: function(){
+
+                console.log(glyphCollection);
+
+            }});
+        };
+    });
+
+    App.module("glyphEdit", function(myModule, App, Backbone, Marionette, $, _){
+        this.startWithParent = false;
 
 
         /*  
@@ -367,14 +461,6 @@
                 return this.trigger("destroy");
             }
         });
-
-        // /**
-        //  * View for looking at a single glyph object.
-        //  */
-        // var SingleGlyphView = Backbone.Marionette.ItemView.extend({
-        //     tagName: "li",
-        //     template: _.template("")
-        // });
 
         var CreateImagesView = Backbone.Marionette.ItemView.extend({
             createdCollection: undefined,
