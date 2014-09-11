@@ -36,8 +36,28 @@
 </nav>
 </script>
 
+<script type="text/template" id="single-image-template">
+<img scr="<%= image_file %>"/>
+</script>
+
+<script type="text/template" id="single-name-template">
+<%= string %> - <% short_code %>
+</script>
+
 <script type="text/template" id="single-main-menu-link-template">
 <a href="<%= url %>"><%= text %></a>
+</script>
+
+<script type="text/template" id="glyph-template">
+<td>Names</td><td>Images</td>
+</script>
+
+<script type="text/template" id="glyph-collection-template">
+<h2>Glyphs</h2>
+<table class="table glyph-collection">
+    <tbody>
+    </tbody>
+</table>
 </script>
 
 <script type="text/template" id="edit-glyph-template">
