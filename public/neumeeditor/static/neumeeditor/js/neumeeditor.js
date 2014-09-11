@@ -100,6 +100,14 @@
             }
         });
 
+        /** 
+         * A link on the main menu.
+         */
+        var SingleMainMenuLinkView = Backbone.Marionette.ItemView.extend({
+            template: "#single-main-menu-link-template",
+            tagName: "li"
+        });
+
         /**
          * The main menu.
          */
@@ -107,13 +115,6 @@
             childView: SingleMainMenuLinkView,
             childViewContainer: ".navbar-left",
             template: "#main-menu-template"
-        });
-
-        /** 
-         * A link on the main menu.
-         */
-        var SingleMainMenuLinkView = Backbone.Marionette.ItemView.extend({
-            template: "single-main-menu-link-template"
         });
 
         /*
