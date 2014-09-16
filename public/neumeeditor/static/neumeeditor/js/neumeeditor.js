@@ -330,7 +330,22 @@
 
         var GlyphView = Backbone.Marionette.LayoutView.extend({
             template: "#glyph-template",
-            tagName: "tr"
+            tagName: "tr",
+
+            regions: {
+                names: ".glyph-name-list",
+                images: ".glyph-image-list"
+            },
+
+            onRender: function() {
+                var nameCollection = this.model.getCollection("name_set", NameCollection, Name);
+                this.names.show(new NameCollectionView({
+                    collection: nameCollection
+                }));
+                // this.images.show(new ImageCollectionView({
+                //     collection: this.model.getCollection("image_set", ImageCollection, Image)
+                // }));
+            }
         });
 
         var GlyphCompositeView = Backbone.Marionette.CompositeView.extend({
