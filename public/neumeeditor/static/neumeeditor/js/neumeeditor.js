@@ -324,6 +324,10 @@
             childView: NameView
         });
 
+        var ImageCollectionView = Backbone.Marionette.CollectionView.extend({
+            childView: NameView
+        });
+
         var GlyphView = Backbone.Marionette.LayoutView.extend({
             template: "#glyph-template",
             tagName: "tr"
