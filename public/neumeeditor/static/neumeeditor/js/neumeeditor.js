@@ -194,6 +194,10 @@
         {
             var output = new CollectionType();
             var urlList = this.get(String(attributeName));
+            if (urlList === undefined) {
+                // This prevents crashing if the list is undefined.
+                return undefined;
+            }
             // If we don't encapsulate sort() in a function then we get errors on load.
             var sortOutput = function() {output.sort();};
 
