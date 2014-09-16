@@ -54,6 +54,30 @@
     }
 
     /*
+    Router
+    */
+    var NeumeeditorRouter = Backbone.Marionette.AppRouter.extend({
+        /* standard routes can be mixed with appRoutes/Controllers above */
+        routes : {
+            "" : "openGlyphList",
+            "glyph/:id/" : "openGlyphEditor"
+        },
+
+        openGlyphList: function(){
+            console.log("Open Glyph List.");
+            // Start the glyph list module
+            App.module("glyphList").start();
+        },
+
+        openGlyphEditor: function(id){
+            console.log("Open Glyph List.");
+            // Start the glyph list module
+            App.module("glyphEdit").start();
+        }
+
+    });
+
+    /*
     App initialization
      */
 
@@ -69,6 +93,9 @@
     });
     App.on('start', function(options)
     {
+        console.log("Aout ti initialize router");
+        // Build the router
+        var router = new NeumeeditorRouter();
         // Get history going
         Backbone.history.start();
     });
