@@ -275,7 +275,7 @@
     });
 
     App.module("glyphList", function(myModule, App, Backbone, Marionette, $, _){
-        this.startWithParent = true;
+        this.startWithParent = false;
 
         /*
         Item Views
