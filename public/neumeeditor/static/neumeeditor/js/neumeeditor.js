@@ -78,14 +78,7 @@
         navigation: "#navigation"
     });
 
-    // Add a view to the region. It will automatically render immediately.
-    //    region.show(new MyView());
 
-    // Close out the view that's currently there and render a different view.
-    //    region.show(new MyOtherView());
-
-    // Close out the view and display nothing in #container.
-    //    region.close();
 
 
     /*  
