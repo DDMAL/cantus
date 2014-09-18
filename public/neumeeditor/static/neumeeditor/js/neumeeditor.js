@@ -707,27 +707,6 @@
                 var glyphNames = glyph.getCollection("name_set", NameCollection, Name);
                 var glyphImages = glyph.getCollection("image_set", ImageCollection, Image);
                 console.log(glyphNames);
-                // (new EditNamesView({
-                //     collection: glyphNames,
-                //     el: '.names-area'
-                // })).render();
-
-                // (new CreateNamesView({
-                //     glyphId: glyph.get("id"),
-                //     createdCollection: glyphNames,
-                //     el: '.name-create-area'
-                // })).render();
-
-                // (new CreateImagesView({
-                //     glyphId: 1,
-                //     createdCollection: glyphImages,
-                //     el: '.image-upload-area'
-                // })).render();
-
-                // (new EditImagesView({
-                //     collection: glyphImages,
-                //     el: '.images-area'
-                // })).render();
 
                 editor.namesArea.show(new EditNamesView({collection: glyphNames}));
 
