@@ -6,6 +6,7 @@
      */
 
     var SITE_URL = "http://localhost:8000/neumeeditor/";
+    var SITE_SUBFOLDER = "neumeeditor/";
     var STATIC_URL = "http://localhost:8000/neumeeditor/media/";
 
     /*
