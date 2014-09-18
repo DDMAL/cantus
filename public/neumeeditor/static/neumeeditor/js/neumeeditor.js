@@ -216,7 +216,6 @@
                 output.add(newModel);
                 newModel.fetch({success: sortOutput});
             }
-
             return output;
         },
 
