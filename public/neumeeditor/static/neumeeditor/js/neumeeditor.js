@@ -75,6 +75,16 @@
             // Start the glyph list module
             App.module("GlyphEdit").start();
 
+        routeToPage: function(url) {
+            console.log("url:", url);
+            var newPageUrl = SITE_SUBFOLDER + String(url).replace(SITE_URL, "");
+            console.log(newPageUrl);
+            this.navigate(
+                    // Strip site url if need be
+                    newPageUrl,
+                    {trigger: true}
+                );
+        }
     });
 
     /*
