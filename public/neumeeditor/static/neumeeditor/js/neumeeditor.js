@@ -107,7 +107,7 @@
         // Build the router
         var router = new NeumeeditorRouter();
         // Get history going
-        Backbone.history.start();
+        Backbone.history.start({pushState: true});
     });
 
     App.addRegions({
