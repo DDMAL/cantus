@@ -286,7 +286,17 @@
          */
         var SingleMainMenuLinkView = Backbone.Marionette.ItemView.extend({
             template: "#single-main-menu-link-template",
-            tagName: "li"
+            tagName: "li",
+
+            events: {
+                "click a": "goToUrl"
+            },
+
+            goToUrl: function(event) {
+                console.log(event);
+                event.preventDefault();
+                AppRouter.routeToPage(event.target.href);
+            }
         });
 
         /**
