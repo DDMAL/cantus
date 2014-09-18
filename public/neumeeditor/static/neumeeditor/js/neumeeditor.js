@@ -313,19 +313,27 @@
         */
 
         var ImageView = Backbone.Marionette.ItemView.extend({
-            template: "#single-image-template"
+            template: "#single-image-template",
+
+            tagName: "li"
         });
 
         var NameView = Backbone.Marionette.ItemView.extend({
-            template: "#single-name-template"
+            template: "#single-name-template",
+
+            tagName: "li"
         });
 
         var NameCollectionView = Backbone.Marionette.CollectionView.extend({
-            childView: NameView
+            childView: NameView,
+
+            tagName: "ul"
         });
 
         var ImageCollectionView = Backbone.Marionette.CollectionView.extend({
-            childView: NameView
+            childView: NameView,
+
+            tagName: "ul"
         });
 
         var GlyphView = Backbone.Marionette.LayoutView.extend({
