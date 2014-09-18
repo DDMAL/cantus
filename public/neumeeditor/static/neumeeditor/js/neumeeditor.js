@@ -363,13 +363,27 @@
             },
 
             onRender: function() {
+                console.log(this.model);
+                // console.log("onRender...");
                 var nameCollection = this.model.getCollection("name_set", NameCollection, Name);
+                var imageCollection;
+                try {
+                    imageCollection = this.model.getCollection("image_set", ImageCollection, Image);
+                }
+                catch(ReferenceError) {
+                    // Just make a blank collection
+                    imageCollection = new ImageCollection();
+                }
+                console.log("TEST.");
                 this.names.show(new NameCollectionView({
                     collection: nameCollection
                 }));
                 // this.images.show(new ImageCollectionView({
-                //     collection: this.model.getCollection("image_set", ImageCollection, Image)
-                // }));
+                //     collection: imageCollection
+                // }));                    
+
+
+                // console.log("endOnRender.");
             }
         });
 
