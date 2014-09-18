@@ -302,9 +302,9 @@
         Execution Code
         */
         var menuLinks = new Backbone.Collection();
-        menuLinks.add(new Link());
-        menuLinks.add(new Link());
-        menuLinks.add(new Link());
+        menuLinks.add(new Link().set({url:SITE_URL + "", text: "List"}));
+        // menuLinks.add(new Link());
+        // menuLinks.add(new Link());
         var menu = new MainMenuView({collection: menuLinks});
         App.navigation.show(menu);
     });
