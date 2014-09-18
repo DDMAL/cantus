@@ -74,6 +74,8 @@
             console.log("Open Glyph List.");
             // Start the glyph list module
             App.module("GlyphEdit").start();
+            App.module("GlyphEdit").initializeId(id);
+        },
 
         routeToPage: function(url) {
             console.log("url:", url);
@@ -720,12 +722,19 @@
         ------------------------------------------------------
         */
 
-        var glyph = new Glyph({url: "http://localhost:8000/neumeeditor/glyph/1/"});
+        var glyphId = 1;
+
+        var glyph = new Glyph({
+            url: "http://localhost:8000/neumeeditor/glyph/" + glyphId + "/"
+        });
 
         var editor = new AppLayoutView({model: glyph});
 
-        this.start = function()
+        this.initializeId = function(id)
         {
+            glyphId = parseInt(id);
+            glyph.url = "http://localhost:8000/neumeeditor/glyph/" + glyphId + "/";  
+
             // Render the LayoutView
             App.container.show(editor);
 
