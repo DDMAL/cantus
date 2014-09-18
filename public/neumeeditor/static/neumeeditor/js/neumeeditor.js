@@ -59,21 +59,20 @@
     var NeumeeditorRouter = Backbone.Marionette.AppRouter.extend({
         /* standard routes can be mixed with appRoutes/Controllers above */
         routes : {
-            "" : "openGlyphList",
-            "glyph/:id/" : "openGlyphEditor"
+            "neumeeditor/" : "openGlyphList",
+            "neumeeditor/glyph/:id/" : "openGlyphEditor"
         },
 
         openGlyphList: function(){
             console.log("Open Glyph List.");
             // Start the glyph list module
-            App.module("glyphList").start();
+            App.module("GlyphList").start();
         },
 
         openGlyphEditor: function(id){
             console.log("Open Glyph List.");
             // Start the glyph list module
-            App.module("glyphEdit").start();
-        }
+            App.module("GlyphEdit").start();
 
     });
 
@@ -260,7 +259,7 @@
     });
 
 
-    App.module("mainMenu", function(mymodule, App, Backbone, Marionette, $, _) {
+    App.module("MainMenu", function(MainMenu, App, Backbone, Marionette, $, _) {
         this.startWithParent = true;
 
         /**
@@ -301,11 +300,11 @@
         App.navigation.show(menu);
     });
 
-    App.module("authentication", function(myModule, App, Backbone, Marionette, $, _){
+    App.module("Authentication", function(Authentication, App, Backbone, Marionette, $, _){
         this.startWithParent = false;
     });
 
-    App.module("glyphList", function(myModule, App, Backbone, Marionette, $, _){
+    App.module("GlyphList", function(GlyphList, App, Backbone, Marionette, $, _){
         this.startWithParent = false;
 
         /*
@@ -411,9 +410,8 @@
         };
     });
 
-    App.module("glyphEdit", function(myModule, App, Backbone, Marionette, $, _){
+    App.module("GlyphEdit", function(GlyphEdit, App, Backbone, Marionette, $, _){
         this.startWithParent = false;
-
 
         /*  
         ------------------------------------------------------
