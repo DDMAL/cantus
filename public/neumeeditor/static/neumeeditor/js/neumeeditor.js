@@ -92,6 +92,7 @@
      */
 
     var App = new Backbone.Marionette.Application();
+    var AppRouter = new NeumeeditorRouter();
 
     App.on('initialize:before', function(options)
     {
@@ -103,9 +104,6 @@
     });
     App.on('start', function(options)
     {
-        console.log("Aout ti initialize router");
-        // Build the router
-        var router = new NeumeeditorRouter();
         // Get history going
         Backbone.history.start({pushState: true});
     });
