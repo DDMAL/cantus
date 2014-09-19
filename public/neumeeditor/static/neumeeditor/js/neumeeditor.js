@@ -436,21 +436,18 @@
         ------------------------------------------------------
         */
 
-        var glyphCollection = new GlyphCollection({url: "http://localhost:8000/neumeeditor/glyphs/"});
-
-        // var glyph = new GlyphListLayoutView({model: glyph});
-        var glyphCompositeView = new GlyphCompositeView({collection: glyphCollection});
-
         this.start = function()
         {
+            var glyphCollection = new GlyphCollection({url: "http://localhost:8000/neumeeditor/glyphs/"});
+
+            // var glyph = new GlyphListLayoutView({model: glyph});
+            var glyphCompositeView = new GlyphCompositeView({collection: glyphCollection});
+
+
             App.container.show(glyphCompositeView);
 
             console.log("Starting...");
-            glyphCollection.fetch({success: function(){
-
-                console.log(glyphCollection);
-
-            }});
+            glyphCollection.fetch();
         };
     });
 
@@ -738,8 +735,12 @@
             url: "http://localhost:8000/neumeeditor/glyph/" + glyphId + "/"
         });
 
-        var editor = new AppLayoutView({model: glyph});
+        var editor;
 
+        this.start = function() {
+            editor = new AppLayoutView({model: glyph});   
+        };
+        
         this.initializeId = function(id)
         {
             glyphId = parseInt(id);
