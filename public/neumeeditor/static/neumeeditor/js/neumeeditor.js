@@ -364,6 +364,16 @@
                 images: ".glyph-image-list"
             },
 
+            events: {
+                "click .edit-button": "goToEdit"
+            },
+
+            goToEdit: function(event) {
+                console.log(event);
+                event.preventDefault();
+                AppRouter.routeToPage(this.model.get("url"));
+            },
+
             onRender: function() {
                 console.log(this.model);
                 // console.log("onRender...");
