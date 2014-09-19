@@ -200,25 +200,32 @@
          * @param ItemType
          * @returns {CollectionType}
          */
+        // getCollection: function(attributeName, CollectionType, ItemType)
+        // {
+        //     var output = new CollectionType();
+        //     var urlList = this.get(String(attributeName));
+        //     if (urlList === undefined) {
+        //         // This prevents crashing if the list is undefined.
+        //         return undefined;
+        //     }
+        //     // If we don't encapsulate sort() in a function then we get errors on load.
+        //     var sortOutput = function() {output.sort();};
+
+        //     var newModel;
+        //     for (var i = 0; i < urlList.length; i++)
+        //     {
+        //         newModel = new ItemType({url: String(urlList[i])});
+        //         output.add(newModel);
+        //         newModel.fetch({success: sortOutput});
+        //     }
+        //     return output;
+        // },
         getCollection: function(attributeName, CollectionType, ItemType)
         {
-            var output = new CollectionType();
-            var urlList = this.get(String(attributeName));
-            if (urlList === undefined) {
-                // This prevents crashing if the list is undefined.
-                return undefined;
-            }
-            // If we don't encapsulate sort() in a function then we get errors on load.
-            var sortOutput = function() {output.sort();};
-
-            var newModel;
-            for (var i = 0; i < urlList.length; i++)
-            {
-                newModel = new ItemType({url: String(urlList[i])});
-                output.add(newModel);
-                newModel.fetch({success: sortOutput});
-            }
-            return output;
+            var collectionAttributes = this.get(String(attributeName));
+            var collection = new CollectionType();
+            collection.add(collectionAttributes);
+            return collection;
         },
 
         defaults: {
