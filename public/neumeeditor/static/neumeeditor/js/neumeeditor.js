@@ -382,8 +382,6 @@
             },
 
             onRender: function() {
-                console.log(this.model);
-                // console.log("onRender...");
                 var nameCollection = this.model.getCollection("name_set", NameCollection, Name);
                 var imageCollection;
                 try {
@@ -393,16 +391,12 @@
                     // Just make a blank collection
                     imageCollection = new ImageCollection();
                 }
-                console.log("TEST.");
                 this.names.show(new NameCollectionView({
                     collection: nameCollection
                 }));
                 // this.images.show(new ImageCollectionView({
                 //     collection: imageCollection
                 // }));                    
-
-
-                // console.log("endOnRender.");
             }
         });
 
@@ -412,30 +406,6 @@
             childViewContainer: "tbody",
             template: "#glyph-collection-template"
         });
-
-        // /*
-        // Layout Views
-        // */
-
-        // var GlyphListLayoutView = Backbone.Marionette.LayoutView.extend({
-        //     template: "#edit-glyph-template",
-
-        //     /*
-        //     These regions correspond to template areas. They will be populated with
-        //     sub views.
-        //     */
-        //     regions: {
-        //         namesArea: ".names-area",
-        //         nameCreateArea: ".name-create-area",
-        //         imageUploadArea: ".image-upload-area",
-        //         imagesEditArea: ".images-area"
-        //     },
-
-        //     modelEvents: {
-        //         "change": "render"
-        //     }
-
-        // });
 
         /*  
         ------------------------------------------------------
@@ -537,7 +507,7 @@
                     {
                         success: function() {
                             console.log("Success.");
-                            console.log(that.ui.statusDiv);
+                            // console.log(that.ui.statusDiv);
                             that.ui.statusDiv.html("<p>Name saved successfully.</p>");
                             that.ui.statusDiv.find("p").fadeOut(2500);
                             return that.trigger("submit");
@@ -620,16 +590,16 @@
                     function(file, attributes)
                     {
                         console.log("Creating image model...", that);
-                        console.log(attributes);
-                        console.log(file);
+                        // console.log(attributes);
+                        // console.log(file);
                         var newModel = new Image({url: attributes.url});
                         newModel.set(attributes);
-                        console.log("childviewcontainer: ", that.childViewContainer);
+                        // console.log("childviewcontainer: ", that.childViewContainer);
                         newModel.set("glyph", that.glyphId);
-                        console.log(that.createdCollection);
+                        // console.log(that.createdCollection);
                         that.createdCollection.add(newModel);
                         newModel.save();
-                        console.log(newModel);
+                        // console.log(newModel);
                     }
                 );
             }
@@ -677,7 +647,7 @@
             {
                 console.log("SAVE CALLBACK:");
                 // Remove model from this collection
-                console.log(child.model);
+                // console.log(child.model);
                 // Set the new URL
                 child.model.transferUrl();
                 this.createdCollection.add(child.model);
@@ -759,11 +729,11 @@
             console.log("Starting...");
             glyph.fetch({success: function(){
 
-                console.log(editor.model);
+                // console.log(editor.model);
 
                 var glyphNames = glyph.getCollection("name_set", NameCollection, Name);
                 var glyphImages = glyph.getCollection("image_set", ImageCollection, Image);
-                console.log(glyphNames);
+                // console.log(glyphNames);
 
                 editor.namesArea.show(new EditNamesView({collection: glyphNames}));
 
