@@ -5,7 +5,7 @@ from neumeeditor.models.name import Name
 class GlyphNameSetSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Name
-        fields = ('string', 'short_code', 'glyph')
+        fields = ('id', 'url', 'string', 'short_code', 'glyph')
 
 
 class GlyphSerializer(serializers.HyperlinkedModelSerializer):
