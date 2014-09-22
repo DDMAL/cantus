@@ -1,6 +1,9 @@
 from neumeeditor.models.glyph import Glyph
 from rest_framework import serializers
 from neumeeditor.models.name import Name
+from neumeeditor.models.image import Image
+from neumeeditor.serializers.image import ImageSerializer
+
 
 class GlyphNameSetSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
@@ -11,11 +14,8 @@ class GlyphNameSetSerializer(serializers.HyperlinkedModelSerializer):
 class GlyphSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.Field()
     style = serializers.RelatedField(many=False, read_only=True)
-    # name_set = serializers.HyperlinkedRelatedField(many=True, read_only=True,
-    #                                                 view_name="name-detail")
     name_set = GlyphNameSetSerializer()
-    image_set = serializers.HyperlinkedRelatedField(many=True, read_only=True,
-                                                   view_name="image-detail")
+    image_set = ImageSerializer()
 
     class Meta:
         model = Glyph
