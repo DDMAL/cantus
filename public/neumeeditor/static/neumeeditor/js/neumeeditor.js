@@ -357,7 +357,7 @@
         });
 
         var ImageCollectionView = Backbone.Marionette.CollectionView.extend({
-            childView: NameView,
+            childView: ImageView,
 
             tagName: "ul"
         });
