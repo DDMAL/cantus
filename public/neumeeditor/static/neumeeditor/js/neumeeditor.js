@@ -454,13 +454,13 @@
                 "click button[name='delete']": "destroyModel"
             },
 
-            serializeData: function()
-            {
-                return {
-                    "image_file": this.model.get("image_file"),
-                    "image_file_absolute": this.model.getAbsoluteImageFile()
-                };
-            },
+            // serializeData: function()
+            // {
+            //     return {
+            //         "image_file": this.model.get("image_file"),
+            //         "image_file_absolute": this.model.getAbsoluteImageFile()
+            //     };
+            // },
 
             destroyModel: function()
             {
