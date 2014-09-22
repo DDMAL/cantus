@@ -394,9 +394,9 @@
                 this.names.show(new NameCollectionView({
                     collection: nameCollection
                 }));
-                // this.images.show(new ImageCollectionView({
-                //     collection: imageCollection
-                // }));                    
+                this.images.show(new ImageCollectionView({
+                    collection: imageCollection
+                }));                       
             }
         });
 
