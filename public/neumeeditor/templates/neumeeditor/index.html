@@ -76,17 +76,17 @@
 
 <script type="text/template" id="edit-glyph-template">
     <div class="col-md-12">
-        <h1>Edit Glyph <%= id %></h1>
+        <h1>Edit Glyph <%= id %> - <%= short_code %></h1>
         <hr/>
     </div>
     
-    <div class="col-md-6 name-editor">
+    <div class="col-md-4 name-editor">
         <h2>Name Editor</h2>
         <div class="name-create-area"></div>
         <hr/>
         <div class="names-area"></div>
     </div>
-    <div class="col-md-6 image-editor">
+    <div class="col-md-8 image-editor">
         <h2>Image Editor</h2>
         <div class="image-upload-area"></div>
         <hr/>
@@ -107,45 +107,36 @@
 </script>
 
 <script type="text/template" id="edit-single-image-template">
-<div class="row">
-    <div class="col-xs-3">
-        <img src="<%= image_file %>" class="thumbnail img-responsive"/>
-    </div>
-    <div class="col-xs-7">
-        <%= image_file %>
-    </div>
-    <div class="col-xs-1">
-        <button name="delete" class="btn btn-default" type="button">Delete</button>
+<div class="glyph-editor-image-container">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <img src="<%= image_file %>" class="glyph-editor-image thumbnail img-responsive"/>
+      </div>
+      <div class="panel-footer">
+          <button name="delete" class="btn btn-default" type="button">Delete</button>
+      </div>
     </div>
 </div>
-<hr/>
-</script>
 
-<script type="text/template" id="edit-single-glyph-template">
-    <div class="row">
-        <div class="col-md-6">Edit the glyph lol</div>
-    </div>
 </script>
 
 <script type="text/template" id="edit-single-name-template">
     <div class="row">
-        <form class="form-inline" action="#">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label class="control-label" for="string">Full String:</label>
-                    <input name="string" class="form-control" placeholder="String" value="<%= string %>">
+        <form class="form-horizontal" action="#">
+            <div class="form-group">
+                {# <label class="col-sm-1 control-label" for="string">Full String:</label> #}
+                <div class="col-sm-8">
+                    <input name="string" class="form-control" placeholder="Name" value="<%= string %>">
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label class="control-label" for="short_code">Short Code:</label>
-                    <input name="short_code" class="form-control" placeholder="Shortcode" value="<%= short_code %>">
+                <div class="col-sm-2">
+                    <button class="btn btn-default" type="submit">Submit</button>
                 </div>
+                <div class="col-sm-2">
+                    <button name="delete" class="btn btn-default" type="button">Delete</button>
+                </div>
+                
             </div>
-            <div class="col-md-2">
-                <button class="btn btn-default" type="submit">Submit</button>
-                <button name="delete" class="btn btn-default" type="button">Delete</button>
-            </div>
+
         </form>
     </div>
     <div class="status-message"></div>
@@ -155,20 +146,18 @@
 <script type="text/template" id="create-single-name-template">
     <div class="row">
         <form class="form-inline" action="#">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label class="control-label" for="string">Full String:</label>
-                    <input name="string" class="form-control" placeholder="String" value="<%= string %>">
+            <div class="form-group">
+                {# <label class="col-sm-1 control-label" for="string">Full String:</label> #}
+                <div class="col-sm-8">
+                    <input name="string" class="form-control" placeholder="Name" value="<%= string %>">
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label class="control-label" for="short_code">Short Code:</label>
-                    <input name="short_code" class="form-control" placeholder="Shortcode" value="<%= short_code %>">
+                <div class="col-sm-2">
+                    <button class="btn btn-default" type="submit">Submit</button>
                 </div>
-            </div>
-            <div class="col-md-2">
-                <button class="btn btn-default" type="submit">Submit</button>
+                <div class="col-sm-2">
+                    <button name="delete" class="btn btn-default" type="button">Delete</button>
+                </div>
+                
             </div>
         </form>
         <div class="status-message"></div>
