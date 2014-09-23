@@ -162,8 +162,7 @@
         url: SITE_URL + "names/",
 
         defaults: {
-            string: "",
-            short_code: ""
+            string: ""
         },
 
         /**
@@ -229,7 +228,8 @@
         },
 
         defaults: {
-            id: 0
+            id: 0,
+            short_code: ""
         }
     });
 
@@ -499,8 +499,7 @@
                 event.preventDefault();
                 // Grab values from the form fields
                 this.model.set({
-                    string: String(this.$("input[name='string']").val()),
-                    short_code: String(this.$("input[name='short_code']").val())
+                    string: String(this.$("input[name='string']").val())
                 });
                 var that = this;
                 this.model.save(null,

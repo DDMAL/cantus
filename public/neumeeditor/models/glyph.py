@@ -1,6 +1,7 @@
 from django.db import models
 from neumeeditor.models.name import Name
 from neumeeditor.models.style import Style
+from neumeeditor.models.fields.short_code_field import ShortCodeField
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
@@ -11,6 +12,8 @@ class Glyph(models.Model):
         # ordering = ['name']
 
     style = models.ForeignKey(Style)
+    short_code = ShortCodeField(max_length=128, blank=False, null=False,
+                                unique=False)
 
     def __unicode__(self):
         output = u""
