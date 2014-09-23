@@ -570,8 +570,11 @@
                 console.log(this.ui.dropzone);
                 console.log("Uploader render.");
                 console.log(this.glyphId);
-                this.dropzone = new Dropzone(this.ui.dropzone.selector,
-                        {
+                console.log(this.ui.dropzone.selector);
+                console.log(this.ui.dropzone);
+                this.ui.dropzone.dropzone(
+                // this.dropzone = new Dropzone(this.ui.dropzone.selector,
+                    {
                         url: SITE_URL + "images/",
                         autoProcessQueue: true,
                         paramName: "image_file",
@@ -586,7 +589,7 @@
                     }
                 );
                 var that = this;
-                this.listenTo(this.dropzone, "success",
+                this.listenTo(this.ui.dropzone, "success",
                     function(file, attributes)
                     {
                         console.log("Creating image model...", that);
