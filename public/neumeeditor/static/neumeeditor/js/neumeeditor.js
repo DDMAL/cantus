@@ -425,7 +425,7 @@
 
         this.start = function()
         {
-            var glyphCollection = new GlyphCollection({url: "http://localhost:8000/neumeeditor/glyphs/"});
+            var glyphCollection = new GlyphCollection({url: "/neumeeditor/glyphs/"});
 
             // var glyph = new GlyphListLayoutView({model: glyph});
             var glyphCompositeView = new GlyphCompositeView({collection: glyphCollection});
@@ -722,7 +722,7 @@
         var glyphId = 1;
 
         var glyph = new Glyph({
-            url: "http://localhost:8000/neumeeditor/glyph/" + glyphId + "/"
+            url: "/neumeeditor/glyph/" + glyphId + "/"
         });
 
         var editor;
@@ -734,7 +734,7 @@
         this.initializeId = function(id)
         {
             glyphId = parseInt(id);
-            glyph.url = "http://localhost:8000/neumeeditor/glyph/" + glyphId + "/";  
+            glyph.url = "/neumeeditor/glyph/" + glyphId + "/";  
 
             // Render the LayoutView
             App.container.show(editor);
