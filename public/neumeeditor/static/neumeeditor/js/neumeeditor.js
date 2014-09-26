@@ -5,9 +5,9 @@
     Global Variables
      */
 
-    var SITE_URL = "http://localhost:8000/neumeeditor/";
+    var SITE_URL = "/neumeeditor/";
     var SITE_SUBFOLDER = "neumeeditor/";
-    var STATIC_URL = "http://localhost:8000/neumeeditor/media/";
+    var STATIC_URL = "/neumeeditor/media/";
 
     /*
     Boilerplate Code
@@ -79,7 +79,9 @@
 
         routeToPage: function(url) {
             console.log("url:", url);
-            var newPageUrl = SITE_SUBFOLDER + String(url).replace(SITE_URL, "");
+            console.log("URL: ", url);
+            // var newPageUrl = String(url);
+            var newPageUrl = SITE_SUBFOLDER + String(url).replace(/.*\/neumeeditor\//g, "");
             console.log(newPageUrl);
             this.navigate(
                     // Strip site url if need be
@@ -341,7 +343,15 @@
         var ImageView = Backbone.Marionette.ItemView.extend({
             template: "#single-image-template",
 
-            tagName: "li"
+            tagName: "li",
+
+            serializeData: function()
+            {
+                return {
+                    "image_file": this.model.getAbsoluteImageFile(),
+                    // "image_file_absolute": this.model.getAbsoluteImageFile()
+                };
+            },
         });
 
         var NameView = Backbone.Marionette.ItemView.extend({
@@ -454,13 +464,13 @@
                 "click button[name='delete']": "destroyModel"
             },
 
-            // serializeData: function()
-            // {
-            //     return {
-            //         "image_file": this.model.get("image_file"),
-            //         "image_file_absolute": this.model.getAbsoluteImageFile()
-            //     };
-            // },
+            serializeData: function()
+            {
+                return {
+                    "image_file": this.model.getAbsoluteImageFile(),
+                    // "image_file_absolute": this.model.getAbsoluteImageFile()
+                };
+            },
 
             destroyModel: function()
             {
@@ -587,6 +597,7 @@
                         }
                     }
                 );
+                this.ui.dropzone.on("error", function(error) { console.log(error); });
                 var that = this;
                 this.listenTo(this.ui.dropzone, "success",
                     function(file, attributes)
