@@ -19,9 +19,9 @@ class Command(BaseCommand):
         style = Style.objects.get(name=str(style_name))
         index = 0
         for row in csv_file:
-            glyph = Glyph.objects.create(style=style)
+            glyph = Glyph.objects.create(style=style,
+                                         short_code=str(row["short_code"]))
             Name.objects.create(string=str(row["name"]),
-                                short_code=str(row["short_code"]),
                                 glyph=glyph)
             index += 1
 
