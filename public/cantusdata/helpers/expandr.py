@@ -111,6 +111,19 @@ def expand_genre(genre_code):
     }.get(genre_code, "Error")
 
 
+def expand_differentia(differentia_code):
+    """
+    In most cases, the differentia remains unmodified
+
+    :param differentia_code:
+    :return:
+    """
+    return{
+        "*": "No differentia",
+        "?": "Uncertain",
+    }.get(differentia_code.strip(), differentia_code)
+
+
 def expand_office(office_code):
     return {
         "V": "First Vespers",

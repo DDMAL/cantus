@@ -1,8 +1,9 @@
 (function($){
+    "use strict";
 
-    const siteUrl = "/";
-    const iipImageServerUrl = "http://cantus.simssa.ca/";
-    const divaImageDirectory = "/srv/images/cantus/";
+    var siteUrl = "/";
+    var iipImageServerUrl = "http://cantus.simssa.ca/";
+    var divaImageDirectory = "/srv/images/cantus/";
 
     // Global Event Handler for global events
     var globalEventHandler = {};
@@ -25,7 +26,7 @@
         {
             _.bindAll(this, 'timedQuerySetAll', 'setAll', 'setContainerHeight',
                 'setScrollableHeight', 'setManuscriptContentContainerHeight',
-            'setDivaSize', 'setDivaFullScreen');
+            'setDivaSize', 'setDivaFullScreen', 'setViewPortSize');
             var self = this;
             $(window).resize(function()
             {
@@ -38,6 +39,9 @@
                 function(){this.setDivaFullScreen(true);});
             this.listenTo(globalEventHandler, "divaNotFullScreen",
                 function(){this.setDivaFullScreen(false);});
+
+            // We also want to do stuff when the viewport is rotated
+            this.listenTo($(window), "orientationchange", this.setViewPortSize);
         },
 
         /**
@@ -54,6 +58,7 @@
             this.setContainerHeight();
             this.setManuscriptContentContainerHeight();
             this.setDivaSize();
+            this.setViewPortSize();
         },
 
         setContainerHeight: function()
@@ -70,22 +75,33 @@
         setManuscriptContentContainerHeight: function()
         {
             $('#manuscript-data-container').css("height",
-                    $("#content-container").height()
-                            - $("#manuscript-title-container").height());
+                    $("#content-container").height() - $("#manuscript-title-container").height());
         },
 
         setDivaSize: function()
         {
-            if (this.divaFullScreen === true)
-            {
-                // $('.diva-inner').css("width", $(window).width());
-            }
-            else
+            if (this.divaFullScreen !== true)
             {
                 $('.diva-outer').css("height",
                         $("#content-container").height() - 75);
-//                $('.diva-outer').css("width", $("#diva-toolbar").width());
-                // $('.diva-inner').css("width", $("#diva-toolbar").width());
+            }
+        },
+
+        setViewPortSize: function()
+        {
+            if ($(window).width() <= 880)
+            {
+                // Small screens
+                var window_width = $(window).width();
+                var window_height = $(window).height();
+                var computed_height = 880 * (window_height / window_width);
+                var zoom_factor = 880 / window_width;
+                $('meta[name=viewport]').attr('content','width=880, height=' + computed_height + 'initial-scale=' + zoom_factor + ', user-scalable=no');
+            }
+            else
+            {
+                // Big screens
+                $('meta[name=viewport]').attr('content','width=device-width');
             }
         },
 
@@ -107,8 +123,7 @@
             this.setDivaSize();
         }
     });
-
-    var resizer = new BrowserResizer();
+    
 
     /**
      * Handles the global state.  Updates URLs.
@@ -159,6 +174,7 @@
 
         silentUrlUpdate: function()
         {
+            console.log("silentUrlUpdate()");
             // Don't actually trigger the router!
             app.navigate(this.getUrl(), {trigger: false});
         }
@@ -172,7 +188,7 @@
     * An object that acts like a big row of switches.  You can call
     * getValue() to get the index of the first true element.
     */
-    StateSwitch = Backbone.Model.extend
+    var StateSwitch = Backbone.Model.extend
     ({
 
         length: 0,
@@ -199,7 +215,7 @@
             // Handle out-of-bounds cases
             if (index < 0)
             {
-                index = 0
+                index = 0;
             }
             else if (index >= this.length)
             {
@@ -224,11 +240,11 @@
                 }
             }
             // No elements are true!
-            return undefined
+            return undefined;
         }
     });
 
-    SolrDisjunctiveQueryBuilder = Backbone.Model.extend
+    var SolrDisjunctiveQueryBuilder = Backbone.Model.extend
     ({
         field: undefined,
         values: undefined,
@@ -291,73 +307,73 @@
 
     var Chant = CantusAbstractModel.extend
     ({
-//        defaults: function()
-//        {
-//            return {
-//                marginalia: "the marginalia",
-//                folio: "the folio",
-//                sequence:"the sequence",
-//                cantus_id: "the cantus id",
-//                feast: "the feast",
-//                office: "the office",
-//                genre: "the genre",
-//                lit_position: "the lit position",
-//                mode: "the mode",
-//                differentia: "the differentia",
-//                finalis: "the finalis",
-//                incipit: "the incipit",
-//                full_text: "Quite a nice chant!",
-//                concordances: [],
-//                volpiano: "the volpiano",
-//                manuscript: "the manuscript"
-//            }
-//        }
+        //defaults: function()
+        //{
+        //    return {
+        //        marginalia: "the marginalia",
+        //        folio: "the folio",
+        //        sequence:"the sequence",
+        //        cantus_id: "the cantus id",
+        //        feast: "the feast",
+        //        office: "the office",
+        //        genre: "the genre",
+        //        lit_position: "the lit position",
+        //        mode: "the mode",
+        //        differentia: "the differentia",
+        //        finalis: "the finalis",
+        //        incipit: "the incipit",
+        //        full_text: "Quite a nice chant!",
+        //        concordances: [],
+        //        volpiano: "the volpiano",
+        //        manuscript: "the manuscript"
+        //    }
+        //}
     });
 
-    var Concordance = CantusAbstractModel.extend
-    ({
-//        defaults: function()
-//        {
-//            return {
-//                letter_code: "ZZZ",
-//                institution_city: "Montreal",
-//                instutition_name: "DDMAL",
-//                library_manuscript_name: "No Name",
-//                date: "Right now",
-//                location: "Montreal",
-//                rism_code: "ABC1234"
-//            }
-//        }
-    });
+    //    var Concordance = CantusAbstractModel.extend
+    //    ({
+    ////        defaults: function()
+    ////        {
+    ////            return {
+    ////                letter_code: "ZZZ",
+    ////                institution_city: "Montreal",
+    ////                instutition_name: "DDMAL",
+    ////                library_manuscript_name: "No Name",
+    ////                date: "Right now",
+    ////                location: "Montreal",
+    ////                rism_code: "ABC1234"
+    ////            }
+    ////        }
+    //    });
 
     var Folio = CantusAbstractModel.extend
     ({
-//        defaults: function()
-//        {
-//            return {
-//                number: "000",
-//                manuscript: null,
-//                chant_count: 0,
-//                chant_set: []
-//            }
-//        }
+        //defaults: function()
+        //{
+        //    return {
+        //        number: "000",
+        //        manuscript: null,
+        //        chant_count: 0,
+        //        chant_set: []
+        //    }
+        //}
     });
 
     var Manuscript = CantusAbstractModel.extend
     ({
-//        defaults: function()
-//        {
-//            return {
-//                url: "#",
-//                name: "Test Name",
-//                siglum: "Test Siglum",
-//                siglum_slug: "#",
-//                date: "Tomorrow",
-//                provenance: "Test provenance",
-//                description: "This is a nice manuscript...",
-//                chant_count: 5
-//            };
-//        }
+        //defaults: function()
+        //{
+        //    return {
+        //        url: "#",
+        //        name: "Test Name",
+        //        siglum: "Test Siglum",
+        //        siglum_slug: "#",
+        //        date: "Tomorrow",
+        //        provenance: "Test provenance",
+        //        description: "This is a nice manuscript...",
+        //        chant_count: 5
+        //    };
+        //}
     });
 
     /**
@@ -385,7 +401,7 @@
         {
             var output = [];
 
-            _.each(this.toJSON().results, function(current)
+            _.each(this.get("results"), function(current)
             {
                 var newElement = {};
                 // Remove "cantusdata_" from the type string
@@ -398,8 +414,7 @@
                     case "manuscript":
                         newElement.name = current.name;
                         // Build the url
-                        newElement.url = "/" + newElement.model
-                            + "/" + current.item_id + "/";
+                        newElement.url = "/" + newElement.model + "/" + current.item_id + "/";
                         break;
 
                     case "chant":
@@ -409,23 +424,19 @@
                         newElement.manuscript = current.manuscript_name_hidden;
                         newElement.folio = current.folio;
                         newElement.volpiano = current.volpiano;
-                        newElement.url = "/manuscript/" + current.manuscript_id
-                            + "/?folio=" + current.folio
-                            + "&chant=" + current.sequence;
+                        newElement.url = "/manuscript/" + current.manuscript_id + "/?folio=" + current.folio + "&chant=" + current.sequence;
                         break;
 
                     case "concordance":
                         newElement.name = current.name;
                         // Build the url
-                        newElement.url = "/" + newElement.model
-                            + "/" + current.item_id + "/";
+                        newElement.url = "/" + newElement.model + "/" + current.item_id + "/";
                         break;
 
                     case "folio":
                         newElement.name = current.name;
                         // Build the url
-                        newElement.url = "/" + newElement.model
-                            + "/" + current.item_id + "/";
+                        newElement.url = "/" + newElement.model + "/" + current.item_id + "/";
                         break;
                 }
                 output.push(newElement);
@@ -440,7 +451,7 @@
         {
             return {
                 results: []
-            }
+            };
         }
     });
 
@@ -460,7 +471,7 @@
 
         defaults: function()
         {
-            return []
+            return [];
         }
     });
 
@@ -469,15 +480,15 @@
         model: Chant
     });
 
-    var ConcordanceCollection = CantusAbstractCollection.extend
-    ({
-        model: Concordance
-    });
-
-    var FolioCollection = CantusAbstractCollection.extend
-    ({
-        model: Folio
-    });
+//    var ConcordanceCollection = CantusAbstractCollection.extend
+//    ({
+//        model: Concordance
+//    });
+//
+//    var FolioCollection = CantusAbstractCollection.extend
+//    ({
+//        model: Folio
+//    });
 
     var ManuscriptCollection = CantusAbstractCollection.extend
     ({
@@ -499,11 +510,11 @@
          */
         assign : function (view, selector) {
             view.setElement(selector).render();
-        },
-
-        unAssign : function (view, selector) {
-            $(selector).empty();
         }
+
+//        unAssign : function (view, selector) {
+//            $(selector).empty();
+//        }
     });
 
     var ChantCollectionView = CantusAbstractView.extend
@@ -549,21 +560,25 @@
          */
         unfoldChantCallback: function(event)
         {
+            console.log("unfoldChantCallback() begin.");
             // "collapse-1" becomes 1, etc.
             var chant = parseInt(event.target.id.split('-')[1]) + 1;
             this.chantStateSwitch.setValue(chant, true);
 
             globalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
             globalEventHandler.trigger("SilentUrlUpdate");
+            console.log("unfoldChantCallback() end.");
         },
 
         foldChantCallback: function(event)
         {
+            console.log("foldChantCallback() begin.");
             var chant = parseInt(event.target.id.split('-')[1]) + 1;
             this.chantStateSwitch.setValue(chant, false);
 
             globalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
             globalEventHandler.trigger("SilentUrlUpdate");
+            console.log("foldChantCallback() end.");
         },
 
         /**
@@ -583,7 +598,7 @@
         {
             // Make a new StateSwitch object that we will use to keep track
             // of the open chant.
-            this.chantStateSwitch = new StateSwitch(this.collection.length)
+            this.chantStateSwitch = new StateSwitch(this.collection.length);
         },
 
         /**
@@ -591,20 +606,24 @@
          *
          * @param url
          */
-        setUrl: function(url, unfoldedChant)
+        setUrl: function(url)
         {
+            console.log("setUrl() begin.");
             this.collection.url = url;
             this.collection.fetch({success: this.afterFetch});
             // Reset the chant if this isn't the initial load
-            if (this.alreadyLoaded) {
+            if (this.alreadyLoaded === true) {
                 this.unfoldedChant = undefined;
                 globalEventHandler.trigger("ChangeChant", undefined);
+                // If we don't update the URL then the chant persists when we
+                // change the folio...
                 globalEventHandler.trigger("SilentUrlUpdate");
             }
             else
             {
                 this.alreadyLoaded = true;
             }
+            console.log("setUrl() end.");
         },
 
         /**
@@ -661,9 +680,11 @@
 
         initialize: function(options)
         {
+            console.log("Initialize Diva View begin.");
             _.bindAll(this, 'render', 'storeFolioIndex', 'storeInitialFolio',
                 'setGlobalFullScreen', 'zoomToLocation');
             this.setManuscript(options.siglum, options.folio);
+            console.log("Initialize Diva View end.");
         },
 
         /**
@@ -737,6 +758,7 @@
 
         render: function()
         {
+            console.log("Diva render() begin.");
             // We only want to initialize Diva once!
             if (!this.divaInitialized)
             {
@@ -744,6 +766,7 @@
             }
 
             globalEventHandler.trigger("renderView");
+            console.log("Diva render() end.");
             return this.trigger('render', this);
         },
 
@@ -779,6 +802,7 @@
          */
         storeInitialFolio: function()
         {
+            console.log("storeInitialFolio() begin.");
             // If there exists a client-defined initial folio
             if (this.initialFolio !== undefined)
             {
@@ -790,18 +814,7 @@
             this.storeFolioIndex(number, name);
             // Store the image prefix for later
             this.setImagePrefixAndSuffix(name);
-        },
-
-        /**
-         * Takes an image file name and returns the folio code.
-         *
-         * @param imageName Some image name, ex: "folio_001.jpg"
-         * @returns string "001"
-         */
-        imageNameToFolio: function (imageName)
-        {
-            var splitFolioName = String(imageName).split('.')[0].split('_');
-            return splitFolioName[splitFolioName.length - 1];
+            console.log("storeInitialFolio() end.");
         },
 
         /**
@@ -809,7 +822,7 @@
          *
          * @param imageName
          */
-        setImagePrefixAndSuffix: function (imageName)
+        setImagePrefixAndSuffix: function(imageName)
         {
             // Suffix is usually just ".jpeg" or whatever...
             this.imageSuffix = String(imageName).split('.')[1];
@@ -858,7 +871,13 @@
          */
         storeFolioIndex: function(index, fileName)
         {
-            if (index != this.currentFolioIndex)
+            console.log("storeFolioIndex() begin.");
+            // The first time it's ever called
+            if (this.initialFolio === undefined) {
+                this.initialFolio = 0;
+            }
+            // Not the first time
+            else if (index !== this.currentFolioIndex)
             {
                 this.currentFolioIndex = index;
                 this.currentFolioName = fileName;
@@ -875,6 +894,7 @@
                     },
                     250);
             }
+            console.log("storeFolioIndex() end.");
         },
 
         /**
@@ -888,23 +908,30 @@
         {
             this.$el.data('diva').resetHighlights();
 
+            // Grab the array of page filenames straight from Diva.
+            var pageFilenameArray = this.$el.data('diva').getFilenames();
+
             // Use the Diva highlight plugin to draw the boxes
             var highlightsByPageHash = {};
             var pageList = [];
 
             for (var i = 0; i < boxSet.length; i++)
             {
-                var page = boxSet[i].p - 1; // The page
+                // Translate folio to Diva page
+                var folioCode = boxSet[i].p;
+                var pageFilename = this.imagePrefix + "_" + folioCode + ".jp2";
+                console.log("pageFilename: ", pageFilename);
+                var pageIndex = pageFilenameArray.indexOf(pageFilename);
+                console.log("pageIndex: ", pageIndex);
 
-                if (highlightsByPageHash[page] === undefined)
+                if (highlightsByPageHash[pageIndex] === undefined)
                 {
                     // Add page to the hash
-                    highlightsByPageHash[page] = [];
-                    pageList.push(page);
-
+                    highlightsByPageHash[pageIndex] = [];
+                    pageList.push(pageIndex);
                 }
                 // Page is in the hash, so we add to it.
-                highlightsByPageHash[page].push
+                highlightsByPageHash[pageIndex].push
                 ({
                     'width': boxSet[i].w,
                     'height': boxSet[i].h,
@@ -924,7 +951,9 @@
         },
 
         /**
-         * Zoom Diva to a locatiom.
+         * Zoom Diva to a location.
+         *
+         * @param box
          */
         zoomToLocation: function(box)
         {
@@ -936,28 +965,44 @@
 
             // Now figure out the page that box is on
             var divaOuter = this.$el.data('diva').getSettings().outerSelector;
-            var desiredPage = box.p;
             var zoomLevel = this.$el.data('diva').getZoomLevel();
 
-            // Zoom in
-            // this.$el.data('diva').setZoomLevel(zoomLevel);
+            // Grab the array of page filenames straight from Diva.
+            var pageFilenameArray = this.$el.data('diva').getFilenames();
+            var folioCode = box.p;
+            var pageFilename = this.imagePrefix + "_" + folioCode + ".jp2";
+            console.log("pageFilename: ", pageFilename);
+            var desiredPage = pageFilenameArray.indexOf(pageFilename) + 1;
+
             // Now jump to that page
             this.$el.data('diva').gotoPageByNumber(desiredPage);
             // Get the height above top for that box
             var boxTop = this.$el.data('diva').translateFromMaxZoomLevel(box.y);
             var currentScrollTop = parseInt($(divaOuter).scrollTop(), 10);
 
-            var topMarginConsiderations = this.$el.data('diva').getSettings().averageHeights[zoomLevel]
-                * this.$el.data('diva').getSettings().adaptivePadding;
-             var leftMarginConsiderations = this.$el.data('diva').getSettings().averageWidths[zoomLevel]
-                * this.$el.data('diva').getSettings().adaptivePadding;
-             $(divaOuter).scrollTop(boxTop + currentScrollTop -
-                ($(divaOuter).height() / 2) + (box.h / 2) + topMarginConsiderations);
+            var topMarginConsiderations = this.$el.data('diva').getSettings().averageHeights[zoomLevel] * this.$el.data('diva').getSettings().adaptivePadding;
+             var leftMarginConsiderations = this.$el.data('diva').getSettings().averageWidths[zoomLevel] * this.$el.data('diva').getSettings().adaptivePadding;
+             $(divaOuter).scrollTop(boxTop + currentScrollTop - ($(divaOuter).height() / 2) + (box.h / 2) + topMarginConsiderations);
             // Now get the horizontal scroll
             var boxLeft = this.$el.data('diva').translateFromMaxZoomLevel(box.x);
-            $(divaOuter).scrollLeft(boxLeft - ($(divaOuter).width() / 2)
-                + (box.w / 2) + leftMarginConsiderations);
+            $(divaOuter).scrollLeft(boxLeft - ($(divaOuter).width() / 2) + (box.w / 2) + leftMarginConsiderations);
             // Will include the padding between pages for best results
+        },
+
+        /*
+        DivaView helpers
+         */
+
+        /**
+         * Takes an image file name and returns the folio code.
+         *
+         * @param imageName Some image name, ex: "folio_001.jpg"
+         * @returns string "001"
+         */
+        imageNameToFolio: function(imageName)
+        {
+            var splitFolioName = String(imageName).split('.')[0].split('_');
+            return splitFolioName[splitFolioName.length - 1];
         }
     });
 
@@ -971,6 +1016,12 @@
         // Subviews
         chantCollectionView: null,
 
+        /**
+         * 
+         * 
+         * @param {type} options
+         * @returns null
+         */
         initialize: function(options)
         {
             _.bindAll(this, 'render', 'afterFetch', 'assignChants');
@@ -1048,13 +1099,13 @@
             // We need to handle the data differently depending on whether
             // we're getting the information from Django or Solr.
             var folio_id;
-            if (this.model.toJSON().item_id)
+            if (this.model.get("item_id"))
             {
-                folio_id = this.model.toJSON().item_id;
+                folio_id = this.model.get("item_id");
             }
             else
             {
-               folio_id = this.model.toJSON().id;
+               folio_id = this.model.get("id");
             }
 
             if (folio_id !== undefined)
@@ -1116,7 +1167,7 @@
             _.bindAll(this, 'render');
             this.template= _.template($('#header-template').html());
             // The search view that we will shove into the modal box
-            this.searchView = new SearchView();
+            this.searchView = new SearchView({showManuscriptName: true});
             // The modal box for the search pop-up
             this.searchModalView = new ModalView({title: "Search", view: this.searchView});
             // Create the TopMenuView with all of its options
@@ -1128,11 +1179,6 @@
                             url: "/",
                             active: false
                         },
-//                        {
-//                            name: "Manuscripts",
-//                            url: "/manuscripts/",
-//                            active: false
-//                        },
                         {
                             name: "Search",
                             tags: 'data-toggle="modal" data-target="#myModal"',
@@ -1195,11 +1241,7 @@
             var new_url = this.items[id].url;
             var old_url = Backbone.history.fragment;
             // Only route to the new URL if it really is a new url!
-            if (new_url === "#" || new_url.trim('/') === old_url.trim('/'))
-            {
-                return;
-            }
-            else
+            if (!(new_url === "#" || new_url.trim('/') === old_url.trim('/')))
             {
                 app.navigate(this.items[id].url, {trigger: true});
                 this.setActiveButton(id);
@@ -1213,7 +1255,10 @@
          */
         setActiveButton: function(index)
         {
-            if (index === this.activeButton) return;
+            if (index === this.activeButton)
+            {
+                return;
+            }
             this.items[this.activeButton].active = false;
             this.activeButton = index;
             this.items[this.activeButton].active = true;
@@ -1247,7 +1292,7 @@
             // Clear out the events
             this.events = {};
             // Menu items
-            for (var i = 0; i < this.collection.toJSON().length; i++)
+            for (var i = 0; i < this.collection.length; i++)
             {
                 this.events["click #manuscript-list-" + i] = "buttonClickCallback";
             }
@@ -1267,11 +1312,7 @@
             var oldUrl = Backbone.history.fragment;
 
             // Only route to the new URL if it really is a new url!
-            if (newUrl === "#" || newUrl.trim('/') === oldUrl.trim('/'))
-            {
-                return;
-            }
-            else
+            if (!(newUrl === "#" || newUrl.trim('/') === oldUrl.trim('/')))
             {
                 app.navigate(newUrl, {trigger: true});
             }
@@ -1378,7 +1419,10 @@
             // Clear out the events
             this.events = {};
             // No binding if there are no elements
-            if (this.elementCount === 0) return;
+            if (this.elementCount === 0)
+            {
+                return;
+            }
             // Backwards
             if (this.currentPage > 1)
             {
@@ -1462,6 +1506,7 @@
                     this.endPage = this.currentPage + ((this.maxWidth / 2) | 0);
                 }
             }
+
             this.render();
             // We have to register the events every time we render
             this.registerEvents();
@@ -1532,7 +1577,6 @@
             this.results = new CantusAbstractModel();
             this.paginator = new PaginationView({name: "notation-paginator"});
             this.registerEvents();
-
             this.listenTo(this.results, "sync", this.resultFetchCallback);
         },
 
@@ -1541,12 +1585,10 @@
             this.query = null;
             this.results = null;
             this.paginator.remove();
-
             // We don't actually need to call remove() on this again
             this.divaView = null;
             this.paginator = null;
             this.manuscript = null;
-
             // Deal with the event listeners
             this.stopListening();
             this.undelegateEvents();
@@ -1565,8 +1607,7 @@
             // Clear out the events
             this.events = {};
             // Register them
-            this.events["submit"] = "newSearch";
-
+            this.events.submit = "newSearch";
             // Delegate the new events
             this.delegateEvents();
         },
@@ -1576,8 +1617,7 @@
             // Stop the page from auto-reloading
             event.preventDefault();
             // Grab the query
-            this.query  = encodeURIComponent($(this.$el.selector
-                + ' .query-input').val());
+            this.query  = encodeURIComponent($(this.$el.selector + ' .query-input').val());
             // Handle the empty case
             if (this.query  === "")
             {
@@ -1588,24 +1628,21 @@
             else
             {
                 // Grab the field name
-                this.field = encodeURIComponent($(this.$el.selector
-                    + ' .search-field').val());
-                var composedQuery = siteUrl + "notation-search/?q=" + this.query
-                    + "&type=" + this.field + "&manuscript=" + this.manuscript;
-                this.results.url = composedQuery;
+                this.field = encodeURIComponent($(this.$el.selector + ' .search-field').val());
+                this.results.url = siteUrl + "notation-search/?q=" + this.query + "&type=" + this.field + "&manuscript=" + this.manuscript;
                 this.results.fetch();
             }
         },
 
         resultFetchCallback: function()
         {
-            this.divaView.paintBoxes(this.results.toJSON().results);
+            this.divaView.paintBoxes(this.results.get("results"));
             // We need a new paginator
             this.paginator = new PaginationView(
                 {
                     name: "notation-paginator",
                     currentPage: 1,
-                    elementCount: this.results.toJSON().numFound,
+                    elementCount: this.results.get("numFound"),
                     pageSize: 1
                 }
             );
@@ -1619,7 +1656,7 @@
         zoomToResult: function()
         {
             var newIndex = this.paginator.getPage() - 1;
-            this.divaView.zoomToLocation(this.results.toJSON().results[newIndex]);
+            this.divaView.zoomToLocation(this.results.get("results")[newIndex]);
         },
 
         render: function() {
@@ -1637,13 +1674,13 @@
         renderResults: function()
         {
             $(this.$el.selector + ' .note-search-results').html(
-                "<h4>" + this.results.toJSON().numFound +
-                    ' results found for query "' + this.field + ':'
-                    + decodeURIComponent(this.query) + '"</h4>'
+                "<h4>" + this.results.get("numFound") +
+                    ' results found for query "' + this.field + ':' + decodeURIComponent(this.query) + '"</h4>'
             );
             this.assign(this.paginator, this.$el.selector + ' .note-pagination');
         }
     });
+
 
     var SearchView = CantusAbstractView.extend
     ({
@@ -1663,6 +1700,7 @@
 
         // Subviews
         searchResultView: null,
+        showManuscriptName: true,
 
         // Search template dictionary
         currentSearchFormTemplate: "all",
@@ -1675,15 +1713,12 @@
             _.bindAll(this, 'render', 'newSearch', 'autoNewSearch',
                 'changeSearchField', 'registerEvents');
             this.template= _.template($('#search-template').html());
-
             // The search form templates
-            this.searchFormTemplates['all'] = _.template(
-                $('#search-all-template').html());
-            this.searchFormTemplates['mode'] = _.template(
-                $('#search-mode-template').html());
-            this.searchFormTemplates['volpiano'] = this.searchFormTemplates['all'];
-            this.searchFormTemplates['feast'] = this.searchFormTemplates['all'];
-            this.searchFormTemplates['office'] = this.searchFormTemplates['all'];
+            this.searchFormTemplates.all = _.template( $('#search-all-template').html());
+            this.searchFormTemplates.mode = _.template( $('#search-mode-template').html());
+            this.searchFormTemplates.volpiano = this.searchFormTemplates.all;
+            this.searchFormTemplates.feast = this.searchFormTemplates.all;
+            this.searchFormTemplates.office = this.searchFormTemplates.all;
 
             // If not supplied, the query is blank
             if (options !== undefined)
@@ -1703,12 +1738,12 @@
                     this.setQueryPostScript(options.queryPostScript);
                 }
             }
-
-            //Date to use for checking timestamps
-            this.searchResultView = new SearchResultView({query: this.query});
-
-            // Re-register events if this.el changes
-//            this.listenTo(this, "change", this.registerEvents);
+            this.searchResultView = new SearchResultView(
+                {
+                    query: this.query,
+                    showManuscriptName: this.showManuscriptName
+                }
+            );
         },
 
         /**
@@ -1724,21 +1759,17 @@
         changeSearchField: function()
         {
             // Grab the field name
-            var newField = encodeURIComponent($(this.$el.selector
-                + ' .search-field').val());
-
+            var newField = encodeURIComponent($(this.$el.selector + ' .search-field').val());
             // We want to make sure that we aren't just loading the same template again
             if (this.searchFormTemplates[newField] !== this.searchFormTemplates[this.field])
             {
                 // Store the field
                 this.field = newField;
                 // Render with the new template
-                // this.render();
                 $(this.$el.selector  + " .input-section").html(
                     this.searchFormTemplates[String(this.field)](
                         {query: this.query}));
             }
-
             // We want to fire off a search
             this.newSearch();
         },
@@ -1750,11 +1781,9 @@
         newSearch: function()
         {
             // Grab the new search query
-            var newQuery = encodeURIComponent($(this.$el.selector
-                + ' .search-input').val());
+            var newQuery = encodeURIComponent($(this.$el.selector + ' .search-input').val());
             // Grab the field name
-            var fieldSelection = encodeURIComponent($(this.$el.selector
-                + ' .search-field').val());
+            var fieldSelection = encodeURIComponent($(this.$el.selector + ' .search-field').val());
             if (newQuery !== this.query || fieldSelection !== this.field) {
                 this.query = newQuery;
                 this.field = fieldSelection;
@@ -1768,24 +1797,21 @@
                     if (fieldSelection !== "all")
                     {
                         // Split the query into multiple things
-                        queryList = decodeURIComponent(newQuery).split(",");
+                        var queryList = decodeURIComponent(newQuery).split(",");
                         var disjunctive = new SolrDisjunctiveQueryBuilder(fieldSelection, queryList);
                         newQuery = disjunctive.getQuery();
                     }
                     if (this.queryPostScript !== null)
                     {
                         // Attach this.queryPostScript if available
-                        this.searchResultView.changeQuery(newQuery + " "
-                            + this.queryPostScript, this.field);
+                        this.searchResultView.changeQuery(newQuery + " " + this.queryPostScript, this.field);
                     }
                     else
                     {
                         // Set the new search results view
                         this.searchResultView.changeQuery(newQuery, this.field);
                     }
-
                 }
-                // app.navigate("/search/?q=" + this.query);
             }
         },
 
@@ -1797,11 +1823,9 @@
             // Clear out the events
             this.events = {};
             // Register them
-            // this.events["click " + this.$el.selector + ".search-button"] = "newSearch";
             this.events["change .search-input"] = "newSearch";
             this.events["change .search-field"] = "changeSearchField";
             this.events["input .search-input"] = "autoNewSearch";
-
             // Delegate the new events
             this.delegateEvents();
         },
@@ -1841,8 +1865,21 @@
         }
     });
 
+     /**
+     * A special kind of search that exists within some particular manuscript.
+     */
+    var InternalSearchView = SearchView.extend
+    (
+        {
+            showManuscriptName: false
+        }
+    );
+
+
+
     var SearchResultView = CantusAbstractView.extend
     ({
+        showManuscriptName: null,
         pageSize: 10,
         currentPage: null,
         paginationView: null,
@@ -1863,6 +1900,11 @@
                 this.model.setQuery(options.query);
                 this.query = options.query;
             }
+            if (options.showManuscriptName !== undefined)
+            {
+                // The client might not want to see the manuscript name
+                this.showManuscriptName = options.showManuscriptName;
+            }
 
             // Query the search result
             this.model.fetch({success: this.updatePaginationView});
@@ -1878,10 +1920,9 @@
             // Clear out the events
             this.events = {};
             // Menu items
-            for (var i = 0; i < this.model.toJSON().results.length; i++)
+            for (var i = 0; i < this.model.get("results").length; i++)
             {
-                this.events["click .search-result-" + i]
-                    = "buttonClickCallback";
+                this.events["click .search-result-" + i] = "buttonClickCallback";
             }
             // Delegate the new events
             this.delegateEvents();
@@ -1903,6 +1944,7 @@
          * Set the model's query string and fetch results from the restful API.
          *
          * @param query string
+         * @param field string
          */
         changeQuery: function(query, field)
         {
@@ -1922,7 +1964,7 @@
                 {
                     name: "search",
                     currentPage: this.currentPage,
-                    elementCount: this.model.toJSON().numFound,
+                    elementCount: this.model.get("numFound"),
                     pageSize: this.pageSize
                 }
             );
@@ -1937,8 +1979,7 @@
             // Grab the page
             this.currentPage = this.paginationView.getPage();
             // Rebuild the model with a modified query
-            this.model.setQuery(this.query + "&start="
-                + (this.pageSize * (this.currentPage - 1)));
+            this.model.setQuery(this.query + "&start=" + (this.pageSize * (this.currentPage - 1)));
             this.model.fetch();
         },
 
@@ -1947,8 +1988,10 @@
             // Only render if the model is defined
             if (this.model !== undefined)
             {
+                console.log("Showmanuscriptname: ", this.showManuscriptName);
                 $(this.el).html(this.template(
                     {
+                        showManuscriptName: this.showManuscriptName,
                         searchType: this.field,
                         results: this.model.getFormattedData()
                     }
@@ -2006,67 +2049,6 @@
         }
     });
 
-    /**
-     * A generic loading bar.
-     *
-     * @type {*|void}
-     */
-    var LoadingBarView = CantusAbstractView.extend
-    ({
-        label: null,
-        completion: 0,
-
-        initialize: function(options)
-        {
-            _.bindAll(this, 'render');
-            this.template = _.template($('#loading-bar-template').html());
-
-            if (options !== undefined)
-            {
-                if (options.label !== undefined)
-                {
-                    this.label = String(options.label);
-                }
-                if (options.completion !== undefined)
-                {
-                    this.completion = this.setCompletion(options.completion);
-                }
-            }
-        },
-
-        /**
-         * Set the completion value.
-         *
-         * @param completion
-         */
-        setCompletion: function(completion)
-        {
-            if (parseInt(completion) < 0)
-            {
-                this.completion = 0;
-            }
-            else if (parseInt(completion) > 100)
-            {
-                this.completion = 100;
-            }
-            else {
-                this.completion = parseInt(completion);
-            }
-            this.render();
-        },
-
-        render: function()
-        {
-            $(this.el).html(this.template(
-                {
-                    label: this.label,
-                    completion: this.completion
-                }
-            ));
-            globalEventHandler.trigger("renderView");
-            return this.trigger('render', this);
-        }
-    });
 
     /*
     Page Views
@@ -2079,7 +2061,7 @@
      */
     var IndexPageView = CantusAbstractView.extend
     ({
-        el: $('#view-goes-here'),
+        el: '#view-goes-here',
 
         events: {
             "click #manuscripts-hero-button" : function()
@@ -2110,7 +2092,7 @@
      */
     var ManuscriptIndividualPageView = CantusAbstractView.extend
     ({
-        el: $('#view-goes-here'),
+        el: '#view-goes-here',
 
         id: null,
         manuscript: null,
@@ -2134,7 +2116,7 @@
                 }
             );
             this.folioView = new FolioView();
-            this.searchView = new SearchView();
+            this.searchView = new InternalSearchView();
             this.searchNotationView = new SearchNotationView(
                 {
                     divaView: this.divaView
@@ -2153,43 +2135,37 @@
             this.searchView.remove();
             this.searchNotationView.remove();
             this.folioView.remove();
-
             // Deal with the event listeners
             this.stopListening();
             this.undelegateEvents();
-
-
             // Nullify the manuscript model
             this.manuscript = null;
-
             // Nullify the views
             this.divaView = null;
             this.searchView = null;
             this.searchNotationView = null;
             this.folioView = null;
-
             // Remove from the dom
             this.$el.empty();
         },
 
         /**
-         *
-         *
-         * @param chant optional chant index.
+         * 
+         * @returns {undefined}
          */
         updateFolio: function()
         {
+            console.log("updateFolio() begin.");
             var folio = this.divaView.getFolio();
             // Query the folio set at that specific manuscript number
-            newUrl =  siteUrl + "folio-set/manuscript/"
-                      + this.manuscript.toJSON().id + "/"
-                      + folio + "/";
+            var newUrl =  siteUrl + "folio-set/manuscript/" + this.manuscript.get("id") + "/" + folio + "/";
             // Rebuild the folio View
             this.folioView.setUrl(newUrl);
             this.folioView.setCustomNumber(folio);
             this.folioView.update();
             globalEventHandler.trigger("ChangeFolio", folio);
             globalEventHandler.trigger("SilentUrlUpdate");
+            console.log("updateFolio() end.");
         },
 
         /**
@@ -2203,8 +2179,7 @@
         afterFetch: function()
         {
             // Set the search view to only search this manuscript
-            this.searchView.setQueryPostScript(' AND manuscript:"'
-                + this.manuscript.toJSON().siglum + '"');
+            this.searchView.setQueryPostScript(' AND manuscript:"' + this.manuscript.get("siglum") + '"');
             // TODO: Diva is being initialized twice!!!!!!!
             this.divaView.setManuscript(this.manuscript.get("siglum_slug"));
             this.searchNotationView.setManuscript(this.manuscript.get("siglum_slug"));
@@ -2244,7 +2219,7 @@
      */
     var ManuscriptsPageView = CantusAbstractView.extend
     ({
-        el: $('#view-goes-here'),
+        el: '#view-goes-here',
 
         loaded: false,
 
@@ -2283,11 +2258,6 @@
             {
                 this.assign(this.manuscriptCollectionView, '.manuscript-list');
             }
-            else
-            {
-
-//                this.assign(this.loadingAlertView, '.manuscript-list');
-            }
             globalEventHandler.trigger("renderView");
             return this.trigger('render', this);
         }
@@ -2300,7 +2270,7 @@
      */
     var SearchPageView = CantusAbstractView.extend
     ({
-        el: $('#view-goes-here'),
+        el: '#view-goes-here',
 
         // Subviews
         searchView: null,
@@ -2310,7 +2280,12 @@
             _.bindAll(this, 'render');
             this.template= _.template($('#search-page-template').html());
             // Initialize the subviews
-            this.searchView = new SearchView({query: options.query});
+            this.searchView = new SearchView(
+                {
+                    query: options.query,
+                    showManuscriptName: true
+                }
+            );
         },
 
         render: function()
@@ -2339,6 +2314,8 @@
         manuscriptsPageView: null,
         manuscriptView: null,
         searchPageView: null,
+        // Browser resizer
+        resizer: null,
 
         routes: {
             "" : "manuscripts",
@@ -2363,6 +2340,8 @@
             this.indexView = new IndexPageView();
             // Same with manuscripts page
             this.manuscriptsPageView = new ManuscriptsPageView();
+            // Get the resizer going
+            this.resizer = new BrowserResizer();
         },
 
         index: function()
@@ -2397,14 +2376,13 @@
             this.manuscriptView.getData();
 
             globalEventHandler.trigger("ChangeManuscript", query);
-//            globalEventHandler.trigger("ChangeFolio", folio);
             globalEventHandler.trigger("ChangeChant", chant);
         },
 
         search: function(query)
         {
             // Delete a search view if it exists
-            if (this.searchView !== null)
+            if (this.searchView !== null && this.searchView !== undefined)
             {
                 this.searchView.remove();
                 this.searchView = null;

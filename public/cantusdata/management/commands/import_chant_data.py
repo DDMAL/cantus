@@ -47,7 +47,7 @@ class Command(BaseCommand):
             chant.office = expandr.expand_office(row["Office"].strip()).decode('utf-8')
             chant.genre = expandr.expand_genre(row["Genre"].strip()).decode('utf-8')
             chant.mode = expandr.expand_mode(row["Mode"].strip()).decode('utf-8')
-            chant.differentia = row["Differentia"].strip().decode('utf-8')
+            chant.differentia = expandr.expand_differentia(row["Differentia"].strip()).decode('utf-8')
             chant.finalis = row["Finalis"].strip().decode('utf-8')
             chant.incipit = row["Incipit"].strip().decode('utf-8')
             chant.full_text = row["Fulltext"].strip().decode('utf-8')

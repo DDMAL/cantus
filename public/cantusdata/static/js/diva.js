@@ -1349,6 +1349,8 @@ window.divaPlugins = [];
         // Called in init and when the orientation changes
         var adjustMobileWebkitDims = function ()
         {
+            settings.viewerXOffset = $(settings.outerSelector).offset().left;
+            settings.viewerYOffset = $(settings.outerSelector).offset().top;
             settings.panelHeight = window.innerHeight - settings.viewerYOffset - settings.viewerHeightPadding;
             settings.panelWidth = (settings.enableAutoWidth) ? window.innerWidth - settings.viewerWidthPadding * 2 : window.innerWidth;
 
@@ -1398,7 +1400,7 @@ window.divaPlugins = [];
             var heightBorderPixels = parseInt($(settings.outerSelector).css('border-top-width')) + parseInt($(settings.outerSelector).css('border-bottom-width'));
             parentHeight = $(settings.parentSelector).height();
             var parentYOffset = $(settings.parentSelector).offset().top;
-            var newHeight = (settings.enableAutoHeight) ? parentHeight - settings.viewerYOffset + parentYOffset - heightBorderPixels : $(settings.outerSelector).outerHeight();
+            var newHeight = (settings.enableAutoHeight) ? parentHeight - settings.viewerYOffset + parentYOffset - heightBorderPixels : $(settings.outerSelector).height();
 
             //calculate the new width
             var widthBorderPixels = parseInt($(settings.outerSelector).css('border-left-width')) + parseInt($(settings.outerSelector).css('border-right-width'));
@@ -1440,7 +1442,8 @@ window.divaPlugins = [];
         var bindMouseEvents = function()
         {
             // Set drag scroll on first descendant of class dragger on both selected elements
-            $(settings.outerSelector + ', ' + settings.innerSelector).dragscrollable({dragSelector: '.diva-dragger', acceptPropagatedEvent: true});
+            if (!settings.mobileWebkit)
+                $(settings.outerSelector + ', ' + settings.innerSelector).dragscrollable({dragSelector: '.diva-dragger', acceptPropagatedEvent: true});
 
             // Double-click to zoom
             $(settings.outerSelector).on('dblclick', '.diva-document-page', function (event)
@@ -1589,7 +1592,14 @@ window.divaPlugins = [];
                 });
 
                 // Inertial scrolling
-                $(settings.outerSelector).kinetic();
+                $(settings.outerSelector).kinetic({
+                    triggerHardware: true,
+                    filterTarget: function(target) {
+                        if (target.className === 'diva-canvas-icon' || target.className === 'diva-download-icon')
+                            return false;
+                        return true;
+                    }
+                });
             }
 
             // Only check if either scrollBySpace or scrollByKeys is enabled
@@ -2012,7 +2022,8 @@ window.divaPlugins = [];
                             pageTools.push('<div class="diva-' + plugin.pluginName + '-icon" title="' + titleText + '"></div>');
 
                             // Delegate the click event - pass it the settings
-                            $(settings.outerSelector).delegate('.diva-' + plugin.pluginName + '-icon', 'click', function (event)
+                            var clickEvent = (settings.mobileWebkit) ? 'touchend' : 'click';
+                            $(settings.outerSelector).on(clickEvent, '.diva-' + plugin.pluginName + '-icon', function (event)
                             {
                                 plugin.handleClick.call(this, event, settings);
                             });
@@ -2399,6 +2410,19 @@ window.divaPlugins = [];
         this.getCurrentPageNumber = function ()
         {
             return settings.currentPageIndex + 1;
+        };
+
+        // Returns an array of all filenames in the document
+        this.getFilenames = function()
+        {
+            var filenames = [];
+
+            for (var i = 0; i < settings.numPages; i++)
+            {
+                filenames[i] = settings.pages[i].f;
+            }
+
+            return filenames;
         };
 
         // Returns the current zoom level

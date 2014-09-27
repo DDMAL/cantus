@@ -16,16 +16,8 @@
     <script src="/static/js/plugins/highlight.js"></script>
     <script src="/static/js/plugins/canvas.js"></script>
 
-{#    <meta content='width=960, initial-scale=2' name='viewport'/>#}
-{#    <meta name="viewport" content="width=device-width" />#}
+    <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/ico" href="/static/img/favicon.ico">
-{#    <script>#}
-{#        if ($(window).width() < 880)#}
-{#        {#}
-{#            var window_width = $(window).width();#}
-{#            $('meta[name=viewport]').attr('content','width=880, initial-scale=0.54');#}
-{#        }#}
-{#    </script>#}
 </head>
 <body>
     <div id="header-container">
@@ -252,10 +244,12 @@
     <tr>
         <td><a href="<%= results[i].url %>" class="search-result-<%= i %>"><%= results[i].name %></a></td>
         <td><%= results[i].model %></td>
-        <% if (results[i].manuscript !== undefined) { %>
-        <td><%= results[i].manuscript %></td>
-        <% } else { %>
-        <td></td>
+        <% if (showManuscriptName === true) { %>
+            <% if (results[i].manuscript !== undefined) { %>
+            <td><%= results[i].manuscript %></td>
+            <% } else { %>
+            <td></td>
+            <% } %>
         <% } %>
         <% if (searchType == "volpiano") { %>
             <% if (results[i].volpiano !== undefined) { %>
@@ -420,8 +414,5 @@
     <script src="/static/js/backbone.js"></script>
     <script src="/static/js/cantus.js"></script>
 
-    <script type="text/javascript" >
-        $('#manuscript-data-container').on('touchstart', function(event){console.log("test");});
-    </script>
 </body>
 </html>
