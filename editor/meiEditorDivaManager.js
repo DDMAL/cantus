@@ -1294,8 +1294,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             }
                         }
                     }
-                    console.log(meiEditorSettings.activeNeumeChoices);
-
+                    
                     //also have diva automatically scroll
                 });
 
@@ -1420,7 +1419,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         $(document).unbind('keydown', backspacePrevent);
                     }
                 });
-
+                
                 $(document).on('keydown', function(e)
                 {
                     //if win-ctrl or mac-cmd was the key that was put down
