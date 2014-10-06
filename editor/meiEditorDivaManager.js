@@ -247,8 +247,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         var pageNames = [];
                         var dataArr = data.split("\n");
                         var dataLength = dataArr.length;
-                        var curPage = 0;
-                        while (curPage < dataLength)
+                        for(var curPage = 0; curPage < dataLength; curPage++)
                         {
                             //that is not empty
                             if (!dataArr[curPage])
@@ -268,7 +267,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                                     pageNames.push(foundLink[0].slice(9, -2));
                                 }
                             }
-                            curPage++;
                         }
 
                         createModal(meiEditorSettings.element, "serverLoadModal", false,
