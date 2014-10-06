@@ -247,16 +247,17 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         var pageNames = [];
                         var dataArr = data.split("\n");
                         var dataLength = dataArr.length;
-                        while (dataLength--)
+                        var curPage = 0;
+                        while (curPage < dataLength)
                         {
                             //that is not empty
-                            if (!dataArr[dataLength])
+                            if (!dataArr[curPage])
                             {
                                 continue;
                             }
 
                             //find a link
-                            var foundLink = dataArr[dataLength].match(/<a href=".*">/g);
+                            var foundLink = dataArr[curPage].match(/<a href=".*">/g);
 
                             if (foundLink)
                             {
@@ -267,6 +268,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                                     pageNames.push(foundLink[0].slice(9, -2));
                                 }
                             }
+                            curPage++;
                         }
 
                         createModal(meiEditorSettings.element, "serverLoadModal", false,
