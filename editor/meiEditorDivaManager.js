@@ -1155,6 +1155,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     //make the option object
                     var optionID = meiEditor.stripFilenameForJQuery(curMei) + "_" + meiEditor.stripFilenameForJQuery(curDivaFile);
                     $("#selectUnlink").append("<option id='" + optionID + "'>" + curMei + " and " + curDivaFile + "</option>");
+                    meiEditorSettings.divaInstance.gotoPageByName(curDivaFile);
 
                     //delete option elements if they exist
                     $("#selectfile-link").find(':contains("' + curMei + '")').remove();
@@ -1314,6 +1315,11 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     
                     //because one line of code helps prevent one pound of laziness; this is here so that autoLink doesn't call it
                     meiEditor.createHighlights();
+
+                    if($('#selectfile-link').children().length === 0 || $('#selectdiva-link').children().length === 0)
+                    {
+                        $("#fileLinkModal-close").trigger('click');
+                    }
                 });
 
                 //when "Unlink selected files" is clicked
