@@ -1287,6 +1287,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         meiEditor.createHighlights();
                         $("#resizableOverlay").remove();
                     }
+                    
+                    $("#selectfile-link").find(':contains("' + fileName + '")').remove();
 
                     //it's automatically removed from all other selects in the main meiEditor.js file
                 });
