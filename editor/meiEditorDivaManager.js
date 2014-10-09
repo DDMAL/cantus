@@ -106,6 +106,39 @@ function createDefaultMEIString(){
     return meiString;
 }
 
+//stolen mercilessly (but with gratitude) from http://stackoverflow.com/questions/9234830/how-to-hide-a-option-in-a-select-menu-with-css
+jQuery.fn.toggleOption = function( show ) 
+{
+    jQuery( this ).toggle( show );
+    if( show ) {
+        if( jQuery( this ).parent( 'span.toggleOption' ).length )
+            jQuery( this ).unwrap( );
+    } else {
+        if( jQuery( this ).parent( 'span.toggleOption' ).length === 0 )
+            jQuery( this ).wrap( '<span class="toggleOption" style="display: none;" />' );
+    }
+};
+
+jQuery.fn.hasVisibleOptions = function() 
+{
+    var childLength = $(this).children('option').length;
+    if(childLength === 0)
+    {
+        return false;
+    }
+    else
+    {
+        for(var curChildIndex = 0; curChildIndex < childLength; curChildIndex++)
+        {
+            if($(this).children('option').css('display') != "none")
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
 require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.center.min'], function(){
 
 (function ($)
@@ -1153,13 +1186,17 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     meiEditorSettings.divaImagesToMeiFiles[curDivaFile] = curMei;
 
                     //make the option object
-                    var optionID = meiEditor.stripFilenameForJQuery(curMei) + "_" + meiEditor.stripFilenameForJQuery(curDivaFile);
+                    var strippedMei = meiEditor.stripFilenameForJQuery(curMei);
+                    var strippedDiva = meiEditor.stripFilenameForJQuery(curDivaFile);
+
+
+                    var optionID = strippedMei + "_" + strippedDiva;
                     $("#selectUnlink").append("<option id='" + optionID + "'>" + curMei + " and " + curDivaFile + "</option>");
                     meiEditorSettings.divaInstance.gotoPageByName(curDivaFile);
 
                     //delete option elements if they exist
-                    $("#selectfile-link").find(':contains("' + curMei + '")').remove();
-                    $("#selectdiva-link").find(':contains("' + curDivaFile + '")').remove();
+                    $("#file-link-" + strippedMei).toggleOption(false);
+                    $("#diva-link-" + strippedDiva).toggleOption(false);
                 };
 
                 /*
@@ -1203,8 +1240,9 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         for (curPage in data.pgs)
                         {
                             fileNameOriginal = data.pgs[curPage].f; //original file name
+                            fileNameStripped = meiEditor.stripFilenameForJQuery(fileNameOriginal);
                             meiEditorSettings.divaPageList.push(fileNameOriginal);
-                            $("#selectdiva-link").append("<option name='"+fileNameOriginal+"'>" + fileNameOriginal + "</option>");
+                            $("#selectdiva-link").append("<option id='diva-link-" + fileNameStripped + "' name='" + fileNameOriginal + "'>" + fileNameOriginal + "</option>");
                         }
                     }
                 });
@@ -1218,7 +1256,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         //get the active editor page
                         var activeFileName = meiEditorSettings.divaImagesToMeiFiles[fileName];
                         var tabArr = $("#pagesList > li > a");
-                        for (curTabIndex in tabArr)
+                        for (var curTabIndex = 0; curTabIndex < tabArr.length; curTabIndex++)
                         {
                             //find the active file name
                             var curTab = tabArr[curTabIndex];
@@ -1245,7 +1283,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     if(!result)
                     {
                         meiEditor.localWarn("Could not automatically link " + fileName + ".");
-                        $("#selectfile-link").append("<option name='" + fileName + "'>" + fileName + "</option>");
+                        fileNameStripped = meiEditor.stripFilenameForJQuery(fileName);
+                        $("#selectfile-link").append("<option id='file-link-" + fileNameStripped + "' name='" + fileName + "'>" + fileName + "</option>");
                     }
                     else
                     {
@@ -1276,19 +1315,20 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 {
                     //if the page was deleted, see if it was linked
                     var retVal = meiEditor.meiIsLinked(pageName);
+                    var meiFileStripped = meiEditor.stripFilenameForJQuery(pageName);
                     if (retVal)
                     {
                         //if it was, remove it from a lot and refresh highlights
                         var imageName = retVal;
+                        var fileNameStripped = meiEditor.stripFilenameForJQuery(imageName);
                         delete meiEditorSettings.divaImagesToMeiFiles[imageName];
                         var dualOptionID = meiEditor.stripFilenameForJQuery(pageName) + "_" + meiEditor.stripFilenameForJQuery(imageName);
                         $("#" + dualOptionID).remove();
-                        $("#selectdiva-link").append("<option name='" + imageName + "'>" + imageName + "</option>");
+                        $("#diva-link-" + fileNameStripped).toggleOption(true);
                         meiEditor.createHighlights();
                         $("#resizableOverlay").remove();
                     }
-                    
-                    $("#selectfile-link").find(':contains("' + fileName + '")').remove();
+                    $("#file-link-" + meiFileStripped).remove();
 
                     //it's automatically removed from all other selects in the main meiEditor.js file
                 });
@@ -1302,8 +1342,9 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 $("#link-files").on('click', function()
                 {
                     //grab the IDs/stripped IDs of the linked files
-                    var selectedMEI = $('#selectfile-link').find(':selected').text();
-                    var selectedImage = $('#selectdiva-link').find(':selected').text();
+                    var selectedMEI = $("#selectfile-link").children(':not(:hidden) :selected').text();
+                    console.log(selectedMEI, $('#selectfile-link'));
+                    var selectedImage = $("#selectdiva-link").children(':not(:hidden) :selected').text();
 
                     //if there's not 2 selected files, "throw" an error
                     if (selectedMEI === undefined || selectedImage === undefined)
@@ -1318,7 +1359,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     //because one line of code helps prevent one pound of laziness; this is here so that autoLink doesn't call it
                     meiEditor.createHighlights();
 
-                    if($('#selectfile-link').children().length === 0 || $('#selectdiva-link').children().length === 0)
+                    if(!$('#selectfile-link').hasVisibleOptions() || !$('#selectdiva-link').hasVisibleOptions())
                     {
                         $("#fileLinkModal-close").trigger('click');
                     }
@@ -1327,14 +1368,19 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 //when "Unlink selected files" is clicked
                 $("#unlink-files").on('click', function()
                 {
-                    var selectedPair = $('#selectUnlink').find(':selected');
+                    var selectedPair = $("#selectUnlink").children(':not(:hidden) :selected');
                     var fileArr = selectedPair.text().split(' and ');
 
                     //change the data/DOM
                     delete meiEditorSettings.divaImagesToMeiFiles[fileArr[1]];
-                    $("#selectfile-link").append("<option name='" + fileArr[0] + "'>" + fileArr[0] + "</option>");
-                    $("#selectdiva-link").append("<option name='" + fileArr[1] + "'>" + fileArr[1] + "</option>");
+                    $("#file-link-" + meiEditor.stripFilenameForJQuery(fileArr[0])).toggleOption(true);
+                    $("#diva-link-" + meiEditor.stripFilenameForJQuery(fileArr[1])).toggleOption(true);
                     $(selectedPair).remove();
+
+                    if(!$("#selectUnlink").hasVisibleOptions())
+                    {
+                        $("#fileUnlinkModal-close").trigger('click');
+                    }
 
                     meiEditor.localLog("Successfully unlinked " + fileArr[0] + " from " + fileArr[1] + ".");
 
