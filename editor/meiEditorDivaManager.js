@@ -1151,6 +1151,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             //link 'em, and we found it so break
                             meiEditor.linkMeiToDiva(curMei, curDivaFile);
                             meiEditor.createHighlights();
+                            meiEditorSettings.divaInstance.gotoPageByName(curDivaFile);
+                            
                             return true;
                         }
                     }
@@ -1189,10 +1191,8 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     var strippedMei = meiEditor.stripFilenameForJQuery(curMei);
                     var strippedDiva = meiEditor.stripFilenameForJQuery(curDivaFile);
 
-
                     var optionID = strippedMei + "_" + strippedDiva;
                     $("#selectUnlink").append("<option id='" + optionID + "'>" + curMei + " and " + curDivaFile + "</option>");
-                    meiEditorSettings.divaInstance.gotoPageByName(curDivaFile);
 
                     //delete option elements if they exist
                     $("#file-link-" + strippedMei).toggleOption(false);
@@ -1335,6 +1335,29 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                 meiEditor.events.subscribe("PageEdited", meiEditor.createHighlights);
 
+                meiEditor.events.subscribe("PageWasRenamed", function(originalName, newName)
+                {
+                    var strippedOriginal = meiEditor.stripFilenameForJQuery(originalName);
+                    var strippedNew = meiEditor.stripFilenameForJQuery(newName);
+                    for (curImage in meiEditorSettings.divaImagesToMeiFiles)
+                    {
+                        //if it's linked
+                        if(meiEditorSettings.divaImagesToMeiFiles[curImage] == originalName)
+                        {
+                            meiEditorSettings.divaImagesToMeiFiles[curImage] == newName;
+                            var foundChild = $("#selectUnlink").children("[id*='" + strippedOriginal + "']");
+                            var strippedImage = meiEditor.stripFilenameForJQuery(curImage);
+                            $(foundChild).attr('id', strippedNew + "_" + strippedImage).text(newName + " and " + curImage);
+
+                            break;
+                        }
+                    }
+
+                    //or if we make it through the loop
+                    $("#file-link-" + strippedOriginal).attr('id', "file-link-" + strippedNew).attr('name', strippedNew).text(newName);
+                    
+                });
+
                 //to get default pages
                 meiEditor.reapplyEditorClickListener();
 
@@ -1343,7 +1366,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 {
                     //grab the IDs/stripped IDs of the linked files
                     var selectedMEI = $("#selectfile-link").children(':not(:hidden) :selected').text();
-                    console.log(selectedMEI, $('#selectfile-link'));
                     var selectedImage = $("#selectdiva-link").children(':not(:hidden) :selected').text();
 
                     //if there's not 2 selected files, "throw" an error
