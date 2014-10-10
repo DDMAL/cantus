@@ -1344,18 +1344,27 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         //if it's linked
                         if(meiEditorSettings.divaImagesToMeiFiles[curImage] == originalName)
                         {
-                            meiEditorSettings.divaImagesToMeiFiles[curImage] == newName;
+                            meiEditorSettings.divaImagesToMeiFiles[curImage] = newName;
                             var foundChild = $("#selectUnlink").children("[id*='" + strippedOriginal + "']");
                             var strippedImage = meiEditor.stripFilenameForJQuery(curImage);
                             $(foundChild).attr('id', strippedNew + "_" + strippedImage).text(newName + " and " + curImage);
 
-                            break;
+                            return;
                         }
                     }
 
-                    //or if we make it through the loop
-                    $("#file-link-" + strippedOriginal).attr('id', "file-link-" + strippedNew).attr('name', strippedNew).text(newName);
-                    
+                    //or if we make it through the loop, basically treat it as a new file and see if we can auto-link it
+                    var result = meiEditor.autoLinkFile(newName);
+                    if(!result)
+                    {
+                        meiEditor.localWarn("Could not automatically link " + newName + ".");
+                        var newNameStripped = meiEditor.stripFilenameForJQuery(newName);
+                        $("#selectfile-link").append("<option id='file-link-" + newNameStripped + "' name='" + newName + "'>" + newName + "</option>");
+                    }
+                    else
+                    {
+                        meiEditor.localLog("Automatically linked " + newName + ".");
+                    }
                 });
 
                 //to get default pages
