@@ -45,7 +45,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView", 
                 // Only route to the new URL if it really is a new url!
                 if (!(new_url === "#" || new_url.trim('/') === old_url.trim('/')))
                 {
-                    app.navigate(this.items[id].url, {trigger: true});
+                    Backbone.history.navigate(this.items[id].url, {trigger: true});
                     this.setActiveButton(id);
                 }
             },

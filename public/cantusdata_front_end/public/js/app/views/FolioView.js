@@ -2,8 +2,19 @@
 //var CantusAbstractView = require(["views/CantusAbstractView"]);
 //var ChantCollectionView = require(["views/ChantCollectionView"]);
 
-define( ['App', 'backbone', 'marionette', 'jquery', "models/Folio", "views/CantusAbstractView", "views/ChantCollectionView"],
-    function(App, Backbone, Marionette, $, Folio, CantusAbstractView, ChantCollectionView, template) {
+define( ['App', 'backbone', 'marionette', 'jquery',
+        "models/Folio",
+        "views/CantusAbstractView",
+        "views/ChantCollectionView",
+        "singletons/GlobalEventHandler",
+        "config/GlobalVars"],
+    function(App, Backbone, Marionette, $,
+             Folio,
+             CantusAbstractView,
+             ChantCollectionView,
+             GlobalEventHandler,
+             GlobalVars,
+             template) {
 
         /**
          * Provide an alert message to the user.
@@ -113,7 +124,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "models/Folio", "views/Cantu
                 if (folio_id !== undefined)
                 {
                     // Compose the url
-                    var composedUrl = siteUrl + "chant-set/folio/" + folio_id + "/";
+                    var composedUrl = GlobalVars.siteUrl + "chant-set/folio/" + folio_id + "/";
                     // Build a new view with the new data
                     this.chantCollectionView.setUrl(composedUrl);
                 }
@@ -132,7 +143,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "models/Folio", "views/Cantu
                     }
                 ));
                 this.renderChantCollectionView();
-                globalEventHandler.trigger("renderView");
+                GlobalEventHandler.trigger("renderView");
                 return this.trigger('render', this);
             },
 

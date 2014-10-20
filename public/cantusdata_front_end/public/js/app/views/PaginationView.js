@@ -1,7 +1,12 @@
-//var CantusAbstractView = require(["views/CantusAbstractView"]);
+define( ['App', 'backbone', 'marionette', 'jquery',
+        "views/CantusAbstractView",
+        "singletons/GlobalEventHandler"],
+    function(App, Backbone, Marionette, $,
+             CantusAbstractView,
+             GlobalEventHandler,
+             template) {
 
-define( ['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView"],
-    function(App, Backbone, Marionette, $, CantusAbstractView, template) {
+        "use strict";
 
         /**
          * A simple paginator that fires events when it changes page.
@@ -188,7 +193,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView"],
                         currentPage: this.currentPage
                     }
                 ));
-                globalEventHandler.trigger("renderView");
+                GlobalEventHandler.trigger("renderView");
                 return this.trigger('render', this);
             }
         });

@@ -1,6 +1,8 @@
 define(["jquery", "backbone", "singletons/GlobalEventHandler"],
     function($, Backbone, GlobalEventHandler) {
 
+        "use strict";
+
         /**
          * Handles the global state.  Updates URLs.
          */
@@ -52,7 +54,7 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
             {
                 console.log("silentUrlUpdate()");
                 // Don't actually trigger the router!
-                app.navigate(this.getUrl(), {trigger: false});
+                Backbone.history.navigate(this.getUrl(), {trigger: false});
             }
         });
     }

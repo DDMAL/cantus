@@ -1,13 +1,18 @@
-//var CantusAbstractView = require(["views/CantusAbstractView"]);
-//var AlertView = require(["views/AlertView"]);
-
 define( ['App', 'backbone', 'marionette', 'jquery',
         "views/CantusAbstractView",
         "views/AlertView",
         "views/ManuscriptCollectionView",
         "singletons/GlobalEventHandler",
         "config/GlobalVars"],
-    function(App, Backbone, Marionette, $, CantusAbstractView, AlertView, ManuscriptCollectionView, GlobalEventHandler, GlobalVars, template) {
+    function(App, Backbone, Marionette, $,
+             CantusAbstractView,
+             AlertView,
+             ManuscriptCollectionView,
+             GlobalEventHandler,
+             GlobalVars,
+             template) {
+
+        "use strict";
 
         /**
          * This page is a big list of manuscripts.
@@ -50,6 +55,9 @@ define( ['App', 'backbone', 'marionette', 'jquery',
 
             render: function()
             {
+                console.log("Rendering ManuscriptsPageView");
+                console.log(this.$el);
+                console.log(this.template());
                 $(this.el).html(this.template());
                 if (this.loaded)
                 {

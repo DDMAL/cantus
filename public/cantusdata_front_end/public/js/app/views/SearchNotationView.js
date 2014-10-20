@@ -3,10 +3,18 @@
 //var PaginationView = require(["views/PaginationView"]);
 
 define( ['App', 'backbone', 'marionette', 'jquery',
+        "models/CantusAbstractModel",
         "models/SearchResult",
         "views/CantusAbstractView",
-        "views/PaginationView"],
-    function(App, Backbone, Marionette, $, SearchResult, CantusAbstractView, PaginationView, template) {
+        "views/PaginationView",
+        "config/GlobalVars"],
+    function(App, Backbone, Marionette, $,
+             CantusAbstractModel,
+             SearchResult,
+             CantusAbstractView,
+             PaginationView,
+             GlobalVars,
+             template) {
 
         /**
          * Provide an alert message to the user.
@@ -83,7 +91,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 {
                     // Grab the field name
                     this.field = encodeURIComponent($(this.$el.selector + ' .search-field').val());
-                    this.results.url = siteUrl + "notation-search/?q=" + this.query + "&type=" + this.field + "&manuscript=" + this.manuscript;
+                    this.results.url = GlobalVars.siteUrl + "notation-search/?q=" + this.query + "&type=" + this.field + "&manuscript=" + this.manuscript;
                     this.results.fetch();
                 }
             },

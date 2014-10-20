@@ -1,7 +1,12 @@
-var CantusAbstractView = require(["views/CantusAbstractView"]);
+define( ['App', 'backbone', 'marionette', 'jquery',
+        "views/CantusAbstractView",
+        "singletons/GlobalEventHandler"],
+    function(App, Backbone, Marionette, $,
+             CantusAbstractView,
+             GlobalEventHandler,
+             template) {
 
-define( ['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView"],
-    function(App, Backbone, Marionette, $, CantusAbstractView, template) {
+        "use strict";
 
         /**
          * This is the homepage of the website.
@@ -15,7 +20,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView"],
             events: {
                 "click #manuscripts-hero-button" : function()
                 {
-                    app.navigate("/manuscripts/", {trigger: true});
+                    Backbone.history.navigate("/manuscripts/", {trigger: true});
                 }
             },
 
@@ -28,7 +33,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView"],
             render: function()
             {
                 $(this.el).html(this.template());
-                globalEventHandler.trigger("renderView");
+                GlobalEventHandler.trigger("renderView");
                 return this.trigger('render', this);
             }
         });

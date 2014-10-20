@@ -1,10 +1,14 @@
-//var CantusAbstractView = require(["views/CantusAbstractView"]);
-//var SearchView = require(["views/SearchView"]);
-
 define( ['App', 'backbone', 'marionette', 'jquery',
         "views/CantusAbstractView",
-        "views/SearchView"],
-    function(App, Backbone, Marionette, $, CantusAbstractView, SearchView, template) {
+        "views/SearchView",
+        "singletons/GlobalEventHandler"],
+    function(App, Backbone, Marionette, $,
+             CantusAbstractView,
+             SearchView,
+             GlobalEventHandler,
+             template) {
+
+        "use strict";
 
         /**
          * This page is for searching.
@@ -36,7 +40,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 $(this.el).html(this.template());
                 // Render subviews
                 this.assign(this.searchView, '#search');
-                globalEventHandler.trigger("renderView");
+                GlobalEventHandler.trigger("renderView");
                 return this.trigger('render', this);
             }
         });

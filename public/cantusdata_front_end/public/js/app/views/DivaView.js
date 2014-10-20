@@ -1,7 +1,14 @@
-//var CantusAbstractView = require(["views/CantusAbstractView"]);
+define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
+        "views/CantusAbstractView",
+        "singletons/GlobalEventHandler",
+        "config/GlobalVars"],
+    function(App, Backbone, Marionette, $, Diva, DivaHighlight,
+             CantusAbstractView,
+             GlobalEventHandler,
+             GlobalVars,
+             template) {
 
-define( ['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView"],
-    function(App, Backbone, Marionette, $, CantusAbstractView, template) {
+        "use strict";
 
         /**
          * Provide an alert message to the user.
@@ -93,9 +100,9 @@ define( ['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView"],
                     enableHighlight: true,
                     fixedHeightGrid: false,
                     enableCanvas: true,
-                    iipServerURL: iipImageServerUrl + "fcgi-bin/iipsrv.fcgi",
+                    iipServerURL: GlobalVars.iipImageServerUrl + "fcgi-bin/iipsrv.fcgi",
                     objectData: "/static/" + siglum + ".json",
-                    imageDir: divaImageDirectory + siglum
+                    imageDir: GlobalVars.divaImageDirectory + siglum
                 });
                 this.viewerLoadEvent = diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
                 this.pageChangeEvent = diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
@@ -113,7 +120,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView"],
                     this.initializeDiva();
                 }
 
-                globalEventHandler.trigger("renderView");
+                GlobalEventHandler.trigger("renderView");
                 console.log("Diva render() end.");
                 return this.trigger('render', this);
             },
@@ -122,11 +129,11 @@ define( ['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView"],
             {
                 if (isFullScreen === true)
                 {
-                    globalEventHandler.trigger("divaFullScreen");
+                    GlobalEventHandler.trigger("divaFullScreen");
                 }
                 else if (isFullScreen === false)
                 {
-                    globalEventHandler.trigger("divaNotFullScreen");
+                    GlobalEventHandler.trigger("divaNotFullScreen");
                 }
             },
 
@@ -238,7 +245,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView"],
                     this.timer = window.setTimeout(
                         function ()
                         {
-                            globalEventHandler.trigger("manuscriptChangeFolio");
+                            GlobalEventHandler.trigger("manuscriptChangeFolio");
                         },
                         250);
                 }

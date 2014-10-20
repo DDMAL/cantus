@@ -1,13 +1,3 @@
-//var GlobalStateModel = require(["models/GlobalStateModel"]);
-
-//var HeaderView = require(["views/HeaderView"]);
-//var IndexPageView = require(["views/IndexPageView"]);
-//var ManuscriptsPageView = require(["views/ManuscriptsPageView"]);
-//var BrowserResizer = require(["views/BrowserResizer"]);
-//var ManuscriptIndividualPageView = require(["views/ManuscriptIndividualPageView"]);
-//var SearchPageView = require(["views/SearchPageView"]);
-
-
 define(["jquery", "backbone",
         "models/GlobalStateModel",
         "views/HeaderView",
@@ -15,14 +5,19 @@ define(["jquery", "backbone",
         "views/ManuscriptsPageView",
         "views/BrowserResizer",
         "views/ManuscriptIndividualPageView",
-        "views/SearchPageView"],
-    function($, Backbone, GlobalStateModel,
+        "views/SearchPageView",
+        "singletons/GlobalEventHandler"],
+    function($, Backbone,
+             GlobalStateModel,
              HeaderView,
              IndexPageView,
              ManuscriptsPageView,
              BrowserResizer,
              ManuscriptIndividualPageView,
-             SearchPageView) {
+             SearchPageView,
+             GlobalEventHandler) {
+
+        "use strict";
 
         return Backbone.Router.extend
         ({
@@ -67,17 +62,20 @@ define(["jquery", "backbone",
 
             index: function()
             {
+                console.log("index route");
                 this.indexView.render();
             },
 
             manuscripts: function()
             {
+                console.log("manuscripts route");
                 this.manuscriptsPageView.update();
                 this.manuscriptsPageView.render();
             },
 
             manuscriptSingle: function(query, folio, chant)
             {
+                console.log("manuscript single route");
                 if (this.manuscriptView !== null)
                 {
                     // We want to make sure that the old view, if it exists, is
@@ -96,12 +94,13 @@ define(["jquery", "backbone",
                 // Fetch the data
                 this.manuscriptView.getData();
 
-                globalEventHandler.trigger("ChangeManuscript", query);
-                globalEventHandler.trigger("ChangeChant", chant);
+                GlobalEventHandler.trigger("ChangeManuscript", query);
+                GlobalEventHandler.trigger("ChangeChant", chant);
             },
 
             search: function(query)
             {
+                console.log("search view");
                 // Delete a search view if it exists
                 if (this.searchView !== null && this.searchView !== undefined)
                 {

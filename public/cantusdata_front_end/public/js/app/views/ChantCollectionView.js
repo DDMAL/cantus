@@ -1,10 +1,16 @@
-//var ChantCollection = require(["collections/ChantCollection"]);
-//var StateSwitch = require(["models/StateSwitch"]);
-//var CantusAbstractView = require(["views/CantusAbstractView"]);
-
 define( ['App', 'backbone', 'marionette', 'jquery',
-        "collections/ChantCollection", "models/StateSwitch", "views/CantusAbstractView"],
-    function(App, Backbone, Marionette, $, ChantCollection, StateSwitch, CantusAbstractView, template) {
+        "collections/ChantCollection",
+        "models/StateSwitch",
+        "views/CantusAbstractView",
+        "singletons/GlobalEventHandler"],
+    function(App, Backbone, Marionette, $,
+             ChantCollection,
+             StateSwitch,
+             CantusAbstractView,
+             GlobalEventHandler,
+             template) {
+
+        "use strict";
 
         return CantusAbstractView.extend
         ({
@@ -37,7 +43,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 // TODO: Figure out why this is still rendering multiple times
                 this.listenTo(this.collection, 'sync', this.render);
                 // Set the unfolded chant when the global state changes!
-                this.listenTo(globalEventHandler, "ChangeChant", this.setUnfoldedChant);
+                this.listenTo(GlobalEventHandler, "ChangeChant", this.setUnfoldedChant);
 
                 this.alreadyLoaded = 0;
             },
@@ -54,8 +60,8 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 var chant = parseInt(event.target.id.split('-')[1], 10) + 1;
                 this.chantStateSwitch.setValue(chant, true);
 
-                globalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
-                globalEventHandler.trigger("SilentUrlUpdate");
+                GlobalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
+                GlobalEventHandler.trigger("SilentUrlUpdate");
                 console.log("unfoldChantCallback() end.");
             },
 
@@ -65,8 +71,8 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 var chant = parseInt(event.target.id.split('-')[1], 10) + 1;
                 this.chantStateSwitch.setValue(chant, false);
 
-                globalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
-                globalEventHandler.trigger("SilentUrlUpdate");
+                GlobalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
+                GlobalEventHandler.trigger("SilentUrlUpdate");
                 console.log("foldChantCallback() end.");
             },
 
@@ -103,10 +109,10 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 // Reset the chant if this isn't the initial load
                 if (this.alreadyLoaded === true) {
                     this.unfoldedChant = undefined;
-                    globalEventHandler.trigger("ChangeChant", undefined);
+                    GlobalEventHandler.trigger("ChangeChant", undefined);
                     // If we don't update the URL then the chant persists when we
                     // change the folio...
-                    globalEventHandler.trigger("SilentUrlUpdate");
+                    GlobalEventHandler.trigger("SilentUrlUpdate");
                 }
                 else
                 {
@@ -137,7 +143,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                         }
                     ));
                 }
-                globalEventHandler.trigger("renderView");
+                GlobalEventHandler.trigger("renderView");
                 return this.trigger('render', this);
             },
 

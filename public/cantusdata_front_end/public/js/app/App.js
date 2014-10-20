@@ -1,5 +1,3 @@
-var Workspace = require(["routers/WorkSpace"]);
-
 define(['jquery', 'backbone', 'marionette', 'underscore'],
     function ($, Backbone, Marionette, _) {
         "use strict";
@@ -15,6 +13,7 @@ define(['jquery', 'backbone', 'marionette', 'underscore'],
 //        });
 
         App.addInitializer(function () {
+            console.log('Starting history.');
             Backbone.history.start({ pushState: true });
         });
 

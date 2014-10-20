@@ -1,8 +1,14 @@
-//var ManuscriptCollection = require(["collections/ManuscriptCollection"]);
-//var CantusAbstractView = require(["views/CantusAbstractView"]);
+define( ['App', 'backbone', 'marionette', 'jquery',
+        "collections/ManuscriptCollection",
+        "views/CantusAbstractView",
+        "singletons/GlobalEventHandler"],
+    function(App, Backbone, Marionette, $,
+             ManuscriptCollection,
+             CantusAbstractView,
+             GlobalEventHandler,
+             template) {
 
-define( ['App', 'backbone', 'marionette', 'jquery', "collections/ManuscriptCollection", "views/CantusAbstractView"],
-    function(App, Backbone, Marionette, $, ManuscriptCollection, CantusAbstractView, template) {
+        "use strict";
 
         return CantusAbstractView.extend
         ({
@@ -12,7 +18,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "collections/ManuscriptColle
             {
                 _.bindAll(this, 'render', 'update', 'registerClickEvents',
                     'buttonClickCallback');
-                this.template= _.template($('#manuscript-collection-template').html());
+                this.template= _.template($('#manuscript-collection-template ').html());
                 this.collection = new ManuscriptCollection(options.url);
                 this.listenTo(this.collection, 'sync', this.registerClickEvents);
                 this.listenTo(this.collection, 'sync', this.render);
@@ -45,7 +51,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "collections/ManuscriptColle
                 // Only route to the new URL if it really is a new url!
                 if (!(newUrl === "#" || newUrl.trim('/') === oldUrl.trim('/')))
                 {
-                    app.navigate(newUrl, {trigger: true});
+                    Backbone.history.navigate(newUrl, {trigger: true});
                 }
             },
 
@@ -59,7 +65,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "collections/ManuscriptColle
                 $(this.el).html(this.template({
                     manuscripts: this.collection.toJSON()
                 }));
-                globalEventHandler.trigger("renderView");
+                GlobalEventHandler.trigger("renderView");
                 return this.trigger('render', this);
             }
         });

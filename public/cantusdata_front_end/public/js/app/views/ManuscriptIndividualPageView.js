@@ -11,9 +11,21 @@ define( ['App', 'backbone', 'marionette', 'jquery',
         "views/FolioView",
         "views/DivaView",
         "views/InternalSearchView",
-        "views/SearchNotationView"],
-    function(App, Backbone, Marionette, $, Manuscript, CantusAbstractView,
-             FolioView, DivaView, InternalSearchView, SearchNotationView, template) {
+        "views/SearchNotationView",
+        "singletons/GlobalEventHandler",
+        "config/GlobalVars"],
+    function(App, Backbone, Marionette, $,
+             Manuscript,
+             CantusAbstractView,
+             FolioView,
+             DivaView,
+             InternalSearchView,
+             SearchNotationView,
+             GlobalEventHandler,
+             GlobalVars,
+             template) {
+
+        "use strict";
 
         /**
          * This page shows an individual manuscript.  You get a nice diva viewer
@@ -38,7 +50,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 _.bindAll(this, 'render', 'afterFetch', 'updateFolio');
                 this.template = _.template($('#manuscript-template').html());
                 this.manuscript = new Manuscript(
-                        siteUrl + "manuscript/" + this.id + "/");
+                        GlobalVars.siteUrl + "manuscript/" + this.id + "/");
                 // Build the subviews
                 this.divaView = new DivaView(
                     {
@@ -56,7 +68,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 // Render every time the model changes...
                 this.listenTo(this.manuscript, 'change', this.afterFetch);
                 // Switch page when necessary
-                this.listenTo(globalEventHandler, "manuscriptChangeFolio", this.updateFolio);
+                this.listenTo(GlobalEventHandler, "manuscriptChangeFolio", this.updateFolio);
             },
 
             remove: function()
@@ -89,13 +101,13 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 console.log("updateFolio() begin.");
                 var folio = this.divaView.getFolio();
                 // Query the folio set at that specific manuscript number
-                var newUrl =  siteUrl + "folio-set/manuscript/" + this.manuscript.get("id") + "/" + folio + "/";
+                var newUrl =  GlobalVars.siteUrl + "folio-set/manuscript/" + this.manuscript.get("id") + "/" + folio + "/";
                 // Rebuild the folio View
                 this.folioView.setUrl(newUrl);
                 this.folioView.setCustomNumber(folio);
                 this.folioView.update();
-                globalEventHandler.trigger("ChangeFolio", folio);
-                globalEventHandler.trigger("SilentUrlUpdate");
+                GlobalEventHandler.trigger("ChangeFolio", folio);
+                GlobalEventHandler.trigger("SilentUrlUpdate");
                 console.log("updateFolio() end.");
             },
 
@@ -130,7 +142,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 this.renderFolioView();
                 this.assign(this.searchView, '#manuscript-search');
                 this.assign(this.searchNotationView, '#search-notation');
-                globalEventHandler.trigger("renderView");
+                GlobalEventHandler.trigger("renderView");
                 return this.trigger('render', this);
             },
 

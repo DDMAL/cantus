@@ -26,7 +26,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 {
                     // Prevent page from reloading
                     event.preventDefault();
-                    app.navigate("/", {trigger: true});
+                    Backbone.history.navigate("/", {trigger: true});
                 }
             },
 

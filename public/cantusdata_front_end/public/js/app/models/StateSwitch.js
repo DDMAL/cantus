@@ -1,6 +1,8 @@
 define(["jquery", "backbone"],
     function($, Backbone) {
 
+        "use strict";
+
         /**
          * An object that acts like a big row of switches.  You can call
          * getValue() to get the index of the first true element.

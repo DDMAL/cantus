@@ -1,6 +1,9 @@
 // Include Desktop Specific JavaScript files here (or inside of your Desktop Controller, or differentiate based off App.mobile === false)
-require(["App", "routers/WorkSpace", "jquery", "backbone", "marionette", "bootstrap", "backbone.validateAll"],
+require(["App", "routers/WorkSpace", "jquery", "backbone", "marionette", "bootstrap"],
     function (App, WorkSpace) {
+
+        "use strict";
+
         App.appRouter = new WorkSpace({
 //            controller:new AppController()
         });

@@ -1,6 +1,8 @@
 define(["jquery", "backbone", "config/GlobalVars"],
     function($, Backbone, GlobalVars) {
 
+        "use strict";
+
         /**
          * This represents a search result.  It is experimental.
          */

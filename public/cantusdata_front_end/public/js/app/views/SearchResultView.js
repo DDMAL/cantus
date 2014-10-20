@@ -68,7 +68,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 var splitName = input.target.className.split("-");
                 var newIndex = parseInt(splitName[splitName.length - 1], 10);
                 // Redirect us to the new url!
-                app.navigate(this.model.getFormattedData()[newIndex].url,
+                Backbone.history.navigate(this.model.getFormattedData()[newIndex].url,
                     {trigger: true});
             },
 

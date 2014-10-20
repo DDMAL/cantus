@@ -1,7 +1,12 @@
 //var CantusAbstractView = require(["views/CantusAbstractView"]);
 
-define( ['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView"],
-    function(App, Backbone, Marionette, $, CantusAbstractView, template) {
+define( ['App', 'backbone', 'marionette', 'jquery',
+        "views/CantusAbstractView",
+        "singletons/GlobalEventHandler"],
+    function(App, Backbone, Marionette, $,
+             CantusAbstractView,
+             GlobalEventHandler,
+             template) {
 
         /**
          * Provide an alert message to the user.
@@ -29,7 +34,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView"],
                         content: this.content
                     }
                 ));
-                globalEventHandler.trigger("renderView");
+                GlobalEventHandler.trigger("renderView");
                 return this.trigger('render', this);
             }
         });

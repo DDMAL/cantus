@@ -1,6 +1,8 @@
 define(["jquery", "backbone", "singletons/GlobalEventHandler"],
     function($, Backbone, GlobalEventHandler) {
 
+        "use strict";
+
         /**
          * This object handles resizing the browser
          *
