@@ -7,6 +7,11 @@
 <head>
     <meta charset="utf-8">
 
+    <link rel="stylesheet" href="/static/css/bootstrap.css">
+    <link rel="stylesheet" href="/static/css/bootstrap-theme.css">
+    <link rel="stylesheet" href="/static/css/diva.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+
     <!-- Use the .htaccess and remove these lines to avoid edge case issues.
          More info: h5bp.com/i/378 -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -466,12 +471,12 @@
                 // CSS file that is loaded when in production mode
                 "prod-css": "css/mobile.min.css",
                 // Require.js configuration file that is loaded when in development mode
-                "dev-js": { "data-main": "js/app/config/config.js", "src": "js/libs/require.js" },
+                "dev-js": { "data-main": "/static/js/app/config/config.js", "src": "/static/js/libs/require.js" },
                 // JavaScript initialization file that is also loaded when in development mode
-                "dev-init": "js/app/init/MobileInit.js",
+                "dev-init": "/static/js/app/init/MobileInit.js",
                 // JavaScript file that is loaded when in production mode
-                "prod-init": "js/app/init/MobileInit.min.js",
-                "prod-js": { "data-main": "js/app/config/config.js", "src": "js/libs/require.js" }
+                "prod-init": "/static/js/app/init/MobileInit.min.js",
+                "prod-js": { "data-main": "/static/js/app/config/config.js", "src": "/static/js/libs/require.js" }
             };
 
         }
@@ -486,12 +491,12 @@
                 // CSS file that is loaded when in production mode
                 "prod-css": "css/desktop.min.css",
                 // Require.js configuration file that is also loaded when in development mode
-                "dev-js": { "data-main": "js/app/config/config.js", "src": "js/libs/require.js" },
+                "dev-js": { "data-main": "/static/js/app/config/config.js", "src": "/static/js/libs/require.js" },
                 // JavaScript initialization file that is loaded when in development mode
-                "dev-init": "js/app/init/DesktopInit.js",
+                "dev-init": "/static/js/app/init/DesktopInit.js",
                 // JavaScript file that is loaded when in production mode
-                "prod-init": "js/app/init/DesktopInit.min.js",
-                "prod-js": { "data-main": "js/app/config/config.js", "src": "js/libs/require.js" }
+                "prod-init": "/static/js/app/init/DesktopInit.min.js",
+                "prod-js": { "data-main": "/static/js/app/config/config.js", "src": "/static/js/libs/require.js" }
             };
 
         }
