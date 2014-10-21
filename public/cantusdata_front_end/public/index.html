@@ -390,15 +390,12 @@
     </div>
 </script>
 
-<!--Detect if the browser is a mobile browser or a desktop browser and conditionally include your JavaScript -->
 <script>
 
     // Mobile/Desktop Detection script
     (function(ua, w, d, undefined) {
 
         // App Environment
-        // ---------------
-        //  Tip: Set to true to turn on "production" mode
         var production = false,
                 filesToLoad,
         //BoilerplateMVC Helper Methods
@@ -467,9 +464,9 @@
             // Mobile/Tablet CSS and JavaScript files to load
             filesToLoad = {
                 // CSS file that is loaded when in development mode
-                "dev-css": "css/mobile.css",
+                //"dev-css": "css/mobile.css",
                 // CSS file that is loaded when in production mode
-                "prod-css": "css/mobile.min.css",
+                //"prod-css": "css/mobile.min.css",
                 // Require.js configuration file that is loaded when in development mode
                 "dev-js": { "data-main": "/static/js/app/config/config.js", "src": "/static/js/libs/require.js" },
                 // JavaScript initialization file that is also loaded when in development mode
@@ -487,9 +484,9 @@
             // Desktop CSS and JavaScript files to load
             filesToLoad = {
                 // CSS file that is loaded when in development mode
-                "dev-css": "css/desktop.css",
+                //"dev-css": "css/desktop.css",
                 // CSS file that is loaded when in production mode
-                "prod-css": "css/desktop.min.css",
+                //"prod-css": "css/desktop.min.css",
                 // Require.js configuration file that is also loaded when in development mode
                 "dev-js": { "data-main": "/static/js/app/config/config.js", "src": "/static/js/libs/require.js" },
                 // JavaScript initialization file that is loaded when in development mode
