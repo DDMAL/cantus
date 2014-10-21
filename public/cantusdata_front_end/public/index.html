@@ -400,16 +400,16 @@
                 filesToLoad,
         //BoilerplateMVC Helper Methods
                 boilerplateMVC = {
-                    loadCSS: function(url, callback) {
-                        var link = d.createElement("link");
-                        link.type = "text/css";
-                        link.rel = "stylesheet";
-                        link.href = url;
-                        d.getElementsByTagName("head")[0].appendChild(link);
-                        if(callback) {
-                            callback();
-                        }
-                    },
+{#                    //loadCSS: function(url, callback) {#}
+{#                    //    var link = d.createElement("link");#}
+{#                    //    link.type = "text/css";#}
+{#                    //    link.rel = "stylesheet";#}
+{#                    //   link.href = url;#}
+{#                    //    d.getElementsByTagName("head")[0].appendChild(link);#}
+{#                    //    if(callback) {#}
+{#                    //        callback();#}
+{#                    //    }#}
+{#                    //},#}
                     loadJS: function(file, callback) {
                         var script = d.createElement("script");
                         script.type = "text/javascript";
@@ -437,23 +437,25 @@
                     loadFiles: function(production, obj, callback) {
                         var self = this;
                         if(production) {
-                            // Loads the production CSS file(s)
-                            self.loadCSS(obj["prod-css"], function() {
-                                // If there are production JavaScript files to load
-                                if(obj["prod-js"]) {
-                                    // Loads the correct initialization file (which includes Almond.js)
-                                    self.loadJS(obj["prod-js"], callback);
-                                }
-                            });
+                            self.loadJS(obj["prod-js"], callback);
+{#                            // Loads the production CSS file(s)#}
+{#                            self.loadCSS(obj["prod-css"], function() {#}
+{#                                // If there are production JavaScript files to load#}
+{#                                if(obj["prod-js"]) {#}
+{#                                    // Loads the correct initialization file (which includes Almond.js)#}
+{#                                    self.loadJS(obj["prod-js"], callback);#}
+{#                                }#}
+{#                            });#}
                         } else {
-                            // Loads the development CSS file(s)
-                            self.loadCSS(obj["dev-css"], function() {
-                                // If there are development Javascript files to load
-                                if(obj["dev-js"]) {
-                                    // Loads Require.js and tells Require.js to find the correct intialization file
-                                    self.loadJS(obj["dev-js"], callback);
-                                }
-                            });
+                            self.loadJS(obj["dev-js"], callback);
+{#                            // Loads the development CSS file(s)#}
+{#                            self.loadCSS(obj["dev-css"], function() {#}
+{#                                // If there are development Javascript files to load#}
+{#                                if(obj["dev-js"]) {#}
+{#                                    // Loads Require.js and tells Require.js to find the correct intialization file#}
+{#                                    self.loadJS(obj["dev-js"], callback);#}
+{#                                }#}
+{#                            });#}
                         }
                     }
                 };
