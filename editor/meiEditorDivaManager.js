@@ -622,7 +622,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     //unbind everything that could have caused this
                     $(document).unbind('mousemove', changeDragSize);
                     $(document).unbind('mouseup', metaClickHandler);
-                    
+
                     if(!meiEditor.divaIsLinked(meiEditor.getActivePanel().text()))
                     {
                         meiEditor.localError("Current Diva image is not linked.");
@@ -1308,7 +1308,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                         var meiPage = fileName.split(".")[0] + ".mei";
                         $.get("http://" + currentSite + "/mei/" + meiEditorSettings.siglum_slug + "/" + meiPage, "", function(data)
                         {
-                            meiEditor.addFileToProject(data, pageName);
+                            meiEditor.addFileToProject(data, meiPage);
                         });
                     }
                     //change selected diva page to make some selects easier
