@@ -186,7 +186,9 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     resizableCache: [],         //cache of resizable items used to reload display once createHighlights is called
                     lastClicked: "",            //determines which delete listener to use by storing which side was last clicked on
                     highlightHandle: "",        //handler for the highlight event, needs to be committed to memory
-                    activeNeumeChoices: []      //list of neumes present on the active page to choose from when creating new zones
+                    activeNeumeChoices: [],      //list of neumes present on the active page to choose from when creating new zones
+                    foreignPageNames: [],
+                    pageLoadedByScrolling: false,
                 };
 
                 $.extend(meiEditorSettings, globals);
@@ -270,7 +272,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 {
                     $.get("http://" + currentSite + "/mei/" + meiEditorSettings.siglum_slug + "/", "", function(data)
                     {
-                        var pageNames = [];
                         var dataArr = data.split("\n");
                         var dataLength = dataArr.length;
                         for(var curPage = 0; curPage < dataLength; curPage++)
@@ -290,14 +291,14 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                                 linkText = foundLink[0].slice(9, -2);
                                 if(linkText.match(/mei/))
                                 {
-                                    pageNames.push(foundLink[0].slice(9, -2));
+                                    meiEditorSettings.foreignPageNames.push(foundLink[0].slice(9, -2));
                                 }
                             }
                         }
 
                         createModal(meiEditorSettings.element, "serverLoadModal", false,
                             "Select a hosted file:<br>" +
-                            createSelect("hosted-file", pageNames, true),
+                            createSelect("hosted-file", meiEditorSettings.foreignPageNames, true),
                             "Load");
 
                         $("#serverLoadModal-primary").on('click', function()
@@ -1170,7 +1171,10 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             //link 'em, and we found it so break
                             meiEditor.linkMeiToDiva(curMei, curDivaFile);
                             meiEditor.createHighlights();
-                            meiEditorSettings.divaInstance.gotoPageByName(curDivaFile);
+                            if (meiEditorSettings.pageLoadedByScrolling)
+                                meiEditorSettings.pageLoadedByScrolling = false;
+                            else
+                                meiEditorSettings.divaInstance.gotoPageByName(curDivaFile);
                             
                             return true;
                         }
@@ -1303,14 +1307,16 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             }
                         }
                     }
-                    else
+                    else if ((fileName.split(".")[0] + ".mei") in meiEditorSettings.foreignPageNames)
                     { 
                         var meiPage = fileName.split(".")[0] + ".mei";
                         $.get("http://" + currentSite + "/mei/" + meiEditorSettings.siglum_slug + "/" + meiPage, "", function(data)
                         {
+                            meiEditorSettings.pageLoadedByScrolling = true;
                             meiEditor.addFileToProject(data, meiPage);
                         });
                     }
+
                     //change selected diva page to make some selects easier
                     $("#selecthosted-file").val(fileName);
                     $("#selectdiva-link").val(fileName);
@@ -1351,6 +1357,14 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     }
                     
                     //also have diva automatically scroll
+                    for(curDiva in meiEditorSettings.divaImagesToMeiFiles)
+                    {
+                        if(meiEditorSettings.divaImagesToMeiFiles[curDiva] == pageName)
+                        {
+                            meiEditorSettings.divaInstance.gotoPageByName(curDiva);
+                            break;
+                        }
+                    }
                 });
 
                 meiEditor.events.subscribe("PageWasDeleted", function(pageName)
