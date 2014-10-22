@@ -195,8 +195,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                 $("#dropdown-diva-manager").append("<li><a id='file-link-dropdown'>Link files to Diva images...</a></li>" +
                     "<li><a id='file-unlink-dropdown'>Unlink files from Diva images...</a></li>" +
                     "<li><a id='update-diva-dropdown'>Update Diva</a></li>" +
-                    "<li><a id='clear-selection-dropdown'>Clear selection</a></li>" +
-                    "<li><a id='estimate-dropdown'>Estimate line numbers:<span style='float:right'><input type='checkbox' id='estimateBox'></span></a></li>");
+                    "<li><a id='clear-selection-dropdown'>Clear selection</a></li>");
                 $("#dropdown-file-upload").append("<li><a id='default-mei-dropdown'>Create default MEI file</a></li>" +
                     "<li><a id='server-load-dropdown'>Load file from server...</a></li>" + 
                     "<li><a id='manuscript-dropdown'>Close project</a></li>");
@@ -455,52 +454,63 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     var neumeStringToAdd = '<neume xml:id="' + neumeID + '" facs="' + zoneID + '"'; //not closed so name can be added
                     
                     //if the "estimate line numbers" dropdown box is checked, it will make its best guess and automatically insert them
-                    if($("#estimateBox").is(":checked"))
+                    neumeStringToAdd += ' name=""/>';
+                    var chosenDoc = meiEditor.getActivePanel().text();
+                    var editorRef = meiEditorSettings.pageData[chosenDoc];
+
+                    //finds the first instance of "surface"
+                    var surfaceSearch = editorRef.find(/surface/g, 
                     {
-                        neumeStringToAdd += ' name=""/>';
-                        var chosenDoc = meiEditor.getActivePanel().text();
-                        var editorRef = meiEditorSettings.pageData[chosenDoc];
+                        wrap: true,
+                        range: null
+                    });
 
-                        //finds the first instance of "surface"
-                        var surfaceSearch = editorRef.find(/surface/g, 
-                        {
-                            wrap: true,
-                            range: null
-                        });
-                        var surfaceLine = surfaceSearch.start.row + 2; //converting from 0-index to 1-index, adding 1 to get the line after
-                                               
-                        //finds the first instance of "layer"
-                        var layerSearch = editorRef.find(/layer/g, 
-                        {
-                            wrap: true,
-                            range: null
-                        });
-                        var layerLine = layerSearch.start.row + 2; //converting from 0-index to 1-index, adding 1 to get the line after
-                    
-                        //finds out how much white space was at these lines before
-                        var zoneWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(surfaceLine).split("<")[0];
-                        var neumeWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(layerLine).split("<")[0];
-                        
-                        //inserts the new zone and neume lines
-                        meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(surfaceLine, [zoneWhiteSpace + zoneStringToAdd]);
-                        meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(layerLine, [neumeWhiteSpace + neumeStringToAdd]);
-
-                        meiEditor.createHighlights();
-
-                        //moves the editor to the newly entered neume line
-                        var searchNeedle = new RegExp("<neume.*" + neumeID, "g");
-
-                        var testSearch = editorRef.find(searchNeedle, 
-                        {
-                            wrap: true,
-                            range: null
-                        });
-                        return;
+                    if(surfaceSearch === undefined)
+                    {
+                        meiEditor.localError("Could not find MEI 'surface' element to insert 'zone' element. Aborted neume creation.");
+                        return false;
                     }
-                    //if the box is not checked...
+
+                    var surfaceLine = surfaceSearch.start.row + 2; //converting from 0-index to 1-index, adding 1 to get the line after
+
+                    //finds the first instance of "layer"
+                    var layerSearch = editorRef.find(/layer/g, 
+                    {
+                        wrap: true,
+                        range: null
+                    });
+                    if(layerSearch === undefined)
+                    {
+                        meiEditor.localError("Could not find MEI 'layer' element to insert 'neume' element. Aborted neume creation.");
+                        return false;
+                    }
+                    
+                    var layerLine = layerSearch.start.row + 2; //converting from 0-index to 1-index, adding 1 to get the line after
+                
+                    //finds out how much white space was at these lines before
+                    var zoneWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(surfaceLine).split("<")[0];
+                    var neumeWhiteSpace = meiEditorSettings.pageData[chosenDoc].session.doc.getLine(layerLine).split("<")[0];
+                    
+                    //inserts the new zone and neume lines
+                    meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(surfaceLine, [zoneWhiteSpace + zoneStringToAdd]);
+                    meiEditorSettings.pageData[chosenDoc].session.doc.insertLines(layerLine, [neumeWhiteSpace + neumeStringToAdd]);
+
+                    meiEditor.createHighlights();
+
+                    //moves the editor to the newly entered neume line
+                    var searchNeedle = new RegExp("<neume.*" + neumeID, "g");
+
+                    var testSearch = editorRef.find(searchNeedle, 
+                    {
+                        wrap: true,
+                        range: null
+                    });
+
+                    return true;
+                    //legacy code from when there was an "estimate line numbers?" box, alternative for non-automatic neume insertion
 
                     //create the fake modal
-                    $("#diva-wrapper").append("<div id='lineQueryOverlay'></div>");
+                    /*$("#diva-wrapper").append("<div id='lineQueryOverlay'></div>");
                     $("#lineQueryOverlay").offset({'top': $("#diva-wrapper").offset().top, 'left': $("#diva-wrapper").offset().left});
                     $("#lineQueryOverlay").width($("#diva-wrapper").width());
                     $("#lineQueryOverlay").height($("#diva-wrapper").height());
@@ -574,7 +584,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     });
 
                     //key listeners to supplement the two button click listeners
-                    $(document).on('keyup', lineQueryKeyListeners);
+                    $(document).on('keyup', lineQueryKeyListeners);*/
                 };
 
                 //creates the cover-div object with a specific handler for document.on('mouseup')
@@ -589,9 +599,11 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                     $("#cover-div").on('mousedown', function(ev)
                     {
+                        console.log("down");
                         //append the div that will resize as you drag
                         $("#topbar").append('<div id="drag-div"></div>');
-                        $("#drag-div").css('z-index', $(".overlay-box").css('z-index') + 1);
+                        $("#drag-div").css('z-index', $("#cover-div").css('z-index') + 1);
+                        console.log($("#drag-div").css('z-index'), $("#cover-div").css('z-index'));
                         meiEditorSettings.initDragTop = ev.pageY;
                         meiEditorSettings.initDragLeft = ev.pageX;
                         meiEditorSettings.dragActive = true;
@@ -610,6 +622,13 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     //unbind everything that could have caused this
                     $(document).unbind('mousemove', changeDragSize);
                     $(document).unbind('mouseup', metaClickHandler);
+                    
+                    if(!meiEditor.divaIsLinked(meiEditor.getActivePanel().text()))
+                    {
+                        meiEditor.localError("Current Diva image is not linked.");
+                        $("#drag-div").remove();
+                        return false;
+                    }
 
                     //if this was just a click
                     if ($("#drag-div").width() < 2 && $("#drag-div").height() < 2)
@@ -1176,6 +1195,22 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     return false;
                 };
 
+                /*
+                    Determines if a diva image is linked to an image.
+                    @param divaImage the diva image to check
+                */
+                meiEditor.divaIsLinked = function(divaImage)
+                {
+                    for (curDivaFile in meiEditorSettings.divaImagesToMeiFiles)
+                    {
+                        if (divaImage == curDivaFile)
+                        {
+                            return meiEditorSettings.divaImagesToMeiFiles[curDivaFile];
+                        }
+                    }
+                    return false;
+                };
+
                 /* 
                     Function that links an mei file to a diva image.
                     @param selectedMEI The MEI page to link
@@ -1268,7 +1303,14 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             }
                         }
                     }
-
+                    else
+                    { 
+                        var meiPage = fileName.split(".")[0] + ".mei";
+                        $.get("http://" + currentSite + "/mei/" + meiEditorSettings.siglum_slug + "/" + meiPage, "", function(data)
+                        {
+                            meiEditor.addFileToProject(data, pageName);
+                        });
+                    }
                     //change selected diva page to make some selects easier
                     $("#selecthosted-file").val(fileName);
                     $("#selectdiva-link").val(fileName);
