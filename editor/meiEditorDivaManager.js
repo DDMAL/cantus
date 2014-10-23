@@ -1242,7 +1242,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                             }
                         }
                     }
-                    else if ((fileName.split(".")[0] + ".mei") in meiEditorSettings.foreignPageNames)
+                    else if (meiEditorSettings.foreignPageNames.indexOf((fileName.split(".")[0] + ".mei")) > -1)
                     { 
                         var meiPage = fileName.split(".")[0] + ".mei";
                         $.get("http://" + currentSite + "/mei/" + meiEditorSettings.siglum_slug + "/" + meiPage, "", function(data)
