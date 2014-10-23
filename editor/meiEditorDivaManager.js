@@ -508,84 +508,6 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     });
 
                     return true;
-                    //legacy code from when there was an "estimate line numbers?" box, alternative for non-automatic neume insertion
-
-                    //create the fake modal
-                    /*$("#diva-wrapper").append("<div id='lineQueryOverlay'></div>");
-                    $("#lineQueryOverlay").offset({'top': $("#diva-wrapper").offset().top, 'left': $("#diva-wrapper").offset().left});
-                    $("#lineQueryOverlay").width($("#diva-wrapper").width());
-                    $("#lineQueryOverlay").height($("#diva-wrapper").height());
-
-                    //create the contents of the modal
-                    $("#lineQueryOverlay").append("<div id='lineQuery'>" +
-                        "<h4>Enter MEI line numbers to insert zone and neume objects:</h4>" +
-                        "Zone line number: <input type='text' id='zoneLineInput'><br>" +
-                        "Neume line number: <input type='text' id='neumeLineInput'><br>" +
-                        "Neume name: <input type='text' id='neumeNameInput'><br>" +
-                        "<button style='float:right' type='button' class='btn btn-default' id='lineQueryClose'>Close</button>" +
-                        "<button style='float:right' type='button' class='btn btn-primary' id='lineQuerySubmit'>Create Highlight</button>" +
-                        "</div>");
-
-                    $("#neumeNameInput").autocomplete({
-                        source: meiEditorSettings.activeNeumeChoices
-                    });
-
-                    //center it
-                    $("#lineQuery").center({against: 'parent'});
-
-                    //on close for the overlay
-                    $("#lineQueryClose").on('click', function()
-                    {
-                        $("#lineQueryOverlay").remove();
-                        $(document).unbind('keyup', lineQueryKeyListeners);
-                    });
-
-                    //on submit for the overlay
-                    $("#lineQuerySubmit").on('click', function()
-                    {             
-                        neumeStringToAdd += ' name="' + $("#neumeNameInput").val() + '"/>';
-                        var chosenDoc = meiEditor.getActivePanel().text();
-                        var editorRef = meiEditorSettings.pageData[chosenDoc];
-                        var lineCount = editorRef.getSession().doc.getLength();
-                        var zoneStringLine = parseInt($("#zoneLineInput").val(), 10);
-                        var neumeStringLine = parseInt($("#neumeLineInput").val(), 10);
-
-                        //if the line number is not an int and inside the line count for the current page, throw an error
-                        if((zoneStringLine < 1) || (zoneStringLine > lineCount) || !(zoneStringLine))
-                        {
-                            meiEditor.localError("Please enter a number between 1 and " + lineCount + " for the zone line.");
-                            return;
-                        }
-                        if((neumeStringLine < 1) || (neumeStringLine > lineCount) || !(neumeStringLine))
-                        {
-                            meiEditor.localError("Please enter a number between 1 and " + lineCount + " for the neume line.");
-                            return;
-                        }
-
-                        $("#lineQueryClose").trigger('click');
-
-                        //finds out how much white space was at these lines before
-                        var zoneWhiteSpace = editorRef.session.doc.getLine(zoneStringLine).split("<")[0];
-                        var neumeWhiteSpace = editorRef.session.doc.getLine(neumeStringLine).split("<")[0];
-
-                        //inserts the new zone and neume lines
-                        editorRef.session.doc.insertLines(zoneStringLine, [zoneWhiteSpace + zoneStringToAdd]);
-                        editorRef.session.doc.insertLines(neumeStringLine, [neumeWhiteSpace + neumeStringToAdd]);
-
-                        //redraw highlights
-                        meiEditor.createHighlights();
-
-                        var searchNeedle = new RegExp("<neume.*" + neumeID, "g");
-
-                        var testSearch = editorRef.find(searchNeedle, 
-                        {
-                            wrap: true,
-                            range: null
-                        });
-                    });
-
-                    //key listeners to supplement the two button click listeners
-                    $(document).on('keyup', lineQueryKeyListeners);*/
                 };
 
                 //creates the cover-div object with a specific handler for document.on('mouseup')
@@ -1269,6 +1191,19 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     });
                 };
 
+                meiEditor.cursorUpdate = function(a, selection)
+                {
+                    var curRow = selection.getCursor().row;
+                    var facsIDs = selection.doc.getLine(curRow).match(/m-[\dabcdef]{8}-([\dabcdef]{4})-([\dabcdef]{4})-([\dabcdef]{4})-([\dabcdef]{12})/gi);
+
+                    var curFacs = facsIDs.length;
+                    meiEditor.deselectAllHighlights();
+                    while(curFacs--)
+                    {
+                        meiEditor.selectHighlight($("#" + facsIDs[curFacs]));
+                    }
+                };
+
                 $.ajax( //this grabs the json file to get an meiEditor-local list of the image filepaths
                 {
                     url: meiEditorSettings.jsonFileLocation,
@@ -1338,6 +1273,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     {
                         meiEditor.localLog("Automatically linked " + fileName + ".");
                     }
+                    meiEditorSettings.pageData[fileName].selection.on('changeCursor', meiEditor.cursorUpdate);
                 });
 
                 meiEditor.events.subscribe("ActivePageChanged", function(pageName)
@@ -1425,6 +1361,10 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
 
                 //to get default pages
                 meiEditor.reapplyEditorClickListener();
+                for(fileName in meiEditorSettings.pageData)
+                {
+                    meiEditorSettings.pageData[fileName].selection.on('changeCursor', meiEditor.cursorUpdate);
+                }
 
                 //when "Link selected files" is clicked
                 $("#link-files").on('click', function()
