@@ -37,12 +37,12 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 this.delegateEvents();
             },
 
-            buttonClickCallback: function(input)
+            buttonClickCallback: function(event)
             {
                 // Prevent page from reloading
                 event.preventDefault();
                 // Figure out which button was pressed
-                var button_name = String(input.currentTarget.id);
+                var button_name = String(event.currentTarget.id);
                 var id = button_name.split('-')[button_name.split('-').length - 1];
                 // Now that we have that id, route the application to it's URL!
                 var newUrl = "manuscript/" + this.collection.toJSON()[id].id + "/";
