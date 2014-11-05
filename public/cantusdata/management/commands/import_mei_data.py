@@ -9,7 +9,7 @@ import string
 
 # import math
 from music21.interval import convertSemitoneToSpecifierGeneric
-#import time
+# import time
 # from pymei.Import import convert
 from pymei import XmlImport
 # import sys
@@ -72,7 +72,8 @@ class Command(BaseCommand):
             solrconn.commit()
             self.stdout.write("CSV committed to Solr.")
         elif mode == "gall_hack":
-            data = CSVParser("data_dumps/hacky_csv_mei/csg_390_ordered_2.csv", "ch-sgs-390").parse()
+            data = CSVParser("data_dumps/hacky_csv_mei/csg_390_ordered_2.csv",
+                             "ch-sgs-390").parse()
             self.data_to_solr(data, solrconn)
         else:
             raise Exception("Please provide mode!")
@@ -109,10 +110,10 @@ class Command(BaseCommand):
                 solrconn.add(**row)
         solrconn.commit()
 
+
 ################# WORKAROUND CSV PARSER ###############################
 
 class CSVParser():
-
     file_name = None
     siglum_slug = None
 
@@ -201,10 +202,11 @@ class CSVParser():
     def getNeumes(self, seq, counter):
         """ Given a list of MEI note elements, return a string of the names of the neumes seperated by underscores.
         """
-        neumes = str(seq[0]['neume'].lower().replace (" ", "_"))
+        neumes = str(seq[0]['neume'].lower().replace(" ", "_"))
         for k in range(1, counter):
-            if seq[k]['id'] != seq[k-1]['id']:
-                neumes = neumes + '_' + str(seq[k]['neume'].lower().replace (" ", "_"))
+            if seq[k]['id'] != seq[k - 1]['id']:
+                neumes = neumes + '_' + str(
+                    seq[k]['neume'].lower().replace(" ", "_"))
         return neumes
 
     def getLocation(self, seq, meifile, zones):
@@ -217,7 +219,7 @@ class CSVParser():
         ulys = []
         lrys = []
         twosystems = 0
-        endofsystem = len(seq)-1
+        endofsystem = len(seq) - 1
         if seq[0].getId() not in self.systemcache:
             self.systemcache[seq[0].getId()] = meifile.lookBack(seq[0], "sb")
             # systemcache[seq[0]] = meifile.get_system(seq[0])
@@ -226,46 +228,74 @@ class CSVParser():
                 seq[endofsystem], "sb")
             # systemcache[seq[endofsystem]] = meifile.get_system(seq[endofsystem])
 
-        if self.systemcache[seq[0].getId()] != self.systemcache[seq[endofsystem].getId()]:
+        if self.systemcache[seq[0].getId()] != self.systemcache[
+            seq[endofsystem].getId()]:
             #then the sequence spans two systems and we must store two seperate locations to highlight
-            twosystems=1
-            for i in range(1,len(seq)):
-                if seq[i-1].getId() not in self.systemcache:
-                    self.systemcache[seq[i-1].getId()] = meifile.lookBack(seq[i-1], "sb")
+            twosystems = 1
+            for i in range(1, len(seq)):
+                if seq[i - 1].getId() not in self.systemcache:
+                    self.systemcache[seq[i - 1].getId()] = meifile.lookBack(
+                        seq[i - 1], "sb")
                 if seq[i] not in self.systemcache:
-                    self.systemcache[seq[i].getId()] = meifile.lookBack(seq[i], "sb")
+                    self.systemcache[seq[i].getId()] = meifile.lookBack(seq[i],
+                                                                        "sb")
 
                 # find the last note on the first system and the first note on the second system
-                if self.systemcache[seq[i-1].getId()] != self.systemcache[seq[i].getId()]:
-                    endofsystem = i # this will be the index of the first note on second system
+                if self.systemcache[seq[i - 1].getId()] != self.systemcache[
+                    seq[i].getId()]:
+                    endofsystem = i  # this will be the index of the first note on second system
                     # ulx1 = int(meifile.get_by_facs(seq[0].parent.parent.facs)[0].ulx)
                     # lrx1 = int(meifile.get_by_facs(seq[i-1].parent.parent.facs)[0].lrx)
                     # ulx2 = int(meifile.get_by_facs(seq[i].parent.parent.facs)[0].ulx)
                     # lrx2 = int(meifile.get_by_facs(seq[-1].parent.parent.facs)[0].lrx)
-                    ulx1 =  int(self.findbyID(zones, seq[0].parent.parent.getAttribute("facs").value, meifile).getAttribute("ulx").value)
-                    lrx1 =  int(self.findbyID(zones, seq[i-1].parent.parent.getAttribute("facs").value, meifile).getAttribute("lrx").value)
-                    ulx2 =  int(self.findbyID(zones, seq[i].parent.parent.getAttribute("facs").value, meifile).getAttribute("ulx").value)
-                    lrx2 =  int(self.findbyID(zones, seq[-1].parent.parent.getAttribute("facs").value, meifile).getAttribute("lrx").value)
-        else: # the sequence is contained in one system and only one box needs to be highlighted
-            ulx =  int(self.findbyID(zones, seq[0].parent.parent.getAttribute("facs").value, meifile).getAttribute("ulx").value)
-            lrx =  int(self.findbyID(zones, seq[-1].parent.parent.getAttribute("facs").value, meifile).getAttribute("lrx").value)
+                    ulx1 = int(self.findbyID(zones,
+                                             seq[0].parent.parent.getAttribute(
+                                                 "facs").value,
+                                             meifile).getAttribute("ulx").value)
+                    lrx1 = int(self.findbyID(zones, seq[
+                        i - 1].parent.parent.getAttribute("facs").value,
+                                             meifile).getAttribute("lrx").value)
+                    ulx2 = int(self.findbyID(zones,
+                                             seq[i].parent.parent.getAttribute(
+                                                 "facs").value,
+                                             meifile).getAttribute("ulx").value)
+                    lrx2 = int(self.findbyID(zones,
+                                             seq[-1].parent.parent.getAttribute(
+                                                 "facs").value,
+                                             meifile).getAttribute("lrx").value)
+        else:  # the sequence is contained in one system and only one box needs to be highlighted
+            ulx = int(self.findbyID(zones, seq[0].parent.parent.getAttribute(
+                "facs").value, meifile).getAttribute("ulx").value)
+            lrx = int(self.findbyID(zones, seq[-1].parent.parent.getAttribute(
+                "facs").value, meifile).getAttribute("lrx").value)
             # ulx = int(meifile.get_by_facs(seq[0].parent.parent.facs)[0].ulx)
             # lrx = int(meifile.get_by_facs(seq[-1].parent.parent.facs)[0].lrx)
 
         for note in seq:
-            ulys.append(int(self.findbyID(zones, note.parent.parent.getAttribute("facs").value, meifile).getAttribute("uly").value))
-            lrys.append(int(self.findbyID(zones, note.parent.parent.getAttribute("facs").value, meifile).getAttribute("lry").value))
+            ulys.append(int(self.findbyID(zones,
+                                          note.parent.parent.getAttribute(
+                                              "facs").value,
+                                          meifile).getAttribute("uly").value))
+            lrys.append(int(self.findbyID(zones,
+                                          note.parent.parent.getAttribute(
+                                              "facs").value,
+                                          meifile).getAttribute("lry").value))
 
         if twosystems:
             uly1 = min(ulys[:endofsystem])
             uly2 = min(ulys[endofsystem:])
             lry1 = max(lrys[:endofsystem])
             lry2 = max(lrys[endofsystem:])
-            return [{"ulx": int(ulx1), "uly": int(uly1), "height": abs(uly1 - lry1), "width": abs(ulx1 - lrx1)},{"ulx": int(ulx2) ,"uly": int(uly2), "height": abs(uly2 - lry2), "width": abs(ulx2 - lrx2)}]
+            return [
+                {"ulx": int(ulx1), "uly": int(uly1), "height": abs(uly1 - lry1),
+                 "width": abs(ulx1 - lrx1)},
+                {"ulx": int(ulx2), "uly": int(uly2), "height": abs(uly2 - lry2),
+                 "width": abs(ulx2 - lrx2)}]
         else:
             uly = min(ulys)
             lry = max(lrys)
-            return [{"ulx": int(ulx), "uly": int(uly), "height": abs(uly - lry), "width": abs(ulx - lrx)}]
+            return [{"ulx": int(ulx), "uly": int(uly), "height": abs(uly - lry),
+                     "width": abs(ulx - lrx)}]
 
     def processMeiFile(self, folio, data_lists, shortest_gram, longest_gram):
         """
@@ -282,14 +312,14 @@ class CSVParser():
 
         mydocs = []
 
-        for i in range(shortest_gram, longest_gram+1):
+        for i in range(shortest_gram, longest_gram + 1):
 
-            lrows = 0 #comment out this line if you want to process files that aren't already in the couch
+            lrows = 0  #comment out this line if you want to process files that aren't already in the couch
             if lrows == 0:
                 print "Processing pitch sequences... "
                 # for j,note in enumerate(notes):
-                for j in range(0, nnotes-i):
-                    seq = data_lists[j:j+i]
+                for j in range(0, nnotes - i):
+                    seq = data_lists[j:j + i]
                     # get box coordinates of sequence
                     # if ffile == "/Volumes/Copland/Users/ahankins/Documents/code/testing/Liber_Usualis_Final_Output/0012/0012_corr.mei":
                     #     pdb.set_trace()
@@ -361,11 +391,11 @@ class CSVParser():
         height = lry - uly
         return [{'width': width, 'ulx': ulx, 'uly': uly, 'height': height}]
 
+
 ###################### Direct MEI Parser #################################
 
 
 class MEI2Parser():
-
     """
     MEI2couchdb.py
 
@@ -402,14 +432,14 @@ class MEI2Parser():
     # I don't know if this is really the right STEPREF.  I found it somewhere
     # online...
     STEPREF = {
-               'C' : 0,
-               'D' : 2, #2
-               'E' : 4,
-               'F' : 5,
-               'G' : 7,
-               'A' : 9, #9
-               'B' : 11,
-                   }
+        'C': 0,
+        'D': 2,  #2
+        'E': 4,
+        'F': 5,
+        'G': 7,
+        'A': 9,  #9
+        'B': 11,
+    }
     # I also don't know if this is right!!!
     project_id = 1
 
@@ -475,54 +505,83 @@ class MEI2Parser():
         """
         ulys = []
         lrys = []
-        twosystems=0
-        endofsystem = len(seq)-1
+        twosystems = 0
+        endofsystem = len(seq) - 1
         if seq[0].getId() not in self.systemcache:
             self.systemcache[seq[0].getId()] = meifile.lookBack(seq[0], "sb")
             # systemcache[seq[0]] = meifile.get_system(seq[0])
         if seq[endofsystem].getId() not in self.systemcache:
-            self.systemcache[seq[endofsystem].getId()] = meifile.lookBack(seq[endofsystem], "sb")
+            self.systemcache[seq[endofsystem].getId()] = meifile.lookBack(
+                seq[endofsystem], "sb")
             # systemcache[seq[endofsystem]] = meifile.get_system(seq[endofsystem])
 
-        if self.systemcache[seq[0].getId()] != self.systemcache[seq[endofsystem].getId()]: #then the sequence spans two systems and we must store two seperate locations to highlight
-            twosystems=1
-            for i in range(1,len(seq)):
-                if seq[i-1].getId() not in self.systemcache:
-                    self.systemcache[seq[i-1].getId()] = meifile.lookBack(seq[i-1], "sb")
+        if self.systemcache[seq[0].getId()] != self.systemcache[seq[
+            endofsystem].getId()]:  #then the sequence spans two systems and we must store two seperate locations to highlight
+            twosystems = 1
+            for i in range(1, len(seq)):
+                if seq[i - 1].getId() not in self.systemcache:
+                    self.systemcache[seq[i - 1].getId()] = meifile.lookBack(
+                        seq[i - 1], "sb")
                 if seq[i] not in self.systemcache:
-                    self.systemcache[seq[i].getId()] = meifile.lookBack(seq[i], "sb")
+                    self.systemcache[seq[i].getId()] = meifile.lookBack(seq[i],
+                                                                        "sb")
 
                 # find the last note on the first system and the first note on the second system
-                if self.systemcache[seq[i-1].getId()] != self.systemcache[seq[i].getId()]:
-                    endofsystem = i # this will be the index of the first note on second system
+                if self.systemcache[seq[i - 1].getId()] != self.systemcache[
+                    seq[i].getId()]:
+                    endofsystem = i  # this will be the index of the first note on second system
                     # ulx1 = int(meifile.get_by_facs(seq[0].parent.parent.facs)[0].ulx)
                     # lrx1 = int(meifile.get_by_facs(seq[i-1].parent.parent.facs)[0].lrx)
                     # ulx2 = int(meifile.get_by_facs(seq[i].parent.parent.facs)[0].ulx)
                     # lrx2 = int(meifile.get_by_facs(seq[-1].parent.parent.facs)[0].lrx)
-                    ulx1 =  int(self.findbyID(zones, seq[0].parent.parent.getAttribute("facs").value, meifile).getAttribute("ulx").value)
-                    lrx1 =  int(self.findbyID(zones, seq[i-1].parent.parent.getAttribute("facs").value, meifile).getAttribute("lrx").value)
-                    ulx2 =  int(self.findbyID(zones, seq[i].parent.parent.getAttribute("facs").value, meifile).getAttribute("ulx").value)
-                    lrx2 =  int(self.findbyID(zones, seq[-1].parent.parent.getAttribute("facs").value, meifile).getAttribute("lrx").value)
-        else: # the sequence is contained in one system and only one box needs to be highlighted
-            ulx =  int(self.findbyID(zones, seq[0].parent.parent.getAttribute("facs").value, meifile).getAttribute("ulx").value)
-            lrx =  int(self.findbyID(zones, seq[-1].parent.parent.getAttribute("facs").value, meifile).getAttribute("lrx").value)
+                    ulx1 = int(self.findbyID(zones,
+                                             seq[0].parent.parent.getAttribute(
+                                                 "facs").value,
+                                             meifile).getAttribute("ulx").value)
+                    lrx1 = int(self.findbyID(zones, seq[
+                        i - 1].parent.parent.getAttribute("facs").value,
+                                             meifile).getAttribute("lrx").value)
+                    ulx2 = int(self.findbyID(zones,
+                                             seq[i].parent.parent.getAttribute(
+                                                 "facs").value,
+                                             meifile).getAttribute("ulx").value)
+                    lrx2 = int(self.findbyID(zones,
+                                             seq[-1].parent.parent.getAttribute(
+                                                 "facs").value,
+                                             meifile).getAttribute("lrx").value)
+        else:  # the sequence is contained in one system and only one box needs to be highlighted
+            ulx = int(self.findbyID(zones, seq[0].parent.parent.getAttribute(
+                "facs").value, meifile).getAttribute("ulx").value)
+            lrx = int(self.findbyID(zones, seq[-1].parent.parent.getAttribute(
+                "facs").value, meifile).getAttribute("lrx").value)
             # ulx = int(meifile.get_by_facs(seq[0].parent.parent.facs)[0].ulx)
             # lrx = int(meifile.get_by_facs(seq[-1].parent.parent.facs)[0].lrx)
 
         for note in seq:
-            ulys.append(int(self.findbyID(zones, note.parent.parent.getAttribute("facs").value, meifile).getAttribute("uly").value))
-            lrys.append(int(self.findbyID(zones, note.parent.parent.getAttribute("facs").value, meifile).getAttribute("lry").value))
+            ulys.append(int(self.findbyID(zones,
+                                          note.parent.parent.getAttribute(
+                                              "facs").value,
+                                          meifile).getAttribute("uly").value))
+            lrys.append(int(self.findbyID(zones,
+                                          note.parent.parent.getAttribute(
+                                              "facs").value,
+                                          meifile).getAttribute("lry").value))
 
         if twosystems:
             uly1 = min(ulys[:endofsystem])
             uly2 = min(ulys[endofsystem:])
             lry1 = max(lrys[:endofsystem])
             lry2 = max(lrys[endofsystem:])
-            return [{"ulx": int(ulx1), "uly": int(uly1), "height": abs(uly1 - lry1), "width": abs(ulx1 - lrx1)},{"ulx": int(ulx2) ,"uly": int(uly2), "height": abs(uly2 - lry2), "width": abs(ulx2 - lrx2)}]
+            return [
+                {"ulx": int(ulx1), "uly": int(uly1), "height": abs(uly1 - lry1),
+                 "width": abs(ulx1 - lrx1)},
+                {"ulx": int(ulx2), "uly": int(uly2), "height": abs(uly2 - lry2),
+                 "width": abs(ulx2 - lrx2)}]
         else:
             uly = min(ulys)
             lry = max(lrys)
-            return [{"ulx": int(ulx), "uly": int(uly), "height": abs(uly - lry), "width": abs(ulx - lrx)}]
+            return [{"ulx": int(ulx), "uly": int(uly), "height": abs(uly - lry),
+                     "width": abs(ulx - lrx)}]
 
     def getNeumes(self, seq, counter):
         """ Given a list of MEI note elements, return a string of the names of
@@ -530,8 +589,9 @@ class MEI2Parser():
         """
         neumes = str(seq[0].parent.parent.getAttribute('name').value)
         for k in range(1, counter):
-            if seq[k].parent.parent.id != seq[k-1].parent.parent.id:
-                neumes = neumes + '_' + str(seq[k].parent.parent.getAttribute('name').value)
+            if seq[k].parent.parent.id != seq[k - 1].parent.parent.id:
+                neumes = neumes + '_' + str(
+                    seq[k].parent.parent.getAttribute('name').value)
         return neumes
 
     def getPitchNames(self, seq):
@@ -542,8 +602,11 @@ class MEI2Parser():
         pnames = []
         midipitch = []
         for note in seq:
-            pnames.append(note.getAttribute("pname").value[0]) # a string of pitch names e.g. 'gbd'
-            midipitch.append(int(self.convertStepToPs(str(note.getAttribute("pname").value[0]), int(note.getAttribute("oct").value))))
+            pnames.append(note.getAttribute("pname").value[
+                0])  # a string of pitch names e.g. 'gbd'
+            midipitch.append(int(
+                self.convertStepToPs(str(note.getAttribute("pname").value[0]),
+                                     int(note.getAttribute("oct").value))))
         return [str("".join(pnames)), midipitch]
 
     def getIntervals(self, semitones, pnames):
@@ -557,7 +620,7 @@ class MEI2Parser():
         tritones, they may use the semitones field.
         """
         intervals = []
-        for z,interval in enumerate(semitones):
+        for z, interval in enumerate(semitones):
             if interval == 0:
                 intervals.append('r')
             else:
@@ -576,7 +639,8 @@ class MEI2Parser():
                     else:
                         size = 5
                 else:
-                    size = abs(int(convertSemitoneToSpecifierGeneric(interval)[1]))
+                    size = abs(
+                        int(convertSemitoneToSpecifierGeneric(interval)[1]))
 
                 intervals.append("{0}{1}".format(direction, str(size)))
 
@@ -589,12 +653,12 @@ class MEI2Parser():
         """
         contour = ''
         for p in semitones:
-           if p == 0:
-               contour = contour + 'r' # repeated
-           elif p > 0:
-               contour = contour + 'u' # up
-           elif p < 0:
-               contour = contour + 'd' # down
+            if p == 0:
+                contour = contour + 'r'  # repeated
+            elif p > 0:
+                contour = contour + 'u'  # up
+            elif p < 0:
+                contour = contour + 'd'  # down
         return contour
 
     # def storeText(self, lines, zones, textdb):
@@ -647,24 +711,25 @@ class MEI2Parser():
         page = meifile.getElementsByName('page')
 
         # Taken directly from file name!!!
-        pagen = str(ffile).split('_')[len(str(ffile).split('_')) - 1].split('.')[0]
+        pagen = \
+            str(ffile).split('_')[len(str(ffile).split('_')) - 1].split('.')[0]
 
         notes = meifile.getElementsByName('note')
         zones = meifile.getElementsByName('zone')
-        nnotes = len(notes) # number of notes in file
+        nnotes = len(notes)  # number of notes in file
         #print str(nnotes) + 'notes\n'
 
         # get and store text
         # if dotext:
-            # lines = meifile.search('l')
-            # storeText(lines, zones, textdb)
+        # lines = meifile.search('l')
+        # storeText(lines, zones, textdb)
 
         #Set these to control which databases you access
         #shortest_gram = 2
         #longest_gram = 10
         mydocs = []
 
-        for i in range(shortest_gram, longest_gram+1):
+        for i in range(shortest_gram, longest_gram + 1):
 
             # uncomment the lines below if you want to process only files that aren't already in the couch
             # only proceed with the rest of the script if a query for pagen returns 0 hits
@@ -673,7 +738,7 @@ class MEI2Parser():
             #        }'''
             # rows = db.query(map_fun, key=pagen)
             # lrows = len(rows)
-            lrows = 0 #comment out this line if you want to process files that aren't already in the couch
+            lrows = 0  #comment out this line if you want to process files that aren't already in the couch
             if lrows == 0:
                 #*******************TEST************************
                 # for note in notes:
@@ -684,8 +749,8 @@ class MEI2Parser():
 
                 print "Processing pitch sequences... "
                 # for j,note in enumerate(notes):
-                for j in range(0, nnotes-i):
-                    seq = notes[j:j+i]
+                for j in range(0, nnotes - i):
+                    seq = notes[j:j + i]
                     # get box coordinates of sequence
                     # if ffile == "/Volumes/Copland/Users/ahankins/Documents/code/testing/Liber_Usualis_Final_Output/0012/0012_corr.mei":
                     #     pdb.set_trace()
@@ -701,8 +766,10 @@ class MEI2Parser():
 
                     # get semitones
                     # calculate difference between each adjacent entry in midipitch list
-                    semitones = [m-n for n, m in zip(midipitch[:-1], midipitch[1:])]
-                    str_semitones = str(semitones)[1:-1] # string will be stored instead of array for easy searching
+                    semitones = [m - n for n, m in
+                                 zip(midipitch[:-1], midipitch[1:])]
+                    str_semitones = str(semitones)[
+                                    1:-1]  # string will be stored instead of array for easy searching
                     str_semitones = str_semitones.replace(', ', '_')
 
                     # get quality invariant interval name and direction
@@ -773,19 +840,19 @@ class MEI2Parser():
         # This list will represent one manuscript
         output = []
         for ffile in meifiles:
-            output.append(self.processMeiFile(ffile, shortest_gram, longest_gram))
+            output.append(
+                self.processMeiFile(ffile, shortest_gram, longest_gram))
         return output
 
 
 class GallenMEI2Parser(MEI2Parser):
-
     def getNeumes(self, seq, counter):
         """ Given a list of MEI note elements, return a string of the names of
         the neumes seperated by underscores.
         """
         neumes = str(seq[0].getAttribute('name').value)
         for k in range(1, counter):
-            if seq[k].id != seq[k-1].id:
+            if seq[k].id != seq[k - 1].id:
                 neumes = neumes + '_' + str(seq[k].getAttribute('name').value)
         return neumes
 
@@ -798,54 +865,83 @@ class GallenMEI2Parser(MEI2Parser):
         """
         ulys = []
         lrys = []
-        twosystems=0
-        endofsystem = len(seq)-1
+        twosystems = 0
+        endofsystem = len(seq) - 1
         if seq[0].getId() not in self.systemcache:
             self.systemcache[seq[0].getId()] = meifile.lookBack(seq[0], "sb")
             # systemcache[seq[0]] = meifile.get_system(seq[0])
         if seq[endofsystem].getId() not in self.systemcache:
-            self.systemcache[seq[endofsystem].getId()] = meifile.lookBack(seq[endofsystem], "sb")
+            self.systemcache[seq[endofsystem].getId()] = meifile.lookBack(
+                seq[endofsystem], "sb")
             # systemcache[seq[endofsystem]] = meifile.get_system(seq[endofsystem])
 
-        if self.systemcache[seq[0].getId()] != self.systemcache[seq[endofsystem].getId()]: #then the sequence spans two systems and we must store two seperate locations to highlight
-            twosystems=1
-            for i in range(1,len(seq)):
-                if seq[i-1].getId() not in self.systemcache:
-                    self.systemcache[seq[i-1].getId()] = meifile.lookBack(seq[i-1], "sb")
+        if self.systemcache[seq[0].getId()] != self.systemcache[
+            seq[endofsystem].getId()]:
+            #then the sequence spans two systems and we must store two seperate locations to highlight
+            twosystems = 1
+            for i in range(1, len(seq)):
+                if seq[i - 1].getId() not in self.systemcache:
+                    self.systemcache[seq[i - 1].getId()] = meifile.lookBack(
+                        seq[i - 1], "sb")
                 if seq[i] not in self.systemcache:
-                    self.systemcache[seq[i].getId()] = meifile.lookBack(seq[i], "sb")
+                    self.systemcache[seq[i].getId()] = meifile.lookBack(seq[i],
+                                                                        "sb")
 
                 # find the last note on the first system and the first note on the second system
-                if self.systemcache[seq[i-1].getId()] != self.systemcache[seq[i].getId()]:
-                    endofsystem = i # this will be the index of the first note on second system
-                    # ulx1 = int(meifile.get_by_facs(seq[0].parent.parent.facs)[0].ulx)
-                    # lrx1 = int(meifile.get_by_facs(seq[i-1].parent.parent.facs)[0].lrx)
-                    # ulx2 = int(meifile.get_by_facs(seq[i].parent.parent.facs)[0].ulx)
-                    # lrx2 = int(meifile.get_by_facs(seq[-1].parent.parent.facs)[0].lrx)
-                    ulx1 =  int(self.findbyID(zones, seq[0].getAttribute("facs").value, meifile).getAttribute("ulx").value)
-                    lrx1 =  int(self.findbyID(zones, seq[i-1].getAttribute("facs").value, meifile).getAttribute("lrx").value)
-                    ulx2 =  int(self.findbyID(zones, seq[i].getAttribute("facs").value, meifile).getAttribute("ulx").value)
-                    lrx2 =  int(self.findbyID(zones, seq[-1].getAttribute("facs").value, meifile).getAttribute("lrx").value)
-        else: # the sequence is contained in one system and only one box needs to be highlighted
-            ulx =  int(self.findbyID(zones, seq[0].getAttribute("facs").value, meifile).getAttribute("ulx").value)
-            lrx =  int(self.findbyID(zones, seq[-1].getAttribute("facs").value, meifile).getAttribute("lrx").value)
-            # ulx = int(meifile.get_by_facs(seq[0].parent.parent.facs)[0].ulx)
-            # lrx = int(meifile.get_by_facs(seq[-1].parent.parent.facs)[0].lrx)
+                if self.systemcache[seq[i - 1].getId()] != self.systemcache[
+                    seq[i].getId()]:
+                    endofsystem = i  # this will be the index of the first note on second system
+                    ulx1 = int(
+                        self.findbyID(zones, seq[0].getAttribute("facs").value,
+                                      meifile).getAttribute("ulx").value)
+                    lrx1 = int(self.findbyID(zones, seq[i - 1].getAttribute(
+                        "facs").value, meifile).getAttribute("lrx").value)
+                    ulx2 = int(
+                        self.findbyID(zones, seq[i].getAttribute("facs").value,
+                                      meifile).getAttribute("ulx").value)
+                    lrx2 = int(
+                        self.findbyID(zones, seq[-1].getAttribute("facs").value,
+                                      meifile).getAttribute("lrx").value)
+        else:  # the sequence is contained in one system and only one box needs to be highlighted
+            ulx = int(self.findbyID(zones, seq[0].getAttribute("facs").value,
+                                    meifile).getAttribute("ulx").value)
+            lrx = int(self.findbyID(zones, seq[-1].getAttribute("facs").value,
+                                    meifile).getAttribute("lrx").value)
 
         for note in seq:
-            ulys.append(int(self.findbyID(zones, note.getAttribute("facs").value, meifile).getAttribute("uly").value))
-            lrys.append(int(self.findbyID(zones, note.getAttribute("facs").value, meifile).getAttribute("lry").value))
+            ulys.append(int(
+                self.findbyID(zones, note.getAttribute("facs").value,
+                              meifile).getAttribute("uly").value))
+            lrys.append(int(
+                self.findbyID(zones, note.getAttribute("facs").value,
+                              meifile).getAttribute("lry").value))
 
         if twosystems:
             uly1 = min(ulys[:endofsystem])
             uly2 = min(ulys[endofsystem:])
             lry1 = max(lrys[:endofsystem])
             lry2 = max(lrys[endofsystem:])
-            return [{"ulx": int(ulx1), "uly": int(uly1), "height": abs(uly1 - lry1), "width": abs(ulx1 - lrx1)},{"ulx": int(ulx2) ,"uly": int(uly2), "height": abs(uly2 - lry2), "width": abs(ulx2 - lrx2)}]
+            return [{
+                        "ulx": int(ulx1),
+                        "uly": int(uly1),
+                        "height": abs(uly1 - lry1),
+                        "width": abs(ulx1 - lrx1)
+                    },
+                    {
+                        "ulx": int(ulx2),
+                        "uly": int(uly2),
+                        "height": abs(uly2 - lry2),
+                        "width": abs(ulx2 - lrx2)
+                    }]
         else:
             uly = min(ulys)
             lry = max(lrys)
-            return [{"ulx": int(ulx), "uly": int(uly), "height": abs(uly - lry), "width": abs(ulx - lrx)}]
+            return [{
+                        "ulx": int(ulx),
+                        "uly": int(uly),
+                        "height": abs(uly - lry),
+                        "width": abs(ulx - lrx)
+                    }]
 
     """
     Some customizations to MEI2Parser() so that it works with the St. Gallen
@@ -871,37 +967,34 @@ class GallenMEI2Parser(MEI2Parser):
         print ffile
 
         page = meifile.getElementsByName('page')
-        pagen = str(ffile).split('_')[len(str(ffile).split('_')) - 1].split('.')[0]
+        pagen = \
+            str(ffile).split('_')[len(str(ffile).split('_')) - 1].split('.')[0]
 
         # We are going
         neumes = meifile.getElementsByName('neume')
 
-        # print dir(neumes[0])
-        # for note in neumes:
-        #     print note.getAttributes()
-
         zones = meifile.getElementsByName('zone')
-        n_neumes = len(neumes) # number of notes in file
-        print("n_neumes: {0}, shortest_gram: {1}, longest_gram: {2}".format(n_neumes, shortest_gram, longest_gram))
+        n_neumes = len(neumes)  # number of notes in file
+        print("n_neumes: {0}, shortest_gram: {1}, longest_gram: {2}".format(
+            n_neumes, shortest_gram, longest_gram))
 
         mydocs = []
 
-
-        for i in range(shortest_gram, longest_gram+1):
+        for i in range(shortest_gram, longest_gram + 1):
             # comment out this line if you want to process files that aren't
             # already in the couch
             lrows = 0
             if lrows == 0:
-                print "Processing pitch sequences... "
-                for j in range(0, n_neumes-i):
-                    seq = neumes[j:j+i]
+                print "Processing pitch sequences..."
+                for j in range(0, n_neumes - i):
+                    seq = neumes[j:j + i]
                     location = self.getLocation(seq, meifile, zones)
                     # get neumes
                     n_gram_neumes = self.getNeumes(seq, i).lower()
                     n_gram_neumes_no_punctuation = n_gram_neumes.replace(
-                        '_', ' ').translate( string.maketrans("", ""),
-                                             string.punctuation).replace(' ',
-                                                                         '_')
+                        '_', ' ').translate(string.maketrans("", ""),
+                                            string.punctuation).replace(' ',
+                                                                        '_')
 
                     new_doc = {
                         'id': str(uuid.uuid4()),
