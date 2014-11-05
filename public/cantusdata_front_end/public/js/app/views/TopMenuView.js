@@ -32,12 +32,12 @@ define( ['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView", 
                 this.delegateEvents();
             },
 
-            buttonClickCallback: function(input)
+            buttonClickCallback: function(event)
             {
                 // Stop the page from auto-reloading
                 event.preventDefault();
                 // Figure out which button was pressed
-                var button_name = String(input.currentTarget.id);
+                var button_name = String(event.currentTarget.id);
                 var id = button_name.split('-')[button_name.split('-').length - 1];
                 // Now that we have that id, route the application to it's URL!
                 var new_url = this.items[id].url;
