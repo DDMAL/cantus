@@ -22,7 +22,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             searchModalView: null,
 
             events: {
-                "click #site-logo": function()
+                "click #site-logo": function(event)
                 {
                     // Prevent page from reloading
                     event.preventDefault();
