@@ -23,7 +23,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
             currentFolioIndex: -1,
             currentFolioName: 0,
 
-            imagePrefix: "",
+            imagePrefix: null,
             imageSuffix: "",
 
             timer: null,
@@ -89,7 +89,9 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
              */
             initializeDiva: function()
             {
+                console.log("initailizeDiva() state");
                 var siglum = this.siglum;
+                console.log("siglum:", siglum);
                 this.$el.diva({
                     toolbarParentSelector: "#diva-toolbar",
                     viewerWidthPadding: 0,
@@ -104,16 +106,19 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
                     objectData: "/static/" + siglum + ".json",
                     imageDir: GlobalVars.divaImageDirectory + siglum
                 });
+                // console.log("this.el:", this.el);
+                // console.log("this.$el:", this.$el);
                 this.viewerLoadEvent = diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
                 this.pageChangeEvent = diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
                 this.modeSwitchEvent = diva.Events.subscribe("ModeDidSwitch", this.setGlobalFullScreen);
                 // Remember that we've initialized diva
                 this.divaInitialized = true;
+                console.log("initailizeDiva() end");
             },
 
             render: function()
             {
-                console.log("Diva render() begin.");
+                //console.log("Diva render() begin.");
                 // We only want to initialize Diva once!
                 if (!this.divaInitialized)
                 {
@@ -121,7 +126,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
                 }
 
                 GlobalEventHandler.trigger("renderView");
-                console.log("Diva render() end.");
+                //console.log("Diva render() end.");
                 return this.trigger('render', this);
             },
 
@@ -157,7 +162,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
              */
             storeInitialFolio: function()
             {
-                console.log("storeInitialFolio() begin.");
+                //console.log("storeInitialFolio() begin.");
                 // If there exists a client-defined initial folio
                 if (this.initialFolio !== undefined)
                 {
@@ -169,7 +174,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
                 this.storeFolioIndex(number, name);
                 // Store the image prefix for later
                 this.setImagePrefixAndSuffix(name);
-                console.log("storeInitialFolio() end.");
+                //console.log("storeInitialFolio() end.");
             },
 
             /**
@@ -202,7 +207,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
             setFolio: function(folioCode)
             {
                 // We might need to set the prefix and suffix
-                if (this.imagePrefix === "" || this.imageSuffix === "")
+                if (this.imagePrefix === null || this.imageSuffix === "")
                 {
                     this.setImagePrefixAndSuffix(this.currentFolioName);
                 }
@@ -226,7 +231,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
              */
             storeFolioIndex: function(index, fileName)
             {
-                console.log("storeFolioIndex() begin.");
+                //console.log("storeFolioIndex() begin.");
                 // The first time it's ever called
                 if (this.initialFolio === undefined) {
                     this.initialFolio = 0;
@@ -249,7 +254,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
                         },
                         250);
                 }
-                console.log("storeFolioIndex() end.");
+                //console.log("storeFolioIndex() end.");
             },
 
             /**
@@ -266,18 +271,27 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
                 // Grab the array of page filenames straight from Diva.
                 var pageFilenameArray = this.$el.data('diva').getFilenames();
 
+                // console.log("pageFilenameArray:", pageFilenameArray);
+
+                // We might have to manually reset the page prefix
+                if (this.imagePrefix === null)
+                {
+                    this.setImagePrefixAndSuffix(pageFilenameArray[0]);
+                }
+
                 // Use the Diva highlight plugin to draw the boxes
                 var highlightsByPageHash = {};
                 var pageList = [];
+                // console.log('this.imagePrefix:', this.imagePrefix);
 
                 for (var i = 0; i < boxSet.length; i++)
                 {
                     // Translate folio to Diva page
                     var folioCode = boxSet[i].p;
                     var pageFilename = this.imagePrefix + "_" + folioCode + ".jp2";
-                    console.log("pageFilename: ", pageFilename);
+                    // console.log("pageFilename: ", pageFilename);
                     var pageIndex = pageFilenameArray.indexOf(pageFilename);
-                    console.log("pageIndex: ", pageIndex);
+                    // console.log("pageIndex: ", pageIndex);
 
                     if (highlightsByPageHash[pageIndex] === undefined)
                     {
@@ -297,6 +311,8 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
                 // Now we need to add all of the pages to the Diva viewer
                 for (var j = 0; j < pageList.length; j++)
                 {
+                    // console.log("pageList[j]:", pageList[j]);
+                    // console.log("highlightsByPageHash:", highlightsByPageHash[pageList[j]]);
                     this.$el.data('diva').highlightOnPage
                     (
                         pageList[j], // The page number
@@ -326,7 +342,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
                 var pageFilenameArray = this.$el.data('diva').getFilenames();
                 var folioCode = box.p;
                 var pageFilename = this.imagePrefix + "_" + folioCode + ".jp2";
-                console.log("pageFilename: ", pageFilename);
+                // console.log("pageFilename: ", pageFilename);
                 var desiredPage = pageFilenameArray.indexOf(pageFilename) + 1;
 
                 // Now jump to that page

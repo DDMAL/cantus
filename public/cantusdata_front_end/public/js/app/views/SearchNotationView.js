@@ -1,7 +1,3 @@
-//var CantusAbstractModel = require(["models/SearchResult"]);
-//var CantusAbstractView = require(["views/CantusAbstractView"]);
-//var PaginationView = require(["views/PaginationView"]);
-
 define( ['App', 'backbone', 'marionette', 'jquery',
         "models/CantusAbstractModel",
         "models/SearchResult",
@@ -74,7 +70,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 this.delegateEvents();
             },
 
-            newSearch: function()
+            newSearch: function(event)
             {
                 // Stop the page from auto-reloading
                 event.preventDefault();
@@ -94,6 +90,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                     this.results.url = GlobalVars.siteUrl + "notation-search/?q=" + this.query + "&type=" + this.field + "&manuscript=" + this.manuscript;
                     this.results.fetch();
                 }
+                return false;
             },
 
             resultFetchCallback: function()
