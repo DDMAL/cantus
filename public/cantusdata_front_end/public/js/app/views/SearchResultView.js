@@ -60,12 +60,12 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 this.delegateEvents();
             },
 
-            buttonClickCallback: function(input)
+            buttonClickCallback: function(event)
             {
                 // Stop the page from auto-reloading
                 event.preventDefault();
                 // Figure out which button was clicked on
-                var splitName = input.target.className.split("-");
+                var splitName = event.target.className.split("-");
                 var newIndex = parseInt(splitName[splitName.length - 1], 10);
                 // Redirect us to the new url!
                 Backbone.history.navigate(this.model.getFormattedData()[newIndex].url,
