@@ -9,6 +9,7 @@ from cantusdata.views.search import SearchView
 from cantusdata.views.search_notation import SearchNotationView
 from cantusdata.views.chant_set import FolioChantSetView, ManuscriptChantSetView
 from cantusdata.views.folio_set import ManuscriptFolioSetView
+from cantusdata.views.manuscript_glyph_set import ManuscriptGlyphSetView
 
 
 urlpatterns = []
@@ -48,6 +49,9 @@ urlpatterns += format_suffix_patterns(
              url(r'^chant-set/manuscript/(?P<pk>[0-9]+)/page-(?P<start>[0-9]+)/$',
                  ManuscriptChantSetView.as_view(),
                  name="manuscript-chant-set-view-page"),
+             url(r'^manuscript/(?P<pk>[0-9]+)/glyph-set$',
+                 ManuscriptGlyphSetView.as_view(),
+                 name="manuscript-glyph-set-view-page"),
              # Query Folios by manuscript
              url(r'^folio-set/manuscript/(?P<pk>[0-9]+)/$',
                  ManuscriptFolioSetView.as_view(),
