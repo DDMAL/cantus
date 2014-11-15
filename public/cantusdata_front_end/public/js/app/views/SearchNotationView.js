@@ -3,19 +3,21 @@ define( ['App', 'backbone', 'marionette', 'jquery',
         "models/SearchResult",
         "views/CantusAbstractView",
         "views/PaginationView",
+        "views/collection_views/GlyphTypeCollectionView",
         "config/GlobalVars"],
     function(App, Backbone, Marionette, $,
              CantusAbstractModel,
              SearchResult,
              CantusAbstractView,
              PaginationView,
+             GlyphTypeCollectionView,
              GlobalVars,
              template) {
 
         /**
          * Provide an alert message to the user.
          */
-        return CantusAbstractView.extend
+        return Marionette.LayoutView.extend
         ({
             query: null,
             field: null,
@@ -25,11 +27,16 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             paginator: null,
             manuscript: undefined,
 
+            template: "#search-notation-template",
+
+            regions: {
+                glyphTypesRegion: ".glyph-types"
+            },
+
             initialize: function(options)
             {
                 _.bindAll(this, 'render', 'registerEvents', 'newSearch',
                     'resultFetchCallback', 'zoomToResult');
-                this.template = _.template($('#search-notation-template').html());
                 // The diva view which we will act upon!
                 this.divaView = options.divaView;
                 this.results = new CantusAbstractModel();
@@ -118,8 +125,12 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 this.divaView.zoomToLocation(this.results.get("results")[newIndex]);
             },
 
-            render: function() {
-                $(this.el).html(this.template());
+            onRender: function() {
+                    var glyphTypes = new Backbone.Collection();
+                    glyphTypes.add(new Backbone.Model());
+                    this.glyphTypesRegion.show(new GlyphTypeCollectionView({
+                        collection: glyphTypes
+                    }));
             },
 
             clearResults: function(message)
