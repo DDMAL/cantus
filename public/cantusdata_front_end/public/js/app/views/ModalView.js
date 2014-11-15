@@ -1,9 +1,9 @@
-//var CantusAbstractView = require(["views/CantusAbstractView"]);
-
 define( ['App', 'backbone', 'marionette', 'jquery',
         "views/CantusAbstractView",
         "singletons/GlobalEventHandler"],
     function(App, Backbone, Marionette, $, CantusAbstractView, GlobalEventHandler, template) {
+
+        "use strict";
 
         /**
          * Draw a modal box containing a particular view.
