@@ -7,7 +7,7 @@ require.config({
         "jquery":"../libs/jquery",
         "jqueryui":"../libs/jqueryui",
         "jquerymobile":"../libs/jquery.mobile",
-        "underscore":"../libs/lodash",
+        "underscore":"../libs/underscore",
         "backbone":"../libs/backbone",
         "marionette":"../libs/backbone.marionette",
         "json2":"../libs/json2",
