@@ -22,8 +22,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
              InternalSearchView,
              SearchNotationView,
              GlobalEventHandler,
-             GlobalVars,
-             template) {
+             GlobalVars) {
 
         "use strict";
 
@@ -33,9 +32,10 @@ define( ['App', 'backbone', 'marionette', 'jquery',
          *
          * @type {*|void}
          */
-        return CantusAbstractView.extend
+        return Marionette.LayoutView.extend
         ({
             el: '#view-goes-here',
+            template: '#manuscript-template',
 
             id: null,
             manuscript: null,
@@ -46,11 +46,17 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             divaView: null,
             folioView: null,
 
+            regions: {
+                divaViewRegion: ".diva-wrapper",
+                folioViewRegion: "#folio",
+                searchViewRegion: "#manuscript-search",
+                searchNotationViewRegion: "#search-notation"
+            },
+
             initialize: function (options) {
-                _.bindAll(this, 'render', 'afterFetch', 'updateFolio');
-                this.template = _.template($('#manuscript-template').html());
-                this.manuscript = new Manuscript(
-                        GlobalVars.siteUrl + "manuscript/" + this.id + "/");
+                this.manuscript = new Manuscript({url:
+                GlobalVars.siteUrl + "manuscript/" + this.id.toString() + "/"});
+                console.log(this.manuscript);
                 // Build the subviews
                 this.divaView = new DivaView(
                     {
@@ -116,6 +122,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
              */
             getData: function()
             {
+                console.log(this.manuscript);
                 this.manuscript.fetch();
             },
 
@@ -129,27 +136,29 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 this.render();
             },
 
-            render: function()
+            serializeData: function()
             {
-                $(this.el).html(this.template({
-                    manuscript: this.manuscript.toJSON()
-                }));
+                console.log(this.manuscript);
+                console.log(this.manuscript.toJSON());
+                return this.manuscript.toJSON();
+            },
 
+            onRender: function()
+            {
                 // Render subviews
                 if (this.divaView !== undefined) {
-                    this.assign(this.divaView, '.diva-wrapper');
+                    this.divaViewRegion.show(this.divaView);
                 }
                 this.renderFolioView();
-                this.assign(this.searchView, '#manuscript-search');
-                this.assign(this.searchNotationView, '#search-notation');
+                this.searchViewRegion.show(this.searchView);
+                this.searchNotationViewRegion.show(this.searchNotationView);
                 GlobalEventHandler.trigger("renderView");
-                return this.trigger('render', this);
             },
 
             renderFolioView: function()
             {
                 if (this.divaView !== undefined) {
-                    this.assign(this.folioView, '#folio');
+                    this.folioViewRegion.show(this.folioView);
                 }
             }
 
