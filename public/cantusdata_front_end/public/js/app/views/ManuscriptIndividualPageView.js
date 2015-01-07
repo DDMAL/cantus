@@ -54,8 +54,8 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             },
 
             initialize: function (options) {
-                this.manuscript = new Manuscript({url:
-                GlobalVars.siteUrl + "manuscript/" + this.id.toString() + "/"});
+                this.manuscript = new Manuscript(
+                    String(GlobalVars.siteUrl + "manuscript/" + this.id.toString() + "/"));
                 console.log(this.manuscript);
                 // Build the subviews
                 this.divaView = new DivaView(
