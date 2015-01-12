@@ -5,8 +5,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
     function(App, Backbone, Marionette, $, Diva, DivaHighlight,
              CantusAbstractView,
              GlobalEventHandler,
-             GlobalVars,
-             template) {
+             GlobalVars) {
 
         "use strict";
 
