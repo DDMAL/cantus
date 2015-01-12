@@ -167,9 +167,12 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
                 {
                     this.setFolio(this.initialFolio);
                 }
+                // Grab data from diva
+                var divaData = this.getDivaData();
                 // Store the initial folio
-                var number = this.$el.data('diva').getCurrentPageIndex();
-                var name = this.$el.data('diva').getCurrentPageFilename();
+                debugger;
+                var number = divaData.getCurrentPageIndex();
+                var name = divaData.getCurrentPageFilename();
                 this.storeFolioIndex(number, name);
                 // Store the image prefix for later
                 this.setImagePrefixAndSuffix(name);
@@ -211,9 +214,9 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
                     this.setImagePrefixAndSuffix(this.currentFolioName);
                 }
                 var newImageName = this.imagePrefix + "_" + String(folioCode) + "." + this.imageSuffix;
-                if (this.$el.data('diva') !== undefined)
+                if (this.getDivaData() !== undefined)
                 {
-                    this.$el.data('diva').gotoPageByName(newImageName);
+                    this.getDivaData().gotoPageByName(newImageName);
                 }
             },
 
@@ -257,6 +260,15 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
             },
 
             /**
+             * Get the stored Diva data.
+             *
+             * @returns {*|jQuery}
+             */
+            getDivaData: function() {
+                return $(this.el).data('diva');
+            },
+
+            /**
              * Draw boxes on the Diva viewer.  These usually correspond to
              * music notation on a manuscript page.
              * music notation on a manuscript page.
@@ -265,12 +277,12 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
              */
             paintBoxes: function(boxSet)
             {
-                this.$el.data('diva').resetHighlights();
+                var divaData = this.getDivaData();
+
+                divaData.resetHighlights();
 
                 // Grab the array of page filenames straight from Diva.
-                var pageFilenameArray = this.$el.data('diva').getFilenames();
-
-                // console.log("pageFilenameArray:", pageFilenameArray);
+                var pageFilenameArray = divaData.getFilenames();
 
                 // We might have to manually reset the page prefix
                 if (this.imagePrefix === null)
@@ -281,16 +293,13 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
                 // Use the Diva highlight plugin to draw the boxes
                 var highlightsByPageHash = {};
                 var pageList = [];
-                // console.log('this.imagePrefix:', this.imagePrefix);
 
                 for (var i = 0; i < boxSet.length; i++)
                 {
                     // Translate folio to Diva page
                     var folioCode = boxSet[i].p;
                     var pageFilename = this.imagePrefix + "_" + folioCode + ".jp2";
-                    // console.log("pageFilename: ", pageFilename);
                     var pageIndex = pageFilenameArray.indexOf(pageFilename);
-                    // console.log("pageIndex: ", pageIndex);
 
                     if (highlightsByPageHash[pageIndex] === undefined)
                     {
@@ -310,9 +319,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
                 // Now we need to add all of the pages to the Diva viewer
                 for (var j = 0; j < pageList.length; j++)
                 {
-                    // console.log("pageList[j]:", pageList[j]);
-                    // console.log("highlightsByPageHash:", highlightsByPageHash[pageList[j]]);
-                    this.$el.data('diva').highlightOnPage
+                    divaData.highlightOnPage
                     (
                         pageList[j], // The page number
                         highlightsByPageHash[pageList[j]] // List of boxes
@@ -333,29 +340,31 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
                     return;
                 }
 
+                // Grab the diva internals to work with
+                var divaData = this.getDivaData();
+
                 // Now figure out the page that box is on
-                var divaOuter = this.$el.data('diva').getSettings().outerSelector;
-                var zoomLevel = this.$el.data('diva').getZoomLevel();
+                var divaOuter = divaData.getSettings().outerObject;
+                var zoomLevel = divaData.getZoomLevel();
 
                 // Grab the array of page filenames straight from Diva.
-                var pageFilenameArray = this.$el.data('diva').getFilenames();
+                var pageFilenameArray = divaData.getFilenames();
                 var folioCode = box.p;
                 var pageFilename = this.imagePrefix + "_" + folioCode + ".jp2";
-                // console.log("pageFilename: ", pageFilename);
                 var desiredPage = pageFilenameArray.indexOf(pageFilename) + 1;
 
                 // Now jump to that page
-                this.$el.data('diva').gotoPageByNumber(desiredPage);
+                divaData.gotoPageByNumber(desiredPage);
                 // Get the height above top for that box
-                var boxTop = this.$el.data('diva').translateFromMaxZoomLevel(box.y);
-                var currentScrollTop = parseInt($(divaOuter).scrollTop(), 10);
+                var boxTop = divaData.translateFromMaxZoomLevel(box.y);
+                var currentScrollTop = parseInt(divaOuter.scrollTop(), 10);
 
-                var topMarginConsiderations = this.$el.data('diva').getSettings().averageHeights[zoomLevel] * this.$el.data('diva').getSettings().adaptivePadding;
-                var leftMarginConsiderations = this.$el.data('diva').getSettings().averageWidths[zoomLevel] * this.$el.data('diva').getSettings().adaptivePadding;
-                $(divaOuter).scrollTop(boxTop + currentScrollTop - ($(divaOuter).height() / 2) + (box.h / 2) + topMarginConsiderations);
+                var topMarginConsiderations = divaData.getSettings().averageHeights[zoomLevel] * divaData.getSettings().adaptivePadding;
+                var leftMarginConsiderations = divaData.getSettings().averageWidths[zoomLevel] * divaData.getSettings().adaptivePadding;
+                divaOuter.scrollTop(boxTop + currentScrollTop - (divaOuter.height() / 2) + (box.h / 2) + topMarginConsiderations);
                 // Now get the horizontal scroll
-                var boxLeft = this.$el.data('diva').translateFromMaxZoomLevel(box.x);
-                $(divaOuter).scrollLeft(boxLeft - ($(divaOuter).width() / 2) + (box.w / 2) + leftMarginConsiderations);
+                var boxLeft = divaData.translateFromMaxZoomLevel(box.x);
+                divaOuter.scrollLeft(boxLeft - (divaOuter.width() / 2) + (box.w / 2) + leftMarginConsiderations);
                 // Will include the padding between pages for best results
             },
 
