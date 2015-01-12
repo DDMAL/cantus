@@ -49,7 +49,9 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             {
                 this.query = null;
                 this.results = null;
-                this.paginator.remove();
+                if (this.paginator !== null) {
+                    this.paginator.remove();
+                }
                 // We don't actually need to call remove() on this again
                 this.divaView = null;
                 this.paginator = null;
