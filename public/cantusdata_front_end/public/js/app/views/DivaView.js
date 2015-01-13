@@ -14,6 +14,8 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
          */
         return CantusAbstractView.extend
         ({
+            el: "#diva-wrapper",
+
             divaInitialized: false,
 
             // Only used if initial folio
@@ -37,6 +39,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
                 console.log("Initialize Diva View begin.");
                 _.bindAll(this, 'render', 'storeFolioIndex', 'storeInitialFolio',
                     'setGlobalFullScreen', 'zoomToLocation');
+                this.el = options.el;
                 this.setManuscript(options.siglum, options.folio);
                 console.log("Initialize Diva View end.");
             },
