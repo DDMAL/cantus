@@ -6,13 +6,22 @@ define( ['App', 'backbone', 'marionette', 'jquery',
         "views/CantusAbstractView",
         "views/SearchResultView",
         "singletons/GlobalEventHandler"],
-    function(App, Backbone, Marionette, $, SolrDisjunctiveQueryBuilder, CantusAbstractView, SearchResultView, GlobalEventHandler, template) {
+    function(App, Backbone, Marionette, $,
+             SolrDisjunctiveQueryBuilder,
+             CantusAbstractView,
+             SearchResultView,
+             GlobalEventHandler,
+             template) {
+
+        "use strict";
 
         /**
          * Provide an alert message to the user.
          */
-        return CantusAbstractView.extend
+        return Marionette.LayoutView.extend
         ({
+            template: "#search-template",
+
             /**
              *
              */
@@ -37,11 +46,18 @@ define( ['App', 'backbone', 'marionette', 'jquery',
 
             events: {},
 
+            regions: {
+                searchResultsRegion: ".search-results"
+            },
+
+            ui: {
+                searchInputDiv: ".input-section",
+                searchInput: ".search-input",
+                searchFieldSelector: ".search-field"
+            },
+
             initialize: function(options)
             {
-                _.bindAll(this, 'render', 'newSearch', 'autoNewSearch',
-                    'changeSearchField', 'registerEvents');
-                this.template= _.template($('#search-template').html());
                 // The search form templates
                 this.searchFormTemplates.all = _.template( $('#search-all-template').html());
                 this.searchFormTemplates.mode = _.template( $('#search-mode-template').html());
@@ -76,6 +92,24 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             },
 
             /**
+             * Get the search field type selector value.
+             */
+            getSearchFieldTypeValue: function()
+            {
+                return encodeURIComponent(this.ui.searchFieldSelector.val());
+            },
+
+            /**
+             * Get the search query value.
+             *
+             * @returns {*}
+             */
+            getSearchQueryValue: function()
+            {
+                return encodeURIComponent(this.ui.searchInput.val());
+            },
+
+            /**
              * Set this.queryPostScript.
              *
              * @param postScript string
@@ -88,14 +122,14 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             changeSearchField: function()
             {
                 // Grab the field name
-                var newField = encodeURIComponent($(this.$el.selector + ' .search-field').val());
+                var newField = this.getSearchFieldTypeValue();
                 // We want to make sure that we aren't just loading the same template again
                 if (this.searchFormTemplates[newField] !== this.searchFormTemplates[this.field])
                 {
                     // Store the field
                     this.field = newField;
                     // Render with the new template
-                    $(this.$el.selector  + " .input-section").html(
+                    this.ui.searchInputDiv.html(
                         this.searchFormTemplates[String(this.field)](
                             {query: this.query}));
                 }
@@ -110,9 +144,10 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             newSearch: function()
             {
                 // Grab the new search query
-                var newQuery = encodeURIComponent($(this.$el.selector + ' .search-input').val());
+                var newQuery = this.getSearchQueryValue();
                 // Grab the field name
-                var fieldSelection = encodeURIComponent($(this.$el.selector + ' .search-field').val());
+                var fieldSelection = this.getSearchFieldTypeValue();
+
                 if (newQuery !== this.query || fieldSelection !== this.field) {
                     this.query = newQuery;
                     this.field = fieldSelection;
@@ -170,25 +205,24 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 {
                     window.clearTimeout(this.timer);
                 }
-                this.timer = window.setTimeout(this.newSearch, 250);
+                // Flip this to self so that we don't lost our closure
+                var self = this;
+                this.timer = window.setTimeout(
+                    function() {
+                        self.newSearch();
+                    }, 250);
             },
 
-            render: function()
+            onRender: function()
             {
                 this.registerEvents();
-                $(this.el).html(this.template());
-                if (this.field in this.searchFormTemplates)
-                {
-                    $(this.$el.selector  + " .input-section").html(
-                        this.searchFormTemplates[this.field]({query: this.query}));
-                }
-                else
-                {
-                    $(this.$el.selector  + " .input-section").html("Error!");
-                }
+                //$(this.el).html(this.template());
+                this.ui.searchInputDiv.html(
+                            this.searchFormTemplates[this.field]({query: this.query}));
                 // Render subviews
-                $(this.$el.selector + ' .search-results').html("SEARCH RESULT VIEW!");
-                this.assign(this.searchResultView, this.$el.selector + ' .search-results');
+                this.searchResultsRegion.show(this.searchResultView);
+                // Rebind the UI elements
+                this.bindUIElements();
                 GlobalEventHandler.trigger("renderView");
                 return this.trigger('render', this);
             }
