@@ -47,7 +47,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             folioView: null,
 
             regions: {
-                divaViewRegion: ".diva-wrapper",
+                divaViewRegion: "#diva-column",
                 folioViewRegion: "#folio",
                 searchViewRegion: "#manuscript-search",
                 searchNotationViewRegion: "#search-notation"
@@ -56,10 +56,10 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             initialize: function (options) {
                 this.manuscript = new Manuscript(
                     String(GlobalVars.siteUrl + "manuscript/" + this.id.toString() + "/"));
-                console.log(this.manuscript);
                 // Build the subviews
                 this.divaView = new DivaView(
                     {
+                        //el: "#diva-wrapper",
                         siglum: this.manuscript.get("siglum_slug"),
                         folio: options.folio
                     }
@@ -79,6 +79,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
 
             remove: function()
             {
+                console.log("Removing ManuscriptIndividualPageView.");
                 // Remove the subviews
                 this.divaView.remove();
                 this.searchView.remove();
@@ -99,8 +100,15 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             },
 
             /**
+             * Marionette method called automatically before the destroy event happens.
+             */
+            onBeforeDestroy: function()
+            {
+                //this.remove();
+            },
+
+            /**
              *
-             * @returns {undefined}
              */
             updateFolio: function()
             {
@@ -122,7 +130,8 @@ define( ['App', 'backbone', 'marionette', 'jquery',
              */
             getData: function()
             {
-                console.log(this.manuscript);
+                //console.log("GETDATA:");
+                //console.log(this.manuscript);
                 this.manuscript.fetch();
             },
 
@@ -130,16 +139,18 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             {
                 // Set the search view to only search this manuscript
                 this.searchView.setQueryPostScript(' AND manuscript:"' + this.manuscript.get("siglum") + '"');
-                // TODO: Diva is being initialized twice!!!!!!!
                 this.divaView.setManuscript(this.manuscript.get("siglum_slug"));
                 this.searchNotationView.setManuscript(this.manuscript.get("siglum_slug"));
                 this.render();
             },
 
+            /**
+             * Serialize the manuscript before rendering the template.
+             *
+             * @returns {*}
+             */
             serializeData: function()
             {
-                console.log(this.manuscript);
-                console.log(this.manuscript.toJSON());
                 return this.manuscript.toJSON();
             },
 
@@ -147,7 +158,10 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             {
                 // Render subviews
                 if (this.divaView !== undefined) {
-                    this.divaViewRegion.show(this.divaView);
+                    this.divaViewRegion.show(
+                        this.divaView
+                    );
+                    //this.divaView.render();
                 }
                 this.renderFolioView();
                 this.searchViewRegion.show(this.searchView);

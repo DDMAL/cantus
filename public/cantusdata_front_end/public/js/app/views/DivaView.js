@@ -12,9 +12,15 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
         /**
          * Provide an alert message to the user.
          */
-        return CantusAbstractView.extend
+        return Marionette.ItemView.extend
         ({
-            el: "#diva-wrapper",
+            //el: "#diva-wrapper",
+
+            /**
+             * The tag wrapping the diva stuff
+             */
+            tagName: 'div class="row"',
+            template: "#diva-template",
 
             divaInitialized: false,
 
@@ -29,6 +35,11 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
 
             timer: null,
 
+            ui: {
+                divaToolbar: "#diva-toolbar",
+                divaWrapper: "#diva-wrapper"
+            },
+
             // Diva Event handlers
             viewerLoadEvent: null,
             pageChangeEvent: null,
@@ -37,9 +48,9 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
             initialize: function(options)
             {
                 console.log("Initialize Diva View begin.");
-                _.bindAll(this, 'render', 'storeFolioIndex', 'storeInitialFolio',
-                    'setGlobalFullScreen', 'zoomToLocation');
-                this.el = options.el;
+                //_.bindAll(this, 'render', 'storeFolioIndex', 'storeInitialFolio',
+                //    'setGlobalFullScreen', 'zoomToLocation');
+                //this.el = options.el;
                 this.setManuscript(options.siglum, options.folio);
                 console.log("Initialize Diva View end.");
             },
@@ -110,7 +121,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
                 };
 
                 // Initialize Diva
-                $(this.el).diva(options);
+                this.ui.divaWrapper.diva(options);
 
                 this.viewerLoadEvent = diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
                 this.pageChangeEvent = diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
@@ -120,7 +131,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
                 console.log("initailizeDiva() end");
             },
 
-            render: function()
+            onShow: function()
             {
                 //console.log("Diva render() begin.");
                 // We only want to initialize Diva once!
@@ -131,7 +142,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
 
                 GlobalEventHandler.trigger("renderView");
                 //console.log("Diva render() end.");
-                return this.trigger('render', this);
+                //return this.trigger('render', this);
             },
 
             setGlobalFullScreen: function(isFullScreen)
