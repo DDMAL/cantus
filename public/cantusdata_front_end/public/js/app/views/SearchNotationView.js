@@ -29,13 +29,19 @@ define( ['App', 'backbone', 'marionette', 'jquery',
 
             template: "#search-notation-template",
 
+            ui: {
+                typeSelector: ".search-field",
+                searchBox: ".query-input"
+            },
+
             regions: {
-                glyphTypesRegion: ".glyph-types"
+                glyphTypesRegion: ".glyph-types",
+                paginatorRegion: ".note-pagination"
             },
 
             initialize: function(options)
             {
-                _.bindAll(this, 'render', 'registerEvents', 'newSearch',
+                _.bindAll(this, 'registerEvents', 'newSearch',
                     'resultFetchCallback', 'zoomToResult');
                 // The diva view which we will act upon!
                 this.divaView = options.divaView;
@@ -61,6 +67,16 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 this.undelegateEvents();
             },
 
+            getSearchType: function()
+            {
+                return encodeURIComponent(this.ui.typeSelector.val());
+            },
+
+            getSearchValue: function()
+            {
+                return encodeURIComponent(this.ui.searchBox.val());
+            },
+
             setManuscript: function(manuscript)
             {
                 this.manuscript = manuscript;
@@ -84,7 +100,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 // Stop the page from auto-reloading
                 event.preventDefault();
                 // Grab the query
-                this.query  = encodeURIComponent($(this.$el.selector + ' .query-input').val());
+                this.query  = this.getSearchValue();
                 // Handle the empty case
                 if (this.query  === "")
                 {
@@ -95,7 +111,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 else
                 {
                     // Grab the field name
-                    this.field = encodeURIComponent($(this.$el.selector + ' .search-field').val());
+                    this.field = this.getSearchType();
                     this.results.url = GlobalVars.siteUrl + "notation-search/?q=" + this.query + "&type=" + this.field + "&manuscript=" + this.manuscript;
                     this.results.fetch();
                 }
@@ -149,7 +165,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                         "<h4>" + this.results.get("numFound") +
                         ' results found for query "' + this.field + ':' + decodeURIComponent(this.query) + '"</h4>'
                 );
-                this.assign(this.paginator, this.$el.selector + ' .note-pagination');
+                this.paginatorRegion.show(this.paginator);
             }
         });
     });
