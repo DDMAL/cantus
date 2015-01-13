@@ -91,10 +91,10 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
              */
             initializeDiva: function()
             {
-                console.log("initailizeDiva() state");
+                console.log("initailizeDiva() start");
                 var siglum = this.siglum;
-                console.log("siglum:", siglum);
-                this.$el.diva({
+
+                var options = {
                     toolbarParentSelector: "#diva-toolbar",
                     viewerWidthPadding: 0,
                     enableAutoTitle: false,
@@ -107,9 +107,11 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
                     iipServerURL: GlobalVars.iipImageServerUrl + "fcgi-bin/iipsrv.fcgi",
                     objectData: "/static/" + siglum + ".json",
                     imageDir: GlobalVars.divaImageDirectory + siglum
-                });
-                // console.log("this.el:", this.el);
-                // console.log("this.$el:", this.$el);
+                };
+
+                // Initialize Diva
+                $(this.el).diva(options);
+
                 this.viewerLoadEvent = diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
                 this.pageChangeEvent = diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
                 this.modeSwitchEvent = diva.Events.subscribe("ModeDidSwitch", this.setGlobalFullScreen);
@@ -173,7 +175,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
                 // Grab data from diva
                 var divaData = this.getDivaData();
                 // Store the initial folio
-                debugger;
+                //debugger;
                 var number = divaData.getCurrentPageIndex();
                 var name = divaData.getCurrentPageFilename();
                 this.storeFolioIndex(number, name);
@@ -236,7 +238,6 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
              */
             storeFolioIndex: function(index, fileName)
             {
-                //console.log("storeFolioIndex() begin.");
                 // The first time it's ever called
                 if (this.initialFolio === undefined) {
                     this.initialFolio = 0;
@@ -259,7 +260,6 @@ define( ['App', 'backbone', 'marionette', 'jquery', "diva", "diva-highlight",
                         },
                         250);
                 }
-                //console.log("storeFolioIndex() end.");
             },
 
             /**
