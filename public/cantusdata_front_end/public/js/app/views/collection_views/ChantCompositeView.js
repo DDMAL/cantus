@@ -1,26 +1,24 @@
 define( ['App', 'backbone', 'marionette', 'jquery',
-        "collections/ChantCollection",
+        "views/item_views/ChantItemView",
+        "singletons/GlobalEventHandler",
         "models/StateSwitch",
-        "views/CantusAbstractView",
-        "singletons/GlobalEventHandler"],
+        "config/GlobalVars"],
     function(App, Backbone, Marionette, $,
-             ChantCollection,
-             StateSwitch,
-             CantusAbstractView,
+             ChantItemView,
              GlobalEventHandler,
-             template) {
+             StateSwitch,
+             GlobalVars) {
 
 "use strict";
 
 /**
- * Depricated in favour of ChantCompositeView.
+ * A composite view.
  */
-return CantusAbstractView.extend
+return Marionette.CompositeView.extend
 ({
-    /**
-     * Useful switch if you want different functionality on initial load.
-     */
-    alreadyLoaded: false,
+    childView: ChantItemView,
+    childViewContainer: "#accordion",
+    template: "#chant-composite-template",
 
     /**
      * The chant that bootstrap has unfolded!
@@ -36,19 +34,8 @@ return CantusAbstractView.extend
 
     initialize: function()
     {
-        _.bindAll(this, 'render', 'setUnfoldedChant', 'unfoldChantCallback',
-            'foldChantCallback', 'afterFetch');
-        this.template = _.template($('#chant-collection-template').html());
-        this.emptyTemplate = _.template($('#empty-chant-collection-template').html());
-
-        this.collection = new ChantCollection();
-
-        // TODO: Figure out why this is still rendering multiple times
-        this.listenTo(this.collection, 'sync', this.render);
-        // Set the unfolded chant when the global state changes!
+        // Unfold a chant when changechant event happens
         this.listenTo(GlobalEventHandler, "ChangeChant", this.setUnfoldedChant);
-
-        this.alreadyLoaded = 0;
     },
 
     /**
@@ -58,25 +45,29 @@ return CantusAbstractView.extend
      */
     unfoldChantCallback: function(event)
     {
-        console.log("unfoldChantCallback() begin.");
+        //console.log("unfoldChantCallback() begin.");
         // "collapse-1" becomes 1, etc.
         var chant = parseInt(event.target.id.split('-')[1], 10) + 1;
         this.chantStateSwitch.setValue(chant, true);
 
+        //console.log(chant);
+
         GlobalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
         GlobalEventHandler.trigger("SilentUrlUpdate");
-        console.log("unfoldChantCallback() end.");
+        //console.log("unfoldChantCallback() end.");
     },
 
     foldChantCallback: function(event)
     {
-        console.log("foldChantCallback() begin.");
+        //console.log("foldChantCallback() begin.");
         var chant = parseInt(event.target.id.split('-')[1], 10) + 1;
         this.chantStateSwitch.setValue(chant, false);
 
+        //console.log(chant);
+
         GlobalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
         GlobalEventHandler.trigger("SilentUrlUpdate");
-        console.log("foldChantCallback() end.");
+        //console.log("foldChantCallback() end.");
     },
 
     /**
@@ -92,7 +83,7 @@ return CantusAbstractView.extend
         }
     },
 
-    afterFetch: function()
+    onRender: function()
     {
         // Make a new StateSwitch object that we will use to keep track
         // of the open chant.
@@ -108,7 +99,7 @@ return CantusAbstractView.extend
     {
         console.log("setUrl() begin.");
         this.collection.url = url;
-        this.collection.fetch({success: this.afterFetch});
+        this.collection.fetch({success: this.render});
         // Reset the chant if this isn't the initial load
         if (this.alreadyLoaded === true) {
             this.unfoldedChant = undefined;
@@ -122,37 +113,6 @@ return CantusAbstractView.extend
             this.alreadyLoaded = true;
         }
         console.log("setUrl() end.");
-    },
-
-    /**
-     * Render the collection.
-     *
-     * @returns {*}
-     */
-    render: function()
-    {
-        // TODO: Figure out why this gets called 4 times
-        if (this.collection.length === 0)
-        {
-            $(this.el).html(this.emptyTemplate());
-        }
-        else
-        {
-            // Render out the template
-            $(this.el).html(this.template(
-                {
-                    chants: this.collection.toJSON(),
-                    unfoldedChant: this.unfoldedChant
-                }
-            ));
-        }
-        GlobalEventHandler.trigger("renderView");
-        return this.trigger('render', this);
-    },
-
-    resetCollection: function()
-    {
-        this.collection.reset();
     }
 });
 });
