@@ -1283,7 +1283,7 @@ require(['meiEditor', 'https://x2js.googlecode.com/hg/xml2json.js', 'jquery.cent
                     {
                         if(lineArr[curLine].match(/<neume/g))
                         {
-                            var neumeNameString = lineArr[curLine].match(/name=".*" /g);
+                            var neumeNameString = lineArr[curLine].match(/name=".*"[ >]/g);
                             var neumeNameSliced = neumeNameString[0].slice(6, -2);
                             if (meiEditorSettings.activeNeumeChoices.indexOf(neumeNameSliced) == -1)
                             {
