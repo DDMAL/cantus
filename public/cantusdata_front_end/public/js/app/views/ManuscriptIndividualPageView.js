@@ -1,10 +1,3 @@
-//var Manuscript = require(["models/Manuscript"]);
-//var CantusAbstractView = require(["views/CantusAbstractView"]);
-//var FolioView = require(["views/FolioView"]);
-//var DivaView = require(["views/DivaView"]);
-//var InternalSearchView = require(["views/InternalSearchView"]);
-//var SearchNotationView = require(["views/SearchNotationView"]);
-
 define( ['App', 'backbone', 'marionette', 'jquery',
         "models/Manuscript",
         "views/CantusAbstractView",
