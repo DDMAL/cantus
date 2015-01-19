@@ -75,13 +75,14 @@ define(["jquery", "backbone",
 
             manuscriptSingle: function(query, folio, chant)
             {
-                console.log("manuscript single route");
+                console.log("manuscript single route. query:", query, "folio:", folio, "chant:", chant);
                 if (this.manuscriptView !== null)
                 {
                     // We want to make sure that the old view, if it exists, is
                     // completely cleared-out.
                     this.manuscriptView.divaView.uninitializeDiva();
-                    this.manuscriptView.remove();
+                    //this.manuscriptView.remove();
+                    this.manuscriptView.destroy();
                     this.manuscriptView = null;
                 }
 
@@ -91,8 +92,10 @@ define(["jquery", "backbone",
                         folio: folio
                     }
                 );
+                //console.log(this.manuscriptView);
                 // Fetch the data
                 this.manuscriptView.getData();
+                //this.manuscriptView.render();
 
                 GlobalEventHandler.trigger("ChangeManuscript", query);
                 GlobalEventHandler.trigger("ChangeChant", chant);
@@ -117,6 +120,4 @@ define(["jquery", "backbone",
                 // TODO: Handle 404 somehow
             }
         });
-    }
-
-);
+    });
