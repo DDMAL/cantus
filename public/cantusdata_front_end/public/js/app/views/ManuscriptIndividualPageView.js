@@ -52,7 +52,6 @@ return Marionette.LayoutView.extend
         // Build the subviews
         this.divaView = new DivaView(
             {
-                //el: "#diva-wrapper",
                 siglum: this.manuscript.get("siglum_slug"),
                 folio: options.folio
             }
@@ -123,8 +122,6 @@ return Marionette.LayoutView.extend
      */
     getData: function()
     {
-        //console.log("GETDATA:");
-        //console.log(this.manuscript);
         this.manuscript.fetch();
     },
 
@@ -150,11 +147,11 @@ return Marionette.LayoutView.extend
     onRender: function()
     {
         // Render subviews
-        if (this.divaView !== undefined) {
+        if (this.divaView !== undefined)
+        {
             this.divaViewRegion.show(
                 this.divaView
             );
-            //this.divaView.render();
         }
         this.renderFolioView();
         this.searchViewRegion.show(this.searchView);
@@ -164,7 +161,8 @@ return Marionette.LayoutView.extend
 
     renderFolioView: function()
     {
-        if (this.divaView !== undefined) {
+        if (this.divaView !== undefined)
+        {
             this.folioViewRegion.show(this.folioView);
         }
     }
