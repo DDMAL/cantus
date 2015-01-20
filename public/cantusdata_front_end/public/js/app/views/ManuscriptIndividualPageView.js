@@ -127,10 +127,22 @@ return Marionette.LayoutView.extend
 
     afterFetch: function()
     {
+        // Figure out what search fields to activate
+        var notationSearchFields = {};
+        if (this.manuscript.isPluginActivated("pitch-search"))
+        {
+            notationSearchFields.pnames = "Pitch";
+        }
+        if (this.manuscript.isPluginActivated("neume-search"))
+        {
+            notationSearchFields.neumes = "Neume";
+        }
+
         // Set the search view to only search this manuscript
         this.searchView.setQueryPostScript(' AND manuscript:"' + this.manuscript.get("siglum") + '"');
         this.divaView.setManuscript(this.manuscript.get("siglum_slug"));
         this.searchNotationView.setManuscript(this.manuscript.get("siglum_slug"));
+        this.searchNotationView.setSearchFields(notationSearchFields);
         this.render();
     },
 

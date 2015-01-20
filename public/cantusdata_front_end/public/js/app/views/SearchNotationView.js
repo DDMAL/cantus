@@ -31,7 +31,7 @@ return Marionette.LayoutView.extend
 
     template: "#search-notation-template",
 
-    searchFieldNames: {
+    searchFields: {
         pnames: "Pitch",
         neumes: "Neume"
     },
@@ -87,6 +87,16 @@ return Marionette.LayoutView.extend
     setManuscript: function(manuscript)
     {
         this.manuscript = manuscript;
+    },
+
+    /**
+     * Set the search fields to display.
+     *
+     * @param fields
+     */
+    setSearchFields: function(fields)
+    {
+        this.searchFields = fields;
     },
 
     /**
@@ -156,6 +166,27 @@ return Marionette.LayoutView.extend
             this.glyphTypesRegion.show(new GlyphTypeCollectionView({
                 collection: glyphTypes
             }));
+    serializeData: function()
+    {
+        // Create an array with the field types
+        var searchFieldArray = [];
+        for (var fieldCode in this.searchFields)
+        {
+            searchFieldArray.push(
+                {
+                    codeName: fieldCode,
+                    name: this.searchFields[fieldCode]
+                }
+            );
+        }
+
+        console.log("SearchFieldArray:", searchFieldArray);
+
+        return {
+            searchFields:searchFieldArray
+        };
+    },
+
     },
 
     clearResults: function(message)
@@ -167,7 +198,7 @@ return Marionette.LayoutView.extend
     renderResults: function()
     {
         $(this.$el.selector + ' .note-search-results').html(
-                "<h3>" + this.searchFieldNames[this.field] + " search</h3><h4>" +
+                "<h3>" + this.searchFields[this.field] + " search</h3><h4>" +
                 this.results.get("numFound") + ' results found for query "' +
                 decodeURIComponent(this.query) + '"</h4>'
         );
