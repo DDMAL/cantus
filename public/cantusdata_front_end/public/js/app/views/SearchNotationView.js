@@ -29,6 +29,11 @@ return Marionette.LayoutView.extend
 
     template: "#search-notation-template",
 
+    searchFieldNames: {
+        pnames: "Pitch",
+        neumes: "Neume"
+    },
+
     ui: {
         typeSelector: ".search-field",
         searchBox: ".query-input"
@@ -153,17 +158,16 @@ return Marionette.LayoutView.extend
 
     clearResults: function(message)
     {
-        $(this.$el.selector + ' .note-search-results').html(
-            message
-        );
+        $(this.$el.selector + ' .note-search-results').html(message);
         $(this.$el.selector + ' .note-pagination').empty();
     },
 
     renderResults: function()
     {
         $(this.$el.selector + ' .note-search-results').html(
-                "<h4>" + this.results.get("numFound") +
-                ' results found for query "' + this.field + ':' + decodeURIComponent(this.query) + '"</h4>'
+                "<h3>" + this.searchFieldNames[this.field] + " search</h3><h4>" +
+                this.results.get("numFound") + ' results found for query "' +
+                decodeURIComponent(this.query) + '"</h4>'
         );
         this.paginatorRegion.show(this.paginator);
     }
