@@ -48,8 +48,8 @@ return Marionette.ItemView.extend
     initialize: function(options)
     {
         console.log("Initialize Diva View begin.");
-        //_.bindAll(this, 'render', 'storeFolioIndex', 'storeInitialFolio',
-        //    'setGlobalFullScreen', 'zoomToLocation');
+        _.bindAll(this, 'storeFolioIndex', 'storeInitialFolio', 'setFolio',
+            'setGlobalFullScreen', 'zoomToLocation');
         //this.el = options.el;
         this.setManuscript(options.siglum, options.folio);
         console.log("Initialize Diva View end.");
