@@ -113,6 +113,24 @@ return Marionette.CompositeView.extend
             this.alreadyLoaded = true;
         }
         console.log("setUrl() end.");
+    },
+
+    /**
+     * Reset the collection.
+     */
+    resetCollection: function()
+    {
+        this.collection.reset();
+    },
+
+    /**
+     * Set the collection.
+     *
+     * @param collection
+     */
+    setCollection: function(collection)
+    {
+        this.collection = collection;
     }
 });
 });
