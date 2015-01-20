@@ -281,7 +281,7 @@ return Marionette.ItemView.extend
      * @returns {*|jQuery}
      */
     getDivaData: function() {
-        return $(this.el).data('diva');
+        return this.ui.divaWrapper.data('diva');
     },
 
     /**
