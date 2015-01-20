@@ -14,6 +14,8 @@ define( ['App', 'backbone', 'marionette', 'jquery',
              GlobalVars,
              template) {
 
+"use strict";
+
 /**
  * Provide an alert message to the user.
  */
