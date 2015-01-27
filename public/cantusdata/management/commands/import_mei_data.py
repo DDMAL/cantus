@@ -41,12 +41,17 @@ class Command(BaseCommand):
             siglum = "ch-sgs-390"
             mei_location = "data_dumps/mei/csg-390"
             csv_location = "data_dumps/mei_csv/csg-390.csv"
+        elif manuscript == "st_gallen_391":
+            self.stdout.write("St. Gallen 391 manuscript selected.")
+            siglum = "ch-sgs-391"
+            mei_location = "data_dumps/mei/csg-391"
+            csv_location = "data_dumps/mei_csv/csg-391.csv"
         else:
             raise Exception("Please provide manuscript name!")
 
         if mode == "mei_to_csv":
             self.stdout.write("Dumping MEI to CSV.")
-            if (manuscript == "st_gallen_390"):
+            if manuscript == "st_gallen_390" or manuscript == "st_gallen_391":
                 parser = GallenMEI2Parser(mei_location, siglum)
             else:
                 parser = MEI2Parser(mei_location, siglum)
@@ -55,7 +60,7 @@ class Command(BaseCommand):
             self.stdout.write("MEI dumped to CSV.")
         elif mode == "mei_to_solr":
             self.stdout.write("Committing MEI to Solr.")
-            if (manuscript == "st_gallen_390"):
+            if manuscript == "st_gallen_390" or manuscript == "st_gallen_391":
                 parser = GallenMEI2Parser(mei_location, siglum)
             else:
                 parser = MEI2Parser(mei_location, siglum)
