@@ -14,6 +14,7 @@ class Glyph(models.Model):
     style = models.ForeignKey(Style)
     short_code = ShortCodeField(max_length=128, blank=False, null=False,
                                 unique=False)
+    comments = models.TextField(blank=True, null=False)
 
     def __unicode__(self):
         output = u""
