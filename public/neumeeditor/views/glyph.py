@@ -18,8 +18,10 @@ class GlyphDetailHTMLRenderer(CustomHTMLRenderer):
 
 class GlyphList(generics.ListCreateAPIView):
     model = Glyph
+    queryset = Glyph.objects.all()
     serializer_class = GlyphSerializer
-    renderer_classes = (JSONRenderer, JSONPRenderer, GlyphListHTMLRenderer)
+    renderer_classes = (JSONRenderer, JSONPRenderer,
+                        GlyphListHTMLRenderer)
     authentication_classes = (ExpiringTokenAuthentication,
                               SessionAuthentication)
     permission_classes = (IsAuthenticated,)
@@ -27,8 +29,10 @@ class GlyphList(generics.ListCreateAPIView):
 
 class GlyphDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Glyph
+    queryset = Glyph.objects.all()
     serializer_class = GlyphSerializer
-    renderer_classes = (JSONRenderer, JSONPRenderer, GlyphDetailHTMLRenderer)
+    renderer_classes = (JSONRenderer, JSONPRenderer,
+                        GlyphDetailHTMLRenderer)
     authentication_classes = (ExpiringTokenAuthentication,
                               SessionAuthentication)
     permission_classes = (IsAuthenticated,)

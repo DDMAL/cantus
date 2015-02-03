@@ -10,6 +10,7 @@ from rest_framework.renderers import JSONRenderer, JSONPRenderer
 class StyleList(generics.ListCreateAPIView):
     model = Style
     serializer_class = StyleSerializer
+    queryset = Style.objects.all()
     renderer_classes = (JSONRenderer, JSONPRenderer)
     authentication_classes = (ExpiringTokenAuthentication,
                               SessionAuthentication)
@@ -19,6 +20,7 @@ class StyleList(generics.ListCreateAPIView):
 class StyleDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Style
     serializer_class = StyleSerializer
+    queryset = Style.objects.all()
     renderer_classes = (JSONRenderer, JSONPRenderer)
     authentication_classes = (ExpiringTokenAuthentication,
                               SessionAuthentication)
