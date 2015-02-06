@@ -231,7 +231,8 @@
 
         defaults: {
             id: 0,
-            short_code: ""
+            short_code: "",
+            comments: ""
         }
     });
 
