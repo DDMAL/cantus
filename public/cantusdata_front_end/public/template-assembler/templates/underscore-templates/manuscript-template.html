@@ -1,0 +1,56 @@
+<div class="row">
+    <div id="diva-column" class="col-xs-6"></div>
+    <div class="col-xs-6">
+        <div id="manuscript-title-container" class="row">
+            <div class="column-md-12">
+                <h1 class="h3"><%= name %></h1>
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs">
+                    <li class="active"><a href="#manuscript-folio-pane" data-toggle="tab">Folio</a></li>
+                    <li><a href="#manuscript-details-pane" data-toggle="tab">Manuscript Details</a></li>
+                    <li><a href="#manuscript-search-pane" data-toggle="tab">Search Manuscript</a></li>
+                </ul>
+            </div>
+        </div>
+        <div id="manuscript-data-container" class="row">
+            <div class="tab-pane col-md-12 active">
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane active" id="manuscript-folio-pane" >
+                        <div id="folio"></div>
+                    </div>
+                    <div class="tab-pane" id="manuscript-details-pane">
+                        <h4>Siglum</h4>
+                        <p><%= siglum %></p>
+                        <h4>Date</h4>
+                        <p><%= date %></p>
+                        <h4>Provenance</h4>
+                        <p><%= provenance %></p>
+                        <h4>Description</h4>
+                        <p><%= description %></p>
+                    </div>
+                    <div class="tab-pane" id="manuscript-search-pane">
+                        <h3>Search this Manuscript</h3>
+
+                        <!-- Nav tabs -->
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="active"><a href="#text-search-container" role="tab" data-toggle="tab">Text Search</a></li>
+                            <li><a href="#notation-search-container" role="tab" data-toggle="tab">Notation Search</a></li>
+                        </ul>
+
+                        <!-- Tab panes -->
+                        <div class="tab-content">
+                            <div class="tab-pane active" id="text-search-container">
+                                <div id="manuscript-search"></div>
+                            </div>
+                            <div class="tab-pane" id="notation-search-container">
+                                <div id="search-notation"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
