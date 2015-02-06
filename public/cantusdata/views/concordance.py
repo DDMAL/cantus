@@ -15,6 +15,7 @@ class ConcordanceDetailHTMLRenderer(CustomHTMLRenderer):
 
 class ConcordanceList(generics.ListCreateAPIView):
     model = Concordance
+    queryset = Concordance.objects.all()
     serializer_class = ConcordanceSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer,
                          ConcordanceListHTMLRenderer)
@@ -22,6 +23,7 @@ class ConcordanceList(generics.ListCreateAPIView):
 
 class ConcordanceDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Concordance
+    queryset = Concordance.objects.all()
     serializer_class = ConcordanceSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer,
                          ConcordanceDetailHTMLRenderer)

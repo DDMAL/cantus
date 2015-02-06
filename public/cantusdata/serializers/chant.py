@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 
 class ChantSerializer(serializers.HyperlinkedModelSerializer):
-    id = serializers.Field()
+    id = serializers.ReadOnlyField()
 
     class Meta:
         model = Chant

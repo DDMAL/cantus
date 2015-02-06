@@ -24,6 +24,7 @@ class ManuscriptHasChantsMixin(object):
 
 class ManuscriptList(ManuscriptHasChantsMixin, generics.ListCreateAPIView):
     model = Manuscript
+    queryset = Manuscript.objects.all()
     serializer_class = ManuscriptSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer,
                         ManuscriptListHTMLRenderer)
@@ -31,6 +32,7 @@ class ManuscriptList(ManuscriptHasChantsMixin, generics.ListCreateAPIView):
 
 class ManuscriptDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Manuscript
+    queryset = Manuscript.objects.all()
     serializer_class = ManuscriptSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer,
                         ManuscriptDetailHTMLRenderer)
