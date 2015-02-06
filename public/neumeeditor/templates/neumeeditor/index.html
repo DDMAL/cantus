@@ -91,6 +91,24 @@
         <hr/>
         <div class="images-area"></div>
     </div>
+    <div class="col-md-12">
+        <hr/>
+        <div class="row">
+            <div class="col-md-4 glyph-properties-area">
+                <h2>Glyph Properties</h2>
+                <h3>Comments</h3>
+                <form class="form" action="#">
+                    <div class="form-group">
+                        <textarea class="form-control comments-box" rows="3"><%= comments %></textarea>
+                        <button name="save-properties" class="btn btn-default" type="submit">Save Properties</button>
+                        <div class="property-status-message"></div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
 </script>
 
 <script type="text/template" id="upload-image-template">
