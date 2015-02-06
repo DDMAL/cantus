@@ -23,6 +23,7 @@ class ChantList(generics.ListCreateAPIView):
 
 class ChantDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Chant
+    queryset = Chant.objects.all()
     serializer_class = ChantSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer,
     ChantDetailHTMLRenderer)
