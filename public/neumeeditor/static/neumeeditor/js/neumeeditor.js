@@ -352,7 +352,7 @@
                     "image_file": this.model.getAbsoluteImageFile(),
                     // "image_file_absolute": this.model.getAbsoluteImageFile()
                 };
-            },
+            }
         });
 
         var NameView = Backbone.Marionette.ItemView.extend({
