@@ -705,11 +705,97 @@
                 namesArea: ".names-area",
                 nameCreateArea: ".name-create-area",
                 imageUploadArea: ".image-upload-area",
-                imagesEditArea: ".images-area"
+                imagesEditArea: ".images-area",
+                glyphPropertiesArea: ".glyph-properties-area"
             },
 
             modelEvents: {
-                "change": "render"
+                "change": "onChange"
+            },
+
+            events: {
+                "click button[name='save-properties']": "saveProperties"
+            },
+
+            ui: {
+                commentsBox: ".comments-box",
+                statusDiv: ".property-status-message"
+            },
+
+            initialize: function()
+            {
+                this.loadNamesAndImages();
+            },
+
+            saveProperties: function(event)
+            {
+                // Prevent default functionality
+                event.preventDefault();
+                var that = this;
+                console.log(this.model.toJSON());
+                this.model.save(
+                    {
+                        comments: String(this.ui.commentsBox.val())
+                    },
+                    {
+                        success: function() {
+                            console.log("Success.");
+                            that.ui.statusDiv.html("<p>Properties updated successfully.</p>");
+                            that.ui.statusDiv.find("p").fadeOut(2500);
+                            return that.trigger("submit");
+                        },
+                        error: function(test1, test2, test3) {
+                            console.log(that.model.toJSON());
+                            console.log(test1, test2, test3);
+                            that.ui.statusDiv.html("<p>Error saving.<p>");
+                            that.ui.statusDiv.find("p").fadeOut(2500);
+                        }
+                    }
+                );
+            },
+
+            onChange: function()
+            {
+                this.loadNamesAndImages();
+                this.render();
+            },
+
+            loadNamesAndImages: function()
+            {
+                this.glyphNames = glyph.getCollection("name_set", NameCollection, Name);
+                this.glyphImages = glyph.getCollection("image_set", ImageCollection, Image);
+            },
+
+            onShow: function()
+            {
+                this.namesArea.show(new EditNamesView(
+                    {collection: this.glyphNames}
+                ));
+
+                this.nameCreateArea.show(
+                    new CreateNamesView({
+                        glyphId: glyph.get("id"),
+                        createdCollection: this.glyphNames
+                    })
+                );
+
+                this.imagesEditArea.show(
+                    new EditImagesView({
+                        collection: this.glyphImages
+                    })
+                );
+
+                this.imageUploadArea.show(
+                    new CreateImagesView({
+                        glyphId: this.model.get("id"),
+                        createdCollection: this.glyphImages
+                    })
+                );
+            },
+
+            onRender: function()
+            {
+                this.onShow();
             }
 
         });
@@ -745,31 +831,8 @@
 
                 // console.log(editor.model);
 
-                var glyphNames = glyph.getCollection("name_set", NameCollection, Name);
-                var glyphImages = glyph.getCollection("image_set", ImageCollection, Image);
+
                 // console.log(glyphNames);
-
-                editor.namesArea.show(new EditNamesView({collection: glyphNames}));
-
-                editor.nameCreateArea.show(
-                    new CreateNamesView({
-                        glyphId: glyph.get("id"),
-                        createdCollection: glyphNames
-                    })
-                );
-
-                editor.imagesEditArea.show(
-                    new EditImagesView({
-                        collection: glyphImages
-                    })
-                );
-
-                editor.imageUploadArea.show(
-                    new CreateImagesView({
-                        glyphId: 1,
-                        createdCollection: glyphImages
-                    })
-                );
 
             }});
         };
