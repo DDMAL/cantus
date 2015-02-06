@@ -18,8 +18,8 @@ class GlyphSerializer(serializers.HyperlinkedModelSerializer):
         # many=False,
         read_only=True)
 
-    name_set = GlyphNameSetSerializer(many=True)
-    image_set = ImageSerializer(many=True)
+    name_set = GlyphNameSetSerializer(many=True, read_only=True)
+    image_set = ImageSerializer(many=True, read_only=True)
     # name_set = serializers.HyperlinkedRelatedField(many=True, view_name='name-detail', read_only=True)
     # image_set = serializers.HyperlinkedRelatedField(many=True, view_name='image-detail', read_only=True)
 
