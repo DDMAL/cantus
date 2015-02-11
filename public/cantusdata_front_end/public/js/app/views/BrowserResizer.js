@@ -15,6 +15,8 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
             divaFullScreen: null,
             timedQuery: null,
 
+            divaPanelSizeResizeTimer: null,
+
             initialize: function()
             {
                 _.bindAll(this, 'timedQuerySetAll', 'setAll', 'setContainerHeight',
@@ -71,12 +73,27 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
                         $("#content-container").height() - $("#manuscript-title-container").height());
             },
 
+            /**
+             * Recalculate and set the new size of the Diva viewer.
+             */
             setDivaSize: function()
             {
                 if (this.divaFullScreen !== true)
                 {
                     $('.diva-outer').css("height",
                             $("#content-container").height() - 75);
+
+                    var divaData = $('#diva-wrapper').data('diva');
+                    if (divaData !== undefined)
+                    {
+                        // Only try to resize diva if diva exists
+                        console.log("Diva events", diva.Events);
+                        // Include a delay so that we don't have repeats
+                        this.divaPanelSizeResizeTimer = window.setTimeout(
+                            function() {
+                                diva.Events.publish("PanelSizeDidChange");
+                            }, 500);
+                    }
                 }
             },
 
