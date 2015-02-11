@@ -24,7 +24,7 @@ class Manuscript(models.Model):
     provenance = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     chant_count = models.IntegerField(default=0)
-
+    public = models.BooleanField(default=False)
     plugins = models.ManyToManyField("cantusdata.Plugin",
                                      related_name="plugins",
                                      blank=True, null=True)
