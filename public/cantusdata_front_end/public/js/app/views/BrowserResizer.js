@@ -43,7 +43,7 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
             timedQuerySetAll: function()
             {
                 window.clearTimeout(this.timedQuery);
-                this.timedQuery = window.setTimeout(this.setAll, 250);
+                this.timedQuery = window.setTimeout(this.setAll, 500);
             },
 
             setAll: function()
