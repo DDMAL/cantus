@@ -36,7 +36,7 @@ return Marionette.ItemView.extend
     timer: null,
 
     ui: {
-        divaToolbar: "#diva-toolbar",
+        //divaToolbar: "#diva-toolbar",
         divaWrapper: "#diva-wrapper"
     },
 
@@ -55,14 +55,11 @@ return Marionette.ItemView.extend
         console.log("Initialize Diva View end.");
     },
 
-    /**
-     * Destroy Diva instance.
-     */
-    remove: function()
+    onBeforeDestroy: function()
     {
-        // Deal with the event listeners
-        this.stopListening();
-        this.undelegateEvents();
+        console.log("onBeforeDestroy Diva");
+        // Uninitialize Diva
+        this.uninitializeDiva();
         // Clear the fields
         this.initialFolio = null;
         this.currentFolioName = null;
@@ -79,6 +76,9 @@ return Marionette.ItemView.extend
      */
     uninitializeDiva: function()
     {
+        // Diva's default destructor
+        this.getDivaData().destroy();
+
         if (this.divaInitialized)
         {
             // Unsubscribe the event handlers
@@ -120,8 +120,17 @@ return Marionette.ItemView.extend
             imageDir: GlobalVars.divaImageDirectory + siglum
         };
 
+        console.log("Diva options:", options);
+
+        console.log("Diva wrapper:", $("#diva-wrapper"));
+        console.log(document.getElementById('diva-wrapper'));
+
+        // Destroy the diva div just in case
+        this.ui.divaWrapper.empty();
         // Initialize Diva
         this.ui.divaWrapper.diva(options);
+
+        //debugger;
 
         this.viewerLoadEvent = diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
         this.pageChangeEvent = diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
@@ -133,16 +142,15 @@ return Marionette.ItemView.extend
 
     onShow: function()
     {
-        //console.log("Diva render() begin.");
+        console.log("Diva onShow() begin.");
         // We only want to initialize Diva once!
-        if (!this.divaInitialized)
-        {
+        //if (!this.divaInitialized)
+        //{
             this.initializeDiva();
-        }
+        //}
 
         GlobalEventHandler.trigger("renderView");
-        //console.log("Diva render() end.");
-        //return this.trigger('render', this);
+        console.log("Diva onShow() end.");
     },
 
     setGlobalFullScreen: function(isFullScreen)

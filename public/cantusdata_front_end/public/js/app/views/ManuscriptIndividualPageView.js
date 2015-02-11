@@ -96,7 +96,10 @@ return Marionette.LayoutView.extend
      */
     onBeforeDestroy: function()
     {
-        //this.remove();
+        this.divaView.destroy();
+        this.searchView.destroy();
+        this.searchNotationView.destroy();
+        this.folioView.destroy();
     },
 
     /**
@@ -158,26 +161,17 @@ return Marionette.LayoutView.extend
 
     onRender: function()
     {
+        console.log("RENDER MANUSCRIPTPAGEVIEW");
+
         // Render subviews
         if (this.divaView !== undefined)
         {
-            this.divaViewRegion.show(
-                this.divaView
-            );
+            this.divaViewRegion.show(this.divaView, {preventDestroy: true});
+            this.folioViewRegion.show(this.folioView, {preventDestroy: true});
         }
-        this.renderFolioView();
         this.searchViewRegion.show(this.searchView);
         this.searchNotationViewRegion.show(this.searchNotationView);
         GlobalEventHandler.trigger("renderView");
-    },
-
-    renderFolioView: function()
-    {
-        if (this.divaView !== undefined)
-        {
-            this.folioViewRegion.show(this.folioView);
-        }
     }
-
 });
 });

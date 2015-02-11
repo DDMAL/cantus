@@ -33,6 +33,8 @@ return Backbone.Router.extend
     // Browser resizer
     resizer: null,
 
+    mainBodyRegion: null,
+
     routes: {
         "" : "manuscripts",
         "manuscript/:query/?folio=(:folio)&chant=(:chant)": "manuscriptSingle",
@@ -58,6 +60,11 @@ return Backbone.Router.extend
         this.manuscriptsPageView = new ManuscriptsPageView();
         // Get the resizer going
         this.resizer = new BrowserResizer();
+
+        // Set up the main view regions
+        this.mainBodyRegion = new Backbone.Marionette.Region({
+            el: document.querySelector("#view-goes-here")
+        });
     },
 
     index: function()
@@ -69,6 +76,8 @@ return Backbone.Router.extend
     manuscripts: function()
     {
         console.log("manuscripts route");
+        this.manuscriptView.destroy();
+        this.manuscriptView = null;
         this.manuscriptsPageView.update();
         this.manuscriptsPageView.render();
     },
@@ -78,10 +87,7 @@ return Backbone.Router.extend
         console.log("manuscript single route. query:", query, "folio:", folio, "chant:", chant);
         if (this.manuscriptView !== null)
         {
-            // We want to make sure that the old view, if it exists, is
-            // completely cleared-out.
-            this.manuscriptView.divaView.uninitializeDiva();
-            //this.manuscriptView.remove();
+            // We want to make sure that the old view, if it exists, is completely cleared-out.
             this.manuscriptView.destroy();
             this.manuscriptView = null;
         }
