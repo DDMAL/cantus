@@ -151,7 +151,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 this.render();
                 // We have to register the events every time we render
                 this.registerEvents();
-                this.trigger("change");
+                this.trigger("change", {page: this.getPage});
             },
 
             /**

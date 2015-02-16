@@ -2,11 +2,20 @@ define( ['App', 'backbone', 'marionette', 'jquery',
         "models/SearchResult",
         "views/CantusAbstractView",
         "views/PaginationView",
+        "views/item_views/SearchResultItemView",
         "singletons/GlobalEventHandler"],
-    function(App, Backbone, Marionette, $, SearchResult, CantusAbstractView, PaginationView, GlobalEventHandler, template) {
+    function(App, Backbone, Marionette, $,
+             SearchResult,
+             CantusAbstractView,
+             PaginationView,
+             SearchResultItemView,
+             GlobalEventHandler,
+             template) {
 
-        return CantusAbstractView.extend
+        return Marionette.LayoutView.extend
         ({
+            template: "#search-result-template",
+
             showManuscriptName: null,
             pageSize: 10,
             currentPage: null,
@@ -14,12 +23,17 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             query: null,
             field: null,
 
+            regions: {
+                resultRegion: ".result-region",
+                paginationRegion: ".pagination-region"
+            },
+
             initialize: function(options)
             {
                 _.bindAll(this, 'render', 'updatePage', 'changeQuery',
                     'updatePaginationView', 'registerClickEvents',
                     'buttonClickCallback');
-                this.template = _.template($('#search-result-template').html());
+
                 this.currentPage = 1;
                 this.model = new SearchResult();
 
@@ -34,10 +48,20 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                     this.showManuscriptName = options.showManuscriptName;
                 }
 
+                // Create the paginationView
+                this.paginationView = new PaginationView(
+                    {
+                        name: "search-",
+                        currentPage: 0,
+                        elementCount: 0,
+                        pageSize: this.pageSize
+                    }
+                );
+
                 // Query the search result
                 this.model.fetch({success: this.updatePaginationView});
                 this.listenTo(this.model, 'sync', this.registerClickEvents);
-                this.listenTo(this.model, 'sync', this.render);
+                //this.listenTo(this.model, 'sync', this.render);
             },
 
             /**
@@ -88,56 +112,84 @@ define( ['App', 'backbone', 'marionette', 'jquery',
              */
             updatePaginationView: function()
             {
-                this.paginationView = new PaginationView(
-                    {
-                        name: "search",
-                        currentPage: this.currentPage,
-                        elementCount: this.model.get("numFound"),
-                        pageSize: this.pageSize
-                    }
-                );
+                //this.paginationView = new PaginationView(
+                //    {
+                //        name: "search-",
+                //        currentPage: this.currentPage,
+                //        elementCount: this.model.get("numFound"),
+                //        pageSize: this.pageSize
+                //    }
+                //);
+                // Set the paginationView's new properties
+
+                this.paginationView.currentPage = this.currentPage;
+                this.paginationView.elementCount = this.model.get("numFound");
+                this.paginationView.pageSize = this.pageSize;
+                // Render it
+                this.paginationView.render();
+
                 this.listenTo(this.paginationView, 'change', this.updatePage);
             },
 
             /**
              * Grab the page number from the paginator
              */
-            updatePage: function()
+            updatePage: function(args)
             {
-                // Grab the page
-                this.currentPage = this.paginationView.getPage();
+                console.log("ARGS TEST", args);
+                // Grab the page from the event arguments
+                this.currentPage = args.page;
                 // Rebuild the model with a modified query
                 this.model.setQuery(this.query + "&start=" + (this.pageSize * (this.currentPage - 1)));
                 this.model.fetch();
             },
 
-            render: function()
+            /**
+             * Generate the data that will populate the rendered template.
+             *
+             * @returns {{showManuscriptName: *, searchType: (field|*), results: *}}
+             */
+            serializeData: function()
             {
-                // Only render if the model is defined
-                if (this.model !== undefined)
-                {
-                    console.log("Showmanuscriptname: ", this.showManuscriptName);
-                    $(this.el).html(this.template(
-                        {
-                            showManuscriptName: this.showManuscriptName,
-                            searchType: this.field,
-                            results: this.model.getFormattedData()
-                        }
-                    ));
-                    if (this.model.getFormattedData().length !== 0 && this.paginationView !== null)
-                    {
-                        this.assign(this.paginationView, this.$el.selector + " .pagination");
-                    }
-                }
-                GlobalEventHandler.trigger("renderView");
-                return this.trigger('render', this);
+                return {
+                    showManuscriptName: this.showManuscriptName,
+                    searchType: this.field,
+                    results: this.model.getFormattedData()
+                };
             },
 
+            //onRender: function()
+            //{
+            //    if (this.paginationView !== null)
+            //    {
+            //        this.paginationView.render();
+            //        //this.paginationRegion.show(new PaginationView(
+            //        //    {
+            //        //        name: "search-" + Math.floor((Math.random() * 100) + 1),
+            //        //        currentPage: this.currentPage,
+            //        //        elementCount: this.model.get("numFound"),
+            //        //        pageSize: this.pageSize
+            //        //    }
+            //        //));
+            //    }
+            //},
+
+            onShow: function()
+            {
+                //var test = new SearchResult("dom%20%20AND%20manuscript:%22CDN-Hsmu%20M2149.L4%22");
+                //test.fetch();
+                this.resultRegion.show(new SearchResultItemView({model: this.model}));
+                this.paginationRegion.show(this.paginationView);
+
+                GlobalEventHandler.trigger("renderView");
+            },
+
+            /**
+             * Clear the results object.
+             */
             hide: function()
             {
-                $(this.el).html(this.template({results: []}));
-                GlobalEventHandler.trigger("renderView");
-                return this.trigger('render', this);
+                this.model.clear();
             }
         });
     });

@@ -216,7 +216,6 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             onRender: function()
             {
                 this.registerEvents();
-                //$(this.el).html(this.template());
                 this.ui.searchInputDiv.html(
                             this.searchFormTemplates[this.field]({query: this.query}));
                 // Render subviews
