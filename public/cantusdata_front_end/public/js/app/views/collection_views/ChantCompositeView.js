@@ -45,29 +45,19 @@ return Marionette.CompositeView.extend
      */
     unfoldChantCallback: function(event)
     {
-        //console.log("unfoldChantCallback() begin.");
         // "collapse-1" becomes 1, etc.
         var chant = parseInt(event.target.id.split('-')[1], 10) + 1;
         this.chantStateSwitch.setValue(chant, true);
-
-        //console.log(chant);
-
         GlobalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
         GlobalEventHandler.trigger("SilentUrlUpdate");
-        //console.log("unfoldChantCallback() end.");
     },
 
     foldChantCallback: function(event)
     {
-        //console.log("foldChantCallback() begin.");
         var chant = parseInt(event.target.id.split('-')[1], 10) + 1;
         this.chantStateSwitch.setValue(chant, false);
-
-        //console.log(chant);
-
         GlobalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
         GlobalEventHandler.trigger("SilentUrlUpdate");
-        //console.log("foldChantCallback() end.");
     },
 
     /**
