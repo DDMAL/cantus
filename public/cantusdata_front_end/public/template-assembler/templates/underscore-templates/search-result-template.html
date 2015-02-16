@@ -1,32 +1,3 @@
 <h3>Results</h3>
-<table class="table table-striped">
-    <% if (results.length == 0) { %>
-    No results.
-    <% } %>
-    <% for (var i = 0; i < results.length; i++) { %>
-    <tr>
-        <td><a href="<%= results[i].url %>" class="search-result-<%= i %>"><%= results[i].name %></a></td>
-        <td><%= results[i].model %></td>
-        <% if (showManuscriptName === true) { %>
-        <% if (results[i].manuscript !== undefined) { %>
-        <td><%= results[i].manuscript %></td>
-        <% } else { %>
-        <td></td>
-        <% } %>
-        <% } %>
-        <% if (searchType == "volpiano") { %>
-        <% if (results[i].volpiano !== undefined) { %>
-        <td class="volpiano"><%= results[i].volpiano %></td>
-        <% } else { %>
-        <td></td>
-        <% } %>
-        <% } %>
-        <% if (results[i].folio !== undefined) { %>
-        <td><%= results[i].folio %></td>
-        <% } else { %>
-        <td></td>
-        <% } %>
-    </tr>
-    <% } %>
-</table>
-<div class="pagination"></div>
+<div class="result-region"></div>
+<div class="pagination-region"></div>
