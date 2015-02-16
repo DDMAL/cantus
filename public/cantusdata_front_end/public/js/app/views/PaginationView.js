@@ -16,7 +16,6 @@ define( ['App', 'backbone', 'marionette', 'jquery',
          */
         return CantusAbstractView.extend
         ({
-            name: null,
             elementCount: 1,
             pageCount: 1,
             pageSize: 10,
@@ -35,21 +34,30 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                     'render', 'buttonClick');
                 this.template = _.template($('#pagination-template').html());
 
-                this.name = options.name;
+                this.setParams(options.elementCount,
+                    options.pageSize, options.currentPage);
+            },
 
+            /**
+             * Set the paginator params.  Equivalent to re-construction.
+             *
+             * @param elementCount
+             * @param pageSize
+             * @param currentPage
+             */
+            setParams: function(elementCount, pageSize, currentPage)
+            {
                 // Set the size and the current
-                this.elementCount = options.elementCount;
-                this.pageSize = options.pageSize;
-
+                this.elementCount = elementCount;
+                this.pageSize = pageSize;
                 // Calculate number of pages
                 this.pageCount = Math.floor(this.elementCount / this.pageSize);
                 if (this.elementCount % this.pageSize !== 0)
                 {
                     this.pageCount++;
                 }
-
-                // Page must be set after pagecount exists
-                this.setPage(options.currentPage);
+                // Calculate number of pages
+                this.setPage(currentPage);
             },
 
             /**
@@ -67,19 +75,19 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 // Backwards
                 if (this.currentPage > 1)
                 {
-                    this.events["click #" + this.name + "-page-back"] = "decrement";
+                    this.events["click .page-back"] = "decrement";
                 }
                 // Forwards
                 if (this.currentPage < this.pageCount)
                 {
-                    this.events["click #" + this.name + "-page-forward"] = "increment";
+                    this.events["click .page-forward"] = "increment";
                 }
                 // Add the page clickers
                 for (var i = this.startPage; i <= this.endPage; i++)
                 {
                     if (i !== this.currentPage)
                     {
-                        this.events["click #" + this.name + "-page-" + i] = "buttonClick";
+                        this.events["click .page-" + i] = "buttonClick";
                     }
                 }
                 // Delegate the new events
@@ -151,7 +159,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 this.render();
                 // We have to register the events every time we render
                 this.registerEvents();
-                this.trigger("change", {page: this.getPage});
+                this.trigger("change", {page: this.getPage()});
             },
 
             /**
@@ -178,16 +186,22 @@ define( ['App', 'backbone', 'marionette', 'jquery',
              */
             buttonClick: function(query)
             {
-                var buttonId = query.target.id;
+                console.log("query:", query);
+                var buttonId = query.target.className;
                 var newPage = parseInt(buttonId.split("page-")[1], 10);
+                console.log("NEWPAGE: ", newPage);
                 this.setPage(newPage);
             },
 
             render: function()
             {
+                console.log("Rendering Paginator",                     {
+                    startPage: this.startPage,
+                    endPage: this.endPage,
+                    currentPage: this.currentPage
+                });
                 $(this.el).html(this.template(
                     {
-                        name: this.name,
                         startPage: this.startPage,
                         endPage: this.endPage,
                         currentPage: this.currentPage

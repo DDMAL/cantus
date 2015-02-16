@@ -51,7 +51,6 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 // Create the paginationView
                 this.paginationView = new PaginationView(
                     {
-                        name: "search-",
                         currentPage: 0,
                         elementCount: 0,
                         pageSize: this.pageSize
@@ -61,7 +60,8 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 // Query the search result
                 this.model.fetch({success: this.updatePaginationView});
                 this.listenTo(this.model, 'sync', this.registerClickEvents);
-                //this.listenTo(this.model, 'sync', this.render);
+                this.listenTo(this.paginationView, 'change', this.updatePage);
+                //this.listenTo(this.model, 'sync', this.updatePaginationView);
             },
 
             /**
@@ -112,23 +112,16 @@ define( ['App', 'backbone', 'marionette', 'jquery',
              */
             updatePaginationView: function()
             {
-                //this.paginationView = new PaginationView(
-                //    {
-                //        name: "search-",
-                //        currentPage: this.currentPage,
-                //        elementCount: this.model.get("numFound"),
-                //        pageSize: this.pageSize
-                //    }
-                //);
-                // Set the paginationView's new properties
+                console.log("updatePaginationView() numFound:", this.model.get("numFound"));
 
-                this.paginationView.currentPage = this.currentPage;
-                this.paginationView.elementCount = this.model.get("numFound");
-                this.paginationView.pageSize = this.pageSize;
+                // Update the paginator parameters.
+                this.paginationView.setParams(
+                    this.model.get("numFound"),
+                    this.pageSize,
+                    this.currentPage);
+
                 // Render it
                 this.paginationView.render();
-
-                this.listenTo(this.paginationView, 'change', this.updatePage);
             },
 
             /**
@@ -157,22 +150,6 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                     results: this.model.getFormattedData()
                 };
             },
-
-            //onRender: function()
-            //{
-            //    if (this.paginationView !== null)
-            //    {
-            //        this.paginationView.render();
-            //        //this.paginationRegion.show(new PaginationView(
-            //        //    {
-            //        //        name: "search-" + Math.floor((Math.random() * 100) + 1),
-            //        //        currentPage: this.currentPage,
-            //        //        elementCount: this.model.get("numFound"),
-            //        //        pageSize: this.pageSize
-            //        //    }
-            //        //));
-            //    }
-            //},
 
             onShow: function()
             {
