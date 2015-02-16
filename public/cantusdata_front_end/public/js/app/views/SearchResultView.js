@@ -1,7 +1,3 @@
-//var SearchResult = require(["models/SearchResult"]);
-//var CantusAbstractView = require(["views/CantusAbstractView"]);
-//var PaginationView = require(["views/PaginationView"]);
-
 define( ['App', 'backbone', 'marionette', 'jquery',
         "models/SearchResult",
         "views/CantusAbstractView",
