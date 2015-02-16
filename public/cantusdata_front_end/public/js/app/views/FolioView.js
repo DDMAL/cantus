@@ -1,7 +1,3 @@
-//var Folio = require(["models/Folio"]);
-//var CantusAbstractView = require(["views/CantusAbstractView"]);
-//var ChantCollectionView = require(["views/ChantCollectionView"]);
-
 define( ['App', 'backbone', 'marionette', 'jquery',
         "models/Folio",
         "views/CantusAbstractView",
