@@ -85,6 +85,9 @@ class SolrSearch(object):
                     # Start should only ever have one value, so we'll just
                     # grab it from index 0.
                     self.solr_params['start'] = int(v[0])
+                elif k == 'sort':
+                    # Treat sort as a string, not a one-element tuple
+                    self.solr_params['sort'] = str(v[0])
                 else:
                     arr.append(u"{0}:({1})".format(k, " OR ".join(["\"{0}\"".format(s) for s in v if v is not None])))
             self.prepared_query = u" AND ".join(arr)
