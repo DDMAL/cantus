@@ -1,7 +1,3 @@
-//var Folio = require(["models/Folio"]);
-//var CantusAbstractView = require(["views/CantusAbstractView"]);
-//var ChantCollectionView = require(["views/ChantCollectionView"]);
-
 define( ['App', 'backbone', 'marionette', 'jquery',
         "models/Folio",
         "views/CantusAbstractView",
@@ -34,7 +30,7 @@ return Marionette.ItemView.extend
      */
     tagName: function() {
         // "item_id" is what solr calls the standard django id
-        var output =  'div id="chant-' + this.model.get("item_id") + '" class="panel panel-default';
+        var output =  'div id="chant-' + parseInt(this.model.get("sequence"), 10) + '" class="panel panel-default';
         if (this.open) {
             // Append "in" if open
             output += " in ";

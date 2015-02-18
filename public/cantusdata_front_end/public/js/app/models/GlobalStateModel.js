@@ -52,7 +52,6 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
 
             silentUrlUpdate: function()
             {
-                console.log("silentUrlUpdate()");
                 // Don't actually trigger the router!
                 Backbone.history.navigate(this.getUrl(), {trigger: false});
             }

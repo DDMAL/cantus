@@ -46,17 +46,23 @@ return Marionette.CompositeView.extend
     unfoldChantCallback: function(event)
     {
         // "collapse-1" becomes 1, etc.
-        var chant = parseInt(event.target.id.split('-')[1], 10) + 1;
-        this.chantStateSwitch.setValue(chant, true);
-        GlobalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
+        var chant = parseInt(event.target.id.split('-')[1], 10);
+        this.chantStateSwitch.setValue(chant - 1, true);
+        GlobalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue() + 1);
         GlobalEventHandler.trigger("SilentUrlUpdate");
     },
 
     foldChantCallback: function(event)
     {
-        var chant = parseInt(event.target.id.split('-')[1], 10) + 1;
-        this.chantStateSwitch.setValue(chant, false);
-        GlobalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
+        var chant = parseInt(event.target.id.split('-')[1], 10);
+        this.chantStateSwitch.setValue(chant - 1, false);
+        var newGlobalValue = this.chantStateSwitch.getValue();
+        if (newGlobalValue !== undefined)
+        {
+            // Increase it by one because the GUI isn't 0-indexed, but the StateSwitch is.
+            newGlobalValue += 1;
+        }
+        GlobalEventHandler.trigger("ChangeChant", newGlobalValue);
         GlobalEventHandler.trigger("SilentUrlUpdate");
     },
 
@@ -87,7 +93,6 @@ return Marionette.CompositeView.extend
      */
     setUrl: function(url)
     {
-        console.log("setUrl() begin.");
         this.collection.url = url;
         this.collection.fetch({success: this.render});
         // Reset the chant if this isn't the initial load
@@ -102,7 +107,6 @@ return Marionette.CompositeView.extend
         {
             this.alreadyLoaded = true;
         }
-        console.log("setUrl() end.");
     },
 
     /**

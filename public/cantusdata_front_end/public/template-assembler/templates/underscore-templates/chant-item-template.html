@@ -2,13 +2,13 @@
 {#    <div id="chant-<%= incipit %>" class="panel panel-default">#}
 <div class="panel-heading">
     <h4 class="panel-title">
-        <a data-toggle="collapse" data-parent="#accordion" href="#collapse-<%= item_id %>">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapse-<%= sequence %>">
             {#                <a data-toggle="collapse" data-parent="#accordion" href="#collapse-<%= index %>">#}
             <%= incipit %>
         </a>
     </h4>
 </div>
-<div id="collapse-<%= item_id %>" class="panel-collapse collapse">
+<div id="collapse-<%= sequence %>" class="panel-collapse collapse">
     <div class="panel-body">
         <% if (marginalia) { %>
         <p><b>Marginalia:</b> <%= marginalia %></p>
