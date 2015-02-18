@@ -36,6 +36,11 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             queryPostScript: null,
             timer: null,
 
+            /**
+             * Some particular paramaters.
+             */
+            sort: "folio asc",
+
             // Subviews
             searchResultView: null,
             showManuscriptName: true,
@@ -82,6 +87,12 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                     {
                         this.setQueryPostScript(options.queryPostScript);
                     }
+                    else
+                    {
+                        // There is no postScript, but there still might be
+                        // other parameters, such as sorting...
+                        this.setQueryPostScript("");
+                    }
                 }
                 this.searchResultView = new SearchResultView(
                     {
@@ -116,7 +127,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
              */
             setQueryPostScript: function(postScript)
             {
-                this.queryPostScript = String(postScript);
+                this.queryPostScript = String(postScript) + "&sort=" + this.sort;
             },
 
             changeSearchField: function()
