@@ -29,7 +29,7 @@ class SearchView(APIView):
             return Response({'numFound': 0, 'results': [],
                              'facets': facets.facet_counts})
 
-        search_results = s.search(rows=10)
+        search_results = s.search(rows=15)
         result = dict({'numFound': search_results.numFound,
                   'results': search_results,
                   'facets': facets.facet_counts}.items()
