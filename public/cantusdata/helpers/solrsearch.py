@@ -70,7 +70,6 @@ class SolrSearch(object):
         qdict = self.request.GET
         for k, v in qdict.lists():
             self.parsed_request[k] = v
-        print self.parsed_request
 
     def _prepare_query(self):
         if self.parsed_request:
@@ -94,10 +93,7 @@ class SolrSearch(object):
         else:
             self.prepared_query = u"*:*"
 
-        print self.prepared_query
-
 
 class SolrSearchQueryless(SolrSearch):
     def _parse_request(self):
-        print self.request
         self.parsed_request = urlparse.parse_qs(self.request)
