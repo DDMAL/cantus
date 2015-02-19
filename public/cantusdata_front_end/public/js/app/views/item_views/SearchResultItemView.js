@@ -19,12 +19,6 @@ define( ['App', 'backbone', 'marionette'],
                 return {
                     results: this.model.getFormattedData()
                 };
-            },
-
-            onRender: function()
-            {
-                // Test method to see what the serialized data looks like
-                console.log("item:", this.serializeData());
             }
         });
     });

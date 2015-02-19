@@ -112,7 +112,6 @@ define( ['App', 'backbone', 'marionette', 'jquery',
              */
             updatePaginationView: function()
             {
-                console.log("updatePaginationView() numFound:", this.model.get("numFound"));
 
                 // Update the paginator parameters.
                 this.paginationView.setParams(
@@ -129,7 +128,6 @@ define( ['App', 'backbone', 'marionette', 'jquery',
              */
             updatePage: function(args)
             {
-                console.log("ARGS TEST", args);
                 // Grab the page from the event arguments
                 this.currentPage = args.page;
                 // Rebuild the model with a modified query

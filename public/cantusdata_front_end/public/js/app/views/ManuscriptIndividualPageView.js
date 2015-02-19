@@ -71,7 +71,6 @@ return Marionette.LayoutView.extend
 
     remove: function()
     {
-        console.log("Removing ManuscriptIndividualPageView.");
         // Remove the subviews
         this.divaView.remove();
         this.searchView.remove();
@@ -107,7 +106,6 @@ return Marionette.LayoutView.extend
      */
     updateFolio: function()
     {
-        console.log("updateFolio() begin.");
         var folio = this.divaView.getFolio();
         // Query the folio set at that specific manuscript number
         var newUrl =  GlobalVars.siteUrl + "folio-set/manuscript/" + this.manuscript.get("id") + "/" + folio + "/";
@@ -117,7 +115,6 @@ return Marionette.LayoutView.extend
         this.folioView.update();
         GlobalEventHandler.trigger("ChangeFolio", folio);
         GlobalEventHandler.trigger("SilentUrlUpdate");
-        console.log("updateFolio() end.");
     },
 
     /**
@@ -161,8 +158,6 @@ return Marionette.LayoutView.extend
 
     onRender: function()
     {
-        console.log("RENDER MANUSCRIPTPAGEVIEW");
-
         // Render subviews
         if (this.divaView !== undefined)
         {

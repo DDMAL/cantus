@@ -13,7 +13,6 @@ define(['jquery', 'backbone', 'marionette', 'underscore'],
 //        });
 
         App.addInitializer(function () {
-            console.log('Starting history.');
             Backbone.history.start({ pushState: true });
         });
 

@@ -69,13 +69,11 @@ return Backbone.Router.extend
 
     index: function()
     {
-        console.log("index route");
         this.indexView.render();
     },
 
     manuscripts: function()
     {
-        console.log("manuscripts route");
         this.manuscriptView.destroy();
         this.manuscriptView = null;
         this.manuscriptsPageView.update();
@@ -84,7 +82,6 @@ return Backbone.Router.extend
 
     manuscriptSingle: function(query, folio, chant)
     {
-        console.log("manuscript single route. query:", query, "folio:", folio, "chant:", chant);
         if (this.manuscriptView !== null)
         {
             // We want to make sure that the old view, if it exists, is completely cleared-out.
@@ -109,7 +106,6 @@ return Backbone.Router.extend
 
     search: function(query)
     {
-        console.log("search view");
         // Delete a search view if it exists
         if (this.searchView !== null && this.searchView !== undefined)
         {

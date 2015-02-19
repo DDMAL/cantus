@@ -179,9 +179,6 @@ return Marionette.LayoutView.extend
                 }
             );
         }
-
-        console.log("SearchFieldArray:", searchFieldArray);
-
         return {
             searchFields:searchFieldArray
         };

@@ -55,17 +55,14 @@ return Marionette.ItemView.extend
 
     initialize: function(options)
     {
-        console.log("Initialize Diva View begin.");
         _.bindAll(this, 'storeFolioIndex', 'storeInitialFolio', 'setFolio',
             'setGlobalFullScreen', 'zoomToLocation');
         //this.el = options.el;
         this.setManuscript(options.siglum, options.folio);
-        console.log("Initialize Diva View end.");
     },
 
     onBeforeDestroy: function()
     {
-        console.log("onBeforeDestroy Diva");
         // Uninitialize Diva
         this.uninitializeDiva();
         // Clear the fields
@@ -110,7 +107,6 @@ return Marionette.ItemView.extend
      */
     initializeDiva: function()
     {
-        console.log("initailizeDiva() start");
         var siglum = this.siglum;
 
         var options = {
@@ -129,29 +125,20 @@ return Marionette.ItemView.extend
             imageDir: GlobalVars.divaImageDirectory + siglum
         };
 
-        console.log("Diva options:", options);
-
-        console.log("Diva wrapper:", $("#diva-wrapper"));
-        console.log(document.getElementById('diva-wrapper'));
-
         // Destroy the diva div just in case
         this.ui.divaWrapper.empty();
         // Initialize Diva
         this.ui.divaWrapper.diva(options);
-
-        //debugger;
 
         this.viewerLoadEvent = diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
         this.pageChangeEvent = diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
         this.modeSwitchEvent = diva.Events.subscribe("ModeDidSwitch", this.setGlobalFullScreen);
         // Remember that we've initialized diva
         this.divaInitialized = true;
-        console.log("initailizeDiva() end");
     },
 
     onShow: function()
     {
-        console.log("Diva onShow() begin.");
         // We only want to initialize Diva once!
         //if (!this.divaInitialized)
         //{
@@ -159,7 +146,6 @@ return Marionette.ItemView.extend
         //}
 
         GlobalEventHandler.trigger("renderView");
-        console.log("Diva onShow() end.");
     },
 
     setGlobalFullScreen: function(isFullScreen)
@@ -198,8 +184,6 @@ return Marionette.ItemView.extend
         // If there exists a client-defined initial folio
         if (this.initialFolio !== undefined)
         {
-            console.log("intialFolio:", this.initialFolio);
-            console.log("setFolio:", this.setFolio);
             this.setFolio(this.initialFolio);
         }
         // Grab data from diva

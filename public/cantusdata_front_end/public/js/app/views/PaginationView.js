@@ -186,20 +186,13 @@ define( ['App', 'backbone', 'marionette', 'jquery',
              */
             buttonClick: function(query)
             {
-                console.log("query:", query);
                 var buttonId = query.target.className;
                 var newPage = parseInt(buttonId.split("page-")[1], 10);
-                console.log("NEWPAGE: ", newPage);
                 this.setPage(newPage);
             },
 
             render: function()
             {
-                console.log("Rendering Paginator",                     {
-                    startPage: this.startPage,
-                    endPage: this.endPage,
-                    currentPage: this.currentPage
-                });
                 $(this.el).html(this.template(
                     {
                         startPage: this.startPage,

@@ -58,25 +58,19 @@ return CantusAbstractView.extend
      */
     unfoldChantCallback: function(event)
     {
-        console.log("unfoldChantCallback() begin.");
         // "collapse-1" becomes 1, etc.
         var chant = parseInt(event.target.id.split('-')[1], 10) + 1;
         this.chantStateSwitch.setValue(chant, true);
-
         GlobalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
         GlobalEventHandler.trigger("SilentUrlUpdate");
-        console.log("unfoldChantCallback() end.");
     },
 
     foldChantCallback: function(event)
     {
-        console.log("foldChantCallback() begin.");
         var chant = parseInt(event.target.id.split('-')[1], 10) + 1;
         this.chantStateSwitch.setValue(chant, false);
-
         GlobalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue());
         GlobalEventHandler.trigger("SilentUrlUpdate");
-        console.log("foldChantCallback() end.");
     },
 
     /**
@@ -106,11 +100,11 @@ return CantusAbstractView.extend
      */
     setUrl: function(url)
     {
-        console.log("setUrl() begin.");
         this.collection.url = url;
         this.collection.fetch({success: this.afterFetch});
         // Reset the chant if this isn't the initial load
-        if (this.alreadyLoaded === true) {
+        if (this.alreadyLoaded === true)
+        {
             this.unfoldedChant = undefined;
             GlobalEventHandler.trigger("ChangeChant", undefined);
             // If we don't update the URL then the chant persists when we
@@ -121,7 +115,6 @@ return CantusAbstractView.extend
         {
             this.alreadyLoaded = true;
         }
-        console.log("setUrl() end.");
     },
 
     /**

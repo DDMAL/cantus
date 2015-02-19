@@ -87,7 +87,6 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
                     if (divaData !== undefined)
                     {
                         // Only try to resize diva if diva exists
-                        console.log("Diva events", diva.Events);
                         // Include a delay so that we don't have repeats
                         this.divaPanelSizeResizeTimer = window.setTimeout(
                             function() {

@@ -72,7 +72,6 @@ return Marionette.LayoutView.extend
     //},
     onDestroy: function()
     {
-        console.log("Destroy FolioView");
         //this.chantCompositeView.destroy();
     },
 
@@ -165,9 +164,6 @@ return Marionette.LayoutView.extend
 
     onShow: function()
     {
-        console.log("Rendering FolioView.");
-
-        console.log("Current test:", this.chantCompositeView, this.chantListRegion);
         this.chantListRegion.show(this.chantCompositeView);
 
         GlobalEventHandler.trigger("renderView");
