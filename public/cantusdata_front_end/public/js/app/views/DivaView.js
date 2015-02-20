@@ -119,6 +119,8 @@ return Marionette.ItemView.extend
             enableHighlight: true,
             enableDownload: true,
             fixedHeightGrid: false,
+            enableKeyScroll: false,
+            enableSpaceScroll: false,
             enableCanvas: true,
             iipServerURL: GlobalVars.iipImageServerUrl + "fcgi-bin/iipsrv.fcgi",
             objectData: "/static/" + siglum + ".json",
