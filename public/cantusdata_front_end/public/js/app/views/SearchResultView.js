@@ -112,7 +112,6 @@ define( ['App', 'backbone', 'marionette', 'jquery',
              */
             updatePaginationView: function()
             {
-
                 // Update the paginator parameters.
                 this.paginationView.setParams(
                     this.model.get("numFound"),
