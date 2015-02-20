@@ -71,11 +71,6 @@ return Marionette.LayoutView.extend
 
     remove: function()
     {
-        // Remove the subviews
-        this.divaView.remove();
-        this.searchView.remove();
-        this.searchNotationView.remove();
-        this.folioView.remove();
         // Deal with the event listeners
         this.stopListening();
         this.undelegateEvents();
