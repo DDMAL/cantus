@@ -17,7 +17,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
 return Marionette.CompositeView.extend
 ({
     childView: ChantItemView,
-    childViewContainer: "#accordion",
+    childViewContainer: ".accordion",
     template: "#chant-composite-template",
 
     /**
@@ -32,8 +32,13 @@ return Marionette.CompositeView.extend
         'show.bs.collapse': 'unfoldChantCallback'
     },
 
+    ui: {
+        errorMessages: ".error-messages"
+    },
+
     initialize: function()
     {
+        this.collection = new Backbone.Collection();
         // Unfold a chant when changechant event happens
         this.listenTo(GlobalEventHandler, "ChangeChant", this.setUnfoldedChant);
     },
@@ -84,6 +89,17 @@ return Marionette.CompositeView.extend
         // Make a new StateSwitch object that we will use to keep track
         // of the open chant.
         this.chantStateSwitch = new StateSwitch(this.collection.length);
+        // We need to display messages if there are no chants.
+        if (this.collection.length === 0)
+        {
+            // No chants
+            this.ui.errorMessages.html("This folio does not contain musical data.");
+        }
+        else
+        {
+            // Some chants
+            this.ui.errorMessages.html();
+        }
     },
 
     /**
@@ -96,7 +112,8 @@ return Marionette.CompositeView.extend
         this.collection.url = url;
         this.collection.fetch({success: this.render});
         // Reset the chant if this isn't the initial load
-        if (this.alreadyLoaded === true) {
+        if (this.alreadyLoaded === true)
+        {
             this.unfoldedChant = undefined;
             GlobalEventHandler.trigger("ChangeChant", undefined);
             // If we don't update the URL then the chant persists when we
@@ -114,6 +131,7 @@ return Marionette.CompositeView.extend
      */
     resetCollection: function()
     {
+        console.log("Resetting Collection");
         this.collection.reset();
         this.render();
     }
