@@ -143,6 +143,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                     this.ui.searchInputDiv.html(
                         this.searchFormTemplates[String(this.field)](
                             {query: this.query}));
+                    this.bindUIElements();
                 }
                 // We want to fire off a search
                 this.newSearch();
@@ -158,7 +159,6 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 var newQuery = this.getSearchQueryValue();
                 // Grab the field name
                 var fieldSelection = this.getSearchFieldTypeValue();
-
                 if (newQuery !== this.query || fieldSelection !== this.field) {
                     this.query = newQuery;
                     this.field = fieldSelection;
@@ -234,7 +234,6 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 // Rebind the UI elements
                 this.bindUIElements();
                 GlobalEventHandler.trigger("renderView");
-                return this.trigger('render', this);
             }
         });
     });
