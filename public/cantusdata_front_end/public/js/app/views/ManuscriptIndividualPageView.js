@@ -105,9 +105,8 @@ return Marionette.LayoutView.extend
         // Query the folio set at that specific manuscript number
         var newUrl =  GlobalVars.siteUrl + "folio-set/manuscript/" + this.manuscript.get("id") + "/" + folio + "/";
         // Rebuild the folio View
-        this.folioView.setUrl(newUrl);
         this.folioView.setCustomNumber(folio);
-        this.folioView.update();
+        this.folioView.setUrl(newUrl);
         GlobalEventHandler.trigger("ChangeFolio", folio);
         GlobalEventHandler.trigger("SilentUrlUpdate");
     },
