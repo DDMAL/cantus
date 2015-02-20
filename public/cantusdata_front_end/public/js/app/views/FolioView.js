@@ -95,8 +95,7 @@ return Marionette.LayoutView.extend
     {
         console.log("setCustomNumber: ", number);
         this.customNumber = number;
-        this.model.set({number: number});
-        //this.chantCompositeView.resetCollection();
+        this.model.set({number: number, item_id: undefined});
     },
 
     /**
