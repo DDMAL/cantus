@@ -1,4 +1,4 @@
-define(["jquery", "backbone",
+define(["jquery", "backbone", "marionette",
         "models/GlobalStateModel",
         "views/HeaderView",
         "views/IndexPageView",
@@ -8,6 +8,7 @@ define(["jquery", "backbone",
         "views/SearchPageView",
         "singletons/GlobalEventHandler"],
 function($, Backbone,
+         Marionette,
          GlobalStateModel,
          HeaderView,
          IndexPageView,
@@ -33,6 +34,7 @@ return Backbone.Router.extend
     // Browser resizer
     resizer: null,
 
+    headerRegion: null,
     mainBodyRegion: null,
 
     routes: {
@@ -50,9 +52,18 @@ return Backbone.Router.extend
     initialize: function()
     {
         this.globalState = new GlobalStateModel();
+
+        // Regions
         // There is always a header!
         this.headerView = new HeaderView({el:".header"});
         this.headerView.render();
+
+        //this.headerRegion = new Marionette.Region({el: '.header'});
+        this.mainBodyRegion = new Marionette.Region({
+            el: document.querySelector("#view-goes-here")
+        });
+        //
+        //this.headerRegion.show(new HeaderView());
 
         // IndexPageView has no state, so we might as well instantiate it
         this.indexView = new IndexPageView();
@@ -60,21 +71,22 @@ return Backbone.Router.extend
         this.manuscriptsPageView = new ManuscriptsPageView();
         // Get the resizer going
         this.resizer = new BrowserResizer();
-
-        // Set up the main view regions
-        this.mainBodyRegion = new Backbone.Marionette.Region({
-            el: document.querySelector("#view-goes-here")
-        });
     },
 
     index: function()
     {
-        this.indexView.render();
+        //this.indexView.render();
+        //this.mainBodyRegion
     },
 
     manuscripts: function()
     {
-        this.manuscriptView.destroy();
+        //var view = new ManuscriptsPageView();
+        //view.update();
+        if (this.manuscriptView !== null)
+        {
+            this.manuscriptView.destroy();
+        }
         this.manuscriptView = null;
         this.manuscriptsPageView.update();
         this.manuscriptsPageView.render();
@@ -95,7 +107,6 @@ return Backbone.Router.extend
                 folio: folio
             }
         );
-        //console.log(this.manuscriptView);
         // Fetch the data
         this.manuscriptView.getData();
         //this.manuscriptView.render();
