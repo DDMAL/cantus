@@ -115,16 +115,7 @@ return Marionette.CompositeView.extend
     resetCollection: function()
     {
         this.collection.reset();
-    },
-
-    /**
-     * Set the collection.
-     *
-     * @param collection
-     */
-    setCollection: function(collection)
-    {
-        this.collection = collection;
+        this.render();
     }
 });
 });

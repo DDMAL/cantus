@@ -139,7 +139,6 @@ return Marionette.LayoutView.extend
             // Compose the url
             var composedUrl = GlobalVars.siteUrl + "chant-set/folio/" + folio_id + "/";
             // Build a new view with the new data
-            this.chantCompositeView.setCollection(new Backbone.Collection());
             this.chantCompositeView.setUrl(composedUrl);
         }
         else
