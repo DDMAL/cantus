@@ -3,6 +3,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
         "views/CantusAbstractView",
         "views/ChantCollectionView",
         "views/collection_views/ChantCompositeView",
+        "views/item_views/FolioItemView",
         "singletons/GlobalEventHandler",
         "config/GlobalVars"],
 function(App, Backbone, Marionette, $,
@@ -10,6 +11,7 @@ function(App, Backbone, Marionette, $,
          CantusAbstractView,
          ChantCollectionView,
          ChantCompositeView,
+         FolioItemView,
          GlobalEventHandler,
          GlobalVars,
          template) {
@@ -27,11 +29,14 @@ return Marionette.LayoutView.extend
     customNumber: 0,
 
     // Subviews
-    //chantCollectionView: null,
     chantCompositeView: null,
+    folioItemView: null,
+
+    template: "#folio-template",
 
     regions: {
-        chantListRegion: '#chant-list'
+        chantListRegion: '.chant-list-region',
+        folioItemRegion: '.folio-item-region'
     },
 
     /**
@@ -42,37 +47,29 @@ return Marionette.LayoutView.extend
      */
     initialize: function(options)
     {
-        _.bindAll(this, 'render', 'afterFetch', 'assignChants');
-        this.template= _.template($('#folio-template').html());
+        _.bindAll(this, 'afterFetch', 'assignChants');
         // This can handle situations where the first folio
         // doesn't have a url but subsequent ones do.
+
+        this.model = new Folio();
+        this.listenTo(this.model, 'sync', this.afterFetch);
+
         if (options && options.url)
         {
             this.setUrl(options.url);
         }
-        else
-        {
-            this.model = new Folio();
-            this.listenTo(this.model, 'sync', this.afterFetch);
-        }
-        //this.chantCollectionView = new ChantCollectionView();
+        this.folioItemView = new FolioItemView({
+            model: this.model
+        });
         this.chantCompositeView = new ChantCompositeView({
             collection: new Backbone.Collection()
         });
     },
 
-    //remove: function()
-    //{
-    //    //this.chantCollectionView.remove();
-    //    this.chantCompositeView.remove();
-    //
-    //    // Deal with the event listeners
-    //    this.stopListening();
-    //    this.undelegateEvents();
-    //},
     onDestroy: function()
     {
-        //this.chantCompositeView.destroy();
+        this.chantCompositeView.destroy();
+        this.folioItemView.destroy();
     },
 
     /**
@@ -82,8 +79,10 @@ return Marionette.LayoutView.extend
      */
     setUrl: function(url)
     {
-        this.model = new Folio(url);
-        this.listenTo(this.model, 'sync', this.afterFetch);
+        console.log("url:", url);
+        this.model.url = String(url);
+        console.log("model:", this.model);
+        this.model.fetch();
     },
 
     /**
@@ -94,15 +93,10 @@ return Marionette.LayoutView.extend
      */
     setCustomNumber: function(number)
     {
+        console.log("setCustomNumber: ", number);
         this.customNumber = number;
-    },
-
-    /**
-     * Fetch the latest version of the model.
-     */
-    update: function()
-    {
-        this.model.fetch();
+        this.model.set({number: number});
+        //this.chantCompositeView.resetCollection();
     },
 
     /**
@@ -112,7 +106,7 @@ return Marionette.LayoutView.extend
     afterFetch: function()
     {
         this.assignChants();
-        this.render();
+        this.chantListRegion.show(this.chantCompositeView);
     },
 
     /**
@@ -128,45 +122,24 @@ return Marionette.LayoutView.extend
         if (this.model.get("item_id"))
         {
             folio_id = this.model.get("item_id");
-        }
-        else
-        {
-            folio_id = this.model.get("id");
-        }
-
-        if (folio_id !== undefined)
-        {
             // Compose the url
             var composedUrl = GlobalVars.siteUrl + "chant-set/folio/" + folio_id + "/";
+            console.log("composedURL:", composedUrl, this.model.toJSON());
             // Build a new view with the new data
             this.chantCompositeView.setUrl(composedUrl);
         }
         else
         {
-            //this.chantCollectionView.resetCollection();
             this.chantCompositeView.resetCollection();
         }
     },
 
-    /**
-     * Marionette method to serialize the model data.
-     *
-     * @returns {{number: (customNumber|*), model: *}}
-     */
-    serializeData: function()
-    {
-        return {
-            number: this.customNumber,
-            model: this.model.toJSON()
-        };
-    },
-
     onShow: function()
     {
-        this.chantListRegion.show(this.chantCompositeView);
-
+        //// Show the chant list without destroying the original
+        ////this.chantListRegion.show(this.chantCompositeView);
+        this.folioItemRegion.show(this.folioItemView);
         GlobalEventHandler.trigger("renderView");
-        return this.trigger('render', this);
     }
 });
 });
