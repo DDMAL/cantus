@@ -127,10 +127,10 @@ define( ['App', 'backbone', 'marionette', 'jquery',
              */
             updatePage: function(args)
             {
-                // Grab the page from the event arguments
-                this.currentPage = args.page;
-                // Rebuild the model with a modified query
-                this.model.setQuery(this.query + "&start=" + (this.pageSize * (this.currentPage - 1)));
+                // Grab the page from the event arguments.  Make sure it's over 0.
+                this.currentPage = Math.max(args.page, 0);
+                // Rebuild the model with a modified query.  If the page is less than 0 then make it 0
+                this.model.setQuery(this.query + "&start=" + (this.pageSize * (Math.max(this.currentPage - 1,0))));
                 this.model.fetch();
             },
 
