@@ -160,12 +160,6 @@ return Marionette.LayoutView.extend
         this.divaView.zoomToLocation(this.results.get("results")[newIndex]);
     },
 
-    onRender: function() {
-            var glyphTypes = new Backbone.Collection();
-            glyphTypes.add(new Backbone.Model());
-            this.glyphTypesRegion.show(new GlyphTypeCollectionView({
-                collection: glyphTypes
-            }));
     serializeData: function()
     {
         // Create an array with the field types
@@ -184,7 +178,15 @@ return Marionette.LayoutView.extend
         };
     },
 
-    },
+    //onRender: function()
+    //{
+    //    // TODO: Implement the search query builder
+    //    //var glyphTypes = new Backbone.Collection();
+    //    //glyphTypes.add(new Backbone.Model());
+    //    //this.glyphTypesRegion.show(new GlyphTypeCollectionView({
+    //    //    collection: glyphTypes
+    //    //}));
+    //},
 
     clearResults: function(message)
     {
