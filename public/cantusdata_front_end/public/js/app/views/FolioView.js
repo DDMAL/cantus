@@ -79,9 +79,7 @@ return Marionette.LayoutView.extend
      */
     setUrl: function(url)
     {
-        console.log("url:", url);
         this.model.url = String(url);
-        console.log("model:", this.model);
         this.model.fetch();
     },
 
@@ -93,7 +91,6 @@ return Marionette.LayoutView.extend
      */
     setCustomNumber: function(number)
     {
-        console.log("setCustomNumber: ", number);
         this.customNumber = number;
         this.model.set({number: number, item_id: undefined});
     },
@@ -123,7 +120,6 @@ return Marionette.LayoutView.extend
             folio_id = this.model.get("item_id");
             // Compose the url
             var composedUrl = GlobalVars.siteUrl + "chant-set/folio/" + folio_id + "/";
-            console.log("composedURL:", composedUrl, this.model.toJSON());
             // Build a new view with the new data
             this.chantCompositeView.setUrl(composedUrl);
         }

@@ -131,7 +131,6 @@ return Marionette.CompositeView.extend
      */
     resetCollection: function()
     {
-        console.log("Resetting Collection");
         this.collection.reset();
         this.render();
     }
