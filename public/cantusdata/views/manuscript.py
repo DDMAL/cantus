@@ -6,11 +6,11 @@ from rest_framework.renderers import JSONRenderer, JSONPRenderer
 
 
 class ManuscriptListHTMLRenderer(CustomHTMLRenderer):
-    template_name = "backbone.html"
+    template_name = "require.html"
 
 
 class ManuscriptDetailHTMLRenderer(CustomHTMLRenderer):
-    template_name = "backbone.html"
+    template_name = "require.html"
 
 
 class ManuscriptHasChantsMixin(object):
