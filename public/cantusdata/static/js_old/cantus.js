@@ -480,16 +480,6 @@
         model: Chant
     });
 
-//    var ConcordanceCollection = CantusAbstractCollection.extend
-//    ({
-//        model: Concordance
-//    });
-//
-//    var FolioCollection = CantusAbstractCollection.extend
-//    ({
-//        model: Folio
-//    });
-
     var ManuscriptCollection = CantusAbstractCollection.extend
     ({
         model: Manuscript
