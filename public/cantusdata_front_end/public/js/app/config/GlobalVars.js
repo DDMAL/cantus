@@ -4,7 +4,7 @@ define([],
         "use strict";
 
         return {
-            siteUrl : "http://localhost:8000/",
+            siteUrl : "/",
             iipImageServerUrl : "http://cantus.simssa.ca/",
             divaImageDirectory : "/srv/images/cantus/"
         };
