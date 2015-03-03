@@ -9,7 +9,7 @@ from cantusdata.helpers.solrsearch import SolrSearch
 
 
 class SearchViewHTMLRenderer(CustomHTMLRenderer):
-    template_name = "backbone.html"
+    template_name = "require.html"
 
 
 class SearchView(APIView):
