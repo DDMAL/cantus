@@ -1,13 +1,11 @@
 define( ['App', 'backbone', 'marionette', 'jquery',
         "models/Folio",
         "views/CantusAbstractView",
-        "views/ChantCollectionView",
         "singletons/GlobalEventHandler",
         "config/GlobalVars"],
 function(App, Backbone, Marionette, $,
          Folio,
          CantusAbstractView,
-         ChantCollectionView,
          GlobalEventHandler,
          GlobalVars,
          template) {
