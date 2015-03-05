@@ -19,7 +19,7 @@ define(['marionette'],
                 // Create the manuscript if it doesn't exist
                 this.createManuscript(manuscript);
 
-                this.manuscripts[String(manuscript)][String(folio)] = parseInt(chantNumber);
+                this.manuscripts[String(manuscript)][String(folio)] = parseInt(chantNumber, 10);
             },
 
             /**
