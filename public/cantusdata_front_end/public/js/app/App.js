@@ -3,7 +3,7 @@ define(['jquery', 'backbone', 'marionette', 'underscore'],
         "use strict";
 
 
-        var App = new Backbone.Marionette.Application();
+        var App = new Marionette.Application();
 
         //Organize Application into regions corresponding to DOM elements
         //Regions can contain views, Layouts, or subregions nested as necessary
