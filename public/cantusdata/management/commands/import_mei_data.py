@@ -2,8 +2,6 @@ import solr
 import csv
 from django.core.management.base import BaseCommand
 from cantusdata import settings
-from cantusdata.helpers.parsers.mei2_parser import MEI2Parser
-from cantusdata.helpers.parsers.gallen_mei2_parser import GallenMEI2Parser
 from cantusdata.helpers.parsers.csv_parser import CSVParser
 
 
@@ -44,8 +42,10 @@ class Command(BaseCommand):
         if mode == "mei_to_csv":
             self.stdout.write("Dumping MEI to CSV.")
             if manuscript == "st_gallen_390" or manuscript == "st_gallen_391":
+                from cantusdata.helpers.parsers.gallen_mei2_parser import GallenMEI2Parser
                 parser = GallenMEI2Parser(mei_location, siglum)
             else:
+                from cantusdata.helpers.parsers.mei2_parser import MEI2Parser
                 parser = MEI2Parser(mei_location, siglum)
             data = parser.parse()
             self.data_to_csv(data, csv_location)
@@ -53,8 +53,10 @@ class Command(BaseCommand):
         elif mode == "mei_to_solr":
             self.stdout.write("Committing MEI to Solr.")
             if manuscript == "st_gallen_390" or manuscript == "st_gallen_391":
+                from cantusdata.helpers.parsers.gallen_mei2_parser import GallenMEI2Parser
                 parser = GallenMEI2Parser(mei_location, siglum)
             else:
+                from cantusdata.helpers.parsers.mei2_parser import MEI2Parser
                 parser = MEI2Parser(mei_location, siglum)
             data = parser.parse()
             self.data_to_solr(data, solrconn)
