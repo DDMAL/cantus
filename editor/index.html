@@ -9,6 +9,7 @@
         <link rel="stylesheet" href="//cantus.simssa.ca/static/css/bootstrap-theme.css">
         <link rel="stylesheet" href="diva.js/build/css/diva.min.css" />
         <link rel="stylesheet" href="meix.js/css/meiEditor.css" />
+        <link rel="stylesheet" href="meix.js/css/zoneDisplay.css" />
         <link rel="stylesheet" href="divaEditor.css" />
         <link rel="Shortcut Icon" href="/favicon.ico">
 
@@ -18,10 +19,10 @@
         <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 
         <!--local libraries -->
-        <!--<script src="diva.js/build/js/diva.js" type="text/javascript"></script>
+        <script src="diva.js/build/js/diva.js" type="text/javascript"></script>
         <script src="diva.js/build/js/utils.js" type="text/javascript"></script>
-        <script src="diva.js/build/js/plugins/highlight.js" type="text/javascript"></script>-->
-        <script src="diva.js/build/js/diva.min.js" type="text/javascript"></script>
+        <script src="diva.js/build/js/plugins/highlight.js" type="text/javascript"></script>
+        <!--<script src="diva.js/build/js/diva.min.js" type="text/javascript"></script>-->
 
         <script src="meix.js/js/lib/require.js"></script>
         <script src="meix.js/js/local/meiEditorPreloader.js"></script>
@@ -41,7 +42,9 @@
         var docArr = document.URL.split('/'); //0 is http:, 1 is blank, 2 is subdomain + domain, length - 1 is folio to jump to if it's defined
         var currentSite = docArr[2];
         var siglum_slug = docArr[docArr.length - 1].split('?')[1];
-        
+        var meiEditor;
+        var divaInstance;
+
         function editorInit(divaImageLoc, jsonLoc, currentSite, sig_slug)
         {
             $("#loadingScreen").html("The Cantus MEI Editor is loading...");
@@ -71,25 +74,25 @@
             var element = "#mei-editor";
             var options = 
             {
+                'initializeWithFile': 'csg-0390_015.mei',
                 'meiEditorLocation': 'meix.js/',
                 'validatorLink': 'meix.js/validation/', 
                 'xmllintLocation': 'meix.js/js/lib/xmllint.js',
-                'xmllintServer': 'http://' + currentSite + '/nodeLint/',
                 'divaInstance': divaInstance, 
-                'jsonFileLocation': jsonLoc,
+                'oneToOneMEI': true,
                 'navbarClass': 'navbar navbar-default',
                 'pageTitle': 'Cantus Ultimus',
                 'siglum_slug': sig_slug,
                 'currentSite': currentSite
             };
 
-            var plugins = ["meiEditorDivaManager.js"];
+            var plugins = ["meix.js/js/local/plugins/meiEditorZoneDisplay.js"];
 
-            var meiEditor = new MeiEditor(element, options, plugins);
+            meiEditor = new MeiEditor(element, options, plugins);
         }
 
         $(window).on('meiEditorLoaded', function(e){
-            var meiEditor = $("#mei-editor").data('AceMeiEditor');
+            meiEditor = $("#mei-editor").data('AceMeiEditor');
             $(".diva-tools").addClass('diva-toolbar navbar navbar-default');
             $("#loadingScreen").animate({
                 'height': '30px',
@@ -99,6 +102,58 @@
                 duration: 300,
                 complete: function(){$("#loadingScreen").remove();}
             });
+
+            meiEditor.events.subscribe("NewZone", function(pageRef, prevID, nextID, curID)
+            {
+                var toInsert = pageRef.parsed.createElement('neume');
+                toInsert.setAttribute('xml:id', genUUID());
+                toInsert.setAttribute('name', "Unnamed");
+                toInsert.setAttribute('facs', curID);
+
+                var prevIdx, prevNeume, nextIdx, nextNeume;
+                if(nextID)
+                {
+                    nextNeume = pageRef.parsed.querySelectorAll('neume[*|facs=' + nextID + ']')[0];
+                    nextIdx = Array.prototype.indexOf.call(nextNeume.parentElement.childNodes, nextNeume);
+                }
+
+                if(prevID)
+                {
+                    prevNeume = pageRef.parsed.querySelectorAll('neume[*|facs=' + prevID + ']')[0];
+                    prevIdx = Array.prototype.indexOf.call(prevNeume.parentElement.childNodes, prevNeume);
+                }
+
+                if (nextIdx && prevIdx && (Math.abs(nextIdx - prevIdx) > 2))
+                {
+                    meiEditor.localWarn('Tried to insert a neume between two that were not adjacent.');
+                }        
+
+                if (nextID)
+                {
+                    indentNode = nextNeume.parentElement.childNodes[nextIdx - 1].cloneNode(false);
+
+                    nextNeume.parentElement.insertBefore(toInsert, nextNeume);
+                    nextNeume.parentElement.insertBefore(indentNode, nextNeume);
+                }
+
+                else 
+                {
+                    indentNode = prevNeume.parentElement.childNodes[prevIdx - 1].cloneNode(false);
+
+                    inserted = prevNeume.insertAdjacentElement("afterEnd", toInsert);
+                    inserted.parentElement.insertBefore(indentNode, inserted);
+                }    
+
+                rewriteAce(pageRef);
+
+                var newZoneHandler = meiEditor.events.subscribe('ZonesWereUpdated', function()
+                {
+                    meiEditor.selectHighlight("#" + curID);
+                    meiEditor.events.unsubscribe(newZoneHandler);
+                });
+
+
+            });
         });
         
         if(siglum_slug !== undefined && siglum_slug !== "") //if there is a siglum_slug appended to the URL 
@@ -107,14 +162,21 @@
         }
         else
         {
-            if (currentSite != "127.0.0.1:8000")
+            if (!currentSite.match("127.0.0.1"))
             { //if we're not development
-                $.get("http://" + currentSite + "/manuscripts/", undefined, function(e)
-                { //we're on production, make an API call to /manuscripts/
-                    for(curManuscriptIndex in e)
-                    { 
-                        //add an option for each manuscript
-                        $("#manuscriptSelect").append("<option value='" + e[curManuscriptIndex].siglum_slug + "'>" + e[curManuscriptIndex].name + "</option>");
+                $.ajax({
+                    url: "http://" + currentSite + "/manuscripts/",
+                    success: function(e)
+                    { //we're on production, make an API call to /manuscripts/
+                        for(curManuscriptIndex in e)
+                        { 
+                            //add an option for each manuscript
+                            $("#manuscriptSelect").append("<option value='" + e[curManuscriptIndex].siglum_slug + "'>" + e[curManuscriptIndex].name + "</option>");
+                        }
+                    },
+                    error: function(e)
+                    {
+                        console.log("Couldn't find the manuscripts. Just loading demo Diva.");
                     }
                 });
             }
