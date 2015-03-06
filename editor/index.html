@@ -150,6 +150,17 @@
                     });
                     $("#serverLoadModal-close").trigger('click');
                 });
+
+                var firstFilename = divaInstance.getCurrentPageFilename();
+                if (foreignPageNames.indexOf((firstFilename.split(".")[0] + ".mei")) > -1)
+                { 
+                    var meiPage = firstFilename.split(".")[0] + ".mei";
+                    if (meiEditor.getPageTitles().indexOf(meiPage) >= 0) return;
+                    $.get("http://" + currentSite + "/mei/" + siglum_slug + "/" + meiPage, "", function(data)
+                    {
+                        meiEditor.addFileWithoutJumping(data, meiPage);
+                    });
+                }
             });
 
             diva.Events.subscribe("VisiblePageDidChange", function(pageNumber, fileName)
@@ -157,9 +168,10 @@
                 if (foreignPageNames.indexOf((fileName.split(".")[0] + ".mei")) > -1)
                 { 
                     var meiPage = fileName.split(".")[0] + ".mei";
+                    if (meiEditor.getPageTitles().indexOf(meiPage) >= 0) return;
                     $.get("http://" + currentSite + "/mei/" + siglum_slug + "/" + meiPage, "", function(data)
                     {
-                        meiEditor.addFileToProject(data, meiPage);
+                        meiEditor.addFileWithoutJumping(data, meiPage);
                     });
                 }
             });
