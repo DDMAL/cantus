@@ -81,9 +81,7 @@
                 'divaInstance': divaInstance, 
                 'oneToOneMEI': true,
                 'navbarClass': 'navbar navbar-default',
-                'pageTitle': 'Cantus Ultimus',
-                'siglum_slug': sig_slug,
-                'currentSite': currentSite
+                'pageTitle': 'Cantus Ultimus'
             };
 
             var plugins = ["meix.js/js/local/plugins/meiEditorZoneDisplay.js"];
@@ -101,6 +99,56 @@
             }, {
                 duration: 300,
                 complete: function(){$("#loadingScreen").remove();}
+            });
+
+            $("#dropdown-file-upload").append("<li><a id='server-load-dropdown'>Load file from server...</a></li>"); 
+
+            $("#server-load-dropdown").on('click', function(e){
+                $("#serverLoadModal").modal();
+            });
+
+            var foreignPageNames = [];
+
+            $.get("http://" + currentSite + "/mei/" + siglum_slug + "/", "", function(data)
+            {
+                var dataArr = data.split("\n");
+                var dataLength = dataArr.length;
+                for(var curPage = 0; curPage < dataLength; curPage++)
+                {
+                    //that is not empty
+                    if (!dataArr[curPage])
+                    {
+                        continue;
+                    }
+
+                    //find a link
+                    var foundLink = dataArr[curPage].match(/<a href=".*">/g);
+
+                    if (foundLink)
+                    {
+                        //strip the outside, make sure it has ".rng"
+                        linkText = foundLink[0].slice(9, -2);
+                        if(linkText.match(/mei/))
+                        {
+                            foreignPageNames.push(foundLink[0].slice(9, -2));
+                        }
+                    }
+                }
+
+                createModal(element, "serverLoadModal", false,
+                    "Select a hosted file:<br>" +
+                    createSelect("hosted-file", foreignPageNames, true),
+                    "Load");
+
+                $("#serverLoadModal-primary").on('click', function()
+                {
+                    var pageName = $("#selecthosted-file").find(':selected').text();
+                    $.get("http://" + currentSite + "/mei/" + siglum_slug + "/" + pageName, "", function(data)
+                    {
+                        meiEditor.addFileToProject(data, pageName);
+                    });
+                    $("#serverLoadModal-close").trigger('click');
+                });
             });
 
             meiEditor.events.subscribe("NewZone", function(pageRef, prevID, nextID, curID)
