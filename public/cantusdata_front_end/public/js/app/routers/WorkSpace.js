@@ -111,8 +111,14 @@ return Backbone.Router.extend
         this.manuscriptView.getData();
         //this.manuscriptView.render();
 
+        // The parameters to pass to ChangeChant
+        var changeChantEventParameters = {
+            chantIndex: chant,
+            isFirstLoad: false
+        };
+
         GlobalEventHandler.trigger("ChangeManuscript", query);
-        GlobalEventHandler.trigger("ChangeChant", chant);
+        GlobalEventHandler.trigger("ChangeChant", changeChantEventParameters);
     },
 
     search: function(query)
