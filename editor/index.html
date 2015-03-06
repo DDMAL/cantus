@@ -44,7 +44,7 @@
         var siglum_slug = docArr[docArr.length - 1].split('?')[1];
         var meiEditor;
         var divaInstance;
-	var element;
+	    var element;
 
         function editorInit(divaImageLoc, jsonLoc, currentSite, sig_slug)
         {
@@ -150,21 +150,13 @@
                     });
                     $("#serverLoadModal-close").trigger('click');
                 });
-
-                var firstFilename = divaInstance.getCurrentPageFilename();
-                if (foreignPageNames.indexOf((firstFilename.split(".")[0] + ".mei")) > -1)
-                { 
-                    var meiPage = firstFilename.split(".")[0] + ".mei";
-                    if (meiEditor.getPageTitles().indexOf(meiPage) >= 0) return;
-                    $.get("http://" + currentSite + "/mei/" + siglum_slug + "/" + meiPage, "", function(data)
-                    {
-                        meiEditor.addFileWithoutJumping(data, meiPage);
-                    });
-                }
             });
+
+            $("#dropdown-zone-display").append("<li><a>Auto-load: <input type='checkbox' style='float:right' id='auto-load-checkbox'></a></li>");
 
             diva.Events.subscribe("VisiblePageDidChange", function(pageNumber, fileName)
             {
+                if (!$("#auto-load-checkbox").prop('checked')) return;
                 if (foreignPageNames.indexOf((fileName.split(".")[0] + ".mei")) > -1)
                 { 
                     var meiPage = fileName.split(".")[0] + ".mei";
@@ -229,7 +221,7 @@
             });
         });
         
-        if(siglum_slug !== undefined && siglum_slug !== "") //if there is a siglum_slug appended to the URL 
+        if(siglum_slug !== undefined && siglum_slug !== "") //if there is a siglum_slug appended to the URL, we're going back to the page 
         {
             editorInit("/srv/images/cantus/" + siglum_slug, "http://" + currentSite + "/static/" + siglum_slug + ".json", currentSite, siglum_slug); //start the editor based off what it's supposed to be
         }
@@ -257,7 +249,7 @@
             $("#manuscriptSubmit").on('click', function()
             {
                 //when the user selects a manuscript to load
-                var siglum_slug = $($("#manuscriptSelect").find(":selected")).attr('value');
+                siglum_slug = $($("#manuscriptSelect").find(":selected")).attr('value');
                 if(siglum_slug == '000')
                 {
                     //if they're loading the six-page demo, that's static and the json file is included
