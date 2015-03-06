@@ -152,7 +152,17 @@
                 });
             });
 
-
+            diva.Events.subscribe("VisiblePageDidChange", function(pageNumber, fileName)
+            {
+                if (foreignPageNames.indexOf((fileName.split(".")[0] + ".mei")) > -1)
+                { 
+                    var meiPage = fileName.split(".")[0] + ".mei";
+                    $.get("http://" + currentSite + "/mei/" + siglum_slug + "/" + meiPage, "", function(data)
+                    {
+                        meiEditor.addFileToProject(data, meiPage);
+                    });
+                }
+            });
 
             meiEditor.events.subscribe("NewZone", function(pageRef, prevID, nextID, curID)
             {
