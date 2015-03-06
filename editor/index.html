@@ -44,6 +44,7 @@
         var siglum_slug = docArr[docArr.length - 1].split('?')[1];
         var meiEditor;
         var divaInstance;
+	var element;
 
         function editorInit(divaImageLoc, jsonLoc, currentSite, sig_slug)
         {
@@ -71,10 +72,10 @@
 
             divaInstance = $('#diva-wrapper').data('diva');
 
-            var element = "#mei-editor";
+            element = "#mei-editor";
             var options = 
             {
-                'initializeWithFile': 'csg-0390_015.mei',
+                //'initializeWithFile': 'csg-0390_015.mei',
                 'meiEditorLocation': 'meix.js/',
                 'validatorLink': 'meix.js/validation/', 
                 'xmllintLocation': 'meix.js/js/lib/xmllint.js',
@@ -150,6 +151,8 @@
                     $("#serverLoadModal-close").trigger('click');
                 });
             });
+
+
 
             meiEditor.events.subscribe("NewZone", function(pageRef, prevID, nextID, curID)
             {
