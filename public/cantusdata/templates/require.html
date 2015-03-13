@@ -37,6 +37,7 @@
     </div>
 </div>
 
+
 <script type="text/template" id="alert-template">
 <div class="alert alert-<%= role %>" role="alert"><%= content %></div>
 </script>
@@ -159,9 +160,9 @@
         <% } %>
         <h5>Concordances</h5>
         <ul>
-            {#                    <% _.each(concordances, function(concordance) { %>#}
-            {#                    <li><%= concordance %></li>#}
-            {#                    <% }); %>#}
+            <% _.each(concordances, function(concordance) { %>
+            <li><%= concordance %></li>
+            <% }); %>
         </ul>
     </div>
 </div>
@@ -170,6 +171,15 @@
 
 <script type="text/template" id="concordance-collection-template">
 
+</script>
+
+<script type="text/template" id="diva-folio-advancer-template">
+<ul class="pager">
+    <li><a href="#" name="previous"><span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span> Previous Folio</a></li>
+    <li>
+        <a href="#" name="next">Next Folio <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></a>
+    </li>
+</ul>
 </script>
 
 <script type="text/template" id="diva-template">
@@ -187,9 +197,20 @@ Folio <%= number %>
 </script>
 
 <script type="text/template" id="folio-template">
-{#<h3>Folio <%= number %></h3>#}
-<div class="folio-item-region"></div>
-<div class="chant-list-region"></div>
+<div class="row">
+    <div class="col-xs-6">
+        <div class="folio-item-region"></div>
+    </div>
+    <div class="col-xs-6">
+        <div class="diva-folio-advancer-region"></div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="chant-list-region"></div>
+    </div>
+</div>
+
 </script>
 
 <script type="text/template" id="folios-template">
@@ -263,7 +284,7 @@ Folio <%= number %>
                 <h1 class="h3"><%= name %></h1>
 
                 <!-- Nav tabs -->
-                <ul class="nav nav-tabs">
+                <ul class="nav nav-tabs nav-justified">
                     <li class="active"><a href="#manuscript-folio-pane" data-toggle="tab">Folio</a></li>
                     <li><a href="#manuscript-details-pane" data-toggle="tab">Manuscript Details</a></li>
                     <li><a href="#manuscript-search-pane" data-toggle="tab">Search Manuscript</a></li>
@@ -292,8 +313,8 @@ Folio <%= number %>
 
                         <!-- Nav tabs -->
                         <ul class="nav nav-tabs" role="tablist">
-                            <li class="active"><a href="#text-search-container" role="tab" data-toggle="tab">Text Search</a></li>
-                            <li><a href="#notation-search-container" role="tab" data-toggle="tab">Notation Search</a></li>
+                            <li class="active"><a href="#text-search-container" role="tab" data-toggle="tab">Search</a></li>
+                            <li><a href="#notation-search-container" role="tab" data-toggle="tab">OMR Search</a></li>
                         </ul>
 
                         <!-- Tab panes -->
@@ -408,20 +429,20 @@ Folio <%= number %>
     <tr>
         <td><a href="<%= results[i].url %>" class="search-result-<%= i %>"><%= results[i].name %></a></td>
         <td><%= results[i].model %></td>
-    {#        <% if (showManuscriptName === true) { %>#}
-    {#        <% if (results[i].manuscript !== undefined) { %>#}
-    {#        <td><%= results[i].manuscript %></td>#}
-    {#        <% } else { %>#}
-    {#        <td></td>#}
-    {#        <% } %>#}
-    {#        <% } %>#}
-    {#        <% if (searchType == "volpiano") { %>#}
-    {#        <% if (results[i].volpiano !== undefined) { %>#}
-    {#        <td class="volpiano"><%= results[i].volpiano %></td>#}
-    {#        <% } else { %>#}
-    {#        <td></td>#}
-    {#        <% } %>#}
-    {#        <% } %>#}
+            <% if (showManuscriptName === true) { %>
+            <% if (results[i].manuscript !== undefined) { %>
+            <td><%= results[i].manuscript %></td>
+            <% } else { %>
+            <td></td>
+            <% } %>
+            <% } %>
+            <% if (searchType == "volpiano") { %>
+            <% if (results[i].volpiano !== undefined) { %>
+            <td class="volpiano"><%= results[i].volpiano %></td>
+            <% } else { %>
+            <td></td>
+            <% } %>
+            <% } %>
         <% if (results[i].folio !== undefined) { %>
         <td><%= results[i].folio %></td>
         <% } else { %>
@@ -466,6 +487,7 @@ Folio <%= number %>
 <li id="top-menu-button-<%= i %>"<% if (items[i].active) { %> class="active" <% } if (items[i].tags) { %><%= items[i].tags %><% } %> ><a href="<%= items[i].url %>"><%= items[i].name %></a></li>
 <% }%>
 </script>
+
 
 <script>
 
