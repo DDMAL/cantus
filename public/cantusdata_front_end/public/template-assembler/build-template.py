@@ -37,7 +37,7 @@ def assemble_templates(backbone_template_formatter):
     return constant_substitution(base_template, {'templates': templates})
 
 
-def constant_substitution(text, constants_dict):
+def constant_substitution(text, constants_dict=None):
     """
     Substitute some constant in the text.
 
@@ -45,6 +45,9 @@ def constant_substitution(text, constants_dict):
     :param constants_dict:
     :return:
     """
+    if not constants_dict:
+        # No constants, so return the same text
+        return text
     template = Template(text)
     return template.safe_substitute(constants_dict)
 
@@ -65,9 +68,9 @@ def build_underscore_templates(builddir, constants=None):
     # Get the assembled template string
     assembled_template = assemble_templates(format_underscore_template)
     # Constant replacements
-    constant_substitution(assembled_template, constants)
+    post_substitution_template = constant_substitution(assembled_template, constants)
     # Write the file content
-    output_file.write(constant_substitution(assembled_template, constants))
+    output_file.write(post_substitution_template)
     output_file.close()
 
 # Execute
