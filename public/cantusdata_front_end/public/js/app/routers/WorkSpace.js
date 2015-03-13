@@ -90,6 +90,9 @@ return Backbone.Router.extend
         this.manuscriptView = null;
         this.manuscriptsPageView.update();
         this.manuscriptsPageView.render();
+
+        // Set the document title to reflect the manuscripts route
+        GlobalEventHandler.trigger("ChangeDocumentTitle", "Manuscripts");
     },
 
     manuscriptSingle: function(query, folio, chant)
