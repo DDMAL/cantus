@@ -34,24 +34,51 @@ return Marionette.ItemView.extend
         return $("#diva-wrapper").data('diva');
     },
 
-    nextButtonCallbackHandler: function()
+    /**
+     * Increase the page by 1.
+     */
+    nextButtonCallbackHandler: function(event)
     {
-        // We use divaData to call the diva functions
-        var divaData = this.getDivaData();
-        // Grab the current page
-        var currentPageIndex = divaData.getCurrentPageIndex();
-        // Tell Diva to go to the next page
-        divaData.gotoPageByIndex(currentPageIndex + 1);
+        // Don't follow the a href to "#"
+        event.preventDefault();
+
+        this.changeDivaPage(
+            function(index)
+            {
+                return index + 1;
+            }
+        );
     },
 
-    previousButtonCallbackHandler: function()
+    /**
+     * Decrease the page by 1.
+     */
+    previousButtonCallbackHandler: function(event)
     {
-        // We use divaData to call the diva functions
-        var divaData = this.getDivaData();
-        // Grab the current page
-        var currentPageIndex = divaData.getCurrentPageIndex();
-        // Tell Diva to go to the previous page
-        divaData.gotoPageByIndex(currentPageIndex - 1);
+        // Don't follow the a href to "#"
+        event.preventDefault();
+
+        this.changeDivaPage(
+            function(index)
+            {
+                return index - 1;
+            }
+        );
+    },
+
+    /**
+     *  Change the Diva page index.  numberChangeFunction is a function that
+     *  takes the current page index and returns the desired new page index.
+     *
+     * @param numberChangeFunction fn : int -> int
+     */
+    changeDivaPage: function(numberChangeFunction)
+    {
+        // Get DivaData and the curent page count
+        var divaData = this.getDivaData(),
+            currentPageIndex = divaData.getCurrentPageIndex();
+        // Tell Diva to go to the page specified by numberChangeFunction()
+        divaData.gotoPageByIndex(numberChangeFunction(currentPageIndex));
     }
 });
 });
