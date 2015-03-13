@@ -39,14 +39,16 @@ return Marionette.LayoutView.extend
     divaView: null,
     folioView: null,
 
-    regions: {
+    regions:
+    {
         divaViewRegion: "#diva-column",
         folioViewRegion: "#folio",
         searchViewRegion: "#manuscript-search",
         searchNotationViewRegion: "#search-notation"
     },
 
-    initialize: function (options) {
+    initialize: function (options)
+    {
         this.manuscript = new Manuscript(
             String(GlobalVars.siteUrl + "manuscript/" + this.id.toString() + "/"));
         // Build the subviews
@@ -63,6 +65,7 @@ return Marionette.LayoutView.extend
                 divaView: this.divaView
             }
         );
+
         // Render every time the model changes...
         this.listenTo(this.manuscript, 'change', this.afterFetch);
         // Switch page when necessary
@@ -104,6 +107,7 @@ return Marionette.LayoutView.extend
         var folio = this.divaView.getFolio();
         // Query the folio set at that specific manuscript number
         var newUrl =  GlobalVars.siteUrl + "folio-set/manuscript/" + this.manuscript.get("id") + "/" + folio + "/";
+
         // Rebuild the folio View
         this.folioView.setCustomNumber(folio);
         this.folioView.setUrl(newUrl);
@@ -123,6 +127,7 @@ return Marionette.LayoutView.extend
     {
         // Figure out what search fields to activate
         var notationSearchFields = {};
+
         if (this.manuscript.isPluginActivated("pitch-search"))
         {
             notationSearchFields.pnames = "Pitch";
@@ -158,6 +163,7 @@ return Marionette.LayoutView.extend
             this.divaViewRegion.show(this.divaView, {preventDestroy: true});
             this.folioViewRegion.show(this.folioView, {preventDestroy: true});
         }
+
         this.searchViewRegion.show(this.searchView);
         this.searchNotationViewRegion.show(this.searchNotationView);
         GlobalEventHandler.trigger("renderView");
