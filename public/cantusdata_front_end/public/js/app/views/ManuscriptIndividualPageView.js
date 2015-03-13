@@ -143,6 +143,9 @@ return Marionette.LayoutView.extend
         this.searchNotationView.setManuscript(this.manuscript.get("siglum_slug"));
         this.searchNotationView.setSearchFields(notationSearchFields);
         this.render();
+
+        // Set the document title to reflect the manuscript name
+        GlobalEventHandler.trigger("ChangeDocumentTitle", this.manuscript.get("name"));
     },
 
     /**
