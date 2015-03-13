@@ -3,15 +3,6 @@
 # Compile
 grunt --force
 
-# Assemble the templates
-cd public/template-assembler/
-python build-template.py
-cd ../../
-# Copy / paste the template
-rm ../cantusdata/templates/require.html
-cp public/template-assembler/build/index.html ../cantusdata/templates/require.html
-echo "Copied Template"
-
 rm -rf ../cantusdata/static/js
 
 if [ "$1" = "prod" ]; then
@@ -29,4 +20,14 @@ else
     # Not production, so copy unminified code.
     cp -R public/js ../cantusdata/static/js
 fi
+
+# Assemble the templates
+cd public/template-assembler/
+python build-template.py build/
+cd ../../
+# Copy / paste the template
+rm ../cantusdata/templates/require.html
+cp public/template-assembler/build/index.html ../cantusdata/templates/require.html
+echo "Copied Template"
+
 echo "Copied JavaScript"
