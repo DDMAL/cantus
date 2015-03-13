@@ -2,6 +2,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
         "models/Folio",
         "views/CantusAbstractView",
         "views/collection_views/ChantCompositeView",
+        "views/DivaFolioAdvancerView",
         "views/item_views/FolioItemView",
         "singletons/GlobalEventHandler",
         "config/GlobalVars"],
@@ -9,6 +10,7 @@ function(App, Backbone, Marionette, $,
          Folio,
          CantusAbstractView,
          ChantCompositeView,
+         DivaFolioAdvancerView,
          FolioItemView,
          GlobalEventHandler,
          GlobalVars)
@@ -34,7 +36,8 @@ return Marionette.LayoutView.extend
 
     regions: {
         chantListRegion: '.chant-list-region',
-        folioItemRegion: '.folio-item-region'
+        folioItemRegion: '.folio-item-region',
+        divaFolioAdvancerRegion: '.diva-folio-advancer-region'
     },
 
     /**
@@ -132,6 +135,7 @@ return Marionette.LayoutView.extend
         //// Show the chant list without destroying the original
         ////this.chantListRegion.show(this.chantCompositeView);
         this.folioItemRegion.show(this.folioItemView);
+        this.divaFolioAdvancerRegion.show(new DivaFolioAdvancerView());
         GlobalEventHandler.trigger("renderView");
     }
 });
