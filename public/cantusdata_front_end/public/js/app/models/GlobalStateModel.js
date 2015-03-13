@@ -4,7 +4,7 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
         "use strict";
 
         /**
-         * Handles the global state.  Updates URLs.
+         * Handles the global state.  Updates URLs and page title
          */
         return Backbone.Model.extend
         ({
@@ -19,6 +19,7 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
                 this.listenTo(GlobalEventHandler, 'ChangeFolio', this.setFolio);
                 this.listenTo(GlobalEventHandler, 'ChangeChant', this.setChant);
                 this.listenTo(GlobalEventHandler, 'SilentUrlUpdate', this.silentUrlUpdate);
+                this.listenTo(GlobalEventHandler, 'ChangeDocumentTitle', this.setDocumentTitle);
             },
 
             setManuscript: function(manuscript)
@@ -34,6 +35,15 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
             setChant: function(chant)
             {
                 this.chant = chant;
+            /**
+             * Set the title of the HTML document.
+             *
+             * @param title
+             */
+            setDocumentTitle: function(title)
+            {
+                this.documentTitle = "Cantus Ultumus — " + String(title);
+                document.title = this.documentTitle;
             },
 
             getUrl: function()
