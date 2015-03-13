@@ -11,8 +11,8 @@ function(App, Backbone, Marionette, $,
          ChantCompositeView,
          FolioItemView,
          GlobalEventHandler,
-         GlobalVars,
-         template) {
+         GlobalVars)
+{
 
 "use strict";
 

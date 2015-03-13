@@ -1,6 +1,3 @@
-//var CantusAbstractView = require(["views/CantusAbstractView"]);
-//var SearchResultView = require(["views/SearchResultView"]);
-
 define( ['App', 'backbone', 'marionette', 'jquery',
         "models/SolrDisjunctiveQueryBuilder",
         "views/CantusAbstractView",

@@ -1,15 +1,10 @@
-//var CantusAbstractView = require(["views/CantusAbstractView"]);
-//var SearchView = require(["views/SearchView"]);
-//var ModalView = require(["views/ModalView"]);
-//var TopMenuView = require(["views/TopMenuView"]);
-
 define( ['App', 'backbone', 'marionette', 'jquery',
         "views/CantusAbstractView",
         "views/SearchView",
         "views/ModalView",
         "views/TopMenuView",
         "singletons/GlobalEventHandler"],
-    function(App, Backbone, Marionette, $, CantusAbstractView, SearchView, ModalView, TopMenuView, GlobalEventHandler, template) {
+    function(App, Backbone, Marionette, $, CantusAbstractView, SearchView, ModalView, TopMenuView, GlobalEventHandler) {
 
         /**
          * Provide an alert message to the user.
