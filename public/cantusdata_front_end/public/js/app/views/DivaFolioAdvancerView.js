@@ -1,5 +1,6 @@
 define( ['App', 'marionette', 'jquery'],
-function(App, Marionette, $) {
+function(App, Marionette, $)
+{
 
 "use strict";
 
@@ -11,12 +12,14 @@ return Marionette.ItemView.extend
     template: "#diva-folio-advancer-template",
     tagName: "nav",
 
-    ui: {
+    ui:
+    {
         nextButton: "[name='next']",
         previousButton: "[name='previous']"
     },
 
-    events: {
+    events:
+    {
         "click @ui.nextButton": "nextButtonCallbackHandler",
         "click @ui.previousButton": "previousButtonCallbackHandler"
     },
@@ -26,7 +29,8 @@ return Marionette.ItemView.extend
      *
      * @returns {*|jQuery}
      */
-    getDivaData: function() {
+    getDivaData: function()
+    {
         return $("#diva-wrapper").data('diva');
     },
 
