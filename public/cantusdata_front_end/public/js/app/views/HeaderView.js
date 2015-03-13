@@ -16,7 +16,8 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             searchView: null,
             searchModalView: null,
 
-            events: {
+            events:
+            {
                 "click #site-logo": function(event)
                 {
                     // Prevent page from reloading
@@ -55,6 +56,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
 
             render: function()
             {
+                // Render the template
                 $(this.el).html(this.template());
                 // Render subviews
                 this.assign(this.topMenuView, '#top-menu');
