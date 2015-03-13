@@ -11,7 +11,8 @@ define( ['App', 'backbone', 'marionette'],
             template: "#folio-item-template",
             tagName: 'h3',
 
-            modelEvents: {
+            modelEvents:
+            {
                 "change": "render"
             }
         });
