@@ -42,7 +42,7 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
              */
             setDocumentTitle: function(title)
             {
-                this.documentTitle = "Cantus Ultumus — " + String(title);
+                this.documentTitle = "Cantus Ultimus — " + String(title);
                 document.title = this.documentTitle;
             },
 
