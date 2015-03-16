@@ -40,17 +40,10 @@
         <hr/>
         <h5>Full Text</h5>
         <%= full_text %>
-        <hr/>
         <% if (volpiano) { %>
-        <p class="volpiano"><%= volpiano %></p>
         <hr/>
+        <p class="volpiano"><%= volpiano %></p>
         <% } %>
-        <h5>Concordances</h5>
-        <ul>
-            <% _.each(concordances, function(concordance) { %>
-            <li><%= concordance %></li>
-            <% }); %>
-        </ul>
     </div>
 </div>
 {#    </div>#}
