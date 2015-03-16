@@ -11,14 +11,41 @@ define(["jquery", "backbone", "config/GlobalVars"],
             // Sometimes overridden
             searchPage: "search/?q=",
 
+            searchType: undefined,
+
             initialize: function(pQuery)
             {
                 this.setQuery(pQuery);
             },
 
+            /**
+             * Set the query.
+             *
+             * @param query
+             */
             setQuery: function(query)
             {
                 this.url = GlobalVars.siteUrl + this.searchPage + query;
+            },
+
+            /**
+             * Set the type of query.
+             *
+             * @param type
+             */
+            setType: function(type)
+            {
+                this.searchType = String(type);
+            },
+
+            /**
+             * Get the type of search.
+             *
+             * @returns {*}
+             */
+            getSearchType: function()
+            {
+                return this.searchType;
             },
 
             /**

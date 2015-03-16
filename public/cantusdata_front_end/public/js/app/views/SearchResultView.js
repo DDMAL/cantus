@@ -102,6 +102,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             {
                 this.currentPage = 1;
                 this.model.setQuery(query);
+                this.model.setType(field);
                 this.query = String(query);
                 this.field = String(field);
                 this.model.fetch({success: this.updatePaginationView});

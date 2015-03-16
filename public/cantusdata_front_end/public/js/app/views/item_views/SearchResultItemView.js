@@ -33,7 +33,7 @@ define( ['App', 'marionette'],
                 return {
                     query: this.model.getQueryWithoutManuscript(),
                     numFound: this.model.get("numFound"),
-                    searchType: this.searchField,
+                    searchType: this.model.getSearchType(),
                     showManuscriptName: this.showManuscriptName,
                     results: this.model.getFormattedData()
                 };

@@ -1,6 +1,5 @@
 <h4>Query: <%= query %></h4>
 <h4>Results: <%= numFound %></h4>
-
 <tbody>
     <% for (var i = 0; i < results.length; i++) { %>
     <tr>
@@ -13,18 +12,16 @@
             <td></td>
             <% } %>
             <% } %>
-            <% if (searchType == "volpiano") { %>
-            <% if (results[i].volpiano !== undefined) { %>
-            <td class="volpiano"><%= results[i].volpiano %></td>
+            <% if (results[i].folio !== undefined) { %>
+            <td><%= results[i].folio %></td>
             <% } else { %>
             <td></td>
             <% } %>
-            <% } %>
-        <% if (results[i].folio !== undefined) { %>
-        <td><%= results[i].folio %></td>
-        <% } else { %>
-        <td></td>
-        <% } %>
     </tr>
+    <% if (searchType === "volpiano" && results[i].volpiano !== undefined) { %>
+    <tr>
+        <td colspan="4"><p class="volpiano"><%= results[i].volpiano %></p></td>
+    </tr>
+    <% } %>
     <% } %>
 </tbody>
