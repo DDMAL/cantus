@@ -26,13 +26,14 @@ class SearchView(APIView):
                            'differentia', 'finalis'])
 
         if not querydict:
-            return Response({'numFound': 0, 'results': [],
+            return Response({'query': '', 'numFound': 0, 'results': [],
                              'facets': facets.facet_counts})
 
         search_results = s.search(rows=15)
-        result = dict({'numFound': search_results.numFound,
-                  'results': search_results,
-                  'facets': facets.facet_counts}.items()
+        result = dict({'query': querydict['q'],
+                       'numFound': search_results.numFound,
+                       'results': search_results,
+                       'facets': facets.facet_counts}.items()
                       + s.solr_params.items())
         response = Response(result)
         return response
