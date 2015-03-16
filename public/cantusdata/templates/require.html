@@ -153,17 +153,10 @@
         <hr/>
         <h5>Full Text</h5>
         <%= full_text %>
-        <hr/>
         <% if (volpiano) { %>
-        <p class="volpiano"><%= volpiano %></p>
         <hr/>
+        <p class="volpiano"><%= volpiano %></p>
         <% } %>
-        <h5>Concordances</h5>
-        <ul>
-            <% _.each(concordances, function(concordance) { %>
-            <li><%= concordance %></li>
-            <% }); %>
-        </ul>
     </div>
 </div>
 {#    </div>#}
@@ -421,10 +414,10 @@ Folio <%= number %>
 </script>
 
 <script type="text/template" id="search-result-item-template">
+<h4>Query: <%= query %></h4>
+<h4>Results: <%= numFound %></h4>
+
 <tbody>
-    <% if (results.length == 0) { %>
-    No results.
-    <% } %>
     <% for (var i = 0; i < results.length; i++) { %>
     <tr>
         <td><a href="<%= results[i].url %>" class="search-result-<%= i %>"><%= results[i].name %></a></td>
@@ -454,7 +447,6 @@ Folio <%= number %>
 </script>
 
 <script type="text/template" id="search-result-template">
-<h3>Results</h3>
 <div class="result-region"></div>
 <div class="pagination-region"></div>
 </script>
