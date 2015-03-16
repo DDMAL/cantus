@@ -22,6 +22,25 @@ define(["jquery", "backbone", "config/GlobalVars"],
             },
 
             /**
+             * Get the query field with the manuscript selection stripped.
+             *
+             * @returns {*}
+             */
+            getQueryWithoutManuscript: function()
+            {
+                var fullQuery = this.get("query");
+
+                if (fullQuery !== undefined)
+                {
+                    return this.get("query").replace(/AND manuscript:"[^\"]*"/g, '');
+                }
+                else
+                {
+                    return "";
+                }
+            },
+
+            /**
              * Formats the data to be printed in a search result list.
              */
             getFormattedData: function()
