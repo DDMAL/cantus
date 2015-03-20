@@ -8,7 +8,7 @@ define( ['App', 'marionette'],
          */
         return Marionette.ItemView.extend({
             template: "#search-result-item-template",
-            tagName: 'table class="table table-striped"',
+            //tagName: '',
 
             /**
              * The type of search.  "all fields", "volpiano", etc.
