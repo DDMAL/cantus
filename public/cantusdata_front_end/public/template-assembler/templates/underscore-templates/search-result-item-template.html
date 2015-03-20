@@ -4,6 +4,17 @@
 </div>
 <table table class="table table-striped">
     <tbody>
+    <% if (results.length > 0) { %>
+    <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <% if (showManuscriptName === true) { %>
+        <th>Manuscript</th>
+        <% } %>
+        <th>Mode</th>
+        <th>Folio</th>
+    </tr>
+    <% } %>
     <% for (var i = 0; i < results.length; i++) { %>
     <tr>
         <td><a href="<%= results[i].url %>" class="search-result-<%= i %>"><%= results[i].name %></a></td>
