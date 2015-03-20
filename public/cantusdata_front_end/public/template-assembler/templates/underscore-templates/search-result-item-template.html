@@ -15,6 +15,7 @@
         <td></td>
         <% } %>
         <% } %>
+        <td><%= results[i].mode %></td>
         <% if (results[i].folio !== undefined) { %>
         <td><%= results[i].folio %></td>
         <% } else { %>
@@ -23,7 +24,7 @@
     </tr>
     <% if (searchType === "volpiano" && results[i].volpiano !== undefined) { %>
     <tr>
-        <td colspan="4"><p class="volpiano"><%= results[i].volpiano %></p></td>
+        <td colspan="5"><p class="volpiano"><%= results[i].volpiano %></p></td>
     </tr>
     <% } %>
     <% } %>

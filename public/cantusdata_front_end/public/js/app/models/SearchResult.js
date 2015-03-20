@@ -104,6 +104,7 @@ define(["jquery", "backbone", "config/GlobalVars"],
                                 // We have stored the manuscript name in Solr
                                 newElement.manuscript = results[i].manuscript_name_hidden;
                                 newElement.folio = results[i].folio;
+                                newElement.mode = results[i].mode;
                                 newElement.volpiano = this.highlightVolpianoResult(results[i].volpiano);
                                 newElement.url = "/manuscript/" + results[i].manuscript_id + "/?folio=" + results[i].folio + "&chant=" + results[i].sequence;
                                 break;
