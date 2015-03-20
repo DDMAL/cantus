@@ -11,8 +11,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
              CantusAbstractView,
              PaginationView,
              GlyphTypeCollectionView,
-             GlobalVars,
-             template) {
+             GlobalVars) {
 
 "use strict";
 

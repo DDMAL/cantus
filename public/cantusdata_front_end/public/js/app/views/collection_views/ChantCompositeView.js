@@ -1,13 +1,11 @@
 define( ['App', 'backbone', 'marionette', 'jquery',
         "views/item_views/ChantItemView",
         "singletons/GlobalEventHandler",
-        "models/StateSwitch",
-        "config/GlobalVars"],
+        "models/StateSwitch"],
     function(App, Backbone, Marionette, $,
              ChantItemView,
              GlobalEventHandler,
-             StateSwitch,
-             GlobalVars) {
+             StateSwitch) {
 
 "use strict";
 

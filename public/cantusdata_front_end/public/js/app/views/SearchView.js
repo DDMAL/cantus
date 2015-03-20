@@ -7,8 +7,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
              SolrDisjunctiveQueryBuilder,
              CantusAbstractView,
              SearchResultView,
-             GlobalEventHandler,
-             template) {
+             GlobalEventHandler) {
 
         "use strict";
 

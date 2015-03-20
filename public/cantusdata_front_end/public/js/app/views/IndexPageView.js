@@ -3,8 +3,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
         "singletons/GlobalEventHandler"],
     function(App, Backbone, Marionette, $,
              CantusAbstractView,
-             GlobalEventHandler,
-             template) {
+             GlobalEventHandler) {
 
         "use strict";
 

@@ -1,5 +1,5 @@
-define(["jquery", "backbone", "singletons/GlobalEventHandler"],
-    function($, Backbone, GlobalEventHandler) {
+define(["jquery", "backbone", "singletons/GlobalEventHandler", "objects/OpenChantState"],
+    function($, Backbone, GlobalEventHandler, OpenChantState) {
 
         "use strict";
 

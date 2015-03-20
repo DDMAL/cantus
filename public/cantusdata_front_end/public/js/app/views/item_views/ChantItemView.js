@@ -1,14 +1,5 @@
-define( ['App', 'backbone', 'marionette', 'jquery',
-        "models/Folio",
-        "views/CantusAbstractView",
-        "singletons/GlobalEventHandler",
-        "config/GlobalVars"],
-function(App, Backbone, Marionette, $,
-         Folio,
-         CantusAbstractView,
-         GlobalEventHandler,
-         GlobalVars,
-         template) {
+define( ['App', 'marionette'],
+function(App, Marionette) {
 
 "use strict";
 

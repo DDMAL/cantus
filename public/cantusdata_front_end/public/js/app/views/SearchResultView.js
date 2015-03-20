@@ -9,8 +9,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
              CantusAbstractView,
              PaginationView,
              SearchResultItemView,
-             GlobalEventHandler,
-             template) {
+             GlobalEventHandler) {
 
         return Marionette.LayoutView.extend
         ({

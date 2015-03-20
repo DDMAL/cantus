@@ -5,8 +5,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
     function(App, Backbone, Marionette, $,
              ManuscriptCollection,
              CantusAbstractView,
-             GlobalEventHandler,
-             template) {
+             GlobalEventHandler) {
 
         "use strict";
 
