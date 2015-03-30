@@ -1,7 +1,7 @@
 (function($){
     "use strict";
 
-    var siteUrl = "/";
+    var siteUrl = "/view/";
     var iipImageServerUrl = "http://cantus.simssa.ca/";
     var divaImageDirectory = "/srv/images/cantus/";
 
