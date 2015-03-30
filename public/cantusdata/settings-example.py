@@ -36,8 +36,17 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Flat pages
+    'django.contrib.sites',
+    'django.contrib.flatpages',
+    # Auth tokens
+    'rest_framework',
+    'rest_framework.authtoken',
     'cantusdata',
+    'neumeeditor',
+    'cantusstatic',
     'django_extensions',
+    'coverage'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -48,6 +57,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware'
 )
 
 ROOT_URLCONF = 'cantusdata.urls'
@@ -83,6 +93,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
 STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+MEDIA_URL_NEUMEEDITOR = "/neumeeditor/media/"
+# This needs to be an absolute path to the file system location...
+STATIC_ROOT = '/path/to/public/cantusdata/static/'
+MEDIA_ROOT = '/path/to/public/media/'
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
@@ -91,3 +106,13 @@ REST_FRAMEWORK = {
 }
 
 SOLR_SERVER = "http://localhost:8080/cantusdata-solr/"
+
+COVERAGE_MODULE_EXCLUDES = ('django')
+
+LOGGING_CONFIG = None
+
+# AUTHENTICATION
+MAX_TOKEN_AGE_DAYS = 3
+
+# Sites Plugin
+SITE_ID = 1
