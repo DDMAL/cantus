@@ -347,7 +347,7 @@
             serializeData: function()
             {
                 return {
-                    "image_file": this.model.getAbsoluteImageFile(),
+                    "image_file": this.model.getAbsoluteImageFile()
                     // "image_file_absolute": this.model.getAbsoluteImageFile()
                 };
             }
@@ -531,7 +531,7 @@
             serializeData: function()
             {
                 return {
-                    "image_file": this.model.getAbsoluteImageFile(),
+                    "image_file": this.model.getAbsoluteImageFile()
                     // "image_file_absolute": this.model.getAbsoluteImageFile()
                 };
             },
