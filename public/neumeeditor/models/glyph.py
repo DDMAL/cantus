@@ -17,7 +17,7 @@ class Glyph(models.Model):
     comments = models.TextField(blank=True, null=False)
 
     def __unicode__(self):
-        output = u""
+        output = u"{0} : [".format(self.short_code)
         name_count = self.name_set.count()
         index = 0
         for name in self.name_set.all():
@@ -25,7 +25,7 @@ class Glyph(models.Model):
             index += 1
             if index < name_count:
                 output += u", "
-        return output
+        return output + "]"
 
 
 @receiver(pre_delete, sender=Glyph)
