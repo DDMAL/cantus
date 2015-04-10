@@ -11,7 +11,7 @@ class Glyph(models.Model):
         app_label = "neumeeditor"
         # ordering = ['name']
 
-    style = models.ForeignKey(Style)
+    style = models.ForeignKey(Style, blank=True, null=True)
     short_code = ShortCodeField(max_length=128, blank=False, null=False,
                                 unique=False)
     comments = models.TextField(blank=True, null=False)
