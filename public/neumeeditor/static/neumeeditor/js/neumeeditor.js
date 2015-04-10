@@ -599,16 +599,13 @@
         });
 
         var CreateImagesView = Backbone.Marionette.ItemView.extend({
+
             createdCollection: undefined,
             template: "#upload-image-template",
-
-            /**
-             * True iff dropzone has already been initialized.
-             */
-            dropzoneInitialized: false,
+            dropzoneObject: undefined,
 
             ui: {
-                "dropzone": ".dropzone"
+                "dropzone": ".dropzone-form"
             },
 
             initialize: function(options)
@@ -617,6 +614,7 @@
                 {
                     if (options.createdCollection !== undefined)
                     {
+                        console.log("There is a created collection.");
                         this.createdCollection = options.createdCollection;
                     }
                     if (options.glyphId !== undefined)
@@ -636,38 +634,34 @@
                 this.glyphId = getAbsoluteGlyphUrl(parseInt(idNum));
             },
 
-            onShow: function() {
-                if (this.dropzoneInitialized === false)
-                {
-                    this.dropzoneInitialized = true;
-                    this.ui.dropzone.dropzone(
-                        {
-                            url: SITE_URL + "images/",
-                            autoProcessQueue: true,
-                            paramName: "image_file",
-                            acceptedFiles: "image/*",
-                            headers: {
-                                // We need to include the CSRF token again
-                                "X-CSRFToken": csrftoken
-                            },
-                            params: {
-                                glyph: this.glyphId
-                            }
+            onShow: function()
+            {
+                // Build the dropzone
+                this.dropzoneObject = new Dropzone(this.ui.dropzone.selector,
+                    {
+                        url: SITE_URL + "images/",
+                        autoProcessQueue: true,
+                        paramName: "image_file",
+                        acceptedFiles: "image/*",
+                        headers: {
+                            // We need to include the CSRF token again
+                            "X-CSRFToken": csrftoken
+                        },
+                        params: {
+                            glyph: this.glyphId
                         }
-                    );
-                    this.ui.dropzone.on("error", function(error) { console.log(error); });
-                    var that = this;
-                    this.ui.dropzone.on("success",
-                        function(file, attributes)
-                        {
-                            var newModel = new Image({url: attributes.url});
-                            newModel.set(attributes);
-                            newModel.set("glyph", that.glyphId);
-                            that.createdCollection.add(newModel);
-                            newModel.save();
-                        }
-                    );
-                }
+                    }
+                );
+                // Set up the callbacks
+                var that = this;
+                this.dropzoneObject.on("success",
+                    function(file, attributes) {
+                        var newModel = new Image({url: attributes.url});
+                        newModel.set(attributes);
+                        newModel.set("glyph", that.glyphId);
+                        that.createdCollection.add(newModel);
+                    }
+                );
             }
         });
 
