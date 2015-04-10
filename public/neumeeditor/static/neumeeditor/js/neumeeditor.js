@@ -127,18 +127,19 @@
     */
 
     var Image = Backbone.Model.extend({
+
+        url: SITE_URL + "images/",
+
+        defaults: {
+            image_file: ""
+        },
+
         initialize: function(options)
         {
             if (options !== undefined && options.url !== undefined)
             {
                 this.url = String(options.url);
             }
-        },
-
-        url: SITE_URL + "images/",
-
-        defaults: {
-            image_file: ""
         },
 
         /**
@@ -153,18 +154,19 @@
     });
 
     var Name = Backbone.Model.extend({
+
+        url: SITE_URL + "names/",
+
+        defaults: {
+            string: ""
+        },
+
         initialize: function(options)
         {
             if (options !== undefined && options.url !== undefined)
             {
                 this.url = String(options.url);
             }
-        },
-
-        url: SITE_URL + "names/",
-
-        defaults: {
-            string: ""
         },
 
         /**
