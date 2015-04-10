@@ -470,8 +470,8 @@
                             console.log("Success.", event);
                             console.log(newGlyph);
                             // console.log(that.ui.statusDiv);
-                            that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Glyph "' + newGlyph.get("short_code") + '" saved successfully.</p>');
-                            that.ui.statusDiv.find("p").fadeOut(5000);
+                            that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Glyph "<a href="' + newGlyph.get("url") + '">' + newGlyph.get("short_code") + '</a>" saved successfully.</p>');
+                            //that.ui.statusDiv.find("p").fadeOut(5000);
                             // Add the created glyph to the createdCollection
                             that.createdCollection.add(newGlyph);
                             // Generate a new empty glyph
@@ -483,7 +483,7 @@
                             console.log("fail", event);
                             console.log(newGlyph);
                             that.ui.statusDiv.html('<p class="alert alert-danger" role="alert">Error saving glyph.<p>');
-                            that.ui.statusDiv.find("p").fadeOut(5000);
+                            //that.ui.statusDiv.find("p").fadeOut(5000);
                         }
                     }
                 );
