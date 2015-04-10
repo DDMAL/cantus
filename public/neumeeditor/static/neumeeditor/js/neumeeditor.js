@@ -319,7 +319,9 @@
         Execution Code
         */
         var menuLinks = new Backbone.Collection();
-        menuLinks.add(new Link().set({url:SITE_URL + "", text: "List"}));
+        menuLinks.add(new Link().set({url:SITE_URL + "", text: "Neumes"}));
+        menuLinks.add(new Link().set({url:SITE_URL + "nomenclatures/", text: "Nomenclatures"}));
+        menuLinks.add(new Link().set({url:SITE_URL + "styles/", text: "Styles"}));
         // menuLinks.add(new Link());
         // menuLinks.add(new Link());
         var menu = new MainMenuView({collection: menuLinks});
