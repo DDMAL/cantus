@@ -470,7 +470,7 @@
                             console.log("Success.", event);
                             console.log(newGlyph);
                             // console.log(that.ui.statusDiv);
-                            that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Glyph saved successfully.</p>');
+                            that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Glyph "' + newGlyph.get("short_code") + '" saved successfully.</p>');
                             that.ui.statusDiv.find("p").fadeOut(5000);
                             // Add the created glyph to the createdCollection
                             that.createdCollection.add(newGlyph);
