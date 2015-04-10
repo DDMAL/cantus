@@ -65,24 +65,18 @@
         },
 
         openGlyphList: function(){
-            console.log("Open Glyph List.");
             // Start the glyph list module
             App.module("GlyphList").start();
         },
 
         openGlyphEditor: function(id){
-            console.log("Open Glyph List.");
             // Start the glyph list module
             App.module("GlyphEdit").start();
             App.module("GlyphEdit").initializeId(id);
         },
 
         routeToPage: function(url) {
-            console.log("url:", url);
-            console.log("URL: ", url);
-            // var newPageUrl = String(url);
             var newPageUrl = SITE_SUBFOLDER + String(url).replace(/.*\/neumeeditor\//g, "");
-            console.log(newPageUrl);
             this.navigate(
                     // Strip site url if need be
                     newPageUrl,
@@ -104,7 +98,6 @@
     });
     App.on('initialize:after', function(options)
     {
-        // console.log('Initialization Finished');
     });
     App.on('start', function(options)
     {
@@ -308,7 +301,6 @@
             },
 
             goToUrl: function(event) {
-                console.log(event);
                 event.preventDefault();
                 AppRouter.routeToPage(event.target.href);
             }
@@ -391,7 +383,6 @@
             },
 
             goToEdit: function(event) {
-                console.log(event);
                 event.preventDefault();
                 AppRouter.routeToPage(this.model.get("url"));
             },
@@ -440,7 +431,6 @@
             },
 
             initialize: function(createdCollection) {
-                console.log("Test");
                 // The model is always a blank glyph
                 this.generateNewEmptyGlyph();
                 // Assign the collection which contains the created glyphs
@@ -455,11 +445,6 @@
             {
                 // Prevent the event from redirecting the page
                 event.preventDefault();
-                //this.model.set("short_code", this.ui.createGlyphButton.val());
-                //newGlyph.set("");
-
-                console.log("CreatedGlyph", this.model.toJSON());
-
                 // Flip the reference
                 var newGlyph = this.model;
                 var that = this;
@@ -467,9 +452,6 @@
                     {"short_code": this.ui.shortCodeField.val()},
                     {
                         success: function(event) {
-                            console.log("Success.", event);
-                            console.log(newGlyph);
-                            // console.log(that.ui.statusDiv);
                             that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Glyph "<a href="' + newGlyph.get("url") + '">' + newGlyph.get("short_code") + '</a>" saved successfully.</p>');
                             //that.ui.statusDiv.find("p").fadeOut(5000);
                             // Add the created glyph to the createdCollection
@@ -480,8 +462,6 @@
                             that.ui.shortCodeField.val('');
                         },
                         error: function(event) {
-                            console.log("fail", event);
-                            console.log(newGlyph);
                             that.ui.statusDiv.html('<p class="alert alert-danger" role="alert">Error saving glyph.<p>');
                             //that.ui.statusDiv.find("p").fadeOut(5000);
                         }
@@ -517,8 +497,6 @@
         this.start = function()
         {
             App.container.show(new GlyphDashboardView());
-
-            console.log("Starting...");
         };
     });
 
@@ -558,7 +536,6 @@
 
             destroyModel: function()
             {
-                console.log("Delete name.");
                 event.preventDefault();
                 this.model.destroy();
                 return this.trigger("destroy");
@@ -599,8 +576,6 @@
                 this.model.save(null,
                     {
                         success: function() {
-                            console.log("Success.");
-                            // console.log(that.ui.statusDiv);
                             that.ui.statusDiv.html("<p>Name saved successfully.</p>");
                             that.ui.statusDiv.find("p").fadeOut(2500);
                             return that.trigger("submit");
@@ -615,7 +590,6 @@
 
             destroyModel: function()
             {
-                console.log("Delete name.");
                 event.preventDefault();
                 this.model.destroy();
                 return this.trigger("destroy");
@@ -624,8 +598,6 @@
 
         var CreateImagesView = Backbone.Marionette.ItemView.extend({
             createdCollection: undefined,
-            childView: CreateSingleNameView,
-            childViewContainer: ".name-list",
             template: "#upload-image-template",
 
             /**
@@ -633,34 +605,24 @@
              */
             dropzoneInitialized: false,
 
-            childEvents: {
-                //"submit": "save"
-            },
-
             ui: {
                 "dropzone": ".dropzone"
             },
 
             initialize: function(options)
             {
-                if(options)
+                if(options !== undefined)
                 {
-                    if (options.createdCollection)
+                    if (options.createdCollection !== undefined)
                     {
                         this.createdCollection = options.createdCollection;
                     }
-                    if (options.glyphId)
+                    if (options.glyphId !== undefined)
                     {
                         this.setGlyphId(options.glyphId);
-                        console.log("DECLARING GLYPH ID: ", this);
                     }
                 }
             },
-
-            //save: function(child)
-            //{
-            //    console.log("SAVE CALLBACK:");
-            //},
 
             /**
              * Set the view glyph ID.
@@ -693,20 +655,14 @@
                     );
                     this.ui.dropzone.on("error", function(error) { console.log(error); });
                     var that = this;
-                    this.listenTo(this.ui.dropzone, "success",
+                    this.ui.dropzone.on("success",
                         function(file, attributes)
                         {
-                            console.log("Creating image model...", that);
-                            // console.log(attributes);
-                            // console.log(file);
                             var newModel = new Image({url: attributes.url});
                             newModel.set(attributes);
-                            // console.log("childviewcontainer: ", that.childViewContainer);
                             newModel.set("glyph", that.glyphId);
-                            // console.log(that.createdCollection);
                             that.createdCollection.add(newModel);
                             newModel.save();
-                            // console.log(newModel);
                         }
                     );
                 }
@@ -737,7 +693,6 @@
             initialize: function(options)
             {
                 this.emptyName = new Name();
-                console.log("TEEEST", options);
                 if(options)
                 {
                     if (options.createdCollection !== undefined)
@@ -746,7 +701,6 @@
                     }
                     if (options.glyphId !== undefined)
                     {
-                        console.log("GlyphId", options.glyphId);
                         this.emptyName.setGlyph(parseInt(options.glyphId));
                     }
                 }
@@ -756,12 +710,9 @@
 
             save: function(child)
             {
-                console.log("SAVE CALLBACK:");
                 // Remove model from this collection
-                // console.log(child.model);
                 // Set the new URL
                 child.model.transferUrl();
-                console.log(child.model);
                 this.createdCollection.add(child.model);
                 this.collection.remove(child.model);
                 this.collection.add(new Name());
@@ -822,8 +773,6 @@
 
             initialize: function()
             {
-                console.log("Glyph Model", this.model.toJSON());
-
                 this.glyphNames = new NameCollection();
                 this.glyphImages = new ImageCollection();
 
@@ -852,21 +801,17 @@
                 // Prevent default functionality
                 event.preventDefault();
                 var that = this;
-                console.log(this.model.toJSON());
                 this.model.save(
                     {
                         comments: String(this.ui.commentsBox.val())
                     },
                     {
                         success: function() {
-                            console.log("Success.");
                             that.ui.statusDiv.html("<p>Properties updated successfully.</p>");
                             that.ui.statusDiv.find("p").fadeOut(2500);
                             return that.trigger("submit");
                         },
-                        error: function(test1, test2, test3) {
-                            console.log(that.model.toJSON());
-                            console.log(test1, test2, test3);
+                        error: function() {
                             that.ui.statusDiv.html("<p>Error saving.<p>");
                             that.ui.statusDiv.find("p").fadeOut(2500);
                         }
@@ -879,14 +824,11 @@
              */
             loadNamesAndImages: function()
             {
-                console.log("Glyph model:", this.model);
                 // Set the glyph ids on the child views
                 this.createImagesView.setGlyphId(this.model.get("id"));
                 // Load the models into the collections
                 this.glyphNames.reset(this.model.get("name_set"));
                 this.glyphImages.reset(this.model.get("image_set"));
-                console.log("Names:", this.glyphNames);
-                console.log("Images:", this.glyphImages);
             },
 
             onChange: function()
@@ -897,7 +839,6 @@
 
             onShow: function()
             {
-                console.log("Showing:", this.model.toJSON());
                 // Show the subviews
                 this.namesArea.show(this.editNamesView,{ preventDestroy: true });
                 this.nameCreateArea.show(this.createNamesView,{ preventDestroy: true });
@@ -938,12 +879,10 @@
             glyphId = parseInt(id);
             glyph.url = "/neumeeditor/glyph/" + glyphId + "/";
 
-            console.log("Starting...");
             glyph.fetch({success: function() {
                 // Build the main view
                 var editor = new AppLayoutView({model: glyph});
                 // Render the LayoutView
-                console.log("Fetchtest:", glyph);
                 // Glyph data loaded, so load the names, etc.
                 editor.loadNamesAndImages();
                 App.container.show(editor);
@@ -952,7 +891,6 @@
 
 
     });
-    console.log("start app");
     App.start();
 
 })(jQuery);
