@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cantus Ultimus</title>
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="/static/css/bootstrap.css">
+    <link rel="stylesheet" href="/static/css/bootstrap-theme.css">
+    <link rel="stylesheet" href="/static/css/diva.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/js/bootstrap.js"></script>
+    <script src="/static/js/utils.js"></script>
+    <script src="/static/js/diva.js"></script>
+    <script src="/static/js/plugins/highlight.js"></script>
+    <script src="/static/js/plugins/canvas.js"></script>
+
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/ico" href="/static/img/favicon.ico">
+</head>
+<body>
+    <div id="header-container">
+        <div id="page-header" class="header"></div>
+    </div>
+    <div id="content-container" class="container-fluid">
+{#        <hr/>#}
+        <div id="page-content" class="row content">
+            <div class="col-lg-12">
+                <!-- Templates -->
+                <div id="view-goes-here"></div>
+                <div id="search-modal"></div>
+            </div>
+        </div>
+    </div>
+
+
+<script type="text/template" id="header-template">
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a id="site-logo" class="navbar-brand" href="#">Cantus Ultimus</a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
+      <!-- <span class="icon-bar"></span> -->
+      <!-- <span class="icon-bar"></span> -->
+      <!-- <span class="icon-bar"></span> -->
+      </button>
+    </div>
+    <ul id="top-menu" class="nav navbar-nav navbar-right">  </ul>
+    <div>
+      <ul class="nav navbar-nav">
+        <li><a href="/about/">About</a></li>
+        <li><a href="/database/">Database</a></li> 
+        <li><a href="/omr/">OMR</a></li> 
+        <li><a href="/plainchant/">Plainchant</a></li> 
+        <li><a href="/team/">Team</a></li>                
+      </ul>
+    </div>
+  </div>
+</nav>
+</script>
+
+
+
+<!--Templates -->
+<!--
+<script type="text/template" id="header-template">
+<nav class="navbar navbar-default">
+
+
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <a id="site-logo" class="navbar-brand" href="/">Cantus Ultimus</a>
+
+    </div>
+    <ul id="top-menu" class="nav navbar-nav navbar-right">  </ul>
+    <div class="navbar-collapse collapse navbar-responsive-collapse">
+        <ul id="top-menu" class="nav navbar-nav navbar-right">  </ul>
+        <a id="top-menu" class="navbar-text" href="/about/">About</a>
+        <a id="top-menu" class="navbar-text" href="/database/">Database</a>
+        <a id="top-menu" class="navbar-text" href="/omr/">OMR</a>
+        <a id="top-menu" class="navbar-text" href="/plainchant/">Plainchant</a>
+        <a id="top-menu" class="navbar-text" href="/team/">Team</a>
+    </div> 
+</nav>
+</script>
+-->
+
+
+
+<script type="text/template" id="top-menu-template">
+{#<% _.forEach(items, function(item) { %>#}
+<% for (var i = 0; i < items.length; i++) { %>
+    <li id="top-menu-button-<%= i %>"<% if (items[i].active) { %> class="active" <% } if (items[i].tags) { %><%= items[i].tags %><% } %> ><a href="<%= items[i].url %>"><%= items[i].name %></a></li>
+<% }%>
+</script>
+
+
+
+<script type="text/template" id="modal-template">
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel"><%= title %></h4>
+            </div>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+</div>
+</script>
+
+
+
+<script type="text/template" id="search-mode-template">
+    {# Mode input #}
+<select multiple class="form-control search-input">
+    <option value="1">Mode 1</option>
+    <option value="2">Mode 2</option>
+    <option value="3">Mode 3</option>
+    <option value="4">Mode 4</option>
+    <option value="5">Mode 5</option>
+    <option value="6">Mode 6</option>
+    <option value="7">Mode 7</option>
+    <option value="8">Mode 8</option>
+    <option>No Music</option>
+    <option>Responsory (simple)</option>
+    <option>Uncertain</option>
+    <option>Responsory (special)</option>
+    <option>Chant in Transposition</option>
+</select>
+</script>
+
+
+
+<script type="text/template" id="search-all-template">
+{# Regular text input #}
+<input type="text" class="form-control search-input" placeholder="Search" value="<%= query %>">
+</script>
+
+<script type="text/template" id="search-template">
+{#<form role="search">#}
+<div class="form-inline">
+    <div class="form-group">
+        <select class="form-control search-field">
+            <option value="all">All Fields:</option>
+            <option value="volpiano">Volpiano:</option>
+            <option value="mode">Mode:</option>
+            <option value="feast">Feast:</option>
+            <option value="office">Office:</option>
+        </select>
+    </div>
+    <div class="form-group input-section"></div>
+</div>
+{#  <button type="submit" class="btn btn-default search-button">Submit</button>#}
+{#</form>#}
+<div class="search-results"></div>
+</script>
+
+<script type="text/template" id="search-result-template">
+<h3>Results</h3>
+<table class="table table-striped">
+<% if (results.length == 0) { %>
+    No results.
+<% } %>
+<% for (var i = 0; i < results.length; i++) { %>
+    <tr>
+        <td><a href="<%= results[i].url %>" class="search-result-<%= i %>"><%= results[i].name %></a></td>
+        <td><%= results[i].model %></td>
+        <% if (showManuscriptName === true) { %>
+            <% if (results[i].manuscript !== undefined) { %>
+            <td><%= results[i].manuscript %></td>
+            <% } else { %>
+            <td></td>
+            <% } %>
+        <% } %>
+        <% if (searchType == "volpiano") { %>
+            <% if (results[i].volpiano !== undefined) { %>
+            <td class="volpiano"><%= results[i].volpiano %></td>
+            <% } else { %>
+            <td></td>
+            <% } %>
+        <% } %>
+        <% if (results[i].folio !== undefined) { %>
+        <td><%= results[i].folio %></td>
+        <% } else { %>
+        <td></td>
+        <% } %>
+    </tr>
+<% } %>
+</table>
+<div class="pagination"></div>
+</script>
+
+
+
+<div id="content-container" class="container-fluid">
+      {% block body %}
+    {% endblock %}
+</div>
+    <!--Load scripts last-->
+    <script src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script>
+    <script src="/static/js/underscore.js"></script>
+    <script src="/static/js/backbone.js"></script>
+    <script src="/static/js/cantus.js"></script>
+
+
+
+
+</body>
+</html>
