@@ -5,6 +5,7 @@ from neumeeditor.views.authentication import ObtainExpiringAuthToken
 from neumeeditor.views.image import ImageList, ImageDetail
 from neumeeditor.views.main import neumeeditor_home, neumeeditor_api_root
 from neumeeditor.views.name import NameList, NameDetail
+from neumeeditor.views.nomenclature import NomenclatureDetail, NomenclatureList
 from neumeeditor.views.style import StyleList, StyleDetail
 from neumeeditor.views.user import UserList, UserDetail
 from rest_framework.urlpatterns import format_suffix_patterns
@@ -34,9 +35,14 @@ urlpatterns += format_suffix_patterns(
              url(r'^style/(?P<pk>[0-9]+)/$', StyleDetail.as_view(),
                  name="style-detail"),
 
-             url(r'^users/$', UserList.as_view(), name="user-list"),
-             url(r'^user/(?P<pk>[0-9]+)/$', UserDetail.as_view(),
-                 name="user-detail"),
+             # url(r'^users/$', UserList.as_view(), name="user-list"),
+             # url(r'^user/(?P<pk>[0-9]+)/$', UserDetail.as_view(),
+             #     name="user-detail"),
+
+             url(r'^nomenclatures/$', NomenclatureList.as_view(),
+                 name="nomenclature-list"),
+             url(r'^nomenclature/(?P<pk>[0-9]+)/$',
+                 NomenclatureDetail.as_view(), name="nomenclature-detail"),
 
              )
 )
