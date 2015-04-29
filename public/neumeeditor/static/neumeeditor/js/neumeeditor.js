@@ -193,7 +193,7 @@
     });
 
     var Nomenclature = Backbone.Model.extend({
-        urlRoot: SITE_URL + "nomenclatures/",
+        urlRoot: SITE_URL + "nomenclature/",
 
         defaults: {
             name: ""
@@ -377,13 +377,24 @@
             template: "#nomenclature-template",
             tagName: "tr",
 
-            events: {
-                "click .edit-button": "goToEdit"
+            ui: {
+                "deleteButton": 'button[name="delete"]'
             },
 
-            goToEdit: function(event) {
-                event.preventDefault();
-                AppRouter.routeToPage(this.model.get("url"));
+            events: {
+                "click @ui.deleteButton": "destroyModel"
+            },
+
+            destroyModel: function()
+            {
+                console.log("TEST");
+                console.log(this.model.toJSON());
+                this.model.destroy(
+                    {
+                        success: function(){
+                            console.log("It worked.");
+                        }
+                    });
             }
         });
 
