@@ -61,7 +61,8 @@
         /* standard routes can be mixed with appRoutes/Controllers above */
         routes : {
             "neumeeditor/" : "openGlyphList",
-            "neumeeditor/glyph/:id/" : "openGlyphEditor"
+            "neumeeditor/glyph/:id/" : "openGlyphEditor",
+            "neumeeditor/nomenclatures/" : "openNomenclatureList"
         },
 
         openGlyphList: function(){
@@ -75,7 +76,15 @@
             App.module("GlyphEdit").initializeId(id);
         },
 
-        routeToPage: function(url) {
+        openNomenclatureList: function()
+        {
+            console.log("test");
+            // Start the nomenclature list module
+            App.module("NomenclatureList").start();
+        },
+
+        routeToPage: function(url)
+        {
             var newPageUrl = SITE_SUBFOLDER + String(url).replace(/.*\/neumeeditor\//g, "");
             this.navigate(
                     // Strip site url if need be
@@ -181,6 +190,14 @@
         }
     });
 
+    var Nomenclature = Backbone.Model.extend({
+        urlRoot: SITE_URL + "nomenclatures/",
+
+        defaults: {
+            name: ""
+        }
+    });
+
     var Glyph = Backbone.Model.extend({
 
         urlRoot: SITE_URL + "glyphs/",
@@ -242,6 +259,21 @@
 
     var NameCollection = Backbone.Collection.extend({
         model: Name,
+
+        comparator: function(name)
+        {
+            // Newest names first
+            return 0 - parseInt(name.get("id"));
+        }
+    });
+
+    var NomenclatureCollection = Backbone.Collection.extend({
+        model: Nomenclature,
+
+        initialize: function(options)
+        {
+            this.url = String(options.url);
+        },
 
         comparator: function(name)
         {
@@ -330,6 +362,122 @@
 
     App.module("Authentication", function(Authentication, App, Backbone, Marionette, $, _){
         this.startWithParent = false;
+    });
+
+    App.module("NomenclatureList", function(NomenclatureList, App, Backbone, Marionette, $, _){
+        this.startWithParent = false;
+
+        /*
+         Item Views
+         */
+
+        var NomenclatureView = Backbone.Marionette.ItemView.extend({
+            template: "#nomenclature-template",
+            tagName: "tr",
+
+            events: {
+                "click .edit-button": "goToEdit"
+            },
+
+            goToEdit: function(event) {
+                event.preventDefault();
+                AppRouter.routeToPage(this.model.get("url"));
+            }
+        });
+
+        var NomenclatureCompositeView = Backbone.Marionette.CompositeView.extend({
+            childView: NomenclatureView,
+
+            childViewContainer: "tbody",
+            template: "#nomenclature-collection-template"
+        });
+
+        var CreateNomenclatureView = Backbone.Marionette.ItemView.extend({
+            /**
+             * The collection that the new glyph will be added to.
+             */
+            createdCollection: undefined,
+            template: "#create-nomenclature-template",
+            tagName: 'form class="form" action="#"',
+
+            ui: {
+                "nameField": "[name='nomenclature-name-field']",
+                "statusDiv": ".status-message"
+            },
+
+            events: {
+                "submit": "createButtonCallback"
+            },
+
+            initialize: function (createdCollection) {
+                // The model is always a blank glyph
+                this.generateNewEmptyNomenclature();
+                // Assign the collection which contains the created glyphs
+                this.createdCollection = createdCollection;
+            },
+
+            generateNewEmptyNomenclature: function () {
+                this.model = new Nomenclature();
+            },
+
+            createButtonCallback: function (event) {
+                // Prevent the event from redirecting the page
+                event.preventDefault();
+                // Flip the reference
+                var newNomenclature = this.model;
+                var that = this;
+                this.model.save(
+                    {"name": this.ui.nameField.val()},
+                    {
+                        success: function (event) {
+                            that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Nomenclature "' + newNomenclature.get("name") + '" saved successfully.</p>');
+                            //that.ui.statusDiv.find("p").fadeOut(5000);
+                            // Add the created glyph to the createdCollection
+                            that.createdCollection.add(newNomenclature);
+                            // Generate a new empty glyph
+                            that.generateNewEmptyNomenclature();
+                            // Empty the short code field
+                            that.ui.nameField.val('');
+                        },
+                        error: function (event) {
+                            that.ui.statusDiv.html('<p class="alert alert-danger" role="alert">Error saving nomenclature.<p>');
+                            //that.ui.statusDiv.find("p").fadeOut(5000);
+                        }
+                    }
+                );
+                // Redirect to the edit page
+
+            }
+        });
+
+        var NomenclatureDashboardView = Backbone.Marionette.LayoutView.extend({
+            template: "#glyph-dashboard-template",
+
+            regions: {
+                glyphCreateRegion: ".glyph-create-region",
+                glyphListRegion: ".glyph-list-region"
+            },
+
+            onShow: function() {
+                var nomenclatureCollection = new NomenclatureCollection({url: "/neumeeditor/nomenclatures/"});
+                nomenclatureCollection.fetch();
+                this.glyphCreateRegion.show(new CreateNomenclatureView(nomenclatureCollection));
+                this.glyphListRegion.show(new NomenclatureCompositeView({collection: nomenclatureCollection}));
+            }
+        });
+
+        /*
+         ------------------------------------------------------
+         Execution Code
+         ------------------------------------------------------
+         */
+
+        this.start = function()
+        {
+            console.log("Starting Nomenclature Editor...");
+            App.container.show(new NomenclatureDashboardView());
+            console.log("Started Nomenclature Editor.");
+        };
     });
 
     App.module("GlyphList", function(GlyphList, App, Backbone, Marionette, $, _){
