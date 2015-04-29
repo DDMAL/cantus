@@ -65,13 +65,15 @@
             "neumeeditor/nomenclatures/" : "openNomenclatureList"
         },
 
-        openGlyphList: function(){
+        openGlyphList: function()
+        {
             // Start the glyph list module
             App.module("GlyphList").start();
         },
 
-        openGlyphEditor: function(id){
-            // Start the glyph list module
+        openGlyphEditor: function(id)
+        {
+            // Start the individual glyph editor
             App.module("GlyphEdit").start();
             App.module("GlyphEdit").initializeId(id);
         },
