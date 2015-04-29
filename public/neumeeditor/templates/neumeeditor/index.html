@@ -48,6 +48,30 @@
 <a href="<%= url %>"><%= text %></a>
 </script>
 
+<script type="text/template" id="nomenclature-template">
+    <td><%= name %></td>
+</script>
+
+<script type="text/template" id="nomenclature-collection-template">
+    <div class="col-md-12">
+        <h2>Nomenclatures</h2>
+        <div class="create-nomenclatrue-region"></div>
+        <table class="table table-striped nomenclature-collection">
+            <tbody></tbody>
+        </table>
+    </div>
+</script>
+
+<script type="text/template" id="create-nomenclature-template">
+    <h2>Create Nomenclature</h2>
+    <div class="form-group">
+        <label for="nomenclature-name-field">Name</label>
+        <input class="form-control" placeholder="Enter Nomenclature Name" name="nomenclature-name-field">
+    </div>
+    <button class="btn btn-default" type="submit">Create Nomenclature</button>
+    <div class="status-message"></div>
+</script>
+
 <script type="text/template" id="glyph-template">
 {# <td><%= id %></td> #}
 <td><%= short_code %></td>
