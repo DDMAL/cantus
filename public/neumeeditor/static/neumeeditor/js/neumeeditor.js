@@ -197,7 +197,15 @@
 
         defaults: {
             name: ""
-        }
+        },
+
+        initialize: function(options)
+        {
+            if (options !== undefined && options.url !== undefined)
+            {
+                this.url = String(options.url);
+            }
+        },
     });
 
     var Glyph = Backbone.Model.extend({
@@ -430,7 +438,7 @@
             },
 
             generateNewEmptyNomenclature: function () {
-                this.model = new Nomenclature();
+                this.model = new Nomenclature({url: SITE_URL + "nomenclatures/"});
             },
 
             createButtonCallback: function (event) {
