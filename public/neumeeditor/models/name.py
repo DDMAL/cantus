@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 
 
 class Name(models.Model):
@@ -12,3 +14,10 @@ class Name(models.Model):
 
     def __unicode__(self):
         return u"{0}".format(self.string)
+
+
+@receiver(pre_save, sender=Name)
+def strip_whitespace(sender, instance, **kwargs):
+    # Strip out whitespace
+    print instance.string
+    instance.string = instance.string.strip()
