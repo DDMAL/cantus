@@ -762,7 +762,7 @@
 
             tagName: "form",
 
-            template: _.template($('#edit-single-name-template').html()),
+            template: "#edit-single-name-template",
 
             modelEvents: {
                 "change": "render"
