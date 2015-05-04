@@ -205,7 +205,19 @@
             {
                 this.url = String(options.url);
             }
-        },
+        }
+    });
+
+    /**
+     * A relationship between a name and a nomenclature.
+     */
+    var NameNomenclatureMembership = Backbone.Model.extend({
+        urlRoot: SITE_URL + "name-nomenclature-membership/",
+
+        defaults: {
+            name: undefined,
+            nomenclature: undefined
+        }
     });
 
     var Glyph = Backbone.Model.extend({
