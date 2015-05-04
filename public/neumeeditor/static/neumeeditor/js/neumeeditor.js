@@ -220,6 +220,9 @@
         }
     });
 
+    /**
+     * A musical glyph, such as a punctum.
+     */
     var Glyph = Backbone.Model.extend({
 
         urlRoot: SITE_URL + "glyphs/",
