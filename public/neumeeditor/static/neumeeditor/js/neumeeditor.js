@@ -698,6 +698,34 @@
         Item Views
          */
 
+        /**
+         * A view that allows the user to create a NameNomenclatureRelationship.
+         */
+        var CreateNameNomenclatureMembershipView = Backbone.Marionette.ItemView.extend({
+            tagName: "div",
+
+            template: "#create-name-nomenclature-membership-template",
+
+            names: undefined,
+            nomenclatures: undefined,
+
+            /**
+             * Serialize a list of names and nomenclatures.
+             *
+             * @returns {{names: string[], nomenclatures: string[]}}
+             */
+            serializeData: function()
+            {
+                var names = ["n1","n2", "n3"];
+                var nomenclatures = ["no1","no2","no3"];
+
+                return {
+                    names: names,
+                    nomenclatures: nomenclatures
+                }
+            }
+        });
+
         var EditSingleImageView = Backbone.Marionette.ItemView.extend({
             tagName: "div",
 
