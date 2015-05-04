@@ -196,7 +196,7 @@
         urlRoot: SITE_URL + "nomenclature/",
 
         defaults: {
-            name: ""
+            nomenclature_name: ""
         },
 
         initialize: function(options)
@@ -448,14 +448,14 @@
                 var newNomenclature = this.model;
                 var that = this;
                 this.model.save(
-                    {"name": this.ui.nameField.val()},
+                    {"nomenclature_name": this.ui.nameField.val()},
                     {
                         success: function (event) {
-                            that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Nomenclature "' + newNomenclature.get("name") + '" saved successfully.</p>');
+                            that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Nomenclature "' + newNomenclature.get("nomenclature_name") + '" saved successfully.</p>');
                             //that.ui.statusDiv.find("p").fadeOut(5000);
                             // Add the created glyph to the createdCollection
                             that.createdCollection.add(newNomenclature);
-                            // Generate a new empty glyph
+                            // Generate a new empty nomenclature
                             that.generateNewEmptyNomenclature();
                             // Empty the short code field
                             that.ui.nameField.val('');
