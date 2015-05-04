@@ -49,7 +49,7 @@
 </script>
 
 <script type="text/template" id="nomenclature-template">
-    <td><%= name %></td>
+    <td><%= nomenclature_name %></td>
     <td class="text-right"><button name="delete" class="btn btn-danger" type="button">Delete</button></td>
 </script>
 
@@ -164,6 +164,18 @@
     </div>
 </script>
 
+<script type="text/template" id="nomenclature-dropdown-item-template">
+    <%= nomenclature_name %>
+</script>
+
+<script type="text/template" id="nomenclature-dropdown-composite-template">
+    <form>
+        <div class="control-group">
+            <select class="form-control"></select>
+        </div>
+    </form>
+</script>
+
 <script type="text/template" id="edit-single-image-template">
 <div class="glyph-editor-image-container">
     <div class="panel panel-default">
@@ -183,13 +195,15 @@
         <form class="form-horizontal" action="#">
             <div class="form-group">
                 {# <label class="col-sm-1 control-label" for="string">Full String:</label> #}
-                <div class="col-sm-8">
-                    <input name="string" class="form-control" placeholder="Name" value="<%= string %>">
+                <div class="col-sm-12">
+                    Name: <input name="string" class="form-control" placeholder="Name" value="<%= string %>">
                 </div>
-                <div class="col-sm-2">
+                <div class="col-sm-12">
+                    Nomenclature:
+                    <div class="nomenclature-dropdown-region"></div>
+                </div>
+                <div class="col-sm-12">
                     <button class="btn btn-default" type="submit">Submit</button>
-                </div>
-                <div class="col-sm-2">
                     <button name="delete" class="btn btn-danger" type="button">Delete</button>
                 </div>
             </div>
