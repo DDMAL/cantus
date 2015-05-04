@@ -898,12 +898,6 @@
             template: "#edit-image-collection-template"
         });
 
-        var EditSingleGlyphView = Backbone.Marionette.CompositeView.extend({
-            tagName: "li",
-            template: _.template("#edit-single-glyph-template")
-        });
-
-
         /*
         Layout Views
         */
