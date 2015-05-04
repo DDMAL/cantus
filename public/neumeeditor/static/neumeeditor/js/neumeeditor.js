@@ -1080,9 +1080,18 @@
             glyphId = parseInt(id);
             glyph.url = "/neumeeditor/glyph/" + glyphId + "/";
 
+            // Get the nomenclature list that we will use
+            var nomenclatures = new NomenclatureCollection({url: "/neumeeditor/nomenclatures"});
+            nomenclatures.fetch({success: function() {console.log("Got nomenclatures", nomenclatures);}});
+
             glyph.fetch({success: function() {
                 // Build the main view
-                var editor = new AppLayoutView({model: glyph});
+                var editor = new AppLayoutView(
+                    {
+                        model: glyph,
+                        nomenclatures: nomenclatures
+                    }
+                );
                 // Render the LayoutView
                 // Glyph data loaded, so load the names, etc.
                 editor.loadNamesAndImages();
