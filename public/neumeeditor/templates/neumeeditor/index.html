@@ -124,6 +124,30 @@
 <div class="glyph-list-region"></div>
 </script>
 
+<script type="text/template" id="create-name-nomenclature-membership-template">
+    <h3>Create new nomenclature membership</h3>
+    <form>
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <select class="form-control" name="name">
+                <% _.forEach(names, function(name, index) { %>
+                <option><%= name %></option>
+                <% }); %>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="nomenclature">Nomenclature:</label>
+            <select class="form-control" name="nomenclature">
+                <% _.forEach(nomenclatures, function(nomenclature, index) { %>
+                <option><%= nomenclature %></option>
+                <% }); %>
+            </select>
+        </div>
+        <div class="form-group">
+            <button class="btn btn-default" type="submit">Submit</button>
+        </div>
+    </form>
+</script>
 
 <script type="text/template" id="edit-glyph-template">
     <div class="col-md-12">
@@ -135,6 +159,11 @@
         <div class="name-create-area"></div>
         <hr/>
         <div class="names-area"></div>
+        <hr/>
+        <h2>Nomenclature Relationships</h2>
+        <div class="name-nomenclature-membership-create-area"></div>
+        <hr/>
+        <div class="name-nomenclature-view-area"></div>
     </div>
     <div class="col-md-8 image-editor">
         <h2>Image Editor</h2>
