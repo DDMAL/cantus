@@ -232,17 +232,16 @@
     <div class="row">
         <form class="form-horizontal" action="#">
             <div class="form-group">
-                {# <label class="col-sm-1 control-label" for="string">Full String:</label> #}
+                {# <label class="col-sm-1 control-lab ssel" for="string">Full String:</label> #}
                 <div class="col-sm-12">
-                    Name: <input name="string" class="form-control" placeholder="Name" value="<%= string %>">
-                </div>
-                <div class="col-sm-12">
-                    Nomenclature:
-                    <div class="nomenclature-dropdown-region"></div>
-                </div>
-                <div class="col-sm-12">
-                    <button class="btn btn-default" type="submit">Submit</button>
-                    <button name="delete" class="btn btn-danger" type="button">Delete</button>
+                    <div class="form-group">
+                        <label for="string">Name:</label>
+                        <input name="string" class="form-control" placeholder="Name" value="<%= string %>">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-default" type="submit">Submit</button>
+                        <button name="delete" class="btn btn-danger" type="button">Delete</button>
+                    </div>
                 </div>
             </div>
         </form>
