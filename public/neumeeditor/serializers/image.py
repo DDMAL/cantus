@@ -11,9 +11,11 @@ class ImageSerializer(serializers.HyperlinkedModelSerializer):
     image_file = serializers.ImageField(allow_empty_file=False, use_url=False)
     glyph = serializers.HyperlinkedRelatedField(view_name='glyph-detail',
                                                 queryset=Glyph.objects.all())
+    thumbnail = serializers.ReadOnlyField()
 
     class Meta:
         model = Image
+        fields = ('url', 'id', 'image_file', 'glyph', 'thumbnail')
 
     # def retrieve_image_file(self, obj):
     #     request = self.context.get('request', None)
