@@ -10,8 +10,8 @@ from neumeeditor.helpers.storage.media_file_system import media_file_name, \
     MediaFileSystemStorage
 
 
-# A thumbnail should be 480 pixels tall
-thumbnail_height = 480
+# A thumbnail should be 200 pixels tall
+thumbnail_height = 200
 
 
 class Image(models.Model):
