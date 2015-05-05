@@ -1,5 +1,11 @@
+import os
 import hashlib
+from PIL import Image as ImageModule
 from django.db import models
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+from neumeeditor.helpers.file_system_utils import media_url_to_system_path, \
+    remove_media_url
 from neumeeditor.helpers.storage.media_file_system import media_file_name, \
     MediaFileSystemStorage
 
