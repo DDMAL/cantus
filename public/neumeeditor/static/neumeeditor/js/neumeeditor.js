@@ -711,6 +711,47 @@
          */
 
         /**
+         * Edit the properties of the glyph.
+         */
+        var EditGlyphPropertiesView = Backbone.Marionette.ItemView.extend({
+            template: "#edit-glyph-properties-template",
+
+            events: {
+                "submit": "saveProperties"
+            },
+
+            ui: {
+                commentsBox: ".comments-box",
+                statusDiv: ".property-status-message"
+            },
+
+            saveProperties: function(event)
+            {
+                console.log("Saving properties");
+                // Prevent default functionality
+                event.preventDefault();
+                var that = this;
+                this.model.save(
+                    {
+                        comments: String(this.ui.commentsBox.val())
+                    },
+                    {
+                        success: function() {
+                            console.log("Success");
+                            that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Properties updated successfully.</p>');
+                            that.ui.statusDiv.find("p").fadeOut(2500);
+                        },
+                        error: function() {
+                            console.log("Failure.");
+                            that.ui.statusDiv.html('<p class="alert alert-danger">Error saving.<p>');
+                            that.ui.statusDiv.find("p").fadeOut(2500);
+                        }
+                    }
+                );
+            }
+        });
+
+        /**
          * A view that allows the user to create a NameNomenclatureRelationship.
          */
         var CreateNameNomenclatureMembershipView = Backbone.Marionette.ItemView.extend({
@@ -795,16 +836,13 @@
                 return {
                     "image_file": this.model.getAbsoluteImageFile(),
                     "thumbnail": this.model.getAbsoluteThumbnail()
-                    // "image_file_absolute": this.model.getAbsoluteImageFile()
                 };
             },
 
             destroyModel: function()
             {
                 event.preventDefault();
-                console.log("Image:", this.model);
                 this.model.destroy();
-                return this.trigger("destroy");
             }
         });
 
@@ -842,12 +880,12 @@
                 this.model.save(null,
                     {
                         success: function() {
-                            that.ui.statusDiv.html("<p>Name saved successfully.</p>");
+                            that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Name saved successfully.</p>');
                             that.ui.statusDiv.find("p").fadeOut(2500);
                             return that.trigger("submit");
                         },
                         error: function() {
-                            that.ui.statusDiv.html("<p>Error saving name.<p>");
+                            that.ui.statusDiv.html('<p class="alert alert-danger" role="alert">Error saving name.<p>');
                             that.ui.statusDiv.find("p").fadeOut(2500);
                         }
                     }
@@ -1038,19 +1076,6 @@
                 glyphPropertiesArea: ".glyph-properties-area"
             },
 
-            modelEvents: {
-                "change": "onChange"
-            },
-
-            events: {
-                "click button[name='save-properties']": "saveProperties"
-            },
-
-            ui: {
-                commentsBox: ".comments-box",
-                statusDiv: ".property-status-message"
-            },
-
             initialize: function(options)
             {
                 this.glyphNames = new NameCollection();
@@ -1080,28 +1105,7 @@
                 this.loadNamesAndImages();
             },
 
-            saveProperties: function(event)
-            {
-                // Prevent default functionality
-                event.preventDefault();
-                var that = this;
-                this.model.save(
-                    {
-                        comments: String(this.ui.commentsBox.val())
-                    },
-                    {
-                        success: function() {
-                            that.ui.statusDiv.html("<p>Properties updated successfully.</p>");
-                            that.ui.statusDiv.find("p").fadeOut(2500);
-                            return that.trigger("submit");
-                        },
-                        error: function() {
-                            that.ui.statusDiv.html("<p>Error saving.<p>");
-                            that.ui.statusDiv.find("p").fadeOut(2500);
-                        }
-                    }
-                );
-            },
+
 
             /**
              * Extract the names and images from the model.
@@ -1115,12 +1119,6 @@
                 this.glyphImages.reset(this.model.get("image_set"));
             },
 
-            onChange: function()
-            {
-                this.loadNamesAndImages();
-                this.render();
-            },
-
             onShow: function()
             {
                 // Show the subviews
@@ -1128,6 +1126,8 @@
                 this.nameCreateArea.show(this.createNamesView,{ preventDestroy: true });
                 this.imagesEditArea.show(this.editImagesView,{ preventDestroy: true });
                 this.imageUploadArea.show(this.createImagesView,{ preventDestroy: true });
+
+                this.glyphPropertiesArea.show(new EditGlyphPropertiesView({model: this.model}));
 
                 // NameNomenclatureMembershipCollection
                 var memberships = new NameNomenclatureMembershipCollection({url: SITE_URL + "name-nomenclature-memberships/"});

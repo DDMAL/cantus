@@ -18,6 +18,26 @@
     <div id="content"></div>
 </div>
 
+<script type="text/template" id="edit-glyph-properties-template">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h2 class="panel-title">Glyph Property Editor</h2>
+        </div>
+        <div class="panel-body">
+            <div class="property-status-message"></div>
+            <form class="form" action="#">
+                <div class="form-group">
+                    <label for="comments">Comments:</label>
+                    <textarea name="comments" class="form-control comments-box" rows="3"><%= comments %></textarea>
+                </div>
+                <div class="form-group">
+                    <button name="save-properties" class="btn btn-default" type="submit">Save Properties</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</script>
+
 <script type="text/template" id="main-menu-template">
 <nav class="navbar navbar-default" role="navigation">
     <div class="navbar-header">
@@ -157,35 +177,39 @@
         <hr/>
     </div>
     <div class="col-md-4 name-editor">
-        <h2>Name Editor</h2>
-        <div class="name-create-area"></div>
+        <div class="panel panel-default ">
+            <div class="panel-heading">
+                <h2 class="panel-title">Name Editor</h2>
+            </div>
+            <div class="panel-body">
+                <div class="name-create-area"></div>
+                <hr/>
+                <div class="names-area"></div>
+            </div>
+        </div>
         <hr/>
-        <div class="names-area"></div>
-        <hr/>
-        <h2>Nomenclature Relationships</h2>
-        <div class="name-nomenclature-membership-create-area"></div>
-        <hr/>
-        <div class="name-nomenclature-view-area"></div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h2 class="panel-title">Nomenclature Relationship Editor</h2>
+            </div>
+            <div class="panel-body">
+                <div class="name-nomenclature-membership-create-area"></div>
+            </div>
+            <hr/>
+            <div class="name-nomenclature-view-area"></div>
+        </div>
+        <hr />
+        <div class="glyph-properties-area"></div>
     </div>
     <div class="col-md-8 image-editor">
-        <h2>Image Editor</h2>
-        <div class="image-upload-area"></div>
-        <hr/>
-        <div class="images-area"></div>
-    </div>
-    <div class="col-md-12">
-        <hr/>
-        <div class="row">
-            <div class="col-md-4 glyph-properties-area">
-                <h2>Glyph Properties</h2>
-                <h3>Comments</h3>
-                <form class="form" action="#">
-                    <div class="form-group">
-                        <textarea class="form-control comments-box" rows="3"><%= comments %></textarea>
-                    </div>
-                    <button name="save-properties" class="btn btn-default" type="submit">Save Properties</button>
-                    <div class="property-status-message"></div>
-                </form>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h2 class="panel-title">Image Editor</h2>
+            </div>
+            <div class="panel-body">
+                <div class="image-upload-area"></div>
+                <hr/>
+                <div class="images-area"></div>
             </div>
         </div>
     </div>
@@ -233,22 +257,19 @@
 <script type="text/template" id="edit-single-name-template">
     <div class="row">
         <form class="form-horizontal" action="#">
-            <div class="form-group">
-                {# <label class="col-sm-1 control-lab ssel" for="string">Full String:</label> #}
-                <div class="col-sm-8">
-                    <div class="form-group">
+            <div class="col-sm-8">
+                <div class="form-group">
 
-                        <input name="string" class="form-control" placeholder="Name" value="<%= string %>">
-                    </div>
+                    <input name="string" class="form-control" placeholder="Name" value="<%= string %>">
                 </div>
-                <div class="col-sm-2">
-                    <div class="form-group">
-                        <button class="btn btn-default" type="submit">Change</button>
-                    </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <button class="btn btn-default" type="submit">Change</button>
                 </div>
-                <div class="col-sm-2">
-                    <button name="delete" class="btn btn-danger" type="button">Delete</button>
-                </div>
+            </div>
+            <div class="col-sm-2">
+                <button name="delete" class="btn btn-danger" type="button">Delete</button>
             </div>
         </form>
     </div>
