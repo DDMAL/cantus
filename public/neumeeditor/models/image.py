@@ -11,7 +11,7 @@ class Image(models.Model):
     image_file = models.ImageField(null=True, upload_to=media_file_name,
                                    storage=MediaFileSystemStorage())
     glyph = models.ForeignKey("neumeeditor.Glyph", null=True)
-    md5sum = models.CharField(null=True, max_length=36)
+    md5sum = models.CharField(null=True, blank=True, max_length=36)
 
     def save(self, *args, **kwargs):
         if not self.pk:  # file is new
