@@ -134,7 +134,9 @@
         url: SITE_URL + "images/",
 
         defaults: {
-            image_file: ""
+            image_file: "",
+            glyph: 0,
+            thumbnail: ""
         },
 
         initialize: function(options)
@@ -153,6 +155,11 @@
         getAbsoluteImageFile: function()
         {
             return STATIC_URL + this.get("image_file");
+        },
+
+        getAbsoluteThumbnail: function()
+        {
+            return STATIC_URL + this.get("thumbnail");
         }
     });
 
@@ -534,7 +541,8 @@
             serializeData: function()
             {
                 return {
-                    "image_file": this.model.getAbsoluteImageFile()
+                    "image_file": this.model.getAbsoluteImageFile(),
+                    "thumbnail": this.model.getAbsoluteThumbnail()
                     // "image_file_absolute": this.model.getAbsoluteImageFile()
                 };
             }
@@ -785,7 +793,8 @@
             serializeData: function()
             {
                 return {
-                    "image_file": this.model.getAbsoluteImageFile()
+                    "image_file": this.model.getAbsoluteImageFile(),
+                    "thumbnail": this.model.getAbsoluteThumbnail()
                     // "image_file_absolute": this.model.getAbsoluteImageFile()
                 };
             },
@@ -793,6 +802,7 @@
             destroyModel: function()
             {
                 event.preventDefault();
+                console.log("Image:", this.model);
                 this.model.destroy();
                 return this.trigger("destroy");
             }
