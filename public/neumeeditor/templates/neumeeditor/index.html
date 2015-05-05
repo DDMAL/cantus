@@ -37,7 +37,7 @@
 </script>
 
 <script type="text/template" id="single-image-template">
-<img src="<%= image_file %>" class="glyph-list-image thumbnail img-responsive" />
+<img src="<%= thumbnail %>" class="glyph-list-image thumbnail img-responsive" />
 </script>
 
 <script type="text/template" id="single-name-template">
@@ -130,6 +130,7 @@
         <div class="form-group">
             <label for="name">Name:</label>
             <select class="form-control" name="name">
+                <option value="null">None</option>
                 <% _.forEach(names, function(name, index) { %>
                 <option value="<%= name.url %>"><%= name.string %></option>
                 <% }); %>
@@ -138,6 +139,7 @@
         <div class="form-group">
             <label for="nomenclature">Nomenclature:</label>
             <select class="form-control" name="nomenclature">
+                <option value="null">None</option>
                 <% _.forEach(nomenclatures, function(nomenclature, index) { %>
                 <option value="<%= nomenclature.url %>"><%= nomenclature.nomenclature_name %></option>
                 <% }); %>
@@ -218,7 +220,7 @@
 <div class="glyph-editor-image-container">
     <div class="panel panel-default">
       <div class="panel-body">
-        <img src="<%= image_file %>" class="glyph-editor-image thumbnail img-responsive"/>
+        <img src="<%= thumbnail %>" class="glyph-editor-image thumbnail img-responsive"/>
       </div>
       <div class="panel-footer">
           <button name="delete" class="btn btn-danger" type="button">Delete</button>
@@ -233,21 +235,24 @@
         <form class="form-horizontal" action="#">
             <div class="form-group">
                 {# <label class="col-sm-1 control-lab ssel" for="string">Full String:</label> #}
-                <div class="col-sm-12">
+                <div class="col-sm-8">
                     <div class="form-group">
-                        <label for="string">Name:</label>
+
                         <input name="string" class="form-control" placeholder="Name" value="<%= string %>">
                     </div>
+                </div>
+                <div class="col-sm-2">
                     <div class="form-group">
-                        <button class="btn btn-default" type="submit">Submit</button>
-                        <button name="delete" class="btn btn-danger" type="button">Delete</button>
+                        <button class="btn btn-default" type="submit">Change</button>
                     </div>
+                </div>
+                <div class="col-sm-2">
+                    <button name="delete" class="btn btn-danger" type="button">Delete</button>
                 </div>
             </div>
         </form>
     </div>
     <div class="status-message"></div>
-    <hr/>
 </script>
 
 <script type="text/template" id="create-single-name-template">
