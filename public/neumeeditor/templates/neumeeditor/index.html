@@ -131,7 +131,7 @@
             <label for="name">Name:</label>
             <select class="form-control" name="name">
                 <% _.forEach(names, function(name, index) { %>
-                <option><%= name %></option>
+                <option value="<%= name.url %>"><%= name.string %></option>
                 <% }); %>
             </select>
         </div>
@@ -139,7 +139,7 @@
             <label for="nomenclature">Nomenclature:</label>
             <select class="form-control" name="nomenclature">
                 <% _.forEach(nomenclatures, function(nomenclature, index) { %>
-                <option><%= nomenclature %></option>
+                <option value="<%= nomenclature.url %>"><%= nomenclature.nomenclature_name %></option>
                 <% }); %>
             </select>
         </div>
