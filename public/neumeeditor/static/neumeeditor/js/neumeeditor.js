@@ -80,7 +80,6 @@
 
         openNomenclatureList: function()
         {
-            console.log("test");
             // Start the nomenclature list module
             App.module("NomenclatureList").start();
         },
@@ -307,6 +306,15 @@
         }
     });
 
+    var NameNomenclatureMembershipCollection = Backbone.Collection.extend({
+        model: NameNomenclatureMembership,
+
+        initialize: function(options)
+        {
+            this.url = String(options.url);
+        }
+    });
+
     var ImageCollection = Backbone.Collection.extend({
         model: Image,
 
@@ -409,8 +417,6 @@
 
             destroyModel: function()
             {
-                console.log("TEST");
-                console.log(this.model.toJSON());
                 this.model.destroy(
                     {
                         success: function(){
@@ -509,9 +515,7 @@
 
         this.start = function()
         {
-            console.log("Starting Nomenclature Editor...");
             App.container.show(new NomenclatureDashboardView());
-            console.log("Started Nomenclature Editor.");
         };
     });
 
@@ -706,8 +710,35 @@
 
             template: "#create-name-nomenclature-membership-template",
 
+            /**
+             * Collection of names
+             */
             names: undefined,
+            /**
+             * Collection of nomenclatures
+             */
             nomenclatures: undefined,
+            /**
+             * Collection of nameNomenclatureMemberships for when it's done.
+             */
+            nameNomenclatureMemberships: undefined,
+
+            initialize: function(options)
+            {
+                this.names = options.names;
+                this.nomenclatures = options.nomenclatures;
+                this.nameNomenclatureMemberships = options.nameNomenclatureMemberships;
+
+                // Re-render if name and nomenclature list changes
+                this.listenTo(this.names, 'change', this.test);
+                this.listenTo(this.nomenclatures, 'change', this.test);
+            },
+
+            test: function() {
+                console.log("IT HAPPENED.");
+                this.render();
+            },
+
 
             /**
              * Serialize a list of names and nomenclatures.
@@ -716,13 +747,25 @@
              */
             serializeData: function()
             {
-                var names = ["n1","n2", "n3"];
-                var nomenclatures = ["no1","no2","no3"];
-
                 return {
-                    names: names,
-                    nomenclatures: nomenclatures
-                }
+                    names: this.names.toJSON(),
+                    nomenclatures: this.nomenclatures.toJSON()
+                };
+            },
+
+            onSubmit: function()
+            {
+                // Create the membership object
+                var membership = new NameNomenclatureMembership(
+                    {
+                        name: undefined,
+                        nomenclature: undefined
+                    }
+                );
+                // Save it to the server
+                membership.save();
+                // Add it to the completed collection
+                this.nameNomenclatureMemberships.add(membership);
             }
         });
 
@@ -806,11 +849,29 @@
                 event.preventDefault();
                 this.model.destroy();
                 return this.trigger("destroy");
+            },
+
+            serializeData: function()
+            {
+                // Get the default fields
+                var output = this.model.toJSON();
+                // The list of nomenclatures
+                output.nomenclatures = [];
+
+                if (this.nomenclatures !== undefined)
+                {
+                    // Add the nomenclature list
+                    for (var i = 0; i < this.nomenclatures.length; i++)
+                    {
+                        output.nomenclatures.push(this.nomenclatures.at(i).toJSON());
+                    }
+                }
+
+                return output;
             }
         });
 
         var CreateImagesView = Backbone.Marionette.ItemView.extend({
-
             createdCollection: undefined,
             template: "#upload-image-template",
             dropzoneObject: undefined,
@@ -825,7 +886,6 @@
                 {
                     if (options.createdCollection !== undefined)
                     {
-                        console.log("There is a created collection.");
                         this.createdCollection = options.createdCollection;
                     }
                     if (options.glyphId !== undefined)
@@ -900,7 +960,7 @@
             initialize: function(options)
             {
                 this.emptyName = new Name();
-                if(options)
+                if (options)
                 {
                     if (options.createdCollection !== undefined)
                     {
@@ -930,7 +990,14 @@
             childView: EditSingleNameView,
 
             childViewContainer: ".name-list",
-            template: "#edit-name-collection-template"
+            template: "#edit-name-collection-template",
+
+            childViewOptions: {},
+
+            initialize: function(options)
+            {
+                this.childViewOptions.nomenclatures = options.nomenclatures;
+            }
         });
 
         var EditImagesView = Backbone.Marionette.CompositeView.extend({
@@ -954,6 +1021,8 @@
             regions: {
                 namesArea: ".names-area",
                 nameCreateArea: ".name-create-area",
+                nameNomenclatureMembershipCreateArea: ".name-nomenclature-membership-create-area",
+                nameNomenclatureMembershipViewArea: ".name-nomenclature-membership-view-area",
                 imageUploadArea: ".image-upload-area",
                 imagesEditArea: ".images-area",
                 glyphPropertiesArea: ".glyph-properties-area"
@@ -972,14 +1041,18 @@
                 statusDiv: ".property-status-message"
             },
 
-            initialize: function()
+            initialize: function(options)
             {
                 this.glyphNames = new NameCollection();
                 this.glyphImages = new ImageCollection();
+                this.nomenclatures = options.nomenclatures;
 
                 // Create the subViews
                 this.editNamesView = new EditNamesView(
-                    {collection: this.glyphNames}
+                    {
+                        collection: this.glyphNames,
+                        nomenclatures: this.nomenclatures
+                    }
                 );
                 this.createNamesView = new CreateNamesView({
                     glyphId: this.model.get("id"),
@@ -1045,6 +1118,17 @@
                 this.nameCreateArea.show(this.createNamesView,{ preventDestroy: true });
                 this.imagesEditArea.show(this.editImagesView,{ preventDestroy: true });
                 this.imageUploadArea.show(this.createImagesView,{ preventDestroy: true });
+
+                // NameNomenclatureMembershipCollection
+                var memberships = new NameNomenclatureMembershipCollection({url: SITE_URL + "name-nomenclature-memberships/"});
+                memberships.fetch();
+
+                this.nameNomenclatureMembershipCreateArea.show(new CreateNameNomenclatureMembershipView(
+                    {
+                        names: this.glyphNames,
+                        nomenclatures: this.nomenclatures,
+                        nameNomenclatureMemberships: memberships
+                    }));
             },
 
             onRender: function()
