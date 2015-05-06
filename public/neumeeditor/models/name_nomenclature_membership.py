@@ -19,6 +19,7 @@ class NameNomenclatureMembership(models.Model):
         # Name & Nomenclature pair must be unique
         unique_together = ('name', 'nomenclature')
 
+
 @receiver(pre_save, sender=NameNomenclatureMembership)
 def set_glyph(sender, instance, **kwargs):
     # Automatically set the glyph
