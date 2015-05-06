@@ -220,9 +220,16 @@
     var NameNomenclatureMembership = Backbone.Model.extend({
         urlRoot: SITE_URL + "name-nomenclature-membership/",
 
+        initialize: function(options)
+        {
+            this.url = String(options.url);
+        },
+
         defaults: {
+            id: undefined,
             name: undefined,
-            nomenclature: undefined
+            nomenclature: undefined,
+            glyph: undefined
         }
     });
 
@@ -772,6 +779,15 @@
              */
             nameNomenclatureMemberships: undefined,
 
+            ui: {
+                'nameField': "input[name='name']",
+                'nomenclatureField': "input[name='nomenclature']"
+            },
+
+            events: {
+                'submit': 'onSubmit'
+            },
+
             initialize: function(options)
             {
                 this.names = options.names;
@@ -788,7 +804,6 @@
                 this.render();
             },
 
-
             /**
              * Serialize a list of names and nomenclatures.
              *
@@ -802,15 +817,20 @@
                 };
             },
 
-            onSubmit: function()
+
+            onSubmit: function(event)
             {
+                event.preventDefault();
+                console.log("submit");
                 // Create the membership object
                 var membership = new NameNomenclatureMembership(
                     {
-                        name: undefined,
-                        nomenclature: undefined
+                        url: SITE_URL + "name-nomenclature-memberships/",
+                        name: this.ui.nameField.val(),
+                        nomenclature: this.ui.nameField.val()
                     }
                 );
+                console.log("membership:", membership.toJSON());
                 // Save it to the server
                 membership.save();
                 // Add it to the completed collection
