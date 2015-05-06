@@ -957,25 +957,6 @@
                 event.preventDefault();
                 this.model.destroy();
                 return this.trigger("destroy");
-            },
-
-            serializeData: function()
-            {
-                // Get the default fields
-                var output = this.model.toJSON();
-                // The list of nomenclatures
-                output.nomenclatures = [];
-
-                if (this.nomenclatures !== undefined)
-                {
-                    // Add the nomenclature list
-                    for (var i = 0; i < this.nomenclatures.length; i++)
-                    {
-                        output.nomenclatures.push(this.nomenclatures.at(i).toJSON());
-                    }
-                }
-
-                return output;
             }
         });
 
