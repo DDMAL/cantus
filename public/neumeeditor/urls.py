@@ -6,7 +6,7 @@ from neumeeditor.views.image import ImageList, ImageDetail
 from neumeeditor.views.main import neumeeditor_home, neumeeditor_api_root
 from neumeeditor.views.name import NameList, NameDetail
 from neumeeditor.views.name_nomenclature_membership import \
-    NameNomenclatureMembershipList, NameNomenclatureMembershipDetail
+    NameNomenclatureMembershipList, NameNomenclatureMembershipDetail, NameNomenclatureMembershipListForGlyph
 from neumeeditor.views.nomenclature import NomenclatureDetail, NomenclatureList
 from neumeeditor.views.style import StyleList, StyleDetail
 from neumeeditor.views.user import UserList, UserDetail
@@ -51,7 +51,11 @@ urlpatterns += format_suffix_patterns(
             name="name-nomenclature-membership-list"),
         url(r'^name-nomenclature-membership/(?P<pk>[0-9]+)/$',
             NameNomenclatureMembershipDetail.as_view(),
-            name="name-nomenclature-membership-detail"),
+            name="namenomenclaturemembership-detail"),
+        # Get name-nomenclatures for particular glyph
+        url(r'^name-nomenclature-memberships/glyph/(?P<pk>[0-9]+)/$',
+            NameNomenclatureMembershipListForGlyph.as_view(),
+            name="name-nomenclature-membership-list-glyph")
 
 
              ),
