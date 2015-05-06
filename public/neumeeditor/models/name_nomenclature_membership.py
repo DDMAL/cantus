@@ -15,6 +15,15 @@ class NameNomenclatureMembership(models.Model):
     def __unicode__(self):
         return u"({0}, {1})".format(self.name, self.nomenclature)
 
+    @property
+    def name_string(self):
+        return u"{0}".format(self.name.string)
+
+    @property
+    def nomenclature_string(self):
+        return u"{0}".format(self.nomenclature.nomenclature_name)
+
+
     class Meta:
         # Name & Nomenclature pair must be unique
         unique_together = ('name', 'nomenclature')
