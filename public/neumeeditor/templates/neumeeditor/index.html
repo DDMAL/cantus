@@ -169,6 +169,14 @@
             <button class="btn btn-default" type="submit">Submit</button>
         </div>
     </form>
+    <div class="status-message"></div>
+</script>
+
+<script type="text/template" id="edit-single-name-nomenclature-membership-template">
+    <td><%= name_string %></td>
+    <td><%= nomenclature_string %></td>
+    <td><button name="delete" class="btn btn-danger" type="button">Delete</button></td>
+{#    <div class="status-message"></div>#}
 </script>
 
 <script type="text/template" id="edit-glyph-template">
@@ -194,9 +202,10 @@
             </div>
             <div class="panel-body">
                 <div class="name-nomenclature-membership-create-area"></div>
+                <hr/>
+                <h3>Edit Name Nomenclature Memberships</h3>
             </div>
-            <hr/>
-            <div class="name-nomenclature-view-area"></div>
+            <div class="name-nomenclature-membership-view-area"></div>
         </div>
         <hr />
         <div class="glyph-properties-area"></div>
@@ -296,6 +305,16 @@
 <script type="text/template" id="edit-name-collection-template">
     <h3>Edit Existing Names</h3>
     <div class="name-list"></div>
+</script>
+
+<script type="text/template" id="edit-name-nomenclature-membership-collection-template">
+    <table class="table name-list">
+        <tr>
+            <th>Name</th>
+            <th>Nomenclature</th>
+            <th>Modify</th>
+        </tr>
+    </table>
 </script>
 
 <script type="text/template" id="create-name-collection-template">

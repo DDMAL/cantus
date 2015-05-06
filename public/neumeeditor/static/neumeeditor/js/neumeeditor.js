@@ -229,7 +229,9 @@
             id: undefined,
             name: undefined,
             nomenclature: undefined,
-            glyph: undefined
+            glyph: undefined,
+            name_string: undefined,
+            nomenclature_string: undefined
         }
     });
 
@@ -494,8 +496,8 @@
                             // Empty the short code field
                             that.ui.nameField.val('');
                         },
-                        error: function (event) {
-                            that.ui.statusDiv.html('<p class="alert alert-danger" role="alert">Error saving nomenclature.<p>');
+                        error: function (model, event) {
+                            that.ui.statusDiv.html('<p class="alert alert-danger" role="alert">Error saving nomenclature. - ' + event.responseText +  '<p>');
                             //that.ui.statusDiv.find("p").fadeOut(5000);
                         }
                     }
@@ -665,8 +667,8 @@
                             // Empty the short code field
                             that.ui.shortCodeField.val('');
                         },
-                        error: function(event) {
-                            that.ui.statusDiv.html('<p class="alert alert-danger" role="alert">Error saving glyph.<p>');
+                        error: function(model, event) {
+                            that.ui.statusDiv.html('<p class="alert alert-danger" role="alert">Error saving glyph. - ' + event.responseText +  '<p>');
                             //that.ui.statusDiv.find("p").fadeOut(5000);
                         }
                     }
@@ -748,9 +750,9 @@
                             that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Properties updated successfully.</p>');
                             that.ui.statusDiv.find("p").fadeOut(2500);
                         },
-                        error: function() {
+                        error: function(model, event) {
                             console.log("Failure.");
-                            that.ui.statusDiv.html('<p class="alert alert-danger">Error saving.<p>');
+                            that.ui.statusDiv.html('<p class="alert alert-danger">Error saving. - ' + event.responseText +  '<p>');
                             that.ui.statusDiv.find("p").fadeOut(2500);
                         }
                     }
@@ -780,8 +782,9 @@
             nameNomenclatureMemberships: undefined,
 
             ui: {
-                'nameField': "input[name='name']",
-                'nomenclatureField': "input[name='nomenclature']"
+                'nameField': "select[name='name']",
+                'nomenclatureField': "select[name='nomenclature']",
+                'statusDiv': ".status-message"
             },
 
             events: {
@@ -827,21 +830,58 @@
                     {
                         url: SITE_URL + "name-nomenclature-memberships/",
                         name: this.ui.nameField.val(),
-                        nomenclature: this.ui.nameField.val()
+                        nomenclature: this.ui.nomenclatureField.val()
                     }
                 );
                 console.log("membership:", membership.toJSON());
                 // Save it to the server
-                membership.save();
-                // Add it to the completed collection
-                this.nameNomenclatureMemberships.add(membership);
+                var that = this;
+                membership.save(null,
+                    {
+                        success: function()
+                        {
+                            // Add the membership to the created ones
+                            that.nameNomenclatureMemberships.add(membership);
+                            // Reset the option fields to default
+                            that.ui.nameField.val("null");
+                            that.ui.nomenclatureField.val("null");
+                            // Display the user status message
+                            that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Name - Nomenclature membership saved successfully.</p>');
+                            that.ui.statusDiv.find("p").fadeOut(2500);
+                        },
+                        error: function(model, event)
+                        {
+                            console.log("event:", model, event);
+                            that.ui.statusDiv.html('<p class="alert alert-warning" role="alert">Error: Name -' + event.responseText + '</p>');
+                            that.ui.statusDiv.find("p").fadeOut(2500);
+                        }
+                    }
+                );
+            }
+        });
+
+        var EditSingleNameNomenclatureMembershipView = Backbone.Marionette.ItemView.extend({
+            tagName: "tr",
+            template: "#edit-single-name-nomenclature-membership-template",
+
+            ui: {
+                'deleteButton': 'button[name="delete"]'
+            },
+
+            events: {
+                "click @ui.deleteButton": "destroyModel"
+            },
+
+            destroyModel: function()
+            {
+                this.model.destroy();
             }
         });
 
         var EditSingleImageView = Backbone.Marionette.ItemView.extend({
             tagName: "div",
 
-            template: _.template($('#edit-single-image-template').html()),
+            template: "#edit-single-image-template",
 
             modelEvents: {
                 "change": "render"
@@ -904,8 +944,8 @@
                             that.ui.statusDiv.find("p").fadeOut(2500);
                             return that.trigger("submit");
                         },
-                        error: function() {
-                            that.ui.statusDiv.html('<p class="alert alert-danger" role="alert">Error saving name.<p>');
+                        error: function(model, event) {
+                            that.ui.statusDiv.html('<p class="alert alert-danger" role="alert">Error saving name. - ' + event.responseText +  '<p>');
                             that.ui.statusDiv.find("p").fadeOut(2500);
                         }
                     }
@@ -1054,6 +1094,13 @@
             }
         });
 
+        var EditNameNomenclatureMembershipsView = Backbone.Marionette.CompositeView.extend({
+            childView: EditSingleNameNomenclatureMembershipView,
+
+            childViewContainer: ".name-list",
+            template: "#edit-name-nomenclature-membership-collection-template"
+        });
+
         var EditNamesView = Backbone.Marionette.CompositeView.extend({
             childView: EditSingleNameView,
 
@@ -1150,7 +1197,7 @@
                 this.glyphPropertiesArea.show(new EditGlyphPropertiesView({model: this.model}));
 
                 // NameNomenclatureMembershipCollection
-                var memberships = new NameNomenclatureMembershipCollection({url: SITE_URL + "name-nomenclature-memberships/"});
+                var memberships = new NameNomenclatureMembershipCollection({url: SITE_URL + "name-nomenclature-memberships/glyph/" + this.model.get("id")});
                 memberships.fetch();
 
                 this.nameNomenclatureMembershipCreateArea.show(new CreateNameNomenclatureMembershipView(
@@ -1159,6 +1206,7 @@
                         nomenclatures: this.nomenclatures,
                         nameNomenclatureMemberships: memberships
                     }));
+                this.nameNomenclatureMembershipViewArea.show(new EditNameNomenclatureMembershipsView({collection: memberships}));
             },
 
             onRender: function()
