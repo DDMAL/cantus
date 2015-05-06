@@ -1101,11 +1101,10 @@
             template: "#edit-name-nomenclature-membership-collection-template"
         });
 
-        var EditNamesView = Backbone.Marionette.CompositeView.extend({
+        var EditNamesView = Backbone.Marionette.CollectionView.extend({
             childView: EditSingleNameView,
 
             childViewContainer: ".name-list",
-            template: "#edit-name-collection-template",
 
             childViewOptions: {},
 
