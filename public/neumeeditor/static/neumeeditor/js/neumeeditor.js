@@ -1025,55 +1025,63 @@
             }
         });
 
-        var CreateSingleNameView = EditSingleNameView.extend({
-            template: _.template($('#create-single-name-template').html())
+        var CreateNameView = Backbone.Marionette.ItemView.extend({
+            glyphUrl: undefined,
+            nameCollection: undefined,
+            template: '#create-single-name-template',
+
+            events: {
+                "submit": "onSubmit"
+            },
+
+            ui: {
+                nameStringField: "input[name='string']",
+                statusDiv: ".status-message"
+            },
+
+            initialize: function(options)
+            {
+                // We will use the glyphId to construct the name
+                this.glyphUrl = options.glyphUrl;
+                // The collection of names we will add to
+                this.nameCollection = options.nameCollection;
+            },
+
+            onSubmit: function(event)
+            {
+                // Prevent default functionality
+                event.preventDefault();
+
+                // Flip the self reference.
+                var that = this;
+
+                // Grab values from the form fields
+                var name = new Name({
+                    glyph: this.glyphUrl,
+                    string: String(this.ui.nameStringField.val())
+                });
+
+                name.save(null,
+                    {
+                        success: function() {
+                            // Add the new name to the collection
+                            that.nameCollection.add(name);
+                            // Print the success message
+                            that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Name saved successfully.</p>');
+                            that.ui.statusDiv.find("p").fadeOut(2500);
+                        },
+                        error: function(model, event) {
+                            that.ui.statusDiv.html('<p class="alert alert-danger" role="alert">Error saving name. - ' + event.responseText +  '<p>');
+                            that.ui.statusDiv.find("p").fadeOut(2500);
+                        }
+                    }
+                );
+            }
         });
 
         /*
         Composite Views
         */
-
-        var CreateNamesView = Backbone.Marionette.CompositeView.extend({
-
-            emptyName: undefined,
-
-            childView: CreateSingleNameView,
-
-            childViewContainer: ".name-list",
-            template: "#create-name-collection-template",
-
-            childEvents: {
-                "submit": "save"
-            },
-
-            initialize: function(options)
-            {
-                this.emptyName = new Name();
-                if (options)
-                {
-                    if (options.createdCollection !== undefined)
-                    {
-                        this.createdCollection = options.createdCollection;
-                    }
-                    if (options.glyphId !== undefined)
-                    {
-                        this.emptyName.setGlyph(parseInt(options.glyphId));
-                    }
-                }
-                this.collection = new NameCollection();
-                this.collection.add(this.emptyName);
-            },
-
-            save: function(child)
-            {
-                // Remove model from this collection
-                // Set the new URL
-                child.model.transferUrl();
-                this.createdCollection.add(child.model);
-                this.collection.remove(child.model);
-                this.collection.add(new Name());
-            }
-        });
 
         var EditNameNomenclatureMembershipsView = Backbone.Marionette.CompositeView.extend({
             childView: EditSingleNameNomenclatureMembershipView,
@@ -1136,9 +1144,9 @@
                         nomenclatures: this.nomenclatures
                     }
                 );
-                this.createNamesView = new CreateNamesView({
-                    glyphId: this.model.get("id"),
-                    createdCollection: this.glyphNames
+                this.createNamesView = new CreateNameView({
+                    glyphUrl: this.model.get("url"),
+                    nameCollection: this.glyphNames
                 });
                 this.editImagesView = new EditImagesView({
                     collection: this.glyphImages
