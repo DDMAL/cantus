@@ -487,6 +487,8 @@
                     {"nomenclature_name": this.ui.nameField.val()},
                     {
                         success: function (event) {
+                            // Manually copy the url.
+                            newNomenclature.url = newNomenclature.get("url");
                             that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Nomenclature "' + newNomenclature.get("nomenclature_name") + '" saved successfully.</p>');
                             //that.ui.statusDiv.find("p").fadeOut(5000);
                             // Add the created glyph to the createdCollection
@@ -840,6 +842,8 @@
                     {
                         success: function()
                         {
+                            // Manually copy the url
+                            membership.url = membership.get("url");
                             // Add the membership to the created ones
                             that.nameNomenclatureMemberships.add(membership);
                             // Reset the option fields to default
@@ -1064,6 +1068,9 @@
                 name.save(null,
                     {
                         success: function() {
+                            console.log("name test:", name);
+                            // For some reason URL isn't getting copied unless we do it manually
+                            name.url = name.get("url");
                             // Add the new name to the collection
                             that.nameCollection.add(name);
                             // Print the success message
