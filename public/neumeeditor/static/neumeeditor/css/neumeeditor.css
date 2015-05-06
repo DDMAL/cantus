@@ -60,3 +60,22 @@ body, html {
     float: left;
     margin: 0 20px 0 0;
 }
+
+/* Dropzone Stuff */
+
+.dz-image img {
+    height: 50px;
+    width: auto;
+}
+
+.dz-success-mark {
+    display: none;
+}
+
+.dz-error-mark {
+    display: none;
+}
+
+.dz-filename {
+    display: none;
+}
