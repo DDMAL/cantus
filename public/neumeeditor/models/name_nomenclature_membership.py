@@ -1,4 +1,6 @@
 from django.db import models
+from django.dispatch import receiver
+from django.db.models.signals import pre_save
 
 
 class NameNomenclatureMembership(models.Model):
@@ -7,7 +9,17 @@ class NameNomenclatureMembership(models.Model):
     """
     name = models.ForeignKey('Name')
     nomenclature = models.ForeignKey('Nomenclature')
+    # Auto-set glyph
+    glyph = models.ForeignKey('Glyph', null=True, blank=True)
 
-    @property
-    def glyph(self):
-        return self.name.glyph.id
+    def __unicode__(self):
+        return u"({0}, {1})".format(self.name, self.nomenclature)
+
+    class Meta:
+        # Name & Nomenclature pair must be unique
+        unique_together = ('name', 'nomenclature')
+
+@receiver(pre_save, sender=NameNomenclatureMembership)
+def set_glyph(sender, instance, **kwargs):
+    # Automatically set the glyph
+    instance.glyph = instance.name.glyph
