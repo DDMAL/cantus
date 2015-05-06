@@ -1076,6 +1076,8 @@
                             // Print the success message
                             that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Name saved successfully.</p>');
                             that.ui.statusDiv.find("p").fadeOut(2500);
+                            // Clear the user input
+                            that.ui.nameStringField.val("");
                         },
                         error: function(model, event) {
                             that.ui.statusDiv.html('<p class="alert alert-danger" role="alert">Error saving name. - ' + event.responseText +  '<p>');
