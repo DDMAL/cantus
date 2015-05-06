@@ -798,8 +798,8 @@
                 this.nameNomenclatureMemberships = options.nameNomenclatureMemberships;
 
                 // Re-render if name and nomenclature list changes
-                this.listenTo(this.names, 'change', this.test);
-                this.listenTo(this.nomenclatures, 'change', this.test);
+                this.listenTo(this.names, 'all', this.test);
+                this.listenTo(this.nomenclatures, 'all', this.test);
             },
 
             test: function() {
