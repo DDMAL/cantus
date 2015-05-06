@@ -20,12 +20,12 @@
 
 
 <script type="text/template" id="create-glyph-template">
-<h2>Create Glyph</h2>
+<h2>Create Neume</h2>
 <div class="form-group">
     <label for="exampleInputEmail1">Short Code</label>
     <input class="form-control" placeholder="Enter Short Code" name="glyph-short-code-field">
 </div>
-<button class="btn btn-default" type="submit">Create Glyph</button>
+<button class="btn btn-default" type="submit">Create Neume</button>
 <div class="status-message"></div>
 </script>
 
@@ -74,11 +74,10 @@
 
 <script type="text/template" id="create-single-name-template">
 <div class="row">
-    <form class="form-inline" action="#">
+    <form action="#">
         <div class="form-group">
-            {# <label class="col-sm-1 control-label" for="string">Full String:</label> #}
             <div class="col-sm-10">
-                <input name="string" class="form-control" placeholder="Name" value="<%= string %>">
+                <input name="string" class="form-control" placeholder="Name">
             </div>
             <div class="col-sm-2">
                 <button class="btn btn-default" type="submit">Submit</button>
@@ -120,9 +119,10 @@
             <h2 class="panel-title">Name Editor</h2>
         </div>
         <div class="panel-body">
+            <h3>Create name</h3>
             <div class="name-create-area"></div>
             <hr/>
-            <h3>Edit Existing Names</h3>
+            <h3>Edit existing names</h3>
             <div class="names-area"></div>
         </div>
     </div>
@@ -134,7 +134,7 @@
         <div class="panel-body">
             <div class="name-nomenclature-membership-create-area"></div>
             <hr/>
-            <h3>Edit Name Nomenclature Memberships</h3>
+            <h3>Edit name nomenclature memberships</h3>
         </div>
         <div class="name-nomenclature-membership-view-area"></div>
     </div>
@@ -217,7 +217,7 @@
 
 <script type="text/template" id="glyph-collection-template">
 <div class="col-md-12">
-    <h2>Glyphs</h2>
+    <h2>Neumes</h2>
     <div class="create-glyph-region"></div>
     <table class="table table-striped glyph-collection">
         <tbody>
