@@ -1,4 +1,5 @@
 from django.db import models
+from neumeeditor.models.image import Image
 from neumeeditor.models.name import Name
 from neumeeditor.models.style import Style
 from neumeeditor.models.fields.short_code_field import ShortCodeField
