@@ -2,12 +2,21 @@ from lxml import etree
 from django.test import TestCase
 from cantusdata.settings import MEDIA_ROOT, BASE_DIR
 from neumeeditor.helpers.gamera_xml_importer import RunLengthImage, GameraXML, \
-    import_gamera_data, import_gamera_file
+    import_gamera_file, strip_neume_name
+
+
+class NeumeNameStripperTestCase(TestCase):
+    def test_does_begin(self):
+        self.assertEquals(strip_neume_name("neume.some.other.stuff"), "some.other.stuff")
+
+    def test_does_not_begin(self):
+        self.assertEquals(strip_neume_name("other.stuff"), "other.stuff")
 
 
 class GameraXMLImportTestCase(TestCase):
     def testImport(self):
         import_gamera_file(BASE_DIR + "/test_data/390_020")
+
 
 class GameraXMLTestCase(TestCase):
     gamera_file = None
