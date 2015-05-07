@@ -1,6 +1,26 @@
+from lxml import etree
 from django.test import TestCase
-from cantusdata.settings import MEDIA_ROOT
-from neumeeditor.helpers.gamera_xml_importer import RunLengthImage
+from cantusdata.settings import MEDIA_ROOT, BASE_DIR
+from neumeeditor.helpers.gamera_xml_importer import RunLengthImage, GameraXML, \
+    import_gamera_data, import_gamera_file
+
+
+class GameraXMLImportTestCase(TestCase):
+    def testImport(self):
+        import_gamera_file(BASE_DIR + "/test_data/390_020")
+
+class GameraXMLTestCase(TestCase):
+    gamera_file = None
+
+    def setUp(self):
+        gamera_string = open(BASE_DIR + "/test_data/390_020").read()
+        self.gamera_file = GameraXML(gamera_string)
+
+    def test_get_names(self):
+        print self.gamera_file.get_names()
+
+    def tearDown(self):
+        self.gamera_file = None
 
 
 class RunLengthImageTestCase(TestCase):
