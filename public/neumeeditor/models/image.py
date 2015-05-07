@@ -2,7 +2,7 @@ import os
 import hashlib
 from PIL import Image as ImageModule
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from neumeeditor.helpers.file_system_utils import media_url_to_system_path, \
     remove_media_url
@@ -27,13 +27,11 @@ class Image(models.Model):
     def thumbnail(self):
         return generate_thumbnail_url(remove_media_url(self.image_file.url))
 
-    def save(self, *args, **kwargs):
-        if not self.pk:  # file is new
-            md5 = hashlib.md5()
-            for chunk in self.image_file.chunks():
-                md5.update(chunk)
-            self.md5sum = md5.hexdigest()
-        super(Image, self).save(*args, **kwargs)
+    def set_md5(self):
+        md5 = hashlib.md5()
+        for chunk in self.image_file.chunks():
+            md5.update(chunk)
+        self.md5sum = md5.hexdigest()
 
 
 
@@ -56,11 +54,13 @@ def get_thumbnail_dimensions(width, height):
     :param height: regular height
     :return:
     """
-    print "W: {0} H: {1}".format(width, height)
     new_width = int(float(thumbnail_height) / float(height) * float(width))
-    print "TEST: {0} {1} ".format(thumbnail_height / height, thumbnail_height)
-    print "W: {0} H: {1}".format(new_width, thumbnail_height)
     return new_width, thumbnail_height
+
+@receiver(pre_save, sender=Image)
+def generate_hash(sender, instance, **kwargs):
+    if not instance.pk:  # file is new
+        instance.set_md5()
 
 @receiver(post_save, sender=Image)
 def save_thumbnails(sender, instance, **kwargs):
