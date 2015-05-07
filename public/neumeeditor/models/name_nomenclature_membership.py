@@ -7,10 +7,11 @@ class NameNomenclatureMembership(models.Model):
     """
     A relationship between a name and a nomenclature.
     """
-    name = models.ForeignKey('Name')
-    nomenclature = models.ForeignKey('Nomenclature')
+
+    name = models.ForeignKey('neumeeditor.Name')
+    nomenclature = models.ForeignKey('neumeeditor.Nomenclature')
     # Auto-set glyph
-    glyph = models.ForeignKey('Glyph', null=True, blank=True)
+    glyph = models.ForeignKey('neumeeditor.Glyph', null=True, blank=True)
 
     def __unicode__(self):
         return u"({0}, {1})".format(self.name, self.nomenclature)
@@ -25,6 +26,7 @@ class NameNomenclatureMembership(models.Model):
 
 
     class Meta:
+        app_label = "neumeeditor"
         # Name & Nomenclature pair must be unique
         unique_together = ('name', 'nomenclature')
 
