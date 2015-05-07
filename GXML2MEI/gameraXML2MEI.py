@@ -121,33 +121,38 @@ def generate_MEI_ID():
     return 'm-' + str(uuid4())
 
 
-# usage = "%prog [options] input_directory output_directory data_output_directory"
-# parser = OptionParser(usage)
-# options, args = parser.parse_args()
-#
-# if len(args) < 1:
-#     print("You must specify an input directory.")
-#     sys.exit(-1)
+def main():
+    # usage = "%prog [options] input_directory output_directory data_output_directory"
+    # parser = OptionParser(usage)
+    # options, args = parser.parse_args()
+    #
+    # if len(args) < 1:
+    #     print("You must specify an input directory.")
+    #     sys.exit(-1)
 
-neumeNames = {}
-with open('ccnames.csv', mode='rU') as infile:
-    reader = csv.reader(infile)
-    neumeNames = {rows[1]:rows[0] for rows in reader}
+    neumeNames = {}
+    with open('ccnames.csv', mode='rU') as infile:
+        reader = csv.reader(infile)
+        neumeNames = {rows[1]:rows[0] for rows in reader}
 
-print neumeNames
+    print neumeNames
 
-fileList = [f for f in os.listdir('.') if (os.path.isfile(f) and f.endswith('.xml'))]
-print fileList
-for xmlFile in fileList:
-    meiDocOut, surface, initLayer = init_MEI_document()
+    fileList = [f for f in os.listdir('.') if (os.path.isfile(f) and f.endswith('.xml'))]
+    print fileList
+    for xmlFile in fileList:
+        meiDocOut, surface, initLayer = init_MEI_document()
 
-    zones, neumes = process_gamera(xmlFile)
+        zones, neumes = process_gamera(xmlFile)
 
-    for element in zones:
-        surface.addChild(element)
+        for element in zones:
+            surface.addChild(element)
 
-    for element in neumes:
-        initLayer.addChild(element)
+        for element in neumes:
+            initLayer.addChild(element)
 
-    fileName = xmlFile[:-4]
-    XmlExport.meiDocumentToFile(meiDocOut, fileName+'.mei')
+        fileName = xmlFile[:-4]
+        XmlExport.meiDocumentToFile(meiDocOut, fileName+'.mei')
+
+
+if __name__ == '__main__':
+    main()
