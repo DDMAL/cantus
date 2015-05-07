@@ -1,5 +1,7 @@
+from django.core.files.uploadedfile import InMemoryUploadedFile
 import os
 import hashlib
+from StringIO import StringIO
 from PIL import Image as ImageModule
 from django.db import models
 from django.db.models.signals import post_save, pre_save
@@ -33,6 +35,11 @@ class Image(models.Model):
             md5.update(chunk)
         self.md5sum = md5.hexdigest()
 
+    def set_PIL_image(self, pil_image):
+        file = StringIO()
+        pil_image.save(file, format='png')
+        self.image_file = InMemoryUploadedFile(file, None, 'foo.png', 'image/png',
+                                               file.len, None)
 
 
 def generate_thumbnail_url(image_url):
