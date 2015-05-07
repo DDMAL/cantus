@@ -4,6 +4,12 @@ from lxml import etree
 from neumeeditor.models import Glyph
 from neumeeditor.models.image import Image as NeumeEditorImage
 
+def strip_neume_name(unstripped_name):
+    lead = "neume."
+    if unstripped_name.startswith(lead):
+        return unstripped_name[len(lead):]
+    else:
+        return unstripped_name
 
 def import_gamera_file(file_path):
     """
@@ -23,13 +29,13 @@ def import_gamera_data(gamera_xml_string):
     # Create glyphs
     for name in names:
         # If glyph doesn't exist, create it
-        Glyph.objects.get_or_create(short_code=name)
+        Glyph.objects.get_or_create(short_code=strip_neume_name(name))
     # Get the run length images
     rl_images = gamera.get_run_length_images()
     # for rl_image in rl_images:
     for name_and_image in rl_images:
         # Get the values
-        name = name_and_image['name']
+        name = strip_neume_name(name_and_image['name'])
         run_length_image = name_and_image['image']
         glyph, created = Glyph.objects.get_or_create(short_code=name)
         # Construct an image
