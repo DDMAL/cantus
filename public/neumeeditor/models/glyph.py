@@ -39,3 +39,4 @@ def pre_glyph_delete(sender, instance, **kwargs):
     :return:
     """
     Name.objects.filter(glyph=sender).delete()
+    Image.objects.filter(glyph=sender).delete()
