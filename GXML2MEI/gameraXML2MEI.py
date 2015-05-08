@@ -9,16 +9,16 @@ from optparse import OptionParser
 #todo: have zone point to neume rather than vice versa
 
 
-def process_gamera(xmlFile):
+def processGamera(xmlFile):
     """Extract zones and neumes from xmlFile
     """
-    glyph_list = xmlDict.ConvertXmlToDict(xmlFile)['gamera-database']['glyphs']['glyph']
+    glyphList = xmlDict.ConvertXmlToDict(xmlFile)['gamera-database']['glyphs']['glyph']
     #except indexerror for "not a gameraXML file"
 
     zones = []
     neumes = []
 
-    for curGlyph in glyph_list:
+    for curGlyph in glyphList:
         startX = curGlyph['ulx']
         endX = str(int(curGlyph['ulx']) + int(curGlyph['ncols']))
 
@@ -142,7 +142,7 @@ def main():
     for xmlFile in fileList:
         meiDocOut, surface, initLayer = init_MEI_document()
 
-        zones, neumes = process_gamera(xmlFile)
+        zones, neumes = processGamera(xmlFile)
 
         for element in zones:
             surface.addChild(element)
