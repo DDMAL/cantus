@@ -1,6 +1,7 @@
 import os
 import itertools
 import csv
+import logging
 
 from uuid import uuid4
 import xmlDict
@@ -17,6 +18,8 @@ def processGamera(xmlFile, neumeNames):
     """
     glyphList = xmlDict.ConvertXmlToDict(xmlFile)['gamera-database']['glyphs']['glyph']
     #except indexerror for "not a gameraXML file"
+
+    logging.info('processing file %s', xmlFile)
 
     neumeElements = []
     zones = []
@@ -106,6 +109,7 @@ def sortZones(zones, xmlFile):
         totalCenterGaps += zones[i + 1].centerY - zones[i].centerY
 
     averageGap = float(totalCenterGaps) / (len(zones) - 1)
+    logging.debug('average gap is %s', averageGap)
 
     clusters = []
 
@@ -127,6 +131,8 @@ def sortZones(zones, xmlFile):
         # If no existing cluster overlapped, initialize a new cluster
         else:
             clusters.append(ZoneCluster([zone]))
+
+    logging.debug('initially found %s clusters. consolidating...', len(clusters))
 
     # Consolidate overlapping clusters
     i = 0
@@ -290,12 +296,15 @@ def main():
     #     print("You must specify an input directory.")
     #     sys.exit(-1)
 
+    logging.getLogger().setLevel(logging.INFO)
+
     with open('ccnames.csv', mode='rU') as infile:
         reader = csv.reader(infile)
         neumeNames = {rows[1]:rows[0] for rows in reader}
 
     fileList = [f for f in os.listdir('.') if (os.path.isfile(f) and f.endswith('.xml'))]
-    print fileList
+    logging.info('Found files: %s', fileList)
+
     for xmlFile in fileList:
         meiDocOut, surface, initLayer = init_MEI_document()
 
