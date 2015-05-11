@@ -50,7 +50,7 @@ def processGamera(xmlFile, neumeNames):
 
     zoneElements = []
 
-    for zone in sortZones(zones):
+    for zone in sortZones(zones, xmlFile):
         newZoneElement = MeiElement('zone')
         zoneElements.append(newZoneElement)
 
@@ -95,7 +95,7 @@ class ZoneCluster:
         return sorted(self.zones, key=lambda z: z.startX)
 
 
-def sortZones(zones):
+def sortZones(zones, xmlFile):
     # Sort zones by their center point
     zones.sort(key=lambda a: a.centerY)
 
@@ -155,6 +155,9 @@ def sortZones(zones):
 
     for cluster in clusters:
         cluster.zones = cluster.sortedZones()
+
+    # # Dump an SVG representation of the zones and clusters to file
+    # _dumpZoneVisualization(xmlFile, clusters)
 
     return itertools.chain(*(cluster.zones for cluster in clusters))
 
@@ -238,6 +241,44 @@ def init_MEI_document():
 
 def generate_MEI_ID():
     return 'm-' + str(uuid4())
+
+
+def _dumpZoneVisualization(xmlFile, clusters):
+    '''Output an (ugly) SVG file showing the relation between zones and clusters
+    '''
+
+    filename = 'dump_'+xmlFile+'.svg'
+
+    height = max(cluster.endY for cluster in clusters)
+    width = max(max(zone.endX for zone in cluster.zones) for cluster in clusters)
+
+    clusterIndex = zoneIndex = 1
+
+    with open(filename, 'w') as f:
+        f.write(
+'''\
+<?xml version="1.0" standalone="yes"?>
+<svg viewBox="0 0 {width} {height}" version="1.1"
+     xmlns="http://www.w3.org/2000/svg">
+'''.format(height=height, width=width))
+
+        for cluster in clusters:
+            f.write('  <rect x="0" y="{startY}" height="{yDelta}" width="{width}" '
+                    'stroke-width="3" stroke="black" title="Cluster {idx}"/>\n'
+                    .format(startY=cluster.startY, yDelta=cluster.endY - cluster.startY, width=width, idx=clusterIndex))
+
+            for zone in cluster.zones:
+                f.write('  <rect x="{startX}" y="{startY}" width="{width}" '
+                        'height="{height}" stroke-width="3" stroke="black" fill="yellow" title="Zone {idx}, ID {id}"/>\n'
+                        .format(idx=zoneIndex, id=zone.id, startX=zone.startX, startY=zone.startY,
+                                width=zone.endX-zone.startX, height=zone.endY-zone.startY))
+
+                zoneIndex += 1
+
+            clusterIndex += 1
+
+
+        f.write('\n</svg>')
 
 
 def main():
