@@ -666,6 +666,76 @@
             }
         });
 
+        var UploadGameraXMLView = Backbone.Marionette.ItemView.extend({
+            createdCollection: undefined,
+            template: "#upload-gamera-xml-template",
+            dropzoneObject: undefined,
+
+            // API parameters
+            uploadUrl: SITE_URL + "upload/gamera-xml/",
+            paramName: "file",
+
+            ui: {
+                "dropzone": ".upload-gamera-xml-form"
+            },
+
+            initialize: function(options)
+            {
+                this.createdCollection = options.createdCollection;
+            },
+
+            /**
+             * Set the view glyph ID.
+             *
+             * @param idNum Glyph ID int,
+             */
+            setGlyphId: function(idNum)
+            {
+                this.glyphId = getAbsoluteGlyphUrl(parseInt(idNum));
+            },
+
+            onShow: function()
+            {
+                // Build the dropzone
+                this.dropzoneObject = new Dropzone(this.ui.dropzone.selector,
+                    {
+                        url: this.uploadUrl,
+                        autoProcessQueue: true,
+                        paramName: this.paramName,
+                        //acceptedFiles: "image/*",
+                        headers: {
+                            // We need to include the CSRF token again
+                            "X-CSRFToken": csrftoken
+                        }
+                        //params: {
+                        //    glyph: this.glyphId
+                        //}
+                    }
+                );
+                // Set up the callbacks
+                var that = this;
+                this.dropzoneObject.on("success", function()
+                {
+                    that.onSuccess();
+                });
+            },
+
+            onSuccess: function()
+            {
+                // Re-fetch the data
+                this.createdCollection.fetch();
+            }
+        });
+
+        var UploadMEIView = UploadGameraXMLView.extend({
+            template: "#upload-mei-template",
+
+            // API parameters
+            uploadUrl: SITE_URL + "",
+            paramNameL: "image_file",
+
+            ui: {
+                "dropzone": ".upload-mei-form"
             }
         });
 
@@ -674,14 +744,18 @@
 
             regions: {
                 glyphCreateRegion: ".glyph-create-region",
-                glyphListRegion: ".glyph-list-region"
+                glyphListRegion: ".glyph-list-region",
+                gameraXMLUploadRegion: ".gamera-xml-upload-region",
+                meiUploadRegion: ".mei-upload-region"
             },
 
             onShow: function() {
                 var glyphCollection = new GlyphCollection({url: "/neumeeditor/glyphs/"});
-                glyphCollection.fetch();
-                this.glyphCreateRegion.show(new CreateGlyphView(glyphCollection));
+                this.glyphCreateRegion.show(new CreateGlyphView({createdCollection: glyphCollection}));
+                this.gameraXMLUploadRegion.show(new UploadGameraXMLView({createdCollection: glyphCollection}));
+                this.meiUploadRegion.show(new UploadMEIView({createdCollection: glyphCollection}));
                 this.glyphListRegion.show(new GlyphCompositeView({collection: glyphCollection}));
+                glyphCollection.fetch();
             }
         });
 
