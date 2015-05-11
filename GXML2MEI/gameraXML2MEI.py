@@ -22,11 +22,11 @@ def processGamera(xmlFile, neumeNames):
     zones = []
 
     for curGlyph in glyphList:
-        startX = curGlyph['ulx']
-        endX = str(int(curGlyph['ulx']) + int(curGlyph['ncols']))
+        startX = int(curGlyph['ulx'])
+        endX = int(curGlyph['ulx']) + int(curGlyph['ncols'])
 
-        startY = curGlyph['uly']
-        endY = str(int(curGlyph['uly']) + int(curGlyph['nrows']))
+        startY = int(curGlyph['uly'])
+        endY = int(curGlyph['uly']) + int(curGlyph['nrows'])
 
         newNeumeElement = MeiElement('neume')
         neumeElements.append(newNeumeElement)
@@ -55,10 +55,10 @@ def processGamera(xmlFile, neumeNames):
         zoneElements.append(newZoneElement)
 
         newZoneElement.id = zone.id
-        newZoneElement.addAttribute(MeiAttribute('ulx', zone.startX))
-        newZoneElement.addAttribute(MeiAttribute('uly', zone.startY))
-        newZoneElement.addAttribute(MeiAttribute('lrx', zone.endX))
-        newZoneElement.addAttribute(MeiAttribute('lry', zone.endY))
+        newZoneElement.addAttribute(MeiAttribute('ulx', str(zone.startX)))
+        newZoneElement.addAttribute(MeiAttribute('uly', str(zone.startY)))
+        newZoneElement.addAttribute(MeiAttribute('lrx', str(zone.endX)))
+        newZoneElement.addAttribute(MeiAttribute('lry', str(zone.endY)))
 
     return zoneElements, neumeElements
 
