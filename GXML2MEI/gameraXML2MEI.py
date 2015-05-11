@@ -102,19 +102,19 @@ def sortZones(zones):
     # Get the total distance between the center points of every adjacent pair of zones
     totalCenterGaps = 0
 
-    # FIXME?
     for i in xrange(len(zones) - 2, -1, -2):
         totalCenterGaps += zones[i + 1].centerY - zones[i].centerY
 
     averageGap = float(totalCenterGaps) / (len(zones) - 1)
 
-    # Initialize a cluster with the ID of the first object
-    # FIXME: why are we iterating in reverse?
-    lastZone = zones[len(zones) - 1]
-    clusters = [ZoneCluster([lastZone])]
+    clusters = []
 
     # Build initial clusters of overlapping zones
-    for zone in zones[-2:-1:0]:
+    for zone in reversed(zones):
+        if not clusters:
+            clusters.append(ZoneCluster([zone]))
+            continue
+
         # Iterate through all existing clusters to find an one which overlaps
         # the zone, to within a tolerance of the average gap
         for clusterIndex in xrange(len(clusters) - 1, -1, -1):
