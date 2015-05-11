@@ -12,7 +12,8 @@ from neumeeditor.views.nomenclature import NomenclatureDetail, NomenclatureList
 from neumeeditor.views.style import StyleList, StyleDetail
 from neumeeditor.views.user import UserList, UserDetail
 from rest_framework.urlpatterns import format_suffix_patterns
-from neumeeditor.views.glyph import GlyphDetail, GlyphList
+from neumeeditor.views.glyph import GlyphDetail, GlyphList, GlyphImages, \
+    GlyphNames
 
 
 urlpatterns = []
@@ -25,6 +26,10 @@ urlpatterns += format_suffix_patterns(
         url(r'^glyphs/$', GlyphList.as_view(), name="glyph-list"),
         url(r'^glyph/(?P<pk>[0-9]+)/$', GlyphDetail.as_view(),
         name="glyph-detail"),
+        url(r'^glyph/(?P<pk>[0-9]+)/images/$', GlyphImages.as_view(),
+            name="glyph-images"),
+        url(r'^glyph/(?P<pk>[0-9]+)/names/$', GlyphNames.as_view(),
+            name="glyph-names"),
 
         url(r'^names/$', NameList.as_view(), name="name-list"),
         url(r'^name/(?P<pk>[0-9]+)/$', NameDetail.as_view(),
