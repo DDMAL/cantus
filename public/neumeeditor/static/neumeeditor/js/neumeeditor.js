@@ -634,15 +634,9 @@
                 "submit": "createGlyphButtonCallback"
             },
 
-            initialize: function(createdCollection) {
-                // The model is always a blank glyph
-                this.generateNewEmptyGlyph();
+            initialize: function(options) {
                 // Assign the collection which contains the created glyphs
-                this.createdCollection = createdCollection;
-            },
-
-            generateNewEmptyGlyph: function() {
-                this.model = new Glyph();
+                this.createdCollection = options.createdCollection;
             },
 
             createGlyphButtonCallback: function(event)
@@ -650,18 +644,16 @@
                 // Prevent the event from redirecting the page
                 event.preventDefault();
                 // Flip the reference
-                var newGlyph = this.model;
+                var newGlyph = new Glyph({
+                    "short_code": this.ui.shortCodeField.val()
+                });
                 var that = this;
-                this.model.save(
-                    {"short_code": this.ui.shortCodeField.val()},
+                newGlyph.save(undefined,
                     {
                         success: function(event) {
                             that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Glyph "<a href="' + newGlyph.get("url") + '">' + newGlyph.get("short_code") + '</a>" saved successfully.</p>');
-                            //that.ui.statusDiv.find("p").fadeOut(5000);
                             // Add the created glyph to the createdCollection
                             that.createdCollection.add(newGlyph);
-                            // Generate a new empty glyph
-                            that.generateNewEmptyGlyph();
                             // Empty the short code field
                             that.ui.shortCodeField.val('');
                         },
@@ -671,7 +663,8 @@
                         }
                     }
                 );
-                // Redirect to the edit page
+            }
+        });
 
             }
         });
