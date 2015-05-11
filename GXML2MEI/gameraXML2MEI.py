@@ -135,7 +135,6 @@ def sortZones(zones, xmlFile):
     logging.debug('initially found %s clusters. consolidating...', len(clusters))
 
     # Consolidate overlapping clusters
-    i = 0
     for i in xrange(len(clusters) - 1):
         clusterA = clusters[i]
 
