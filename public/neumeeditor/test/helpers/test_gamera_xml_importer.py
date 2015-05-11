@@ -26,7 +26,7 @@ class GameraXMLTestCase(TestCase):
         self.gamera_file = GameraXML(gamera_string)
 
     def test_get_names(self):
-        print self.gamera_file.get_names()
+        self.gamera_file.get_names()
 
     def tearDown(self):
         self.gamera_file = None

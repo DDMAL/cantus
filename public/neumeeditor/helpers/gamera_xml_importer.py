@@ -49,7 +49,6 @@ def import_gamera_data(gamera_xml_string):
             image.save()
 
 
-
 class GameraXML():
     root = None
     symbols = None

@@ -2,7 +2,7 @@ from django.conf.urls import patterns, url
 from django.conf import settings
 from django.conf.urls.static import static
 from neumeeditor.views.authentication import ObtainExpiringAuthToken
-from neumeeditor.views.file_upload import GameraXMLUploadView
+from neumeeditor.views.file_upload import GameraXMLUploadView, MEIUploadView
 from neumeeditor.views.image import ImageList, ImageDetail
 from neumeeditor.views.main import neumeeditor_home, neumeeditor_api_root
 from neumeeditor.views.name import NameList, NameDetail
@@ -66,7 +66,11 @@ urlpatterns += format_suffix_patterns(
         # File uploads
         url(r'^upload/gamera-xml/$',
             GameraXMLUploadView.as_view(),
-            name="gamera-xml-upload")
+            name="gamera-xml-upload"),
+
+        url(r'^upload/mei/$',
+            MEIUploadView.as_view(),
+            name="mei-upload")
 
 
              ),

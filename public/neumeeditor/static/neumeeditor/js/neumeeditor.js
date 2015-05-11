@@ -731,7 +731,7 @@
             template: "#upload-mei-template",
 
             // API parameters
-            uploadUrl: SITE_URL + "",
+            uploadUrl: SITE_URL + "upload/mei/",
             paramNameL: "image_file",
 
             ui: {
