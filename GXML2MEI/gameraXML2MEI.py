@@ -27,30 +27,30 @@ def processGamera(xmlFile, neumeNames):
         startY = curGlyph['uly']
         endY = str(int(curGlyph['uly']) + int(curGlyph['nrows']))
 
-        neumeElements.append(MeiElement('neume'))
-        neumeIndex = len(neumeElements) - 1
+        newNeumeElement = MeiElement('neume')
+        neumeElements.append(newNeumeElement)
 
-        neumeElements[neumeIndex].id = generate_MEI_ID()
+        newNeumeElement.id = generate_MEI_ID()
         curNeumeName = curGlyph['ids']['id']['name']
         splitName = curNeumeName[curNeumeName.find(".") + 1:]
         if(splitName in neumeNames):
-            neumeElements[neumeIndex].addAttribute(MeiAttribute('name', neumeNames[splitName]))
+            newNeumeElement.addAttribute(MeiAttribute('name', neumeNames[splitName]))
         elif len(splitName) < 3:
-            neumeElements[neumeIndex].addAttribute(MeiAttribute('name', "Letter " + splitName.upper()))
+            newNeumeElement.addAttribute(MeiAttribute('name', "Letter " + splitName.upper()))
         else:
-            neumeElements[neumeIndex].addAttribute(MeiAttribute('name', splitName))
+            newNeumeElement.addAttribute(MeiAttribute('name', splitName))
 
-        zoneElements.append(MeiElement('zone'))
-        zoneIndex = len(zoneElements) - 1
+        newZoneElement = MeiElement('zone')
+        zoneElements.append(newZoneElement)
 
-        zoneElements[zoneIndex].id = generate_MEI_ID()
-        #zones[zoneIndex].addAttribute(MeiAttribute('neume', neumes[neumeIndex].id))
-        zoneElements[zoneIndex].addAttribute(MeiAttribute('ulx', startX))
-        zoneElements[zoneIndex].addAttribute(MeiAttribute('uly', startY))
-        zoneElements[zoneIndex].addAttribute(MeiAttribute('lrx', endX))
-        zoneElements[zoneIndex].addAttribute(MeiAttribute('lry', endY))
+        newZoneElement.id = generate_MEI_ID()
+        #newZoneElement.addAttribute(MeiAttribute('neume', neumes[neumeIndex].id))
+        newZoneElement.addAttribute(MeiAttribute('ulx', startX))
+        newZoneElement.addAttribute(MeiAttribute('uly', startY))
+        newZoneElement.addAttribute(MeiAttribute('lrx', endX))
+        newZoneElement.addAttribute(MeiAttribute('lry', endY))
 
-        neumeElements[neumeIndex].addAttribute(MeiAttribute('facs', zoneElements[zoneIndex].id))
+        newNeumeElement.addAttribute(MeiAttribute('facs', newZoneElement.id))
 
     return zoneElements, neumeElements
 
