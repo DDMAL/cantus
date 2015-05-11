@@ -466,35 +466,31 @@
                 "submit": "createButtonCallback"
             },
 
-            initialize: function (createdCollection) {
-                // The model is always a blank glyph
-                this.generateNewEmptyNomenclature();
+            initialize: function (options) {
                 // Assign the collection which contains the created glyphs
-                this.createdCollection = createdCollection;
-            },
-
-            generateNewEmptyNomenclature: function () {
-                this.model = new Nomenclature({url: SITE_URL + "nomenclatures/"});
+                this.createdCollection = options.createdCollection;
             },
 
             createButtonCallback: function (event) {
                 // Prevent the event from redirecting the page
                 event.preventDefault();
-                // Flip the reference
-                var newNomenclature = this.model;
+                // Create the nomenclature
+                var nomenclature = new Nomenclature(
+                    {
+                        url: SITE_URL + "nomenclatures/",
+                        "nomenclature_name": this.ui.nameField.val()
+                    });
                 var that = this;
-                this.model.save(
-                    {"nomenclature_name": this.ui.nameField.val()},
+                nomenclature.save(
+                    undefined,
                     {
                         success: function (event) {
                             // Manually copy the url.
-                            newNomenclature.url = newNomenclature.get("url");
-                            that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Nomenclature "' + newNomenclature.get("nomenclature_name") + '" saved successfully.</p>');
+                            nomenclature.url = nomenclature.get("url");
+                            that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Nomenclature "' + nomenclature.get("nomenclature_name") + '" saved successfully.</p>');
                             //that.ui.statusDiv.find("p").fadeOut(5000);
                             // Add the created glyph to the createdCollection
-                            that.createdCollection.add(newNomenclature);
-                            // Generate a new empty nomenclature
-                            that.generateNewEmptyNomenclature();
+                            that.createdCollection.add(nomenclature);
                             // Empty the short code field
                             that.ui.nameField.val('');
                         },
@@ -520,7 +516,7 @@
             onShow: function() {
                 var nomenclatureCollection = new NomenclatureCollection({url: "/neumeeditor/nomenclatures/"});
                 nomenclatureCollection.fetch();
-                this.glyphCreateRegion.show(new CreateNomenclatureView(nomenclatureCollection));
+                this.glyphCreateRegion.show(new CreateNomenclatureView({createdCollection: nomenclatureCollection}));
                 this.glyphListRegion.show(new NomenclatureCompositeView({collection: nomenclatureCollection}));
             }
         });
