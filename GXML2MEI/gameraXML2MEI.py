@@ -1,10 +1,10 @@
-import xmlDict
-import sys, os
+import os
 import csv
-from pymei import MeiDocument, MeiElement, MeiAttribute, XmlExport
-import random
+
 from uuid import uuid4
-from optparse import OptionParser
+import xmlDict
+
+from pymei import MeiDocument, MeiElement, MeiAttribute, XmlExport
 
 #todo: have zone point to neume rather than vice versa
 
