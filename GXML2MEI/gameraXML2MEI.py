@@ -17,8 +17,8 @@ def processGamera(xmlFile, neumeNames):
     glyphList = xmlDict.ConvertXmlToDict(xmlFile)['gamera-database']['glyphs']['glyph']
     #except indexerror for "not a gameraXML file"
 
-    zones = []
-    neumes = []
+    zoneElements = []
+    neumeElements = []
 
     for curGlyph in glyphList:
         startX = curGlyph['ulx']
@@ -27,32 +27,32 @@ def processGamera(xmlFile, neumeNames):
         startY = curGlyph['uly']
         endY = str(int(curGlyph['uly']) + int(curGlyph['nrows']))
 
-        neumes.append(MeiElement('neume'))
-        neumeIndex = len(neumes) - 1
+        neumeElements.append(MeiElement('neume'))
+        neumeIndex = len(neumeElements) - 1
 
-        neumes[neumeIndex].id = generate_MEI_ID()
+        neumeElements[neumeIndex].id = generate_MEI_ID()
         curNeumeName = curGlyph['ids']['id']['name']
         splitName = curNeumeName[curNeumeName.find(".") + 1:]
         if(splitName in neumeNames):
-            neumes[neumeIndex].addAttribute(MeiAttribute('name', neumeNames[splitName]))
+            neumeElements[neumeIndex].addAttribute(MeiAttribute('name', neumeNames[splitName]))
         elif len(splitName) < 3:
-            neumes[neumeIndex].addAttribute(MeiAttribute('name', "Letter " + splitName.upper()))
+            neumeElements[neumeIndex].addAttribute(MeiAttribute('name', "Letter " + splitName.upper()))
         else:
-            neumes[neumeIndex].addAttribute(MeiAttribute('name', splitName))
+            neumeElements[neumeIndex].addAttribute(MeiAttribute('name', splitName))
 
-        zones.append(MeiElement('zone'))
-        zoneIndex = len(zones) - 1
+        zoneElements.append(MeiElement('zone'))
+        zoneIndex = len(zoneElements) - 1
 
-        zones[zoneIndex].id = generate_MEI_ID()
+        zoneElements[zoneIndex].id = generate_MEI_ID()
         #zones[zoneIndex].addAttribute(MeiAttribute('neume', neumes[neumeIndex].id))
-        zones[zoneIndex].addAttribute(MeiAttribute('ulx', startX))
-        zones[zoneIndex].addAttribute(MeiAttribute('uly', startY))
-        zones[zoneIndex].addAttribute(MeiAttribute('lrx', endX))
-        zones[zoneIndex].addAttribute(MeiAttribute('lry', endY))
+        zoneElements[zoneIndex].addAttribute(MeiAttribute('ulx', startX))
+        zoneElements[zoneIndex].addAttribute(MeiAttribute('uly', startY))
+        zoneElements[zoneIndex].addAttribute(MeiAttribute('lrx', endX))
+        zoneElements[zoneIndex].addAttribute(MeiAttribute('lry', endY))
 
-        neumes[neumeIndex].addAttribute(MeiAttribute('facs', zones[zoneIndex].id))
+        neumeElements[neumeIndex].addAttribute(MeiAttribute('facs', zoneElements[zoneIndex].id))
 
-    return zones, neumes
+    return zoneElements, neumeElements
 
 
 def init_MEI_document():
