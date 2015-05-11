@@ -78,26 +78,26 @@ class Zone:
 class ZoneCluster:
     def __init__(self, zones):
         self.zones = zones
-        self.startY = max(zone.startY for zone in zones)
-        self.endY = min(zone.endY for zone in zones)
+        self.startY = min(zone.startY for zone in zones)
+        self.endY = max(zone.endY for zone in zones)
 
     def addZone(self, zone):
         self.zones.append(zone)
-        self.startY = max(self.startY, zone.startY)
-        self.endY = min(self.endY, zone.endY)
+        self.startY = min(self.startY, zone.startY)
+        self.endY = max(self.endY, zone.endY)
 
     def extendWithZones(self, otherCluster):
         self.zones.extend(otherCluster.zones)
-        self.startY = max(self.startY, otherCluster.startY)
-        self.endY = min(self.endY, otherCluster.endY)
+        self.startY = min(self.startY, otherCluster.startY)
+        self.endY = max(self.endY, otherCluster.endY)
 
-    def sorted(self):
+    def sortedZones(self):
         return sorted(self.zones, key=lambda z: z.startX)
 
 
 def sortZones(zones):
     # Sort zones by their center point
-    zones.sort(cmp=lambda a, b: a.centerY - b.centerY)
+    zones.sort(key=lambda a: a.centerY)
 
     # Get the total distance between the center points of every adjacent pair of zones
     totalCenterGaps = 0
@@ -147,9 +147,16 @@ def sortZones(zones):
                 clusterA.extendWithZones(clusterB)
                 clusters[j] = None
 
-    # Sort the zones in each cluster by their upper left point
-    # FIXME: how are the clusters sorted?
-    return itertools.chain(cluster.sorted() for cluster in clusters if cluster)
+    logging.info('found %s zones which form %s clusters', len(zones), len(clusters))
+
+    # Sort clusters by their upper y value and sort the zones in each cluster
+    # by their upper left points
+    clusters = sorted((cluster for cluster in clusters if cluster), key=lambda c: c.startY)
+
+    for cluster in clusters:
+        cluster.zones = cluster.sortedZones()
+
+    return itertools.chain(*(cluster.zones for cluster in clusters))
 
 
 def overlaps(regionA, regionB, threshold=0):
@@ -159,7 +166,7 @@ def overlaps(regionA, regionB, threshold=0):
     """
 
     for point in (regionA.startY, regionA.endY):
-        if point >= regionB.startY - threshold or point <= regionB.endY + threshold:
+        if point >= regionB.startY - threshold and point <= regionB.endY + threshold:
             return True
 
     return False
