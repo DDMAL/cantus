@@ -121,9 +121,7 @@ def sortZones(zones, xmlFile, dumpVisualization=False):
 
         # Iterate through all existing clusters to find an one which overlaps
         # the zone, to within a tolerance of the average gap
-        for clusterIndex in xrange(len(clusters) - 1, -1, -1):
-            cluster = clusters[clusterIndex]
-
+        for cluster in reversed(clusters):
             if overlaps(zone, cluster, averageGap):
                 cluster.addZone(zone)
                 break
