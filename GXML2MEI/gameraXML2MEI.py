@@ -150,7 +150,7 @@ def sortZones(zones, xmlFile, dumpVisualization=False):
 
             # If we haven't already removed cluster B and it overlaps cluster A,
             # copy its zones into cluster A and then remove it
-            # FIXME: should this use averageGap as a threshold?
+            # FIXME: should this use averageGap as a tolerance threshold?
             if clusterB and overlaps(clusterA, clusterB):
                 clusterA.extendWithZones(clusterB)
                 clusters[j] = None
@@ -171,22 +171,22 @@ def sortZones(zones, xmlFile, dumpVisualization=False):
     return itertools.chain(*(cluster.zones for cluster in clusters))
 
 
-def overlaps(regionA, regionB, threshold=0):
-    """overlaps(a, b[, threshold]) => return true if two horizontal regions overlap
+def overlaps(regionA, regionB, tolerance=0):
+    """overlaps(a, b[, tolerance]) => return true if two horizontal regions overlap
 
-    Allows a tolerance of threshold.
+    Allows a variable tolerance threshold.
     """
 
     # Check cases where one of the endpoints of region A are contained
     # within region B
     for point in (regionA.startY, regionA.endY):
-        if isWithin(point, regionB.startY - threshold, regionB.endY + threshold):
+        if isWithin(point, regionB.startY - tolerance, regionB.endY + tolerance):
             return True
 
     # If neither of regions A's endpoints fall within region B, then
     # the only way they could overlap is if region B is entirely contained
     # within region A. Test one of region B's endpoints to look for that case.
-    # (Really any point in region B would do, so don't worry about the threshold.)
+    # (Really any point in region B would do, so don't worry about the tolerance.)
     return isWithin(regionB.startY, regionA.startY, regionA.endY)
 
 
