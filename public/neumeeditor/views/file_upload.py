@@ -12,8 +12,6 @@ class GameraXMLUploadView(APIView):
     renderer_classes = (JSONRenderer, JSONPRenderer)
 
     def post(self, request, format=None):
-        for key, value in request.FILES.iteritems():
-            print (key, value)
         # Get a string of the file
         file_string = request.FILES['file'].read()
         # Extract the data
@@ -32,13 +30,12 @@ class MEIUploadView(APIView):
     renderer_classes = (JSONRenderer, JSONPRenderer)
 
     def post(self, request, format=None):
-        for key, value in request.FILES.iteritems():
-            print (key, value)
         # Get a string of the file
         file_string = request.FILES['file'].read()
+        file_name = request.FILES['file'].name.split(".mei")[0]
         # Extract the data
         try:
-            import_mei_data(file_string)
+            import_mei_data(file_string, file_name)
         except XMLSyntaxError:
             return Response(data={"error": "Error parsing MEI."},
                             status=500)

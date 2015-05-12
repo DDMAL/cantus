@@ -11,13 +11,29 @@ from neumeeditor.helpers.gamera_xml_importer import RunLengthImage, GameraXML, \
 #
 #     def test_does_not_begin(self):
 #         self.assertEquals(strip_neume_name("other.stuff"), "other.stuff")
-from neumeeditor.helpers.mei_importer import import_mei_file
+from neumeeditor.helpers.mei_importer import import_mei_file, Neume
 
 
 class MEIImportTestCase(TestCase):
     def testImport(self):
         import_mei_file(BASE_DIR + "/test_data/390_024.mei")
 
+
+class NeumeTestCase(TestCase):
+    neume = None
+
+    def setUp(self):
+        self.neume = Neume()
+        self.neume.ulx = 4
+        self.neume.uly = 3
+        self.neume.lrx = 21
+        self.neume.lry = 27
+
+    def test_height(self):
+        self.assertEquals(self.neume.get_height(), 24)
+
+    def test_width(self):
+        self.assertEquals(self.neume.get_width(), 17)
 
 # class GameraXMLTestCase(TestCase):
 #     gamera_file = None

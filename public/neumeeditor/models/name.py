@@ -23,7 +23,6 @@ class Name(models.Model):
 @receiver(pre_save, sender=Name)
 def strip_whitespace(sender, instance, **kwargs):
     # Strip out whitespace
-    print instance.string
     instance.string = instance.string.strip()
 
 @receiver(pre_delete, sender=Name)

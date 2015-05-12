@@ -1,34 +1,49 @@
+import requests
+from StringIO import StringIO
+from PIL import Image as PIL_Image
 from lxml import etree
 from neumeeditor.models import Glyph, Name
+from neumeeditor.models.fields.short_code_field import sanitize_short_code
+from neumeeditor.models.image import Image
 
+
+def get_image(url):
+    print "Fetching image: {0}".format(url)
+    response = requests.get(url)
+    return PIL_Image.open(StringIO(response.content))
+
+def get_st_gallen_390_image_url(folio_name, ulx, uly, width, height):
+    # The URL that we will serve from
+    return "http://dev-diva.simssa.ca/fcgi-bin/iipsrv.fcgi?IIIF=/srv/images/cantus/ch-sgs-390/ch-sgs-{0}.jp2/{1},{2},{3},{4}/full/0/native.jpg".format(folio_name, ulx, uly, width, height)
 
 def import_mei_file(file_path):
     data_string = open(file_path).read()
     import_mei_data(data_string)
 
-def import_mei_data(mei_string):
+def import_mei_data(mei_string, file_name):
     # Build the file
     mei = MEI(mei_string)
     mei.build_neumes()
     neumes = mei.get_neumes()
-    # print neumes'
-    print len(neumes)
     # Create the glyphs
     for neume in neumes:
         if neume.name is None:
             print "NONE ERROR"
             continue
-        else:
-            print neume.name
         # Check if the name already exists
         name, name_created = Name.objects.get_or_create(string=neume.name)
-        if name_created:
-            # Name doesn't exist, so we'll create a glyph for it
-            glyph, glyph_created = Glyph.objects.get_or_create(short_code=neume.name)
-            # Assign the new glyph to the name and save the name
-            name.glyph = glyph
-            name.save()
-
+        glyph, glyph_created = Glyph.objects.get_or_create(short_code=sanitize_short_code(neume.name))
+        # Assign the new glyph to the name and save the name
+        name.glyph = glyph
+        name.save()
+        # Create the image
+        pil_image = get_image(get_st_gallen_390_image_url(file_name, neume.ulx, neume.uly, neume.get_width(), neume.get_height()))
+        # Create Image model
+        image = Image()
+        image.glyph = glyph
+        image.set_PIL_image(pil_image)
+        image.set_md5()
+        image.save()
 
 def mei_element_name(xml_element_name):
     prefix = "{http://www.music-encoding.org/ns/mei}"
@@ -99,4 +114,10 @@ class Neume():
     name = None
 
     def __unicode__(self):
-        print u"neume[name: {0}, ulx: {1}, uly: {2}, lrx: {3}, lry: {4}]".format(self.name, self.ulx, self.uly, self.lrx, self.lry)
+        return u"neume[name: {0}, ulx: {1}, uly: {2}, lrx: {3}, lry: {4}]".format(self.name, self.ulx, self.uly, self.lrx, self.lry)
+
+    def get_width(self):
+        return int(self.lrx) - int(self.ulx)
+
+    def get_height(self):
+        return int(self.lry) - int(self.uly)
