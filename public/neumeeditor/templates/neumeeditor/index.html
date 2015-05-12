@@ -216,32 +216,26 @@
 </script>
 
 <script type="text/template" id="glyph-collection-template">
-<div class="col-md-12">
-    <h2>Neumes</h2>
-    <div class="create-glyph-region"></div>
-    <table class="table table-striped glyph-collection">
-        <tbody>
-        <tr>
-            <th>Short Code</th>
-            <th>Names</th>
-            <th>Images</th>
-            <th>Modify</th>
-        </tr>
-        </tbody>
-    </table>
-</div>
+<h2>Neumes</h2>
+<table class="table table-striped glyph-collection">
+    <tbody>
+    <tr>
+        <th>Short Code</th>
+        <th>Names</th>
+        <th>Images</th>
+        <th>Modify</th>
+    </tr>
+    </tbody>
+</table>
 </script>
 
 <script type="text/template" id="glyph-dashboard-template">
-<div class="row">
-    <div class="glyph-create-region col-md-4"></div>
-    <div class="gamera-xml-upload-region col-md-4"></div>
-    <div class="mei-upload-region col-md-4"></div>
-</div>
-<div class="row">
-    <div class="glyph-list-region col-md-12"></div>
-</div>
+<div class="glyph-create-region col-md-4"></div>
+<div class="gamera-xml-upload-region col-md-4"></div>
+<div class="mei-upload-region col-md-4"></div>
+<div class="glyph-list-region col-md-12"></div>
 
+<div class="glyph-list-fetch-modal-region"></div>
 </script>
 
 <script type="text/template" id="glyph-template">
@@ -276,19 +270,37 @@
 </nav>
 </script>
 
+<script type="text/template" id="modal-upload-progress-template">
+<div class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title"><%= title %></h4>
+            </div>
+            <div class="modal-body">
+                <p><%= text %></p>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%;">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</script>
+
 <script type="text/template" id="nomenclature-collection-template">
-<div class="col-md-12">
-    <h2>Nomenclatures</h2>
-    <div class="create-nomenclatrue-region"></div>
-    <table class="table table-striped nomenclature-collection">
-        <tbody>
+<h2>Nomenclatures</h2>
+<div class="create-nomenclatrue-region"></div>
+<table class="table table-striped nomenclature-collection">
+    <tbody>
         <tr>
             <th>Name</th>
             <th></th>
         </tr>
-        </tbody>
-    </table>
-</div>
+    </tbody>
+</table>
 </script>
 
 <script type="text/template" id="nomenclature-template">
@@ -311,19 +323,21 @@
 <script type="text/template" id="upload-gamera-xml-template">
 <h3>Upload GameraXML Files</h3>
 <p>Click on or drag images onto this box to upload GameraXML files:</p>
-<form class="upload-gamera-xml-form dropzone-form"></form>
+<form class="dropzone-form upload-gamera-xml-form"></form>
+<div class="upload-modal"></div>
 </script>
 
 <script type="text/template" id="upload-image-template">
 <h3>Upload Images</h3>
 <p>Click on or drag images onto this box to upload images:</p>
-<form class="dropzone-form"></form>
+<form class="dropzone-form upload-images-form"></form>
 </script>
 
 <script type="text/template" id="upload-mei-template">
 <h3>Upload MEI Files</h3>
 <p>Click on or drag images onto this box to upload MEI files:</p>
 <form class="upload-mei-form dropzone-form"></form>
+<div class="upload-modal"></div>
 </script>
 
 

@@ -614,7 +614,7 @@
             childView: GlyphView,
 
             childViewContainer: "tbody",
-            template: "#glyph-collection-template"
+            template: "#glyph-collection-template",
         });
 
         var CreateGlyphView = Backbone.Marionette.ItemView.extend({
@@ -634,7 +634,8 @@
                 "submit": "createGlyphButtonCallback"
             },
 
-            initialize: function(options) {
+            initialize: function(options)
+            {
                 // Assign the collection which contains the created glyphs
                 this.createdCollection = options.createdCollection;
             },
@@ -666,10 +667,14 @@
             }
         });
 
-        var UploadGameraXMLView = Backbone.Marionette.ItemView.extend({
+        var UploadGameraXMLView = Backbone.Marionette.LayoutView.extend({
             createdCollection: undefined,
             template: "#upload-gamera-xml-template",
             dropzoneObject: undefined,
+
+            modalView: undefined,
+            modalViewTitle: "Uploading GameraXML file...",
+            modalViewText: "",
 
             // API parameters
             uploadUrl: SITE_URL + "upload/gamera-xml/",
@@ -679,9 +684,15 @@
                 "dropzone": ".upload-gamera-xml-form"
             },
 
+            regions: {
+                modalRegion: ".upload-modal"
+            },
+
             initialize: function(options)
             {
                 this.createdCollection = options.createdCollection;
+                // Build the progress modal
+                this.modalView = new UploadProgressModalView({title: this.modalViewTitle, text: this.modalViewText});
             },
 
             /**
@@ -696,6 +707,9 @@
 
             onShow: function()
             {
+                // Show the modal
+                this.modalRegion.show(this.modalView);
+
                 // Build the dropzone
                 this.dropzoneObject = new Dropzone(this.ui.dropzone.selector,
                     {
@@ -714,7 +728,13 @@
                 );
                 // Set up the callbacks
                 var that = this;
-                this.dropzoneObject.on("success", function()
+                this.dropzoneObject.on("processing", function(){
+                    that.modalView.open();
+                });
+                this.dropzoneObject.on("uploadprogress", function(file, percent, bytes) {
+                    //that.modalView.setPercent(percent);
+                });
+                this.dropzoneObject.on("complete", function()
                 {
                     that.onSuccess();
                 });
@@ -722,6 +742,9 @@
 
             onSuccess: function()
             {
+                this.modalView.close();
+                // Fetch modal
+                this.createdCollection.trigger("open-modal");
                 // Re-fetch the data
                 this.createdCollection.fetch();
             }
@@ -729,6 +752,8 @@
 
         var UploadMEIView = UploadGameraXMLView.extend({
             template: "#upload-mei-template",
+
+            modalViewTitle: "Uploading MEI file...",
 
             // API parameters
             uploadUrl: SITE_URL + "upload/mei/",
@@ -739,6 +764,81 @@
             }
         });
 
+        var UploadProgressModalView = Backbone.Marionette.ItemView.extend({
+            template: "#modal-upload-progress-template",
+            title: undefined,
+            text: undefined,
+            percent: 0,
+
+            ui: {
+                "modal": ".modal",
+                "percentBar": ".progress-bar"
+            },
+
+            initialize: function(options)
+            {
+                this.title = options.title;
+                this.text = options.text;
+            },
+
+            /**
+             * Set the percent value of the progress bar.
+             *
+             * @param newPercent
+             */
+            setPercent: function(newPercent)
+            {
+                this.percent = parseInt(newPercent, 10);
+                this.ui.percentBar.html(this.percent + "\%");
+            },
+
+            serializeData: function()
+            {
+                return {
+                    title: this.title,
+                    text: this.text
+                };
+            },
+
+            open: function()
+            {
+                console.log(this);
+                console.log(this.ui);
+                this.ui.modal.modal(
+                    {
+                        backdrop: 'static',
+                        keyboard: false
+                    }
+                );
+            },
+
+            close: function()
+            {
+                this.ui.modal.modal('hide');
+            }
+        });
+
+        var FetchModal = UploadProgressModalView.extend({
+            initialize: function(options)
+            {
+                this.title = options.title;
+                this.text = options.text;
+                this.collection = options.collection;
+
+                // Bind the events
+                var that = this;
+                console.log("Event bindings");
+                this.collection.on("open-modal", function()
+                {
+                    that.open();
+                });
+                this.collection.on("sync", function()
+                {
+                    that.close();
+                });
+            }
+        });
+
         var GlyphDashboardView = Backbone.Marionette.LayoutView.extend({
             template: "#glyph-dashboard-template",
 
@@ -746,15 +846,27 @@
                 glyphCreateRegion: ".glyph-create-region",
                 glyphListRegion: ".glyph-list-region",
                 gameraXMLUploadRegion: ".gamera-xml-upload-region",
-                meiUploadRegion: ".mei-upload-region"
+                meiUploadRegion: ".mei-upload-region",
+                glyphListFetchModalRegion: ".glyph-list-fetch-modal-region"
             },
 
             onShow: function() {
                 var glyphCollection = new GlyphCollection({url: "/neumeeditor/glyphs/"});
+                var glyphFetchModal = new FetchModal(
+                    {
+                        title: "Fetching neumes...",
+                        text: "",
+                        collection: glyphCollection
+                    }
+                );
+                this.glyphListFetchModalRegion.show(glyphFetchModal);
                 this.glyphCreateRegion.show(new CreateGlyphView({createdCollection: glyphCollection}));
                 this.gameraXMLUploadRegion.show(new UploadGameraXMLView({createdCollection: glyphCollection}));
                 this.meiUploadRegion.show(new UploadMEIView({createdCollection: glyphCollection}));
                 this.glyphListRegion.show(new GlyphCompositeView({collection: glyphCollection}));
+                // Open the modal
+                glyphCollection.trigger("open-modal");
+                // Fetch the glyphs
                 glyphCollection.fetch();
             }
         });
