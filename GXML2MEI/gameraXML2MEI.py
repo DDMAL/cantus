@@ -53,7 +53,7 @@ def processGamera(xmlFile, neumeNames):
 
     zoneElements = []
 
-    for zone in sortZones(zones, xmlFile):
+    for zone in sortZones(zones, xmlFile, dumpVisualization=False):
         newZoneElement = MeiElement('zone')
         zoneElements.append(newZoneElement)
 
@@ -98,7 +98,7 @@ class ZoneCluster:
         return sorted(self.zones, key=lambda z: z.startX)
 
 
-def sortZones(zones, xmlFile):
+def sortZones(zones, xmlFile, dumpVisualization=False):
     # Sort zones by their center point
     zones.sort(key=lambda a: a.centerY)
 
@@ -134,6 +134,11 @@ def sortZones(zones, xmlFile):
 
     logging.debug('initially found %s clusters. consolidating...', len(clusters))
 
+    if dumpVisualization:
+        initialClusters = dict()
+        for i in range(len(clusters)):
+            initialClusters.update((zone, i+1) for zone in clusters[i].zones)
+
     # Consolidate overlapping clusters
     for i in xrange(len(clusters) - 1):
         clusterA = clusters[i]
@@ -161,8 +166,9 @@ def sortZones(zones, xmlFile):
     for cluster in clusters:
         cluster.zones = cluster.sortedZones()
 
-    # # Dump an SVG representation of the zones and clusters to file
-    # _dumpZoneVisualization(xmlFile, clusters)
+    if dumpVisualization:
+        # Dump an SVG representation of the zones and clusters to file
+        _dumpZoneVisualization(xmlFile, clusters, averageGap, initialClusters)
 
     return itertools.chain(*(cluster.zones for cluster in clusters))
 
@@ -248,7 +254,7 @@ def generate_MEI_ID():
     return 'm-' + str(uuid4())
 
 
-def _dumpZoneVisualization(xmlFile, clusters):
+def _dumpZoneVisualization(xmlFile, clusters, averageGap, initialClusters):
     '''Output an (ugly) SVG file showing the relation between zones and clusters
     '''
 
@@ -257,26 +263,56 @@ def _dumpZoneVisualization(xmlFile, clusters):
     height = max(cluster.endY for cluster in clusters)
     width = max(max(zone.endX for zone in cluster.zones) for cluster in clusters)
 
-    clusterIndex = zoneIndex = 1
-
     with open(filename, 'w') as f:
-        f.write(
-'''\
+        f.write('''\
 <?xml version="1.0" standalone="yes"?>
 <svg viewBox="0 0 {width} {height}" version="1.1"
      xmlns="http://www.w3.org/2000/svg">
 '''.format(height=height, width=width))
 
+        f.write('<!-- Clusters -->\n')
+
+        clusterIndex = 1
         for cluster in clusters:
             f.write('  <rect x="0" y="{startY}" height="{yDelta}" width="{width}" '
-                    'stroke-width="3" stroke="black" title="Cluster {idx}"/>\n'
+                    'stroke-width="5" stroke="blue" fill="gainsboro" title="Cluster {idx}"/>\n'
                     .format(startY=cluster.startY, yDelta=cluster.endY - cluster.startY, width=width, idx=clusterIndex))
 
+            clusterIndex += 1
+
+        f.write('<!-- Zones -->\n')
+
+        clusterIndex = zoneIndex = 1
+        for cluster in clusters:
             for zone in cluster.zones:
+                # Draw the actual zone
+                zoneHeight = zone.endY-zone.startY
+                zoneWidth = zone.endX-zone.startX
+
                 f.write('  <rect x="{startX}" y="{startY}" width="{width}" '
-                        'height="{height}" stroke-width="3" stroke="black" fill="yellow" title="Zone {idx}, ID {id}"/>\n'
-                        .format(idx=zoneIndex, id=zone.id, startX=zone.startX, startY=zone.startY,
-                                width=zone.endX-zone.startX, height=zone.endY-zone.startY))
+                        'height="{height}" stroke-width="3" stroke="black" '
+                        'fill="yellow" title="Zone {idx}, initial cluster {initialCluster}, ID {id}"/>\n'
+                        .format(idx=zoneIndex, initialCluster=initialClusters[zone], id=zone.id, startX=zone.startX, startY=zone.startY,
+                                width=zoneWidth, height=zoneHeight))
+
+                # Draw the midpoint and bars representing the average gap
+                centerX = zone.startX + (zone.endX - zone.startX) / 2
+                centerY = zone.centerY
+
+                # Find a tolerable radius for the midpoint
+                radius = max(min(zoneHeight, zoneWidth) / 5, 3)
+
+                f.write('  <circle cx="{centerX}" cy="{centerY}" r="{radius}" fill="black" />\n'
+                        .format(centerX=centerX, centerY=centerY, radius=radius))
+
+                f.write('  <path d="M {centerX}, {startY} v -{averageGap} '
+                        'h {barLen} h -{barLenTimes2}" stroke-width="3" '
+                        'stroke="black" fill="none" />\n'
+                        .format(centerX=centerX, startY=zone.startY, averageGap=averageGap, barLen=zoneWidth/2, barLenTimes2=zoneWidth))
+                f.write('  <path d="M {centerX}, {endY} v {averageGap} '
+                        'h {barLen} h -{barLenTimes2}" stroke-width="3" '
+                        'stroke="black" fill="none" />\n'
+                        .format(centerX=centerX, endY=zone.endY, averageGap=averageGap, barLen=zoneWidth/2, barLenTimes2=zoneWidth))
 
                 zoneIndex += 1
 
