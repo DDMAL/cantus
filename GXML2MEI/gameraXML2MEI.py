@@ -174,16 +174,29 @@ def sortZones(zones, xmlFile, dumpVisualization=False):
 
 
 def overlaps(regionA, regionB, threshold=0):
-    """overlaps(a, b[, threshold]) => return whether the clusters overlap
+    """overlaps(a, b[, threshold]) => return true if two horizontal regions overlap
 
     Allows a tolerance of threshold.
     """
 
+    # Check cases where one of the endpoints of region A are contained
+    # within region B
     for point in (regionA.startY, regionA.endY):
-        if point >= regionB.startY - threshold and point <= regionB.endY + threshold:
+        if isWithin(point, regionB.startY - threshold, regionB.endY + threshold):
             return True
 
-    return False
+    # If neither of regions A's endpoints fall within region B, then
+    # the only way they could overlap is if region B is entirely contained
+    # within region A. Test one of region B's endpoints to look for that case.
+    # (Really any point in region B would do, so don't worry about the threshold.)
+    return isWithin(regionB.startY, regionA.startY, regionA.endY)
+
+
+def isWithin(point, start, end):
+    """
+    Return true if point falls within start and end
+    """
+    return point >= start and point <= end
 
 
 def init_MEI_document():
