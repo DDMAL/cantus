@@ -20,7 +20,7 @@ def remove_unique_id(response_string):
     :param response_string:
     :return: string
     """
-    return re.sub(r',? ?"id": "[a-z\d-]*"', '', response_string)
+    return re.sub(r',?\s*"id":\s*"[a-z\d-]*"', '', response_string)
 
 def remove_number(response_string, parameter_name):
     """
@@ -29,5 +29,5 @@ def remove_number(response_string, parameter_name):
     :param response_string:
     :return: string
     """
-    return re.sub(r',? ?"{0}": [\d\.]*'.format(parameter_name),
+    return re.sub(r',?\s*"{0}":\s*[\d\.]*'.format(parameter_name),
                   '', response_string)
