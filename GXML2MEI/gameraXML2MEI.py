@@ -152,11 +152,11 @@ def sortZones(zones, xmlFile):
                 clusterA.extendWithZones(clusterB)
                 clusters[j] = None
 
-    logging.info('found %s zones which form %s clusters', len(zones), len(clusters))
-
     # Sort clusters by their upper y value and sort the zones in each cluster
     # by their upper left points
     clusters = sorted((cluster for cluster in clusters if cluster), key=lambda c: c.startY)
+
+    logging.info('found %s zones which form %s clusters', len(zones), len(clusters))
 
     for cluster in clusters:
         cluster.zones = cluster.sortedZones()
