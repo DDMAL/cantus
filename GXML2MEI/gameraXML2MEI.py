@@ -11,59 +11,215 @@ from pymei import MeiDocument, MeiElement, MeiAttribute, XmlExport
 #todo: have zone point to neume rather than vice versa
 
 
-def processGamera(xmlFile, neumeNames):
-    """Extract zones and neumes from xmlFile
-    :param xmlFile: path to the Gamera XML file
-    :param neumeNames: a dict mapping to full neume names
-    """
-    glyphList = xmlDict.ConvertXmlToDict(xmlFile)['gamera-database']['glyphs']['glyph']
-    #except indexerror for "not a gameraXML file"
+class GameraXMLConverter:
+    def __init__(self, xmlFile, meiFile, neumeNames):
+        self.xmlFile = xmlFile
+        self.meiFile = meiFile
+        self.neumeNames = neumeNames
 
-    logging.info('processing file %s', xmlFile)
+        self._initMEI()
 
-    neumeElements = []
-    zones = []
+    def processGamera(self):
+        zones, neumes = self.getMEIContent()
 
-    for curGlyph in glyphList:
-        startX = int(curGlyph['ulx'])
-        endX = int(curGlyph['ulx']) + int(curGlyph['ncols'])
+        for element in zones:
+            self.surface.addChild(element)
 
-        startY = int(curGlyph['uly'])
-        endY = int(curGlyph['uly']) + int(curGlyph['nrows'])
+        for element in neumes:
+            self.initLayer.addChild(element)
 
-        newNeumeElement = MeiElement('neume')
-        neumeElements.append(newNeumeElement)
+    def write(self):
+        XmlExport.meiDocumentToFile(self.meiDoc, self.meiFile)
 
-        newNeumeElement.id = generate_MEI_ID()
-        curNeumeName = curGlyph['ids']['id']['name']
-        splitName = curNeumeName[curNeumeName.find(".") + 1:]
-        if(splitName in neumeNames):
-            newNeumeElement.addAttribute(MeiAttribute('name', neumeNames[splitName]))
-        elif len(splitName) < 3:
-            newNeumeElement.addAttribute(MeiAttribute('name', "Letter " + splitName.upper()))
-        else:
-            newNeumeElement.addAttribute(MeiAttribute('name', splitName))
+    def getMEIContent(self):
+        """Extract zones and neumes from the source file"""
 
-        zoneID = generate_MEI_ID()
-        newNeumeElement.addAttribute(MeiAttribute('facs', zoneID))
-        zones.append(Zone(zoneID, startX, startY, endX, endY))
+        # Load the Gamera glyphs
+        glyphList = xmlDict.ConvertXmlToDict(self.xmlFile)['gamera-database']['glyphs']['glyph']
+        #except indexerror for "not a gameraXML file"
 
-    # Allow garbage collection of the original Gamera glyphs
-    glyphList = None
+        neumeElements = []
+        zones = []
 
-    zoneElements = []
+        for curGlyph in glyphList:
+            startX = int(curGlyph['ulx'])
+            endX = int(curGlyph['ulx']) + int(curGlyph['ncols'])
 
-    for zone in sortZones(zones, xmlFile, dumpVisualization=False):
-        newZoneElement = MeiElement('zone')
-        zoneElements.append(newZoneElement)
+            startY = int(curGlyph['uly'])
+            endY = int(curGlyph['uly']) + int(curGlyph['nrows'])
 
-        newZoneElement.id = zone.id
-        newZoneElement.addAttribute(MeiAttribute('ulx', str(zone.startX)))
-        newZoneElement.addAttribute(MeiAttribute('uly', str(zone.startY)))
-        newZoneElement.addAttribute(MeiAttribute('lrx', str(zone.endX)))
-        newZoneElement.addAttribute(MeiAttribute('lry', str(zone.endY)))
+            newNeumeElement = MeiElement('neume')
+            neumeElements.append(newNeumeElement)
 
-    return zoneElements, neumeElements
+            newNeumeElement.id = generate_MEI_ID()
+            curNeumeName = curGlyph['ids']['id']['name']
+            splitName = curNeumeName[curNeumeName.find(".") + 1:]
+            if(splitName in self.neumeNames):
+                newNeumeElement.addAttribute(MeiAttribute('name', self.neumeNames[splitName]))
+            elif len(splitName) < 3:
+                newNeumeElement.addAttribute(MeiAttribute('name', "Letter " + splitName.upper()))
+            else:
+                newNeumeElement.addAttribute(MeiAttribute('name', splitName))
+
+            zoneID = generate_MEI_ID()
+            newNeumeElement.addAttribute(MeiAttribute('facs', zoneID))
+            zones.append(Zone(zoneID, startX, startY, endX, endY))
+
+        # Allow garbage collection of the original Gamera glyphs
+        glyphList = None
+
+        zoneElements = []
+
+        for zone in self._sortZones(zones, dumpVisualization=False):
+            newZoneElement = MeiElement('zone')
+            zoneElements.append(newZoneElement)
+
+            newZoneElement.id = zone.id
+            newZoneElement.addAttribute(MeiAttribute('ulx', str(zone.startX)))
+            newZoneElement.addAttribute(MeiAttribute('uly', str(zone.startY)))
+            newZoneElement.addAttribute(MeiAttribute('lrx', str(zone.endX)))
+            newZoneElement.addAttribute(MeiAttribute('lry', str(zone.endY)))
+
+        return zoneElements, neumeElements
+
+    def _initMEI(self):
+        """Initialize a new MEI document
+
+        Sets the attributes meiDoc, surface, and initLayer
+        """
+
+        self.meiDoc = MeiDocument()
+
+        root = MeiElement("mei")
+        root.id = generate_MEI_ID()
+        self.meiDoc.root = root
+
+        #needs meiHead here
+        meiHead = MeiElement('meiHead')
+        fileDesc = MeiElement('fileDesc')
+        titleStmt = MeiElement('titleStmt')
+        title = MeiElement('title')
+        pubStmt = MeiElement('pubStmt')
+        date = MeiElement('date')
+        encodingDesc = MeiElement('encodingDesc')
+        projectDesc = MeiElement('projectDesc')
+        p = MeiElement('p')
+
+        music = MeiElement('music')
+        facsimile = MeiElement('facsimile')
+
+        self.surface = MeiElement('surface')
+
+        #systems get added to page
+        #neumes get added to systems
+
+        body = MeiElement('body')
+        mdiv = MeiElement('mdiv')
+        pages = MeiElement('pages')
+        page = MeiElement('page')
+        page.id = generate_MEI_ID()
+
+        initSystem = MeiElement('system')
+        initSystem.id = generate_MEI_ID()
+
+        initStaff = MeiElement('staff')
+        initStaff.id = generate_MEI_ID()
+
+        self.initLayer = MeiElement('layer')
+        self.initLayer.id = generate_MEI_ID()
+
+        root.addChild(meiHead)
+        meiHead.addChild(fileDesc)
+        fileDesc.addChild(titleStmt)
+        titleStmt.addChild(title)
+        fileDesc.addChild(pubStmt)
+        pubStmt.addChild(date)
+        meiHead.addChild(encodingDesc)
+        encodingDesc.addChild(projectDesc)
+        projectDesc.addChild(p)
+
+        root.addChild(music)
+        music.addChild(facsimile)
+        facsimile.addChild(self.surface)
+        music.addChild(body)
+        body.addChild(mdiv)
+        mdiv.addChild(pages)
+        pages.addChild(page)
+        page.addChild(initSystem)
+        initSystem.addChild(initStaff)
+        initStaff.addChild(self.initLayer)
+
+    def _sortZones(self, zones, dumpVisualization=False):
+        # Sort zones by their center point
+        zones.sort(key=lambda a: a.centerY)
+
+        # Get the total distance between the center points of every adjacent pair of zones
+        totalCenterGaps = 0
+
+        for i in xrange(len(zones) - 2, -1, -2):
+            totalCenterGaps += zones[i + 1].centerY - zones[i].centerY
+
+        averageGap = float(totalCenterGaps) / (len(zones) - 1)
+        logging.debug('average gap is %s', averageGap)
+
+        clusters = []
+
+        # Build initial clusters of overlapping zones
+        for zone in reversed(zones):
+            if not clusters:
+                clusters.append(ZoneCluster([zone]))
+                continue
+
+            # Iterate through all existing clusters to find an one which overlaps
+            # the zone, to within a tolerance of the average gap
+            for cluster in reversed(clusters):
+                if overlaps(zone, cluster, averageGap):
+                    cluster.addZone(zone)
+                    break
+
+            # If no existing cluster overlapped, initialize a new cluster
+            else:
+                clusters.append(ZoneCluster([zone]))
+
+        logging.debug('initially found %s clusters. consolidating...', len(clusters))
+
+        if dumpVisualization:
+            initialClusters = dict()
+            for i in range(len(clusters)):
+                initialClusters.update((zone, i+1) for zone in clusters[i].zones)
+
+        # Consolidate overlapping clusters
+        for i in xrange(len(clusters) - 1):
+            clusterA = clusters[i]
+
+            # If we've removed this cluster, skip it
+            if not clusterA:
+                continue
+
+            for j in xrange(i + 1, len(clusters)):
+                clusterB = clusters[j]
+
+                # If we haven't already removed cluster B and it overlaps cluster A,
+                # copy its zones into cluster A and then remove it
+                # FIXME: should this use averageGap as a tolerance threshold?
+                if clusterB and overlaps(clusterA, clusterB):
+                    clusterA.extendWithZones(clusterB)
+                    clusters[j] = None
+
+        # Sort clusters by their upper y value and sort the zones in each cluster
+        # by their upper left points
+        clusters = sorted((cluster for cluster in clusters if cluster), key=lambda c: c.startY)
+
+        logging.info('found %s zones which form %s clusters', len(zones), len(clusters))
+
+        for cluster in clusters:
+            cluster.zones = cluster.sortedZones()
+
+        if dumpVisualization:
+            # Dump an SVG representation of the zones and clusters to file
+            _dumpZoneVisualization(self.xmlFile, clusters, averageGap, initialClusters)
+
+        return itertools.chain(*(cluster.zones for cluster in clusters))
 
 
 class Zone:
@@ -98,79 +254,6 @@ class ZoneCluster:
         return sorted(self.zones, key=lambda z: z.startX)
 
 
-def sortZones(zones, xmlFile, dumpVisualization=False):
-    # Sort zones by their center point
-    zones.sort(key=lambda a: a.centerY)
-
-    # Get the total distance between the center points of every adjacent pair of zones
-    totalCenterGaps = 0
-
-    for i in xrange(len(zones) - 2, -1, -2):
-        totalCenterGaps += zones[i + 1].centerY - zones[i].centerY
-
-    averageGap = float(totalCenterGaps) / (len(zones) - 1)
-    logging.debug('average gap is %s', averageGap)
-
-    clusters = []
-
-    # Build initial clusters of overlapping zones
-    for zone in reversed(zones):
-        if not clusters:
-            clusters.append(ZoneCluster([zone]))
-            continue
-
-        # Iterate through all existing clusters to find an one which overlaps
-        # the zone, to within a tolerance of the average gap
-        for cluster in reversed(clusters):
-            if overlaps(zone, cluster, averageGap):
-                cluster.addZone(zone)
-                break
-
-        # If no existing cluster overlapped, initialize a new cluster
-        else:
-            clusters.append(ZoneCluster([zone]))
-
-    logging.debug('initially found %s clusters. consolidating...', len(clusters))
-
-    if dumpVisualization:
-        initialClusters = dict()
-        for i in range(len(clusters)):
-            initialClusters.update((zone, i+1) for zone in clusters[i].zones)
-
-    # Consolidate overlapping clusters
-    for i in xrange(len(clusters) - 1):
-        clusterA = clusters[i]
-
-        # If we've removed this cluster, skip it
-        if not clusterA:
-            continue
-
-        for j in xrange(i + 1, len(clusters)):
-            clusterB = clusters[j]
-
-            # If we haven't already removed cluster B and it overlaps cluster A,
-            # copy its zones into cluster A and then remove it
-            # FIXME: should this use averageGap as a tolerance threshold?
-            if clusterB and overlaps(clusterA, clusterB):
-                clusterA.extendWithZones(clusterB)
-                clusters[j] = None
-
-    # Sort clusters by their upper y value and sort the zones in each cluster
-    # by their upper left points
-    clusters = sorted((cluster for cluster in clusters if cluster), key=lambda c: c.startY)
-
-    logging.info('found %s zones which form %s clusters', len(zones), len(clusters))
-
-    for cluster in clusters:
-        cluster.zones = cluster.sortedZones()
-
-    if dumpVisualization:
-        # Dump an SVG representation of the zones and clusters to file
-        _dumpZoneVisualization(xmlFile, clusters, averageGap, initialClusters)
-
-    return itertools.chain(*(cluster.zones for cluster in clusters))
-
-
 def overlaps(regionA, regionB, tolerance=0):
     """overlaps(a, b[, tolerance]) => return true if two horizontal regions overlap
 
@@ -195,70 +278,6 @@ def isWithin(point, start, end):
     Return true if point falls within start and end
     """
     return point >= start and point <= end
-
-
-def init_MEI_document():
-    """Create a new MEI document. Return a tuple (meiDocument, surface, initialLayer).
-    """
-
-    meiDocOut = MeiDocument()
-
-    root = MeiElement("mei")
-    root.id = generate_MEI_ID()
-    meiDocOut.root = root
-
-    #needs meiHead here
-    meiHead = MeiElement('meiHead')
-    fileDesc = MeiElement('fileDesc')
-    titleStmt = MeiElement('titleStmt')
-    title = MeiElement('title')
-    pubStmt = MeiElement('pubStmt')
-    date = MeiElement('date')
-    encodingDesc = MeiElement('encodingDesc')
-    projectDesc = MeiElement('projectDesc')
-    p = MeiElement('p')
-
-    music = MeiElement('music')
-    facsimile = MeiElement('facsimile')
-    surface = MeiElement('surface')
-
-    #systems get added to page
-    #neumes get added to systems
-
-    body = MeiElement('body')
-    mdiv = MeiElement('mdiv')
-    pages = MeiElement('pages')
-    page = MeiElement('page')
-    page.id = generate_MEI_ID()
-    initSystem = MeiElement('system')
-    initSystem.id = generate_MEI_ID()
-    initStaff = MeiElement('staff')
-    initStaff.id = generate_MEI_ID()
-    initLayer = MeiElement('layer')
-    initLayer.id = generate_MEI_ID()
-
-    root.addChild(meiHead)
-    meiHead.addChild(fileDesc)
-    fileDesc.addChild(titleStmt)
-    titleStmt.addChild(title)
-    fileDesc.addChild(pubStmt)
-    pubStmt.addChild(date)
-    meiHead.addChild(encodingDesc)
-    encodingDesc.addChild(projectDesc)
-    projectDesc.addChild(p)
-
-    root.addChild(music)
-    music.addChild(facsimile)
-    facsimile.addChild(surface)
-    music.addChild(body)
-    body.addChild(mdiv)
-    mdiv.addChild(pages)
-    pages.addChild(page)
-    page.addChild(initSystem)
-    initSystem.addChild(initStaff)
-    initStaff.addChild(initLayer)
-
-    return meiDocOut, surface, initLayer
 
 
 def generate_MEI_ID():
@@ -333,6 +352,13 @@ def _dumpZoneVisualization(xmlFile, clusters, averageGap, initialClusters):
         f.write('\n</svg>')
 
 
+def loadNeumeNames(csvFile):
+    """Load neume names from a CSV file"""
+    with open(csvFile, mode='rU') as infile:
+        reader = csv.reader(infile)
+        return {rows[1]: rows[0] for rows in reader}
+
+
 def main():
     # usage = "%prog [options] input_directory output_directory data_output_directory"
     # parser = OptionParser(usage)
@@ -344,26 +370,16 @@ def main():
 
     logging.getLogger().setLevel(logging.INFO)
 
-    with open('ccnames.csv', mode='rU') as infile:
-        reader = csv.reader(infile)
-        neumeNames = {rows[1]:rows[0] for rows in reader}
+    neumeNames = loadNeumeNames('ccnames.csv')
 
     fileList = [f for f in os.listdir('.') if (os.path.isfile(f) and f.endswith('.xml'))]
     logging.info('Found files: %s', fileList)
 
     for xmlFile in fileList:
-        meiDocOut, surface, initLayer = init_MEI_document()
-
-        zones, neumes = processGamera(xmlFile, neumeNames)
-
-        for element in zones:
-            surface.addChild(element)
-
-        for element in neumes:
-            initLayer.addChild(element)
-
-        fileName = xmlFile[:-4]
-        XmlExport.meiDocumentToFile(meiDocOut, fileName+'.mei')
+        logging.info('processing file %s', xmlFile)
+        converter = GameraXMLConverter(xmlFile, xmlFile[:-4]+'.mei', neumeNames)
+        converter.processGamera()
+        converter.write()
 
 
 if __name__ == '__main__':
