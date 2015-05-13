@@ -2,7 +2,8 @@ from django.db import models
 from neumeeditor.models.image import Image
 from neumeeditor.models.name import Name
 from neumeeditor.models.style import Style
-from neumeeditor.models.fields.short_code_field import ShortCodeField
+from neumeeditor.models.fields.short_code_field import ShortCodeField, \
+    sanitize_short_code
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
@@ -41,3 +42,16 @@ def pre_glyph_delete(sender, instance, **kwargs):
     """
     Name.objects.filter(glyph=sender).delete()
     Image.objects.filter(glyph=sender).delete()
+
+def get_or_create_glyph(short_code):
+    """
+    Get or create a glyph with a particular short code.
+
+    :param short_code:
+    :return: (glyph, created)
+    """
+    processed_short_code = sanitize_short_code(short_code)
+    glyph, created = Glyph.objects.get_or_create(short_code=processed_short_code)
+    if (glyph.short_code != processed_short_code):
+        print short_code, processed_short_code, glyph.short_code
+    return glyph, created

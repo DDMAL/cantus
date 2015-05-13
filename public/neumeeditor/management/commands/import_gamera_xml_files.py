@@ -1,7 +1,7 @@
 import csv
 from django.core.management.base import BaseCommand
 from cantusdata.settings import BASE_DIR
-from neumeeditor.helpers.gamera_xml_importer import import_gamera_file
+from neumeeditor.helpers.importers.gamera_xml_importer import import_gamera_file
 
 
 class Command(BaseCommand):

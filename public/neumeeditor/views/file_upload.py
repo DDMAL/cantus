@@ -3,8 +3,8 @@ from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer, JSONPRenderer
-from neumeeditor.helpers.gamera_xml_importer import import_gamera_data
-from neumeeditor.helpers.mei_importer import import_mei_data
+from neumeeditor.helpers.importers.gamera_xml_importer import GameraXMLImporter
+from neumeeditor.helpers.importers.mei_importer import MeiImporter
 
 
 class GameraXMLUploadView(APIView):
@@ -14,9 +14,11 @@ class GameraXMLUploadView(APIView):
     def post(self, request, format=None):
         # Get a string of the file
         file_string = request.FILES['file'].read()
+        file_name = request.FILES['file'].name
         # Extract the data
+        importer = GameraXMLImporter(file_string, file_name)
         try:
-            import_gamera_data(file_string)
+            importer.import_data()
         except XMLSyntaxError:
             return Response(data={"error": "Error parsing GameraXML."},
                             status=500)
@@ -34,8 +36,9 @@ class MEIUploadView(APIView):
         file_string = request.FILES['file'].read()
         file_name = request.FILES['file'].name.split(".mei")[0]
         # Extract the data
+        importer = MeiImporter(file_string, file_name)
         try:
-            import_mei_data(file_string, file_name)
+            importer.import_data()
         except XMLSyntaxError:
             return Response(data={"error": "Error parsing MEI."},
                             status=500)

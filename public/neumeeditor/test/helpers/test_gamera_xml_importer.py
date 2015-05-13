@@ -1,16 +1,18 @@
 from lxml import etree
 from django.test import TestCase
 from cantusdata.settings import MEDIA_ROOT, BASE_DIR
-from neumeeditor.helpers.gamera_xml_importer import RunLengthImage, GameraXML, \
-    import_gamera_file, strip_neume_name
+from neumeeditor.helpers.gamera_xml import GameraXML
+from neumeeditor.helpers.importers.gamera_xml_importer import import_gamera_file
+from neumeeditor.helpers.string import strip_leading_characters
+from neumeeditor.helpers.run_length_image import RunLengthImage
 
 
 class NeumeNameStripperTestCase(TestCase):
     def test_does_begin(self):
-        self.assertEquals(strip_neume_name("neume.some.other.stuff"), "some.other.stuff")
+        self.assertEquals(strip_leading_characters("neume.some.other.stuff"), "some.other.stuff")
 
     def test_does_not_begin(self):
-        self.assertEquals(strip_neume_name("other.stuff"), "other.stuff")
+        self.assertEquals(strip_leading_characters("other.stuff"), "other.stuff")
 
 
 class GameraXMLImportTestCase(TestCase):

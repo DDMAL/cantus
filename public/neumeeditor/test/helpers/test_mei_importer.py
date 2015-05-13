@@ -1,8 +1,10 @@
 from lxml import etree
 from django.test import TestCase
 from cantusdata.settings import MEDIA_ROOT, BASE_DIR
-from neumeeditor.helpers.gamera_xml_importer import RunLengthImage, GameraXML, \
-    import_gamera_file, strip_neume_name
+from neumeeditor.helpers.gamera_xml import GameraXML
+from neumeeditor.helpers.importers.gamera_xml_importer import import_gamera_file
+from neumeeditor.helpers.string import strip_leading_characters
+from neumeeditor.helpers.run_length_image import RunLengthImage
 
 
 # class NeumeNameStripperTestCase(TestCase):
@@ -11,7 +13,8 @@ from neumeeditor.helpers.gamera_xml_importer import RunLengthImage, GameraXML, \
 #
 #     def test_does_not_begin(self):
 #         self.assertEquals(strip_neume_name("other.stuff"), "other.stuff")
-from neumeeditor.helpers.mei_importer import import_mei_file, Neume
+from neumeeditor.helpers.importers.mei_importer import import_mei_file
+from neumeeditor.helpers.bounding_box import BoundingBox
 
 
 class MEIImportTestCase(TestCase):
@@ -23,7 +26,7 @@ class NeumeTestCase(TestCase):
     neume = None
 
     def setUp(self):
-        self.neume = Neume()
+        self.neume = BoundingBox()
         self.neume.ulx = 4
         self.neume.uly = 3
         self.neume.lrx = 21
