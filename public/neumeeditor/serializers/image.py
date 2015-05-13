@@ -10,6 +10,12 @@ class ImageSerializer(serializers.HyperlinkedModelSerializer):
     glyph = serializers.HyperlinkedRelatedField(view_name='glyph-detail',
                                                 queryset=Glyph.objects.all())
     # thumbnail = serializers.ReadOnlyField()
+    # Positional information
+    folio_name = serializers.ReadOnlyField()
+    uxl = serializers.ReadOnlyField()
+    uly = serializers.ReadOnlyField()
+    width = serializers.ReadOnlyField()
+    height = serializers.ReadOnlyField()
 
     class Meta:
         model = Image
