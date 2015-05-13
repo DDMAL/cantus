@@ -20,7 +20,9 @@ def sanitize_short_code(input):
     # Turn spaces and dots into single dots
     new_code = re.sub(duplicate_spaces_and_dots, '.', input.strip().lower())
     # Filter out everything bad
-    return re.sub(unacceptable_chars, '', new_code)
+    new_code = replace_common_words(re.sub(unacceptable_chars, '', new_code))
+    # Duplicates once more
+    return re.sub(duplicate_spaces_and_dots, '.', new_code)
 
 def replace_common_words(input):
     # Neumes that we will shorten
