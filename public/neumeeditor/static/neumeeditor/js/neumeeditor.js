@@ -554,7 +554,7 @@
             {
                 return {
                     image_file: this.model.getAbsoluteImageFile(),
-                    thumbnail: this.model.getAbsoluteThumbnail()
+                    // thumbnail: this.model.getAbsoluteThumbnail()
                 };
             }
         });
@@ -1078,7 +1078,7 @@
             {
                 var json = this.model.toJSON();
                 json.image_file = this.model.getAbsoluteImageFile();
-                json.thumbnail = this.model.getAbsoluteThumbnail();
+                // json.thumbnail = this.model.getAbsoluteThumbnail();
                 console.log(json);
                 return json;
             },

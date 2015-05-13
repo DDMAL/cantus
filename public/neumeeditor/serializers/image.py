@@ -1,8 +1,6 @@
 from neumeeditor.models.image import Image
 from neumeeditor.models.glyph import Glyph
 from rest_framework import serializers
-from django.conf import settings
-import os
 
 
 class ImageSerializer(serializers.HyperlinkedModelSerializer):
@@ -11,11 +9,11 @@ class ImageSerializer(serializers.HyperlinkedModelSerializer):
     image_file = serializers.ImageField(allow_empty_file=False, use_url=False)
     glyph = serializers.HyperlinkedRelatedField(view_name='glyph-detail',
                                                 queryset=Glyph.objects.all())
-    thumbnail = serializers.ReadOnlyField()
+    # thumbnail = serializers.ReadOnlyField()
 
     class Meta:
         model = Image
-        fields = ('url', 'id', 'image_file', 'glyph', 'thumbnail')
+        # fields = ('url', 'id', 'image_file', 'glyph', 'thumbnail')
 
     # def retrieve_image_file(self, obj):
     #     request = self.context.get('request', None)

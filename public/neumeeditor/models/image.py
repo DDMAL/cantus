@@ -70,12 +70,13 @@ def get_thumbnail_dimensions(width, height):
     new_width = int(float(thumbnail_height) / float(height) * float(width))
     return new_width, thumbnail_height
 
+
 @receiver(pre_save, sender=Image)
-def generate_hash(sender, instance, **kwargs):
+def pre_image_save(sender, instance, **kwargs):
     if not instance.pk:  # file is new
         instance.set_md5()
 
-@receiver(post_save, sender=Image)
+#@receiver(post_save, sender=Image)
 def save_thumbnails(sender, instance, **kwargs):
     # Get the old file system root
     old_url = media_url_to_system_path(instance.image_file.url)
