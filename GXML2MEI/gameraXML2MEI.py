@@ -8,8 +8,6 @@ import xmlDict
 
 from pymei import MeiDocument, MeiElement, MeiAttribute, XmlExport
 
-#todo: have zone point to neume rather than vice versa
-
 
 class GameraXMLConverter:
     def __init__(self, xmlFile, meiFile, neumeNames):
