@@ -219,6 +219,39 @@ class GameraXMLConverter:
 
         return itertools.chain(*(cluster.zones for cluster in clusters))
 
+    def generateOverlaidImage(self, inputTiff, outputTiff):
+        """Output a TIFF with the zone bounding box overlaid over the neumes
+
+        Requires PIL to be installed
+        """
+        from PIL import Image
+
+        glyph_list = xmlDict.ConvertXmlToDict(self.xmlFile)['gamera-database']['glyphs']['glyph']
+        imageIn = Image.open(inputTiff)
+        imageOut = imageIn
+
+        for curGlyph in glyph_list:
+            redPixel = (255,0,0)
+            startX = int(curGlyph['ulx'])
+            startY = int(curGlyph['uly'])
+
+            width = int(curGlyph['ncols'])
+            height = int(curGlyph['nrows'])
+
+            for xPix in xrange(startX, startX+width):
+                imageOut.putpixel((xPix, startY), redPixel)
+
+            for xPix in xrange(startX, startX+width):
+                imageOut.putpixel((xPix, startY + height), redPixel)
+
+            for yPix in xrange(startY, startY+height):
+                imageOut.putpixel((startX, yPix), redPixel)
+
+            for yPix in xrange(startY, startY+height):
+                imageOut.putpixel((startX + width, yPix), redPixel)
+
+        imageOut.save(outputTiff)
+
 
 class Zone:
     def __init__(self, zoneId, startX, startY, endX, endY):
