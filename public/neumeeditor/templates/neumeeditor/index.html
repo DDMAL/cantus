@@ -76,7 +76,7 @@
 <div class="row">
     <form action="#">
         <div class="form-group">
-            <div class="col-sm-10">
+            <div class="col-sm-9">
                 <input name="string" class="form-control" placeholder="Name">
             </div>
             <div class="col-sm-2">
@@ -179,6 +179,28 @@
         <div class="panel-body">
             <img src="<%= thumbnail %>" class="glyph-list-image thumbnail img-responsive"/>
         </div>
+        <table class="table">
+            <tr>
+                <th>File:</th>
+                <td><%= folio_name %></td>
+            </tr>
+            <tr>
+                <th>ulx:</th>
+                <td><%= ulx %></td>
+            </tr>
+            <tr>
+                <th>uly:</th>
+                <td><%= uly %></td>
+            </tr>
+            <tr>
+                <th>width:</th>
+                <td><%= width %></td>
+            </tr>
+            <tr>
+                <th>height:</th>
+                <td><%= height %></td>
+            </tr>
+        </table>
         <div class="panel-footer">
             <button name="delete" class="btn btn-danger" type="button">Delete</button>
         </div>
@@ -196,7 +218,7 @@
 <script type="text/template" id="edit-single-name-template">
 <div class="row">
     <form class="form-horizontal" action="#">
-        <div class="col-sm-8">
+        <div class="col-sm-7">
             <div class="form-group">
 
                 <input name="string" class="form-control" placeholder="Name" value="<%= string %>">
