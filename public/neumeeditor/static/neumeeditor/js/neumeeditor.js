@@ -136,7 +136,12 @@
         defaults: {
             image_file: "",
             glyph: 0,
-            thumbnail: ""
+            thumbnail: "",
+            ulx: 0,
+            uly: 0,
+            width: 0,
+            height: 0,
+            folio_name: ""
         },
 
         initialize: function(options)
@@ -548,9 +553,8 @@
             serializeData: function()
             {
                 return {
-                    "image_file": this.model.getAbsoluteImageFile(),
-                    "thumbnail": this.model.getAbsoluteThumbnail()
-                    // "image_file_absolute": this.model.getAbsoluteImageFile()
+                    image_file: this.model.getAbsoluteImageFile(),
+                    thumbnail: this.model.getAbsoluteThumbnail()
                 };
             }
         });
@@ -1072,10 +1076,11 @@
 
             serializeData: function()
             {
-                return {
-                    "image_file": this.model.getAbsoluteImageFile(),
-                    "thumbnail": this.model.getAbsoluteThumbnail()
-                };
+                var json = this.model.toJSON();
+                json.image_file = this.model.getAbsoluteImageFile();
+                json.thumbnail = this.model.getAbsoluteThumbnail();
+                console.log(json);
+                return json;
             },
 
             destroyModel: function()

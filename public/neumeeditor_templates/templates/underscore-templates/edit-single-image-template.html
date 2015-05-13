@@ -3,6 +3,28 @@
         <div class="panel-body">
             <img src="<%= thumbnail %>" class="glyph-list-image thumbnail img-responsive"/>
         </div>
+        <table class="table">
+            <tr>
+                <th>File:</th>
+                <td><%= folio_name %></td>
+            </tr>
+            <tr>
+                <th>ulx:</th>
+                <td><%= ulx %></td>
+            </tr>
+            <tr>
+                <th>uly:</th>
+                <td><%= uly %></td>
+            </tr>
+            <tr>
+                <th>width:</th>
+                <td><%= width %></td>
+            </tr>
+            <tr>
+                <th>height:</th>
+                <td><%= height %></td>
+            </tr>
+        </table>
         <div class="panel-footer">
             <button name="delete" class="btn btn-danger" type="button">Delete</button>
         </div>

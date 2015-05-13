@@ -24,6 +24,12 @@ class Image(models.Model):
                                    storage=MediaFileSystemStorage())
     glyph = models.ForeignKey("neumeeditor.Glyph", null=True)
     md5sum = models.CharField(null=True, blank=True, max_length=36)
+    # Positional fields
+    folio_name = models.CharField(null=True, blank=True, max_length=64)
+    ulx = models.PositiveIntegerField(blank=True)
+    uly = models.PositiveIntegerField(blank=True)
+    width = models.PositiveIntegerField(blank=True)
+    height = models.PositiveIntegerField(blank=True)
 
     @property
     def thumbnail(self):
