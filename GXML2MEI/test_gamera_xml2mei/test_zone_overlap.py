@@ -3,7 +3,7 @@ import unittest
 from gameraXML2MEI import Zone, ZoneCluster, overlaps
 
 
-class ZoneClusteringTest (unittest.TestCase):
+class ZoneOverlapTest (unittest.TestCase):
     def setUp(self):
         self.zones = [
             Zone('1', 0,  0,  10, 5), # <-- no overlap with zone 2
