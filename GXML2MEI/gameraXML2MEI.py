@@ -407,6 +407,10 @@ def main():
     neumeNames = loadNeumeNames('ccnames.csv')
 
     fileList = [f for f in os.listdir(args.input_directory) if (os.path.isfile(f) and f.endswith('.xml'))]
+    if not fileList:
+        logging.warn('Did not find any files in %s', args.input_directory)
+        return
+
     logging.debug('Found files: %s', fileList)
 
     for relativeFile in fileList:
