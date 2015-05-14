@@ -173,6 +173,22 @@
         getAbsoluteThumbnail: function()
         {
             return STATIC_URL + this.get("thumbnail");
+        },
+
+        getCantusUrl: function()
+        {
+            if (this.get("folio_name") === "")
+            {
+                // Handle empty case
+                return "";
+            }
+            else
+            {
+                // Get the folio code
+                var folio = this.get("folio_name").split("_")[1];
+                return "http://cantus.simssa.ca/manuscript/127/?folio=" + folio
+                    + "#z=5&n=5&y=" + this.get("uly") + "&x=" + this.get("ulx");
+            }
         }
     });
 
@@ -1194,6 +1210,7 @@
             {
                 var json = this.model.toJSON();
                 json.image_file = this.model.getAbsoluteImageFile();
+                json.cantus_url = this.model.getCantusUrl();
                 // json.thumbnail = this.model.getAbsoluteThumbnail();
                 console.log(json);
                 return json;
