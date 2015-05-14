@@ -1,1 +1,2 @@
 from test_gamera_xml2mei.test_zone_overlap import ZoneOverlapTest
+from test_gamera_xml2mei.test_cluster_detection import ClusterDetectionTest
