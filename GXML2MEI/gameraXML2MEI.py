@@ -109,6 +109,11 @@ class GameraXMLConverter:
 
         self.surface = MeiElement('surface')
 
+        # Label the surface with the name of the input file, which could help
+        # identify the original image
+        label = os.path.basename(os.path.splitext(self.xmlFile)[0])
+        self.surface.addAttribute(MeiAttribute('label', label))
+
         #systems get added to page
         #neumes get added to systems
 
