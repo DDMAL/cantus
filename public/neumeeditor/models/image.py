@@ -26,10 +26,10 @@ class Image(models.Model):
     md5sum = models.CharField(null=True, blank=True, max_length=36)
     # Positional fields
     folio_name = models.CharField(null=True, blank=True, max_length=64)
-    ulx = models.PositiveIntegerField(blank=True)
-    uly = models.PositiveIntegerField(blank=True)
-    width = models.PositiveIntegerField(blank=True)
-    height = models.PositiveIntegerField(blank=True)
+    ulx = models.PositiveIntegerField(null=True, blank=True)
+    uly = models.PositiveIntegerField(null=True, blank=True)
+    width = models.PositiveIntegerField(null=True, blank=True)
+    height = models.PositiveIntegerField(null=True, blank=True)
 
     @property
     def thumbnail(self):
