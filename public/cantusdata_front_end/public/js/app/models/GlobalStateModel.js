@@ -35,6 +35,8 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler", "objects/OpenChan
             setChant: function(chant)
             {
                 this.chant = chant;
+            },
+
             /**
              * Set the title of the HTML document.
              *
