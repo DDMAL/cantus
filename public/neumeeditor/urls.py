@@ -8,7 +8,8 @@ from neumeeditor.views.main import neumeeditor_home, neumeeditor_api_root
 from neumeeditor.views.name import NameList, NameDetail
 from neumeeditor.views.name_nomenclature_membership import \
     NameNomenclatureMembershipList, NameNomenclatureMembershipDetail, NameNomenclatureMembershipListForGlyph
-from neumeeditor.views.nomenclature import NomenclatureDetail, NomenclatureList
+from neumeeditor.views.nomenclature import NomenclatureDetail, NomenclatureList, \
+    NomenclatureNames
 from neumeeditor.views.style import StyleList, StyleDetail
 from neumeeditor.views.user import UserList, UserDetail
 from rest_framework.urlpatterns import format_suffix_patterns
@@ -51,6 +52,8 @@ urlpatterns += format_suffix_patterns(
             name="nomenclature-list"),
         url(r'^nomenclature/(?P<pk>[0-9]+)/$',
             NomenclatureDetail.as_view(), name="nomenclature-detail"),
+        url(r'^nomenclature/(?P<pk>[0-9]+)/names/$',
+            NomenclatureNames.as_view(), name="nomenclature-names"),
 
         url(r'^name-nomenclature-memberships/$',
             NameNomenclatureMembershipList.as_view(),

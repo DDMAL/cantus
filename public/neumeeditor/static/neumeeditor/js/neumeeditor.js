@@ -62,7 +62,8 @@
         routes : {
             "neumeeditor/" : "openGlyphList",
             "neumeeditor/glyph/:id/" : "openGlyphEditor",
-            "neumeeditor/nomenclatures/" : "openNomenclatureList"
+            "neumeeditor/nomenclatures/" : "openNomenclatureList",
+            "neumeeditor/nomenclature/:id/": "openNomenclatureEdit"
         },
 
         openGlyphList: function()
@@ -83,6 +84,13 @@
             // Start the nomenclature list module
             App.module("NomenclatureList").start();
         },
+
+        openNomenclatureEdit: function(id)
+        {
+            App.module("NomenclatureEdit").start();
+            App.module("NomenclatureEdit").initializeId(id);
+        },
+
 
         routeToPage: function(url)
         {
@@ -173,6 +181,7 @@
         url: SITE_URL + "names/",
 
         defaults: {
+            id: 0,
             string: ""
         },
 
@@ -207,15 +216,13 @@
         urlRoot: SITE_URL + "nomenclature/",
 
         defaults: {
+            id: 0,
             nomenclature_name: ""
         },
 
         initialize: function(options)
         {
-            if (options !== undefined && options.url !== undefined)
-            {
-                this.url = String(options.url);
-            }
+            this.url = String(options.url);
         }
     });
 
@@ -417,6 +424,112 @@
         this.startWithParent = false;
     });
 
+    App.module("NomenclatureEdit", function(NomenclatureEdit, App, Backbone, Marionette, $, _){
+
+        var NomenclatureItemView = Backbone.Marionette.ItemView.extend({
+            template: "#edit-nomenclature-template",
+
+            modelEvents: {
+                sync: "render"
+            },
+
+            onRender: function()
+            {
+                console.log(this.model.toJSON());
+            }
+        });
+
+        /**
+         * A particular name.
+         */
+        var NameItemView = Backbone.Marionette.ItemView.extend({
+            template: "#nomenclature-name-list-name-template",
+            tagName: "tr",
+
+            ui: {
+                neumeButton: ".neume-button"
+            },
+
+            events: {
+                "click @ui.neumeButton": "onNeumeButtonClick"
+            },
+
+            onNeumeButtonClick: function(event)
+            {
+                event.preventDefault();
+                AppRouter.routeToPage(this.model.get("glyph"));
+            }
+        });
+
+        /**
+         * The list of names in the nomenclature.
+         */
+        var NameCompositeView = Backbone.Marionette.CompositeView.extend({
+            childView: NameItemView,
+            //tagName: "table class='table'",
+
+            childViewContainer: "tbody",
+            template: "#nomenclature-name-list-template"
+
+        });
+
+        var AppLayoutView = Backbone.Marionette.LayoutView.extend({
+
+            template: "#nomenclature-edit-template",
+
+            nameCollection: undefined,
+            nomenclature: undefined,
+            nomenclatureId: undefined,
+
+            regions: {
+                nameListRegion: ".name-list-region",
+                nomenclatureRegion: ".nomenclature-region"
+            },
+
+            initialize: function(options)
+            {
+                // Save the nomenclature
+                this.nomenclature = options.nomenclature;
+                this.nomenclatureId = options.id;
+                // Get the names
+                this.nameCollection = new NameCollection();
+                this.nameCollection.url = SITE_URL + "nomenclature/" + this.nomenclatureId + "/names/";
+                // Fetch the names
+                this.nameCollection.fetch();
+            },
+
+            onShow: function()
+            {
+                // Show the nomenclature
+                this.nomenclatureRegion.show(new NomenclatureItemView({model: this.nomenclature}));
+                // Show the names
+                this.nameListRegion.show(new NameCompositeView({collection: this.nameCollection}));
+            }
+        });
+
+        /*
+         ------------------------------------------------------
+         Execution Code
+         ------------------------------------------------------
+         */
+
+        this.initializeId = function(id)
+        {
+            var nomenclatureId = parseInt(id);
+            var nomenclature = new Nomenclature({url: "/neumeeditor/nomenclature/" + nomenclatureId + "/"});
+            console.log(nomenclature.toJSON());
+
+            // The main module
+            var editor = new AppLayoutView({
+                nomenclature: nomenclature,
+                id: nomenclatureId
+            });
+            App.container.show(editor);
+            nomenclature.fetch();
+        };
+
+    });
+
     App.module("NomenclatureList", function(NomenclatureList, App, Backbone, Marionette, $, _){
         this.startWithParent = false;
 
@@ -429,21 +542,24 @@
             tagName: "tr",
 
             ui: {
-                "deleteButton": 'button[name="delete"]'
+                viewNamesButton: '.neume-button',
+                deleteButton: 'button[name="delete"]'
             },
 
             events: {
+                "click @ui.viewNamesButton": "onClickViewNames",
                 "click @ui.deleteButton": "destroyModel"
+            },
+
+            onClickViewNames: function(event)
+            {
+                event.preventDefault();
+                AppRouter.routeToPage(this.model.get("url"));
             },
 
             destroyModel: function()
             {
-                this.model.destroy(
-                    {
-                        success: function(){
-                            console.log("It worked.");
-                        }
-                    });
+                this.model.destroy();
             }
         });
 
@@ -1437,8 +1553,6 @@
                 App.container.show(editor);
             }});
         };
-
-
     });
     App.start();
 
