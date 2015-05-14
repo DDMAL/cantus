@@ -181,7 +181,7 @@
         url: SITE_URL + "names/",
 
         defaults: {
-            id: 0,
+            id: undefined,
             string: ""
         },
 
@@ -216,7 +216,7 @@
         urlRoot: SITE_URL + "nomenclature/",
 
         defaults: {
-            id: 0,
+            id: undefined,
             nomenclature_name: ""
         },
 
