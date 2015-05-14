@@ -1,7 +1,8 @@
-import os
+import os, os.path
 import itertools
 import csv
 import logging
+import argparse
 
 from uuid import uuid4
 import xmlDict
@@ -17,8 +18,8 @@ class GameraXMLConverter:
 
         self._initMEI()
 
-    def processGamera(self):
-        zones, neumes = self.getMEIContent()
+    def processGamera(self, dumpVisualization=False):
+        zones, neumes = self.getMEIContent(dumpVisualization=dumpVisualization)
 
         for element in zones:
             self.surface.addChild(element)
@@ -29,7 +30,7 @@ class GameraXMLConverter:
     def write(self):
         XmlExport.meiDocumentToFile(self.meiDoc, self.meiFile)
 
-    def getMEIContent(self):
+    def getMEIContent(self, dumpVisualization=False):
         """Extract zones and neumes from the source file"""
 
         # Load the Gamera glyphs
@@ -68,7 +69,7 @@ class GameraXMLConverter:
 
         zoneElements = []
 
-        for zone in self._sortZones(zones, dumpVisualization=False):
+        for zone in self._sortZones(zones, dumpVisualization=dumpVisualization):
             newZoneElement = MeiElement('zone')
             zoneElements.append(newZoneElement)
 
@@ -215,7 +216,7 @@ class GameraXMLConverter:
 
         if dumpVisualization:
             # Dump an SVG representation of the zones and clusters to file
-            _dumpZoneVisualization(self.xmlFile, clusters, averageGap, initialClusters)
+            self.dumpZoneVisualization(clusters, averageGap, initialClusters)
 
         return itertools.chain(*(cluster.zones for cluster in clusters))
 
@@ -251,6 +252,72 @@ class GameraXMLConverter:
                 imageOut.putpixel((startX + width, yPix), redPixel)
 
         imageOut.save(outputTiff)
+
+    def dumpZoneVisualization(self, clusters, averageGap, initialClusters):
+        """Output an (ugly) SVG file showing the relation between zones and clusters
+        """
+
+        outPath, filename = os.path.split(self.meiFile)
+        dumpFile = os.path.join(outPath, os.path.splitext(filename)[0] + '_clusters.svg')
+
+        height = max(cluster.endY for cluster in clusters)
+        width = max(max(zone.endX for zone in cluster.zones) for cluster in clusters)
+
+        with open(dumpFile, 'w') as f:
+            f.write('''\
+<?xml version="1.0" standalone="yes"?>
+<svg viewBox="0 0 {width} {height}" version="1.1"
+     xmlns="http://www.w3.org/2000/svg">'''.format(height=height, width=width))
+
+            f.write('<!-- Clusters -->\n')
+
+            clusterIndex = 1
+            for cluster in clusters:
+                f.write('  <rect x="0" y="{startY}" height="{yDelta}" width="{width}" '
+                        'stroke-width="5" stroke="blue" fill="gainsboro" title="Cluster {idx}"/>\n'
+                        .format(startY=cluster.startY, yDelta=cluster.endY - cluster.startY, width=width, idx=clusterIndex))
+
+                clusterIndex += 1
+
+            f.write('<!-- Zones -->\n')
+
+            clusterIndex = zoneIndex = 1
+            for cluster in clusters:
+                for zone in cluster.zones:
+                    # Draw the actual zone
+                    zoneHeight = zone.endY-zone.startY
+                    zoneWidth = zone.endX-zone.startX
+
+                    f.write('  <rect x="{startX}" y="{startY}" width="{width}" '
+                            'height="{height}" stroke-width="3" stroke="black" '
+                            'fill="yellow" title="Zone {idx}, initial cluster {initialCluster}, ID {id}"/>\n'
+                            .format(idx=zoneIndex, initialCluster=initialClusters[zone], id=zone.id, startX=zone.startX, startY=zone.startY,
+                                    width=zoneWidth, height=zoneHeight))
+
+                    # Draw the midpoint and bars representing the average gap
+                    centerX = zone.startX + (zone.endX - zone.startX) / 2
+                    centerY = zone.centerY
+
+                    # Find a tolerable radius for the midpoint
+                    radius = max(min(zoneHeight, zoneWidth) / 5, 3)
+
+                    f.write('  <circle cx="{centerX}" cy="{centerY}" r="{radius}" fill="black" />\n'
+                            .format(centerX=centerX, centerY=centerY, radius=radius))
+
+                    f.write('  <path d="M {centerX}, {startY} v -{averageGap} '
+                            'h {barLen} h -{barLenTimes2}" stroke-width="3" '
+                            'stroke="black" fill="none" />\n'
+                            .format(centerX=centerX, startY=zone.startY, averageGap=averageGap, barLen=zoneWidth/2, barLenTimes2=zoneWidth))
+                    f.write('  <path d="M {centerX}, {endY} v {averageGap} '
+                            'h {barLen} h -{barLenTimes2}" stroke-width="3" '
+                            'stroke="black" fill="none" />\n'
+                            .format(centerX=centerX, endY=zone.endY, averageGap=averageGap, barLen=zoneWidth/2, barLenTimes2=zoneWidth))
+
+                    zoneIndex += 1
+
+                clusterIndex += 1
+
+            f.write('\n</svg>')
 
 
 class Zone:
@@ -315,74 +382,6 @@ def generate_MEI_ID():
     return 'm-' + str(uuid4())
 
 
-def _dumpZoneVisualization(xmlFile, clusters, averageGap, initialClusters):
-    '''Output an (ugly) SVG file showing the relation between zones and clusters
-    '''
-
-    filename = 'dump_'+xmlFile+'.svg'
-
-    height = max(cluster.endY for cluster in clusters)
-    width = max(max(zone.endX for zone in cluster.zones) for cluster in clusters)
-
-    with open(filename, 'w') as f:
-        f.write('''\
-<?xml version="1.0" standalone="yes"?>
-<svg viewBox="0 0 {width} {height}" version="1.1"
-     xmlns="http://www.w3.org/2000/svg">
-'''.format(height=height, width=width))
-
-        f.write('<!-- Clusters -->\n')
-
-        clusterIndex = 1
-        for cluster in clusters:
-            f.write('  <rect x="0" y="{startY}" height="{yDelta}" width="{width}" '
-                    'stroke-width="5" stroke="blue" fill="gainsboro" title="Cluster {idx}"/>\n'
-                    .format(startY=cluster.startY, yDelta=cluster.endY - cluster.startY, width=width, idx=clusterIndex))
-
-            clusterIndex += 1
-
-        f.write('<!-- Zones -->\n')
-
-        clusterIndex = zoneIndex = 1
-        for cluster in clusters:
-            for zone in cluster.zones:
-                # Draw the actual zone
-                zoneHeight = zone.endY-zone.startY
-                zoneWidth = zone.endX-zone.startX
-
-                f.write('  <rect x="{startX}" y="{startY}" width="{width}" '
-                        'height="{height}" stroke-width="3" stroke="black" '
-                        'fill="yellow" title="Zone {idx}, initial cluster {initialCluster}, ID {id}"/>\n'
-                        .format(idx=zoneIndex, initialCluster=initialClusters[zone], id=zone.id, startX=zone.startX, startY=zone.startY,
-                                width=zoneWidth, height=zoneHeight))
-
-                # Draw the midpoint and bars representing the average gap
-                centerX = zone.startX + (zone.endX - zone.startX) / 2
-                centerY = zone.centerY
-
-                # Find a tolerable radius for the midpoint
-                radius = max(min(zoneHeight, zoneWidth) / 5, 3)
-
-                f.write('  <circle cx="{centerX}" cy="{centerY}" r="{radius}" fill="black" />\n'
-                        .format(centerX=centerX, centerY=centerY, radius=radius))
-
-                f.write('  <path d="M {centerX}, {startY} v -{averageGap} '
-                        'h {barLen} h -{barLenTimes2}" stroke-width="3" '
-                        'stroke="black" fill="none" />\n'
-                        .format(centerX=centerX, startY=zone.startY, averageGap=averageGap, barLen=zoneWidth/2, barLenTimes2=zoneWidth))
-                f.write('  <path d="M {centerX}, {endY} v {averageGap} '
-                        'h {barLen} h -{barLenTimes2}" stroke-width="3" '
-                        'stroke="black" fill="none" />\n'
-                        .format(centerX=centerX, endY=zone.endY, averageGap=averageGap, barLen=zoneWidth/2, barLenTimes2=zoneWidth))
-
-                zoneIndex += 1
-
-            clusterIndex += 1
-
-
-        f.write('\n</svg>')
-
-
 def loadNeumeNames(csvFile):
     """Load neume names from a CSV file"""
     with open(csvFile, mode='rU') as infile:
@@ -391,26 +390,50 @@ def loadNeumeNames(csvFile):
 
 
 def main():
-    # usage = "%prog [options] input_directory output_directory data_output_directory"
-    # parser = OptionParser(usage)
-    # options, args = parser.parse_args()
-    #
-    # if len(args) < 1:
-    #     print("You must specify an input directory.")
-    #     sys.exit(-1)
+    args = parseCommandLineArguments()
 
-    logging.getLogger().setLevel(logging.INFO)
+    logging.getLogger().setLevel(logging.DEBUG if args.verbose else logging.INFO)
 
     neumeNames = loadNeumeNames('ccnames.csv')
 
-    fileList = [f for f in os.listdir('.') if (os.path.isfile(f) and f.endswith('.xml'))]
-    logging.info('Found files: %s', fileList)
+    fileList = [f for f in os.listdir(args.input_directory) if (os.path.isfile(f) and f.endswith('.xml'))]
+    logging.debug('Found files: %s', fileList)
 
-    for xmlFile in fileList:
-        logging.info('processing file %s', xmlFile)
-        converter = GameraXMLConverter(xmlFile, xmlFile[:-4]+'.mei', neumeNames)
-        converter.processGamera()
+    for relativeFile in fileList:
+        logging.info('processing file %s', relativeFile)
+
+        inFile = os.path.join(args.input_directory, relativeFile)
+        outFile = os.path.join(args.output_directory, os.path.splitext(relativeFile)[0] + '.mei')
+
+        converter = GameraXMLConverter(inFile, outFile, neumeNames)
+
+        if args.dump_zone_overlay:
+            converter.generateOverlaidImage(args.dump_zone_overlay[0], args.dump_zone_overlay[1])
+
+        converter.processGamera(dumpVisualization=args.dump_zone_clusters)
+
         converter.write()
+
+
+def parseCommandLineArguments(args=None):
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('input_directory', nargs='?', help='directory with the input (defaults to working directory)',
+                        default='.')
+
+    parser.add_argument('output_directory', nargs='?', help='directory for the output (defaults to working directory)',
+                        default='.')
+
+    parser.add_argument('-v', '--verbose', action='store_true', help='increase the verbosity')
+
+    parser.add_argument('--dump-zone-clusters', action='store_true',
+                        help='write a visualization of the zone clusters to file')
+
+    parser.add_argument('--dump-zone-overlay', nargs=2, metavar='TIFF',
+                        help='create a copy of the TIFF image with the zones overlaid')
+
+    # Parse the arguments, defaulting to parsing from sys.argv
+    return parser.parse_args(args)
 
 
 if __name__ == '__main__':
