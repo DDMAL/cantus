@@ -16,6 +16,8 @@ class GameraXMLConverter:
         self.meiFile = meiFile
         self.neumeNames = neumeNames
 
+        self.conversionInfo = {}
+
         self._initMEI()
 
     def processGamera(self, dumpVisualization=False):
@@ -186,6 +188,7 @@ class GameraXMLConverter:
                 clusters.append(ZoneCluster([zone]))
 
         logging.debug('initially found %s clusters. consolidating...', len(clusters))
+        self.conversionInfo['initialClusters'] = len(clusters)
 
         if dumpVisualization:
             initialClusters = dict()
@@ -215,6 +218,8 @@ class GameraXMLConverter:
         clusters = sorted((cluster for cluster in clusters if cluster), key=lambda c: c.startY)
 
         logging.info('found %s zones which form %s clusters', len(zones), len(clusters))
+        self.conversionInfo['zones'] = len(zones)
+        self.conversionInfo['clusters'] = len(clusters)
 
         for cluster in clusters:
             cluster.zones = cluster.sortedZones()
