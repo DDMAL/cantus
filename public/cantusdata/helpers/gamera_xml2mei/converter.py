@@ -398,7 +398,7 @@ def loadNeumeNames(csvFile):
 def main(args):
     logging.getLogger().setLevel(logging.DEBUG if args.verbose else logging.INFO)
 
-    neumeNames = loadNeumeNames('ccnames.csv')
+    neumeNames = loadNeumeNames(os.path.join(os.path.dirname(__file__), 'ccnames.csv'))
 
     fileList = [f for f in os.listdir(args.input_directory)
                 if os.path.isfile(os.path.join(args.input_directory, f)) and f.endswith('.xml')]

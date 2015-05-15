@@ -6,7 +6,7 @@ import unittest
 import os
 import shutil
 
-from gameraXML2MEI import GameraXMLConverter
+from cantusdata.helpers.gamera_xml2mei.converter import GameraXMLConverter
 
 
 class ClusterDetectionTest (unittest.TestCase):

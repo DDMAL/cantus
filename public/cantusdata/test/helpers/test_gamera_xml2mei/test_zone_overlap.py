@@ -1,6 +1,6 @@
 import unittest
 
-from gameraXML2MEI import Zone, ZoneCluster, overlaps
+from cantusdata.helpers.gamera_xml2mei.converter import Zone, ZoneCluster, overlaps
 
 
 class ZoneOverlapTest (unittest.TestCase):
