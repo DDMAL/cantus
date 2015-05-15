@@ -395,9 +395,7 @@ def loadNeumeNames(csvFile):
         return {rows[1]: rows[0] for rows in reader}
 
 
-def main():
-    args = parseCommandLineArguments()
-
+def main(args):
     logging.getLogger().setLevel(logging.DEBUG if args.verbose else logging.INFO)
 
     neumeNames = loadNeumeNames('ccnames.csv')
@@ -427,9 +425,7 @@ def main():
         converter.write()
 
 
-def parseCommandLineArguments(args=None):
-    parser = argparse.ArgumentParser()
-
+def initializeArgumentParser(parser):
     parser.add_argument('input_directory', nargs='?', help='directory with the input (defaults to working directory)',
                         default='.')
 
@@ -444,9 +440,8 @@ def parseCommandLineArguments(args=None):
     parser.add_argument('--dump-zone-overlay', nargs=2, metavar='TIFF',
                         help='create a copy of the TIFF image with the zones overlaid')
 
-    # Parse the arguments, defaulting to parsing from sys.argv
-    return parser.parse_args(args)
+    return parser
 
 
 if __name__ == '__main__':
-    main()
+    main(args=initializeArgumentParser(argparse.ArgumentParser()).parse_args())
