@@ -5,7 +5,7 @@ import logging
 import argparse
 
 from uuid import uuid4
-import xmlDict
+from lxml import etree
 
 from pymei import MeiDocument, MeiElement, MeiAttribute, XmlExport
 
@@ -35,25 +35,25 @@ class GameraXMLConverter:
     def getMEIContent(self, dumpVisualization=False):
         """Extract zones and neumes from the source file"""
 
-        # Load the Gamera glyphs
-        glyphList = xmlDict.ConvertXmlToDict(self.xmlFile)['gamera-database']['glyphs']['glyph']
-        #except indexerror for "not a gameraXML file"
-
         neumeElements = []
         zones = []
 
-        for curGlyph in glyphList:
-            startX = int(curGlyph['ulx'])
-            endX = int(curGlyph['ulx']) + int(curGlyph['ncols'])
+        for elem in etree.parse(self.xmlFile).xpath('/gamera-database/glyphs/glyph'):
+            # Get the relevant attributes from the glyph element
+            startX = int(elem.get('ulx'))
+            endX = startX + int(elem.get('ncols'))
 
-            startY = int(curGlyph['uly'])
-            endY = int(curGlyph['uly']) + int(curGlyph['nrows'])
+            startY = int(elem.get('uly'))
+            endY = startY + int(elem.get('nrows'))
 
+            curNeumeName = elem.xpath('string(./ids/id/@name)')
+
+            # Create the MEI neume element
             newNeumeElement = MeiElement('neume')
             neumeElements.append(newNeumeElement)
 
             newNeumeElement.id = generate_MEI_ID()
-            curNeumeName = curGlyph['ids']['id']['name']
+
             splitName = curNeumeName[curNeumeName.find(".") + 1:]
             if(splitName in self.neumeNames):
                 newNeumeElement.addAttribute(MeiAttribute('name', self.neumeNames[splitName]))
@@ -65,9 +65,6 @@ class GameraXMLConverter:
             zoneID = generate_MEI_ID()
             newNeumeElement.addAttribute(MeiAttribute('facs', zoneID))
             zones.append(Zone(zoneID, startX, startY, endX, endY))
-
-        # Allow garbage collection of the original Gamera glyphs
-        glyphList = None
 
         zoneElements = []
 
@@ -237,17 +234,16 @@ class GameraXMLConverter:
         """
         from PIL import Image
 
-        glyph_list = xmlDict.ConvertXmlToDict(self.xmlFile)['gamera-database']['glyphs']['glyph']
         imageIn = Image.open(inputTiff)
         imageOut = imageIn
 
-        for curGlyph in glyph_list:
+        for curGlyph in etree.parse(self.xmlFile).xpath('/gamera-database/glyphs/glyph'):
             redPixel = (255,0,0)
-            startX = int(curGlyph['ulx'])
-            startY = int(curGlyph['uly'])
+            startX = int(curGlyph.get('ulx'))
+            startY = int(curGlyph.get('uly'))
 
-            width = int(curGlyph['ncols'])
-            height = int(curGlyph['nrows'])
+            width = int(curGlyph.get('ncols'))
+            height = int(curGlyph.get('nrows'))
 
             for xPix in xrange(startX, startX+width):
                 imageOut.putpixel((xPix, startY), redPixel)
