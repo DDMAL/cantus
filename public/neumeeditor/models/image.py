@@ -20,7 +20,7 @@ class Image(models.Model):
     class Meta:
         app_label = "neumeeditor"
 
-    image_file = models.ImageField(null=True, upload_to=media_file_name,
+    image_file = models.ImageField(null=True, blank=True, upload_to=media_file_name,
                                    storage=MediaFileSystemStorage())
     glyph = models.ForeignKey("neumeeditor.Glyph", null=True)
     md5sum = models.CharField(null=True, blank=True, max_length=36)
