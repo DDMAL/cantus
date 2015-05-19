@@ -177,7 +177,8 @@
 
         getCantusUrl: function()
         {
-            if (this.get("folio_name") === "")
+            var folioName = this.get("folio_name");
+            if (!folioName || folioName === null || folioName === "")
             {
                 // Handle empty case
                 return "";
@@ -185,9 +186,9 @@
             else
             {
                 // Get the folio code
-                var folio = this.get("folio_name").split("_")[1];
+                var folio = folioName.split("_")[1];
                 return "http://cantus.simssa.ca/manuscript/127/?folio=" + folio
-                    + "#z=5&n=5&y=" + this.get("uly") + "&x=" + this.get("ulx");
+                    + "#z=3&n=5&y=" + this.get("uly") + "&x=" + this.get("ulx");
             }
         }
     });
