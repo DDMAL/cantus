@@ -37,10 +37,12 @@ def replace_common_words(input):
         ("status", "stra"),
         ("quadratus", "q"),
         ("quassus", "quas"),
+        ("oriscus", "ori"),
         ("episema", "e"),
         ("clivis", "cli"),
         ("rotundus", "r"),
         ("liquescent", "l"),
+        ("quilismapes", "pes.quil"),
         ("two", "2"),
         ("three", "3"),
         # Important to strip simple
