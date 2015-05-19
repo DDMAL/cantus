@@ -167,7 +167,14 @@
          */
         getAbsoluteImageFile: function()
         {
-            return STATIC_URL + this.get("image_file");
+            var external_image = this.get("external_image");
+            if (external_image)
+            {
+                return this.get("external_image");
+            }
+            else {
+                return STATIC_URL + this.get("image_file");
+            }
         },
 
         getAbsoluteThumbnail: function()

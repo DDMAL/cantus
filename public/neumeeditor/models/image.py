@@ -22,6 +22,7 @@ class Image(models.Model):
 
     image_file = models.ImageField(null=True, blank=True, upload_to=media_file_name,
                                    storage=MediaFileSystemStorage())
+    external_image = models.URLField(null=True, blank=True)
     glyph = models.ForeignKey("neumeeditor.Glyph", null=True)
     md5sum = models.CharField(null=True, blank=True, max_length=36)
     # Positional fields
@@ -37,8 +38,11 @@ class Image(models.Model):
 
     def set_md5(self):
         md5 = hashlib.md5()
-        for chunk in self.image_file.chunks():
-            md5.update(chunk)
+        if self.external_image:
+            md5.update(self.external_image)
+        else:
+            for chunk in self.image_file.chunks():
+                md5.update(chunk)
         self.md5sum = md5.hexdigest()
 
     def set_PIL_image(self, pil_image):

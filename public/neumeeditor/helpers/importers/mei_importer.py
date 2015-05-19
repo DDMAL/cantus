@@ -33,13 +33,17 @@ class MeiImporter(AbstractImporter):
         :param neume:
         :return:
         '''
-        pil_image = get_image(
-            get_st_gallen_390_image_url(self.file_name, neume.ulx, neume.uly,
-                                        neume.get_width(), neume.get_height()))
+        #pil_image = get_image(
+        #    get_st_gallen_390_image_url(self.file_name, neume.ulx, neume.uly,
+        #                                neume.get_width(), neume.get_height()))
+        external_image = get_st_gallen_390_image_url(self.file_name, neume.ulx, neume.uly, neume.get_width(), neume.get_height())
+        # print external_image
         # Create Image model
         image = Image()
         image.glyph = glyph
-        image.set_PIL_image(pil_image)
+        #image.set_PIL_image(pil_image)
+        image.external_image = external_image
+
         image.set_md5()
         image.ulx = neume.ulx
         image.uly = neume.uly
