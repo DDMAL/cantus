@@ -44,7 +44,7 @@ return Marionette.ItemView.extend
     timer: null,
 
     ui: {
-        //divaToolbar: "#diva-toolbar",
+        divaToolbar: "#diva-toolbar",
         divaWrapper: "#diva-wrapper"
     },
 
@@ -110,7 +110,7 @@ return Marionette.ItemView.extend
         var siglum = this.siglum;
 
         var options = {
-            toolbarParentSelector: "#diva-toolbar",
+            toolbarParentObject: this.ui.divaToolbar,
             viewerWidthPadding: 0,
             enableAutoTitle: false,
             enableAutoWidth: false,
