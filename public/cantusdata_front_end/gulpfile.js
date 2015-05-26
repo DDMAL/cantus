@@ -15,7 +15,7 @@ gulp.task('default', ['lint:js', 'build:js', 'build:templates']);
 gulp.task('build:js', ['bundle:js'], function ()
 {
     var filesToCopy = [
-        './public/js/app/init/DesktopInit.min.js',
+        './public/js/app/cantus.min.js',
         './public/js/app/config/config.js',
         './public/js/libs/require.js'
     ];
@@ -47,8 +47,8 @@ gulp.task('bundle:js', ['clean:js'], function (done)
         preserveLicenseComments: false,
         optimize: "uglify",
         mainConfigFile: "public/js/app/config/config.js",
-        include: ["init/DesktopInit"],
-        out: "public/js/app/init/DesktopInit.min.js"
+        include: ["init/Init"],
+        out: "public/js/app/cantus.min.js"
     }, bundlingComplete);
 });
 

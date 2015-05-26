@@ -45,7 +45,7 @@ ${templates}
     (function(ua, w, d, undefined) {
 
         // App Environment
-        var production = false,
+        var production = true,
                 filesToLoad,
         //BoilerplateMVC Helper Methods
                 boilerplateMVC = {
@@ -83,37 +83,16 @@ ${templates}
                     }
                 };
 
-        // Mobile/Tablet Logic
-        if((/iPhone|iPod|iPad|Android|BlackBerry|Opera Mini|IEMobile/).test(ua)) {
-
-            // Mobile/Tablet CSS and JavaScript files to load
-            filesToLoad = {
-                // Require.js configuration file that is loaded when in development mode
-                "dev-js": { "data-main": "/static/js/app/config/config.js", "src": "/static/js/libs/require.js" },
-                // JavaScript initialization file that is also loaded when in development mode
-                "dev-init": "/static/js/app/init/MobileInit.js",
-                // JavaScript file that is loaded when in production mode
-                "prod-init": "/static/js/app/init/MobileInit.min.js",
-                "prod-js": { "data-main": "/static/js/app/config/config.js", "src": "/static/js/libs/require.js" }
-            };
-
-        }
-
-        // Desktop Logic
-        else {
-
-            // Desktop CSS and JavaScript files to load
-            filesToLoad = {
-                // Require.js configuration file that is also loaded when in development mode
-                "dev-js": { "data-main": "/static/js/app/config/config.js", "src": "/static/js/libs/require.js" },
-                // JavaScript initialization file that is loaded when in development mode
-                "dev-init": "/static/js/app/init/DesktopInit.js",
-                // JavaScript file that is loaded when in production mode
-                "prod-init": "/static/js/app/init/DesktopInit.min.js",
-                "prod-js": { "data-main": "/static/js/app/config/config.js", "src": "/static/js/libs/require.js" }
-            };
-
-        }
+        // JavaScript files to load
+        filesToLoad = {
+            // Require.js configuration file that is also loaded when in development mode
+            "dev-js": { "data-main": "/static/js/app/config/config.js", "src": "/static/js/libs/require.js" },
+            // JavaScript initialization file that is loaded when in development mode
+            "dev-init": "/static/js/app/init/Init.js",
+            // JavaScript file that is loaded when in production mode
+            "prod-init": "/static/js/app/cantus.min.js",
+            "prod-js": { "data-main": "/static/js/app/config/config.js", "src": "/static/js/libs/require.js" }
+        };
 
         boilerplateMVC.loadFiles(production, filesToLoad, function() {
             if(!production && window.require) {
