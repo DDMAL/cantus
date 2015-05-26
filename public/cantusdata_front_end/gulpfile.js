@@ -43,7 +43,7 @@ gulp.task('bundle:js', ['clean:js'], function (done)
         generateSourceMaps: true,
         mainConfigFile: "public/js/app/config/config.js",
         include: ["init/Init"],
-        out: "public/js/app/cantus.min.js"
+        out: "../cantusdata/static/js/app/cantus.min.js"
     }, bundlingComplete);
 });
 
