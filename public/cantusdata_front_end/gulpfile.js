@@ -5,7 +5,22 @@ var rename = require('gulp-rename');
 var requirejs = require('requirejs');
 var del = require('del');
 
-gulp.task('default', ['lint-nofail:js', 'build:js', 'build:templates']);
+// Set path variables
+var scripts = {
+    appJS: ['public/js/app/**/*.js'],
+    clientJS: ['public/js/app/**/*.js', 'public/js/libs/**/*.js'],
+    buildJS: ['gulpfile.js'],
+
+    templates: ['public/template-assembler/templates/**/*.html']
+};
+
+/*
+ * High-level tasks
+ */
+
+gulp.task('default', ['lint-nofail:js', 'build']);
+gulp.task('build', ['build:js', 'build:templates']);
+
 
 /*
  * JavaScript linting
@@ -13,13 +28,13 @@ gulp.task('default', ['lint-nofail:js', 'build:js', 'build:templates']);
 
 gulp.task('lint:js', function ()
 {
-    return lintJS(['gulpfile.js', 'public/js/app/**/*.js', '!public/js/app/**/*.min.js'])
+    return lintJS(scripts.appJS.concat(scripts.buildJS))
         .pipe(jshint.reporter('fail'));
 });
 
 gulp.task('lint-nofail:js', function ()
 {
-    return lintJS(['gulpfile.js', 'public/js/app/**/*.js', '!public/js/app/**/*.min.js']);
+    return lintJS(scripts.appJS.concat(scripts.buildJS));
 });
 
 function lintJS(sources)
@@ -36,7 +51,7 @@ function lintJS(sources)
 // Copy needed files into the Django static directory
 gulp.task('build:js', ['bundle:js'], function ()
 {
-    return gulp.src('./public/js/**/*', {base: './public/js/'})
+    return gulp.src(scripts.clientJS, {base: './public/js/'})
         .pipe(gulp.dest('../cantusdata/static/js/'));
 });
 
