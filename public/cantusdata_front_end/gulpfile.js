@@ -118,3 +118,9 @@ gulp.task('clean:templates', function (done)
             done();
     });
 });
+
+gulp.task('watch', function (done)
+{
+    gulp.watch(scripts.clientJS, ['lint-nofail:js', 'build:js']);
+    gulp.watch(scripts.templates, ['build:templates']);
+});
