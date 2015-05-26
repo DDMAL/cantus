@@ -14,13 +14,7 @@ gulp.task('default', ['lint:js', 'build:js', 'build:templates']);
 // Copy needed files into the Django static directory
 gulp.task('build:js', ['bundle:js'], function ()
 {
-    var filesToCopy = [
-        './public/js/app/cantus.min.js',
-        './public/js/app/config/config.js',
-        './public/js/libs/require.js'
-    ];
-
-    return gulp.src(filesToCopy, {base: './public/js/'})
+    return gulp.src('./public/js/**/*', {base: './public/js/'})
         .pipe(gulp.dest('../cantusdata/static/js/'));
 });
 
@@ -45,7 +39,8 @@ gulp.task('bundle:js', ['clean:js'], function (done)
         // Cannot use almond since it does not currently appear to support requireJS's config-map
         name: "../libs/almond",
         preserveLicenseComments: false,
-        optimize: "uglify",
+        optimize: "uglify2",
+        generateSourceMaps: true,
         mainConfigFile: "public/js/app/config/config.js",
         include: ["init/Init"],
         out: "public/js/app/cantus.min.js"
