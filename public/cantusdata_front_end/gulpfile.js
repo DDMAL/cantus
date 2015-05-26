@@ -5,7 +5,29 @@ var rename = require('gulp-rename');
 var requirejs = require('requirejs');
 var del = require('del');
 
-gulp.task('default', ['lint:js', 'build:js', 'build:templates']);
+gulp.task('default', ['lint-nofail:js', 'build:js', 'build:templates']);
+
+/*
+ * JavaScript linting
+ */
+
+gulp.task('lint:js', function ()
+{
+    return lintJS(['gulpfile.js', 'public/js/app/**/*.js', '!public/js/app/**/*.min.js'])
+        .pipe(jshint.reporter('fail'));
+});
+
+gulp.task('lint-nofail:js', function ()
+{
+    return lintJS(['gulpfile.js', 'public/js/app/**/*.js', '!public/js/app/**/*.min.js']);
+});
+
+function lintJS(sources)
+{
+    return gulp.src(sources)
+        .pipe(jshint({lookup: true}))
+        .pipe(jshint.reporter('jshint-stylish'));
+}
 
 /*
  * JavaScript build tasks
@@ -16,14 +38,6 @@ gulp.task('build:js', ['bundle:js'], function ()
 {
     return gulp.src('./public/js/**/*', {base: './public/js/'})
         .pipe(gulp.dest('../cantusdata/static/js/'));
-});
-
-gulp.task('lint:js', function ()
-{
-    return gulp.src(['gulpfile.js', 'public/js/app/**/*.js', '!public/js/app/**/*.min.js'])
-        .pipe(jshint({lookup: true}))
-        .pipe(jshint.reporter('jshint-stylish'))
-        .pipe(jshint.reporter('fail'));
 });
 
 gulp.task('bundle:js', ['clean:js'], function (done)
