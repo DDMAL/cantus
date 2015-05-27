@@ -13,23 +13,28 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
         ({
 
             divaFullScreen: null,
-            timedQuery: null,
-
-            divaPanelSizeResizeTimer: null,
 
             initialize: function()
             {
-                _.bindAll(this, 'timedQuerySetAll', 'setAll', 'setContainerHeight',
-                    'setScrollableHeight', 'setManuscriptContentContainerHeight',
-                    'setDivaSize', 'setDivaFullScreen', 'setViewPortSize');
-                var self = this;
+                _.bindAll(this, 'setAll', 'setContainerHeight', 'setScrollableHeight',
+                    'setManuscriptContentContainerHeight', 'setDivaSize',
+                    'setDivaFullScreen', 'setViewPortSize');
+
+                // Create a debounced function to alert Diva that its panel size
+                // has changed
+                this.publishDivaPanelResizedEvent = _.debounce(function () {
+                    diva.Events.publish("PanelSizeDidChange");
+                }, 500);
+
+                var debouncedSetAll = _.debounce(this.setAll, 500);
+
                 $(window).resize(function()
                 {
-                    self.timedQuerySetAll();
+                    debouncedSetAll();
                 });
+
                 this.divaFullScreen = "lol";
-                this.listenTo(GlobalEventHandler, "renderView",
-                    this.timedQuerySetAll);
+                this.listenTo(GlobalEventHandler, "renderView", debouncedSetAll);
                 this.listenTo(GlobalEventHandler, "divaFullScreen",
                     function(){this.setDivaFullScreen(true);});
                 this.listenTo(GlobalEventHandler, "divaNotFullScreen",
@@ -37,15 +42,6 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
 
                 // We also want to do stuff when the viewport is rotated
                 this.listenTo($(window), "orientationchange", this.setViewPortSize);
-            },
-
-            /**
-             * Set a timed query for resizing the window.
-             */
-            timedQuerySetAll: function()
-            {
-                window.clearTimeout(this.timedQuery);
-                this.timedQuery = window.setTimeout(this.setAll, 500);
             },
 
             setAll: function()
@@ -88,10 +84,7 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
                     {
                         // Only try to resize diva if diva exists
                         // Include a delay so that we don't have repeats
-                        this.divaPanelSizeResizeTimer = window.setTimeout(
-                            function() {
-                                diva.Events.publish("PanelSizeDidChange");
-                            }, 500);
+                        this.publishDivaPanelResizedEvent();
                     }
                 }
             },
