@@ -2,8 +2,10 @@ var gulp = require('gulp');
 var jshint = require('gulp-jshint');
 var shell = require('gulp-shell');
 var rename = require('gulp-rename');
+var newer = require('gulp-newer');
 var requirejs = require('requirejs');
 var del = require('del');
+var path = require('path');
 
 // Set path variables
 var scripts = {
@@ -49,17 +51,30 @@ function lintJS(sources)
  */
 
 // Copy needed files into the Django static directory
-gulp.task('build:js', ['bundle:js'], function ()
+gulp.task('build:js', ['cleanThenBundle:js'], function ()
 {
     return gulp.src(scripts.clientJS, {base: './public/js/'})
         .pipe(gulp.dest('../cantusdata/static/js/'));
 });
 
-gulp.task('bundle:js', ['clean:js'], function (done)
+gulp.task('rebuild:js', ['bundle:js'], function ()
+{
+    var dest = '../cantusdata/static/js/';
+
+    return gulp.src(scripts.clientJS, {base: './public/js'})
+        .pipe(newer(dest))
+        .pipe(gulp.dest(dest));
+});
+
+gulp.task('cleanThenBundle:js', ['clean:js'], bundleJS);
+
+gulp.task('bundle:js', bundleJS);
+
+function bundleJS(cb)
 {
     var bundlingComplete = function ()
     {
-        done();
+        cb();
     };
 
     requirejs.optimize({
@@ -74,7 +89,7 @@ gulp.task('bundle:js', ['clean:js'], function (done)
         include: ["init/Init"],
         out: "../cantusdata/static/js/app/cantus.min.js"
     }, bundlingComplete);
-});
+}
 
 gulp.task('clean:js', function (done)
 {
@@ -121,6 +136,38 @@ gulp.task('clean:templates', function (done)
 
 gulp.task('watch', function (done)
 {
-    gulp.watch(scripts.clientJS, ['lint-nofail:js', 'build:js']);
-    gulp.watch(scripts.templates, ['build:templates']);
+    var jsWatcher = gulp.watch(scripts.clientJS, ['lint-nofail:js', 'rebuild:js']);
+    var templateWatcher = gulp.watch(scripts.templates, ['build:templates']);
+
+    jsWatcher.on('change', logWatchedChange);
+    templateWatcher.on('change', logWatchedChange);
+
+    jsWatcher.on('change', getWatchDeletionCb('public/js', '../cantusdata/static/js'));
 });
+
+function logWatchedChange(ev)
+{
+    console.log("File '" + path.relative('.', ev.path) + "' was " + ev.type);
+}
+
+/**
+ * Return a gulp.watch callback function which deletes a file in the
+ * destination directory when they are deleted in the source directory.
+ *
+ * @param srcRoot
+ * @param destRoot
+ * @returns {Function}
+ */
+function getWatchDeletionCb(srcRoot, destRoot)
+{
+    return function (ev)
+    {
+        if (ev.type === 'deleted')
+        {
+            var destPath = path.resolve(destRoot, path.relative(srcRoot, ev.path));
+
+            console.log("Deleting file '" + destPath + "'");
+            del.sync(destPath, {force: true});
+        }
+    };
+}
