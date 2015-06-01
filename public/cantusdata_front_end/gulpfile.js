@@ -116,14 +116,11 @@ gulp.task('build:templates', ['bundle:templates'], function ()
         .pipe(gulp.dest('../cantusdata/templates'));
 });
 
-gulp.task('bundle:templates', ['clean:templates'], function ()
-{
-    // This is recommended but ugly syntax for using gulp-shell to execute
-    // a single command
-    return gulp.src('').pipe(shell(['python build-template.py build/'], {
-        cwd: process.cwd() + '/public/template-assembler/'
-    }));
-});
+gulp.task('bundle:templates', ['clean:templates'], shell.task([
+    'python build-template.py build/'
+], {
+    cwd: __dirname + '/public/template-assembler/'
+}));
 
 gulp.task('clean:templates', function (done)
 {
