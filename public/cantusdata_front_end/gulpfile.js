@@ -144,6 +144,11 @@ gulp.task('watch', function (done)
     jsWatcher.on('change', getWatchDeletionCb('public/js', '../cantusdata/static/js'));
 });
 
+/**
+ * Output a log message for a gulp.watch event
+ *
+ * @param ev The change event
+ */
 function logWatchedChange(ev)
 {
     console.log("File '" + path.relative('.', ev.path) + "' was " + ev.type);
