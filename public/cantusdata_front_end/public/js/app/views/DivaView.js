@@ -3,6 +3,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
         "diva-highlight",
         "diva-download",
         "diva-canvas",
+        "diva-pagealias",
         "views/CantusAbstractView",
         "singletons/GlobalEventHandler",
         "config/GlobalVars"],
@@ -11,6 +12,7 @@ function(App, Backbone, Marionette, $,
          DivaHighlight,
          DivaDownload,
          DivaCanvas,
+         DivaPagealias,
          CantusAbstractView,
          GlobalEventHandler,
          GlobalVars) {
@@ -50,13 +52,15 @@ return Marionette.ItemView.extend
 
     // Diva Event handlers
     viewerLoadEvent: null,
+    filenameLoadEvent: null,
     pageChangeEvent: null,
     modeSwitchEvent: null,
 
     initialize: function(options)
     {
         _.bindAll(this, 'storeFolioIndex', 'storeInitialFolio', 'setFolio',
-            'setGlobalFullScreen', 'zoomToLocation');
+            'setGlobalFullScreen', 'zoomToLocation', 'getPageAlias',
+            'storeDivaFilenames');
         //this.el = options.el;
         this.setManuscript(options.siglum, options.folio);
     },
@@ -73,6 +77,7 @@ return Marionette.ItemView.extend
         this.imageSuffix = null;
         this.timer = null;
         this.viewerLoadEvent = null;
+        this.filenameLoadEvent = null;
         this.modeSwitchEvent = null;
     },
 
@@ -90,6 +95,10 @@ return Marionette.ItemView.extend
             if (this.viewerLoadEvent !== null)
             {
                 diva.Events.unsubscribe(this.viewerLoadEvent);
+            }
+            if (this.filenameLoadEvent !== null)
+            {
+                diva.Events.unsubscribe(this.filenameLoadEvent);
             }
             if (this.pageChangeEvent !== null)
             {
@@ -112,16 +121,23 @@ return Marionette.ItemView.extend
         var options = {
             toolbarParentObject: this.ui.divaToolbar,
             viewerWidthPadding: 0,
+
             enableAutoTitle: false,
             enableAutoWidth: false,
             enableAutoHeight: false,
             enableFilename: false,
             enableHighlight: true,
             enableDownload: true,
+
+            enablePagealias: true,
+            pageAliasFunction: this.getPageAlias,
+
             fixedHeightGrid: false,
+
             enableKeyScroll: false,
             enableSpaceScroll: false,
             enableCanvas: true,
+
             iipServerURL: GlobalVars.iipImageServerUrl + "fcgi-bin/iipsrv.fcgi",
             objectData: "/static/" + siglum + ".json",
             imageDir: GlobalVars.divaImageDirectory + siglum
@@ -133,10 +149,22 @@ return Marionette.ItemView.extend
         this.ui.divaWrapper.diva(options);
 
         this.viewerLoadEvent = diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
+        this.filenameLoadEvent = diva.Events.subscribe("ViewerDidLoad", this.storeDivaFilenames);
         this.pageChangeEvent = diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
         this.modeSwitchEvent = diva.Events.subscribe("ModeDidSwitch", this.setGlobalFullScreen);
         // Remember that we've initialized diva
         this.divaInitialized = true;
+    },
+
+    /**
+     * Return the folio for the page at the given index
+     *
+     * @param pageIndex
+     * @returns {*|string}
+     */
+    getPageAlias: function (pageIndex)
+    {
+        return this.imageNameToFolio(this.divaFilenames[pageIndex]);
     },
 
     onShow: function()
@@ -198,6 +226,11 @@ return Marionette.ItemView.extend
         // Store the image prefix for later
         this.setImagePrefixAndSuffix(name);
         //console.log("storeInitialFolio() end.");
+    },
+
+    storeDivaFilenames: function()
+    {
+        this.divaFilenames = this.getDivaData().getFilenames();
     },
 
     /**
