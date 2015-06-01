@@ -1,4 +1,5 @@
 var gulp = require('gulp');
+var runSequence = require('run-sequence');
 var jshint = require('gulp-jshint');
 var shell = require('gulp-shell');
 var rename = require('gulp-rename');
@@ -50,14 +51,19 @@ function lintJS(sources)
  * JavaScript build tasks
  */
 
-// Copy needed files into the Django static directory
-gulp.task('build:js', ['cleanThenBundle:js'], function ()
+gulp.task('build:js', function (cb)
 {
-    return gulp.src(scripts.clientJS, {base: './public/js/'})
-        .pipe(gulp.dest('../cantusdata/static/js/'));
+    runSequence(
+        'clean:js',
+        ['copySources:js', 'bundle:js'],
+        cb
+    );
 });
 
-gulp.task('rebuild:js', ['bundle:js'], function ()
+gulp.task('rebuild:js', ['copySources:js', 'bundle:js']);
+
+/** Copy needed files into the Django static directory */
+gulp.task('copySources:js', function ()
 {
     var dest = '../cantusdata/static/js/';
 
@@ -66,11 +72,7 @@ gulp.task('rebuild:js', ['bundle:js'], function ()
         .pipe(gulp.dest(dest));
 });
 
-gulp.task('cleanThenBundle:js', ['clean:js'], bundleJS);
-
-gulp.task('bundle:js', bundleJS);
-
-function bundleJS(cb)
+gulp.task('bundle:js', function (cb)
 {
     var bundlingComplete = function ()
     {
@@ -89,7 +91,7 @@ function bundleJS(cb)
         include: ["init/Init"],
         out: "../cantusdata/static/js/app/cantus.min.js"
     }, bundlingComplete);
-}
+});
 
 gulp.task('clean:js', function (done)
 {
