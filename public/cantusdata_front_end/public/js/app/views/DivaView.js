@@ -226,13 +226,13 @@ return Marionette.ItemView.extend
         //   - an optional non-numerical trailing value
         var coreNumber = /^\s*([^0-9]*)0*([1-9][0-9]*|0)([^0-9]*)\s*$/.exec(alias);
 
-        var aliasRegex, leading, number, trailing;
+        var aliasRegex;
 
         if (coreNumber)
         {
-            leading = coreNumber[1];
-            number = coreNumber[2];
-            trailing = coreNumber[3];
+            var leading = coreNumber[1],
+                number = coreNumber[2],
+                trailing = coreNumber[3];
 
             leading = this.escapeRegex(leading);
 
@@ -267,7 +267,7 @@ return Marionette.ItemView.extend
         }
 
         // We didn't find a match; fall back to treating this as a non-aliased page number
-        if (coreNumber && !leading && !trailing)
+        if (alias.match(/^\d+$/))
         {
             var pageIndex = parseInt(alias, 10) - 1;
 
