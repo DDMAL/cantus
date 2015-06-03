@@ -52,7 +52,7 @@ return Marionette.ItemView.extend
 
     // Diva Event handlers
     viewerLoadEvent: null,
-    filenameLoadEvent: null,
+    pageAliasingInitEvent: null,
     pageChangeEvent: null,
     modeSwitchEvent: null,
 
@@ -60,7 +60,7 @@ return Marionette.ItemView.extend
     {
         _.bindAll(this, 'storeFolioIndex', 'storeInitialFolio', 'setFolio',
             'setGlobalFullScreen', 'zoomToLocation', 'getPageAlias',
-            'storeDivaFilenames');
+            'initializePageAliasing');
         //this.el = options.el;
         this.setManuscript(options.siglum, options.folio);
     },
@@ -77,7 +77,7 @@ return Marionette.ItemView.extend
         this.imageSuffix = null;
         this.timer = null;
         this.viewerLoadEvent = null;
-        this.filenameLoadEvent = null;
+        this.pageAliasingInitEvent = null;
         this.modeSwitchEvent = null;
     },
 
@@ -96,9 +96,9 @@ return Marionette.ItemView.extend
             {
                 diva.Events.unsubscribe(this.viewerLoadEvent);
             }
-            if (this.filenameLoadEvent !== null)
+            if (this.pageAliasingInitEvent !== null)
             {
-                diva.Events.unsubscribe(this.filenameLoadEvent);
+                diva.Events.unsubscribe(this.pageAliasingInitEvent);
             }
             if (this.pageChangeEvent !== null)
             {
@@ -149,7 +149,7 @@ return Marionette.ItemView.extend
         this.ui.divaWrapper.diva(options);
 
         this.viewerLoadEvent = diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
-        this.filenameLoadEvent = diva.Events.subscribe("ViewerDidLoad", this.storeDivaFilenames);
+        this.pageAliasingInitEvent = diva.Events.subscribe("ViewerDidLoad", this.initializePageAliasing);
         this.pageChangeEvent = diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
         this.modeSwitchEvent = diva.Events.subscribe("ModeDidSwitch", this.setGlobalFullScreen);
         // Remember that we've initialized diva
@@ -164,7 +164,14 @@ return Marionette.ItemView.extend
      */
     getPageAlias: function (pageIndex)
     {
-        return this.imageNameToFolio(this.divaFilenames[pageIndex]);
+        var folio = this.imageNameToFolio(this.divaFilenames[pageIndex]);
+
+        var pageNumber = pageIndex + 1;
+
+        // Append an opening parenthesis and the page number
+        // This is a hack, since Diva doesn't have functionality to customize the page label
+        // beyond the pagealias plugin
+        return folio + ' (' + pageNumber;
     },
 
     onShow: function()
@@ -228,9 +235,21 @@ return Marionette.ItemView.extend
         //console.log("storeInitialFolio() end.");
     },
 
-    storeDivaFilenames: function()
+    initializePageAliasing: function()
     {
-        this.divaFilenames = this.getDivaData().getFilenames();
+        var divaData = this.getDivaData();
+
+        // Store the list of filenames
+        this.divaFilenames = divaData.getFilenames();
+
+        // Rename the page label
+        var pageLabel = this.ui.divaToolbar.find('.diva-page-label')[0];
+
+        // Replace "Page " with "Folio "
+        pageLabel.firstChild.textContent = 'Folio ';
+
+        // Add a closing parenthesis (the opening is within the page alias)
+        pageLabel.appendChild(document.createTextNode(')'));
     },
 
     /**
