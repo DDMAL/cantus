@@ -60,7 +60,7 @@ return Marionette.ItemView.extend
     {
         _.bindAll(this, 'storeFolioIndex', 'storeInitialFolio', 'setFolio',
             'setGlobalFullScreen', 'zoomToLocation', 'getPageAlias',
-            'initializePageAliasing');
+            'initializePageAliasing', 'gotoInputPage', 'getPageWhichMatchesAlias');
         //this.el = options.el;
         this.setManuscript(options.siglum, options.folio);
     },
@@ -174,6 +174,122 @@ return Marionette.ItemView.extend
         return folio + ' (' + pageNumber;
     },
 
+    /**
+     * Replacement callback for the Diva page input submission
+     */
+    gotoInputPage: function (event)
+    {
+        event.preventDefault();
+
+        var pageAlias = $(this.ui.divaToolbar.find(this.getDivaData().getInstanceSelector() + 'goto-page-input')).val();
+
+        if (!pageAlias)
+            return;
+
+        var actualPage = this.getPageWhichMatchesAlias(pageAlias);
+
+        if (actualPage === null)
+        {
+            alert("Invalid page number");
+        }
+        else
+        {
+            this.getDivaData().gotoPageByIndex(actualPage);
+        }
+    },
+
+    /**
+     * Implement lenient matching for a page alias. Handle leading zeros for
+     * numerical folio names, prefix characters (for appendices, etc.) and suffix
+     * characters (e.g. r and v for recto and verso).
+     *
+     * Given a bare page number, it will automatically match it with a recto page
+     * with that number.
+     *
+     * Examples: Suppose the folios are named 0000a, 0000b, 001r, 001v, and A001r
+     *
+     *   - 0a would match 0000a
+     *   - a1 would match A001r
+     *   - 0001 would match 001r
+     *
+     * @param alias {string}
+     * @returns {number|null} The index of the page with the matching folio name
+     */
+    getPageWhichMatchesAlias: function (alias)
+    {
+        if (!alias)
+            return null;
+
+        // Try to split the page alias into the following components:
+        //   - an optional non-numerical leading value
+        //   - an integer value (with leading zeros stripped)
+        //   - an optional non-numerical trailing value
+        var coreNumber = /^\s*([^0-9]*)0*([1-9][0-9]*|0)([^0-9]*)\s*$/.exec(alias);
+
+        var aliasRegex, leading, number, trailing;
+
+        if (coreNumber)
+        {
+            leading = coreNumber[1];
+            number = coreNumber[2];
+            trailing = coreNumber[3];
+
+            leading = this.escapeRegex(leading);
+
+            if (trailing) {
+                trailing = this.escapeRegex(trailing);
+            }
+            else
+            {
+                // If there is no trailing value, then allow for a recto suffix by default
+                trailing = 'r?';
+            }
+
+            // Get a case-insensitive regex which allows any number of leading zeros
+            // and then the number
+            aliasRegex = new RegExp('^' + leading + '0*' + number + trailing + '$', 'i');
+        }
+        else
+        {
+            // If the core number detection failed, just strip whitespace and get a case-insensitive regex
+            aliasRegex = new RegExp('^' + this.escapeRegex(alias.replace(/(^\s+|\s+$)/g, '')) + '$', 'i');
+        }
+
+        // Find a folio which matches this pattern
+        // TODO(wabain): cache folio names
+        var length = this.divaFilenames.length;
+        for (var i = 0; i < length; i++)
+        {
+            if (this.imageNameToFolio(this.divaFilenames[i]).match(aliasRegex))
+            {
+                return i;
+            }
+        }
+
+        // We didn't find a match; fall back to treating this as a non-aliased page number
+        if (coreNumber && !leading && !trailing)
+        {
+            var pageIndex = parseInt(alias, 10) - 1;
+
+            if (pageIndex >= 0 && pageIndex < length)
+            {
+                return pageIndex;
+            }
+        }
+
+        // If nothing worked, then just return null
+        return null;
+    },
+
+    /**
+     * Escape a string so that it can be used searched for literally in a regex.
+     * Implementation adapted from Backbone.Router._routeToRegExp
+     */
+    escapeRegex: function (s)
+    {
+        return s.replace(/[\-{}\[\]+?.,\\\^$|#\s]/g, '\\$&');
+    },
+
     onShow: function()
     {
         // We only want to initialize Diva once!
@@ -241,6 +357,15 @@ return Marionette.ItemView.extend
 
         // Store the list of filenames
         this.divaFilenames = divaData.getFilenames();
+
+        // Rebind the page input
+        var input = this.$(divaData.getInstanceSelector() + 'goto-page');
+
+        // Remove the original binding
+        input.off('submit');
+
+        // Add the replacement binding
+        input.on('submit', this.gotoInputPage);
 
         // Rename the page label
         var pageLabel = this.ui.divaToolbar.find('.diva-page-label')[0];
