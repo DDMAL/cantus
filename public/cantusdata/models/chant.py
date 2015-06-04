@@ -97,5 +97,4 @@ def solr_delete(sender, instance, **kwargs):
                             .format(instance.id), q_op="AND")
     if record:
         solrconn.delete(record.results[0]['id'])
-        solrconn.commit(
-)
+        solrconn.commit()
