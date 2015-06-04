@@ -17,6 +17,40 @@ class Folio(models.Model):
     manuscript = models.ForeignKey("Manuscript")
     chant_count = models.IntegerField(default=0)
 
+    def add_to_solr(self, solrconn):
+        """
+        Add a Solr entry for this folio
+
+        Return true if an entry was added
+        """
+        import uuid
+
+        d = {
+            'type': 'cantusdata_folio',
+            'id': str(uuid.uuid4()),
+            'number': self.number,
+            'item_id': self.id,
+            'manuscript_id': self.manuscript.id,
+        }
+
+        solrconn.add(**d)
+        return True
+
+    def delete_from_solr(self, solrconn):
+        """
+        Delete the Solr entry for this folio if it exists
+
+        Return true if there was an entry
+        """
+        record = solrconn.query("type:cantusdata_folio item_id:{0}"
+                                .format(self.id), q_op="AND")
+
+        if record:
+            solrconn.delete(record.results[0]['id'])
+            return True
+
+        return False
+
     def __unicode__(self):
         return u"{0} - {1}".format(self.number, self.manuscript)
 
@@ -43,25 +77,14 @@ def auto_count_chants(chant):
 
 @receiver(post_save, sender=Folio)
 def solr_index(sender, instance, created, **kwargs):
-    import uuid
     from django.conf import settings
     import solr
 
     solrconn = solr.SolrConnection(settings.SOLR_SERVER)
-    record = solrconn.query("type:cantusdata_folio item_id:{0}"
-                            .format(instance.id), q_op="AND")
-    if record:
-        solrconn.delete(record.results[0]['id'])
 
-    folio = instance
-    d = {
-        'type': 'cantusdata_folio',
-        'id': str(uuid.uuid4()),
-        'number': folio.number,
-        'item_id': folio.id,
-        'manuscript_id': folio.manuscript.id,
-    }
-    solrconn.add(**d)
+    instance.delete_from_solr(solrconn)
+    instance.add_to_solr(solrconn)
+
     solrconn.commit()
 
 
@@ -69,9 +92,8 @@ def solr_index(sender, instance, created, **kwargs):
 def solr_delete(sender, instance, **kwargs):
     from django.conf import settings
     import solr
+
     solrconn = solr.SolrConnection(settings.SOLR_SERVER)
-    record = solrconn.query("type:cantusdata_folio item_id:{0}"
-                            .format(instance.id), q_op="AND")
-    if record:
-        solrconn.delete(record.results[0]['id'])
+
+    if instance.delete_from_solr(solrconn):
         solrconn.commit()

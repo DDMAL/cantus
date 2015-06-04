@@ -44,6 +44,51 @@ class Manuscript(models.Model):
     def siglum_slug(self):
         return slugify(self.siglum)
 
+    def add_to_solr(self, solrconn):
+        """
+        Add a Solr entry for this manuscript if it has chants
+
+        Return true if an entry was added
+        """
+        import uuid
+
+        # We only want to index the manuscript if it has chants!
+        if self.chant_count == 0:
+            return False
+
+        d = {
+            'type': 'cantusdata_manuscript',
+            'id': str(uuid.uuid4()),
+            'item_id': self.id,
+            'name': self.name,
+            'siglum': self.siglum,
+            'siglum_slug': self.siglum_slug,
+            'date': self.date,
+            'chant_count': self.chant_count,
+            'folio_count': self.folio_count,
+            'provenance': self.provenance,
+            'description': self.description
+        }
+
+        solrconn.add(**d)
+
+        return True
+
+    def delete_from_solr(self, solrconn):
+        """
+        Delete the Solr entry for this manuscript if it exists
+
+        Return true if there was an entry
+        """
+        record = solrconn.query("type:cantusdata_manuscript item_id:{0}"
+                                .format(self.id), q_op="AND")
+
+        if record:
+            solrconn.delete(record.results[0]['id'])
+            return True
+
+        return False
+
 
 @receiver(post_save, sender=Folio)
 def auto_count_chants(sender, instance, **kwargs):
@@ -60,32 +105,15 @@ def auto_count_chants(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Manuscript)
 def solr_index(sender, instance, created, **kwargs):
-    import uuid
     from django.conf import settings
     import solr
 
     solrconn = solr.SolrConnection(settings.SOLR_SERVER)
-    record = solrconn.query("type:cantusdata_manuscript item_id:{0}"
-                            .format(instance.id), q_op="AND")
-    if record:
-        solrconn.delete(record.results[0]['id'])
-    manuscript = instance
-    # We only want to index the manuscript if it has chants!
-    if manuscript.chant_count > 0:
-        d = {
-            'type': 'cantusdata_manuscript',
-            'id': str(uuid.uuid4()),
-            'item_id': manuscript.id,
-            'name': manuscript.name,
-            'siglum': manuscript.siglum,
-            'siglum_slug': manuscript.siglum_slug,
-            'date': manuscript.date,
-            'chant_count': manuscript.chant_count,
-            'folio_count': manuscript.folio_count,
-            'provenance': manuscript.provenance,
-            'description': manuscript.description
-        }
-        solrconn.add(**d)
+
+    deleted = instance.delete_from_solr(solrconn)
+    added = instance.add_to_solr(solrconn)
+
+    if added or deleted:
         solrconn.commit()
 
 
@@ -93,9 +121,8 @@ def solr_index(sender, instance, created, **kwargs):
 def solr_delete(sender, instance, **kwargs):
     from django.conf import settings
     import solr
+
     solrconn = solr.SolrConnection(settings.SOLR_SERVER)
-    record = solrconn.query("type:cantusdata_manuscript item_id:{0}"
-                            .format(instance.id), q_op="AND")
-    if record:
-        solrconn.delete(record.results[0]['id'])
+
+    if instance.delete_from_solr(solrconn):
         solrconn.commit()
