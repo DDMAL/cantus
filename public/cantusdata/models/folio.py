@@ -37,7 +37,7 @@ def auto_count_chants(chant):
     """
     folio = chant.folio
     if folio:
-        folio.chant_count = len(Chant.objects.filter(folio=folio))
+        folio.chant_count = Chant.objects.filter(folio=folio).count()
         folio.save()
 
 
