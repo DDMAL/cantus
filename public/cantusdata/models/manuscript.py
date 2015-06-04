@@ -89,18 +89,25 @@ class Manuscript(models.Model):
 
         return False
 
+    def update_chant_count(self):
+        """
+        Compute the number of chants on the manuscript
+
+        Called by the post_save receiver whenever a folio is changed
+        """
+        count = 0
+        for folio in self.folio_set.all():
+            count += folio.chant_count
+        self.chant_count = count
+        self.save()
+
 
 @receiver(post_save, sender=Folio)
 def auto_count_chants(sender, instance, **kwargs):
     """
     Compute the number of chants on the folio whenever a chant is saved.
     """
-    manuscript = instance.manuscript
-    count = 0
-    for folio in manuscript.folio_set.all():
-        count += folio.chant_count
-    manuscript.chant_count = count
-    manuscript.save()
+    instance.manuscript.update_chant_count()
 
 
 @receiver(post_save, sender=Manuscript)

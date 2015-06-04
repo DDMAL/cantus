@@ -51,6 +51,10 @@ class Folio(models.Model):
 
         return False
 
+    def update_chant_count(self):
+        self.chant_count = Chant.objects.filter(folio=self).count()
+        self.save()
+
     def __unicode__(self):
         return u"{0} - {1}".format(self.number, self.manuscript)
 
@@ -69,10 +73,8 @@ def auto_count_chants(chant):
     """
     Compute the number of chants on the chant's folio
     """
-    folio = chant.folio
-    if folio:
-        folio.chant_count = Chant.objects.filter(folio=folio).count()
-        folio.save()
+    if chant.folio:
+        chant.folio.update_chant_count()
 
 
 @receiver(post_save, sender=Folio)
