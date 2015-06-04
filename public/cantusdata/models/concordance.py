@@ -67,7 +67,7 @@ def solr_index(sender, instance, created, **kwargs):
         'type': 'cantusdata_concordance',
         'id': str(uuid.uuid4()),
         'item_id': concordance.id,
-        'concordance_citation': concordance.citation.decode("utf-8")
+        'concordance_citation': concordance.unicode_citation
     }
     solrconn.add(**d)
     solrconn.commit()
