@@ -1,46 +1,42 @@
-define( ['App', 'marionette'],
-    function(App, Marionette) {
+define(['marionette'],
+    function(Marionette) {
 
         "use strict";
 
         /**
-         * View representing a Search Result with count.
+         * View representing a single search result
          */
         return Marionette.ItemView.extend({
             template: "#search-result-item-template",
-            //tagName: '',
 
-            /**
-             * The type of search.  "all fields", "volpiano", etc.
-             */
-            searchField: undefined,
+            tagName: 'tr',
 
             showManuscriptName: true,
+            searchType: null,
 
-            modelEvents:
+            initialize: function (options)
             {
-                "change": "render"
-            },
-
-            initialize: function(options)
-            {
-                // FIXME(wabain): update this to use mergeOptions after updating Marionette
-                this.model = options.model;
-                this.searchField = options.searchField;
-
+                // FIXME(wabain): use mergeOptions after upgrading marionette
                 if ('showManuscriptName' in options) {
                     this.showManuscriptName = options.showManuscriptName;
+                }
+
+                if ('searchType' in options) {
+                    this.searchType = options.searchType;
                 }
             },
 
             serializeData: function()
             {
+                // FIXME(wabain): this is terrible, but I'll be refactoring
+                // out the code that relies on having the index anyway
+                var index = this.model.collection.indexOf(this.model);
+
                 return {
-                    query: this.model.getQueryWithoutManuscript(),
-                    numFound: this.model.get("numFound"),
-                    searchType: this.model.getSearchType(),
+                    index: index,
                     showManuscriptName: this.showManuscriptName,
-                    results: this.model.getFormattedData()
+                    searchType: this.searchType,
+                    result: this.model.getFormattedData()
                 };
             }
         });

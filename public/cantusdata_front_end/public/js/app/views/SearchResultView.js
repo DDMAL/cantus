@@ -1,18 +1,17 @@
 define( ['App', 'backbone', 'marionette', 'jquery',
-        "models/SearchResult",
+        "collections/SearchResultCollection",
         "views/CantusAbstractView",
         "views/PaginationView",
-        "views/item_views/SearchResultItemView",
+        "views/collection_views/SearchResultCollectionView",
         "singletons/GlobalEventHandler"],
     function(App, Backbone, Marionette, $,
-             SearchResult,
+             SearchResultCollection,
              CantusAbstractView,
              PaginationView,
-             SearchResultItemView,
+             SearchResultCollectionView,
              GlobalEventHandler) {
 
-        return Marionette.LayoutView.extend
-        ({
+        return Marionette.LayoutView.extend({
             template: "#search-result-template",
 
             showManuscriptName: null,
@@ -34,11 +33,11 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                     'buttonClickCallback');
 
                 this.currentPage = 1;
-                this.model = new SearchResult();
+                this.collection = new SearchResultCollection();
 
                 if (options.query !== undefined)
                 {
-                    this.model.setQuery(options.query);
+                    this.collection.setQuery(options.query);
                     this.query = options.query;
                 }
                 if (options.showManuscriptName !== undefined)
@@ -57,10 +56,9 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 );
 
                 // Query the search result
-                this.model.fetch({success: this.updatePaginationView});
-                this.listenTo(this.model, 'sync', this.registerClickEvents);
+                this.collection.fetch({success: this.updatePaginationView});
+                this.listenTo(this.collection, 'sync', this.registerClickEvents);
                 this.listenTo(this.paginationView, 'change', this.updatePage);
-                //this.listenTo(this.model, 'sync', this.updatePaginationView);
             },
 
             /**
@@ -68,10 +66,12 @@ define( ['App', 'backbone', 'marionette', 'jquery',
              */
             registerClickEvents: function()
             {
+                // FIXME(wabain): this is wrong on so many levels
+
                 // Clear out the events
                 this.events = {};
                 // Menu items
-                for (var i = 0; i < this.model.get("results").length; i++)
+                for (var i = 0; i < this.collection.length; i++)
                 {
                     this.events["click .search-result-" + i] = "buttonClickCallback";
                 }
@@ -87,7 +87,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 var splitName = event.target.className.split("-");
                 var newIndex = parseInt(splitName[splitName.length - 1], 10);
                 // Redirect us to the new url!
-                Backbone.history.navigate(this.model.getFormattedData()[newIndex].url,
+                Backbone.history.navigate(this.collection.get(newIndex).getFormattedData().url,
                     {trigger: true});
             },
 
@@ -100,11 +100,11 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             changeQuery: function(query, field)
             {
                 this.currentPage = 1;
-                this.model.setQuery(query);
-                this.model.setType(field);
+                this.collection.setQuery(query);
+                this.collection.setType(field);
                 this.query = String(query);
                 this.field = String(field);
-                this.model.fetch({success: this.updatePaginationView});
+                this.collection.fetch({success: this.updatePaginationView});
             },
 
             /**
@@ -114,7 +114,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             {
                 // Update the paginator parameters.
                 this.paginationView.setParams(
-                    this.model.get("numFound"),
+                    this.collection.metadata ? this.collection.metadata.numFound : 0,
                     this.pageSize,
                     this.currentPage);
 
@@ -130,8 +130,8 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 // Grab the page from the event arguments.  Make sure it's over 0.
                 this.currentPage = Math.max(args.page, 0);
                 // Rebuild the model with a modified query.  If the page is less than 0 then make it 0
-                this.model.setQuery(this.query + "&start=" + (this.pageSize * (Math.max(this.currentPage - 1,0))));
-                this.model.fetch();
+                this.collection.setQuery(this.query + "&start=" + (this.pageSize * (Math.max(this.currentPage - 1,0))));
+                this.collection.fetch();
             },
 
             /**
@@ -144,7 +144,9 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 return {
                     showManuscriptName: this.showManuscriptName,
                     searchType: this.field,
-                    results: this.model.getFormattedData()
+                    results: this.collection.map(function (model) {
+                        return model.getFormattedData();
+                    })
                 };
             },
 
@@ -152,8 +154,8 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             {
                 //var test = new SearchResult("dom%20%20AND%20manuscript:%22CDN-Hsmu%20M2149.L4%22");
                 //test.fetch();
-                this.resultRegion.show(new SearchResultItemView({
-                    model: this.model,
+                this.resultRegion.show(new SearchResultCollectionView({
+                    collection: this.collection,
                     searchField: this.field,
                     showManuscriptName: this.showManuscriptName
                 }));
@@ -167,7 +169,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
              */
             hide: function()
             {
-                this.model.clear();
+                this.collection.set([]);
             }
         });
     });

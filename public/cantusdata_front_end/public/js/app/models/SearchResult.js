@@ -6,136 +6,56 @@ define(["jquery", "backbone", "config/GlobalVars"],
         /**
          * This represents a search result.  It is experimental.
          */
-        return Backbone.Model.extend
-        ({
-            // Sometimes overridden
-            searchPage: "search/?q=",
-
-            searchType: undefined,
-
-            initialize: function(pQuery)
-            {
-                this.setQuery(pQuery);
-            },
-
-            /**
-             * Set the query.
-             *
-             * @param query
-             */
-            setQuery: function(query)
-            {
-                this.url = GlobalVars.siteUrl + this.searchPage + query;
-            },
-
-            /**
-             * Set the type of query.
-             *
-             * @param type
-             */
-            setType: function(type)
-            {
-                this.searchType = String(type);
-            },
-
-            /**
-             * Get the type of search.
-             *
-             * @returns {*}
-             */
-            getSearchType: function()
-            {
-                return this.searchType;
-            },
-
-            /**
-             * Get the query field with the manuscript selection stripped.
-             *
-             * @returns {*}
-             */
-            getQueryWithoutManuscript: function()
-            {
-                var fullQuery = this.get("query");
-
-                if (fullQuery !== undefined)
-                {
-                    return this.get("query").replace(/AND manuscript:"[^\"]*"/g, '');
-                }
-                else
-                {
-                    return "";
-                }
-            },
-
+        return Backbone.Model.extend({
             /**
              * Formats the data to be printed in a search result list.
              */
             getFormattedData: function()
             {
-                var output = [];
+                // FIXME(wabain): some of this should be happening in model.parse, and some
+                // in a template helper or something
 
-                //_.each(this.get("results"), function(current)
+                var result = this.attributes;
 
-                var results = this.get("results");
+                var newElement = {};
+                // Remove "cantusdata_" from the type string
+                newElement.model = result.type.split("_")[1];
+                newElement.name = result.Name;
 
-                console.log("Results:", results);
-
-                if (results !== undefined)
+                // Figure out what the name is based on the model in question
+                switch(newElement.model)
                 {
-                    for (var i = 0; i < results.length; i++)
-                    {
-                        var newElement = {};
-                        // Remove "cantusdata_" from the type string
-                        newElement.model = results[i].type.split("_")[1];
-                        newElement.name = results[i].Name;
+                    case "manuscript":
+                        newElement.name = result.name;
+                        // Build the url
+                        newElement.url = "/" + newElement.model + "/" + result.item_id + "/";
+                        break;
 
-                        // Figure out what the name is based on the model in question
-                        switch(newElement.model)
-                        {
-                            case "manuscript":
-                                newElement.name = results[i].name;
-                                // Build the url
-                                newElement.url = "/" + newElement.model + "/" + results[i].item_id + "/";
-                                break;
+                    case "chant":
+                        newElement.name = result.incipit;
+                        // Build the url
+                        // We have stored the manuscript name in Solr
+                        newElement.manuscript = result.manuscript_name_hidden;
+                        newElement.folio = result.folio;
+                        newElement.mode = result.mode;
+                        newElement.volpiano = this.highlightVolpianoResult(result.volpiano);
+                        newElement.url = "/manuscript/" + result.manuscript_id + "/?folio=" + result.folio + "&chant=" + result.sequence;
+                        break;
 
-                            case "chant":
-                                newElement.name = results[i].incipit;
-                                // Build the url
-                                // We have stored the manuscript name in Solr
-                                newElement.manuscript = results[i].manuscript_name_hidden;
-                                newElement.folio = results[i].folio;
-                                newElement.mode = results[i].mode;
-                                newElement.volpiano = this.highlightVolpianoResult(results[i].volpiano);
-                                newElement.url = "/manuscript/" + results[i].manuscript_id + "/?folio=" + results[i].folio + "&chant=" + results[i].sequence;
-                                break;
+                    case "concordance":
+                        newElement.name = result.name;
+                        // Build the url
+                        newElement.url = "/" + newElement.model + "/" + result.item_id + "/";
+                        break;
 
-                            case "concordance":
-                                newElement.name = results[i].name;
-                                // Build the url
-                                newElement.url = "/" + newElement.model + "/" + results[i].item_id + "/";
-                                break;
-
-                            case "folio":
-                                newElement.name = results[i].name;
-                                // Build the url
-                                newElement.url = "/" + newElement.model + "/" + results[i].item_id + "/";
-                                break;
-                        }
-                        output.push(newElement);
-                    }
+                    case "folio":
+                        newElement.name = result.name;
+                        // Build the url
+                        newElement.url = "/" + newElement.model + "/" + result.item_id + "/";
+                        break;
                 }
 
-                return output;
-            },
-
-            /**
-             * An empty search is empty.
-             */
-            defaults: function()
-            {
-                return {
-                    results: []
-                };
+                return newElement;
             },
 
             /**
@@ -147,8 +67,11 @@ define(["jquery", "backbone", "config/GlobalVars"],
              */
             highlightVolpianoResult: function(result)
             {
+                if (!(this.metadata && this.metadata.query))
+                    return null;
+
                 // Try to match the regex first
-                var regexMatch = this.get("query").match(/volpiano: ?\(\"([^\"]*)\"\)/);
+                var regexMatch = this.metadata.query.match(/volpiano: ?\(\"([^\"]*)\"\)/);
 
                 // Handle the case where there is no volpiano query
                 if (regexMatch === null || regexMatch === undefined)
