@@ -152,7 +152,11 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             {
                 //var test = new SearchResult("dom%20%20AND%20manuscript:%22CDN-Hsmu%20M2149.L4%22");
                 //test.fetch();
-                this.resultRegion.show(new SearchResultItemView(this.model, this.field));
+                this.resultRegion.show(new SearchResultItemView({
+                    model: this.model,
+                    searchField: this.field,
+                    showManuscriptName: this.showManuscriptName
+                }));
                 this.paginationRegion.show(this.paginationView);
 
                 GlobalEventHandler.trigger("renderView");

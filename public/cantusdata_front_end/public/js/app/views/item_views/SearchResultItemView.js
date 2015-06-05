@@ -15,17 +15,22 @@ define( ['App', 'marionette'],
              */
             searchField: undefined,
 
-            showManuscriptName: false,
+            showManuscriptName: true,
 
             modelEvents:
             {
                 "change": "render"
             },
 
-            initialize: function(model, searchField)
+            initialize: function(options)
             {
-                this.model = model;
-                this.searchField = searchField;
+                // FIXME(wabain): update this to use mergeOptions after updating Marionette
+                this.model = options.model;
+                this.searchField = options.searchField;
+
+                if ('showManuscriptName' in options) {
+                    this.showManuscriptName = options.showManuscriptName;
+                }
             },
 
             serializeData: function()
