@@ -23,7 +23,7 @@ class Command(BaseCommand):
             raise ValueError("Please provide a file name!")
 
         # Load in the csv file.  This is a massive list of dictionaries.
-        with open(open("data_dumps/" + str(csv_file_name))) as csv_file:
+        with open("data_dumps/" + str(csv_file_name)) as csv_file:
             csv_content = csv.DictReader(csv_file)
             self.stdout.write("Starting chant import process.")
 
