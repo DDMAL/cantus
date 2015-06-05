@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models.signals import post_save, post_delete
-from django.dispatch import receiver
+
+from cantusdata.helpers.signal_wrangler import retrievable_receiver
 
 
 class Concordance(models.Model):
@@ -83,7 +84,7 @@ class Concordance(models.Model):
         return False
 
 
-@receiver(post_save, sender=Concordance, dispatch_uid='cantusdata_concordance_solr_add')
+@retrievable_receiver(post_save, sender=Concordance, dispatch_uid='cantusdata_concordance_solr_add')
 def solr_index(sender, instance, created, **kwargs):
     from django.conf import settings
     import solr
@@ -96,7 +97,7 @@ def solr_index(sender, instance, created, **kwargs):
     solrconn.commit()
 
 
-@receiver(post_delete, sender=Concordance, dispatch_uid='cantusdata_concordance_solr_delete')
+@retrievable_receiver(post_delete, sender=Concordance, dispatch_uid='cantusdata_concordance_solr_delete')
 def solr_delete(sender, instance, **kwargs):
     from django.conf import settings
     import solr

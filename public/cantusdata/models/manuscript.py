@@ -1,9 +1,11 @@
 from django.db import models
-from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
+from django.utils.text import slugify
+
 from cantusdata.models.folio import Folio
 from cantusdata.models.chant import Chant
-from django.utils.text import slugify
+
+from cantusdata.helpers.signal_wrangler import retrievable_receiver
 
 
 class Manuscript(models.Model):
@@ -102,7 +104,7 @@ class Manuscript(models.Model):
         self.save()
 
 
-@receiver(post_save, sender=Folio, dispatch_uid='cantusdata_manuscript_update_chant_count')
+@retrievable_receiver(post_save, sender=Folio, dispatch_uid='cantusdata_manuscript_update_chant_count')
 def auto_count_chants(sender, instance, **kwargs):
     """
     Compute the number of chants on the folio whenever a chant is saved.
@@ -110,7 +112,7 @@ def auto_count_chants(sender, instance, **kwargs):
     instance.manuscript.update_chant_count()
 
 
-@receiver(post_save, sender=Manuscript, dispatch_uid='cantusdata_manuscript_solr_add')
+@retrievable_receiver(post_save, sender=Manuscript, dispatch_uid='cantusdata_manuscript_solr_add')
 def solr_index(sender, instance, created, **kwargs):
     from django.conf import settings
     import solr
@@ -124,7 +126,7 @@ def solr_index(sender, instance, created, **kwargs):
         solrconn.commit()
 
 
-@receiver(post_delete, sender=Manuscript, dispatch_uid='cantusdata_manuscript_solr_delete')
+@retrievable_receiver(post_delete, sender=Manuscript, dispatch_uid='cantusdata_manuscript_solr_delete')
 def solr_delete(sender, instance, **kwargs):
     from django.conf import settings
     import solr

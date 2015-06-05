@@ -1,7 +1,9 @@
 from django.db import models
-from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
+
 from cantusdata.models.concordance import Concordance
+
+from cantusdata.helpers.signal_wrangler import retrievable_receiver
 
 
 class Chant(models.Model):
@@ -99,7 +101,7 @@ class Chant(models.Model):
         return False
 
 
-@receiver(post_save, sender=Chant, dispatch_uid='cantusdata_chant_solr_add')
+@retrievable_receiver(post_save, sender=Chant, dispatch_uid='cantusdata_chant_solr_add')
 def solr_index(sender, instance, created, **kwargs):
     from django.conf import settings
     import solr
@@ -112,7 +114,7 @@ def solr_index(sender, instance, created, **kwargs):
     solrconn.commit()
 
 
-@receiver(post_delete, sender=Chant, dispatch_uid='cantusdata_chant_solr_delete')
+@retrievable_receiver(post_delete, sender=Chant, dispatch_uid='cantusdata_chant_solr_delete')
 def solr_delete(sender, instance, **kwargs):
     from django.conf import settings
     import solr

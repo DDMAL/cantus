@@ -1,7 +1,8 @@
 from django.db import models
-from cantusdata.models.chant import Chant
 from django.db.models.signals import post_save, post_delete
-from django.dispatch import receiver
+
+from cantusdata.models.chant import Chant
+from cantusdata.helpers.signal_wrangler import retrievable_receiver
 
 
 class Folio(models.Model):
@@ -59,12 +60,12 @@ class Folio(models.Model):
         return u"{0} - {1}".format(self.number, self.manuscript)
 
 
-@receiver(post_delete, sender=Chant, dispatch_uid='cantusdata_folio_decrement_chant_count')
+@retrievable_receiver(post_delete, sender=Chant, dispatch_uid='cantusdata_folio_decrement_chant_count')
 def pre_chant_delete(sender, instance, **kwargs):
     auto_count_chants(instance)
 
 
-@receiver(post_save, sender=Chant, dispatch_uid='cantusdata_folio_increment_chant_count')
+@retrievable_receiver(post_save, sender=Chant, dispatch_uid='cantusdata_folio_increment_chant_count')
 def post_chant_save(sender, instance, **kwargs):
     auto_count_chants(instance)
 
@@ -77,7 +78,7 @@ def auto_count_chants(chant):
         chant.folio.update_chant_count()
 
 
-@receiver(post_save, sender=Folio, dispatch_uid='cantusdata_folio_solr_add')
+@retrievable_receiver(post_save, sender=Folio, dispatch_uid='cantusdata_folio_solr_add')
 def solr_index(sender, instance, created, **kwargs):
     from django.conf import settings
     import solr
@@ -90,7 +91,7 @@ def solr_index(sender, instance, created, **kwargs):
     solrconn.commit()
 
 
-@receiver(post_delete, sender=Folio, dispatch_uid='cantusdata_folio_solr_delete')
+@retrievable_receiver(post_delete, sender=Folio, dispatch_uid='cantusdata_folio_solr_delete')
 def solr_delete(sender, instance, **kwargs):
     from django.conf import settings
     import solr
