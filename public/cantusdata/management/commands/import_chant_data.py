@@ -11,6 +11,9 @@ from cantusdata.helpers import expandr
 from cantusdata.helpers.signal_wrangler import signal_receivers_disconnected
 
 
+# FIXME: this command is much slower than it could be
+#   see https://github.com/DDMAL/cantus/issues/185
+
 class Command(BaseCommand):
     args = ""
 
