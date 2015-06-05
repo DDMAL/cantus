@@ -102,7 +102,7 @@ class Manuscript(models.Model):
         self.save()
 
 
-@receiver(post_save, sender=Folio)
+@receiver(post_save, sender=Folio, dispatch_uid='cantusdata_manuscript_update_chant_count')
 def auto_count_chants(sender, instance, **kwargs):
     """
     Compute the number of chants on the folio whenever a chant is saved.
@@ -110,7 +110,7 @@ def auto_count_chants(sender, instance, **kwargs):
     instance.manuscript.update_chant_count()
 
 
-@receiver(post_save, sender=Manuscript)
+@receiver(post_save, sender=Manuscript, dispatch_uid='cantusdata_manuscript_solr_add')
 def solr_index(sender, instance, created, **kwargs):
     from django.conf import settings
     import solr
@@ -124,7 +124,7 @@ def solr_index(sender, instance, created, **kwargs):
         solrconn.commit()
 
 
-@receiver(post_delete, sender=Manuscript)
+@receiver(post_delete, sender=Manuscript, dispatch_uid='cantusdata_manuscript_solr_delete')
 def solr_delete(sender, instance, **kwargs):
     from django.conf import settings
     import solr

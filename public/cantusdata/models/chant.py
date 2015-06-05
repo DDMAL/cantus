@@ -99,7 +99,7 @@ class Chant(models.Model):
         return False
 
 
-@receiver(post_save, sender=Chant)
+@receiver(post_save, sender=Chant, dispatch_uid='cantusdata_chant_solr_add')
 def solr_index(sender, instance, created, **kwargs):
     from django.conf import settings
     import solr
@@ -112,7 +112,7 @@ def solr_index(sender, instance, created, **kwargs):
     solrconn.commit()
 
 
-@receiver(post_delete, sender=Chant)
+@receiver(post_delete, sender=Chant, dispatch_uid='cantusdata_chant_solr_delete')
 def solr_delete(sender, instance, **kwargs):
     from django.conf import settings
     import solr

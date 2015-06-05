@@ -83,7 +83,7 @@ class Concordance(models.Model):
         return False
 
 
-@receiver(post_save, sender=Concordance)
+@receiver(post_save, sender=Concordance, dispatch_uid='cantusdata_concordance_solr_add')
 def solr_index(sender, instance, created, **kwargs):
     from django.conf import settings
     import solr
@@ -96,7 +96,7 @@ def solr_index(sender, instance, created, **kwargs):
     solrconn.commit()
 
 
-@receiver(post_delete, sender=Concordance)
+@receiver(post_delete, sender=Concordance, dispatch_uid='cantusdata_concordance_solr_delete')
 def solr_delete(sender, instance, **kwargs):
     from django.conf import settings
     import solr
