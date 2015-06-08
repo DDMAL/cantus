@@ -15,14 +15,10 @@ define( ['App', 'marionette', 'views/item_views/SearchResultItemView'],
             childView: SearchResultItemView,
             childViewContainer: '.child-container',
 
-            childViewOptions: {
-                showManuscriptName: true
-            },
-
             showManuscriptName: true,
 
             /**
-             * The type of search.  "all fields", "volpiano", etc.
+             * The type of search.  "all", "volpiano", etc.
              */
             searchField: null,
 
@@ -31,16 +27,19 @@ define( ['App', 'marionette', 'views/item_views/SearchResultItemView'],
                 "sync": "render"
             },
 
-            initialize: function(options)
+            initialize: function()
             {
                 // FIXME(wabain): update this to use mergeOptions after updating Marionette
-                this.searchField = this.childViewOptions.searchField = options.searchField;
+                this.searchField = this.getOption('searchField');
+                this.showManuscriptName = this.getOption('showManuscriptName');
+            },
 
-                if ('showManuscriptName' in options) {
-                    this.showManuscriptName = this.childViewOptions.showManuscriptName = options.showManuscriptName;
-                }
-
-                console.log('childViewOptions are', this.childViewOptions);
+            childViewOptions: function ()
+            {
+                return {
+                    searchField: this.searchField,
+                    showManuscriptName: this.showManuscriptName
+                };
             },
 
             serializeData: function()
