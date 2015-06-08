@@ -1,18 +1,10 @@
 <td><a href="<%= result.url %>" class="search-result-<%= index %>"><%= result.name %></a></td>
 <td><%= result.model %></td>
 <% if (showManuscriptName) { %>
-<% if (result.manuscript !== undefined) { %>
 <td><%= result.manuscript %></td>
-<% } else { %>
-<td></td>
-<% } %>
 <% } %>
 <td><%= result.mode %></td>
-<% if (result.folio !== undefined) { %>
 <td><%= result.folio %></td>
-<% } else { %>
-<td></td>
-<% } %>
 <% if (searchType === "volpiano" && result.volpiano !== undefined) { %>
 <!-- FIMXE(wabain): this really belongs below the rest of the result information -->
 <td colspan="5"><p class="volpiano"><%= result.volpiano %></p></td>
