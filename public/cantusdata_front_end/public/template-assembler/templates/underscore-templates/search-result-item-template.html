@@ -1,11 +1,22 @@
-<td><a href="<%= result.url %>" class="search-result-<%= index %>"><%= result.name %></a></td>
-<td><%= result.model %></td>
-<% if (showManuscriptName) { %>
-<td><%= result.manuscript %></td>
-<% } %>
-<td><%= result.mode %></td>
-<td><%= result.folio %></td>
+<tr>
+    <td>
+        <a href="<%= result.url %>" class="search-result-<%= index %>"><%= result.name %></a>
+    </td>
+
+    <% if (showManuscriptName) { %>
+    <td><%= result.manuscript %></td>
+    <% } %>
+
+    <td><%= result.mode %></td>
+
+    <td><%= result.folio %></td>
+
+    <td>
+        <div class="label label-default"><%= result.model %></div>
+    </td>
+</tr>
 <% if (searchType === "volpiano" && result.volpiano !== undefined) { %>
-<!-- FIMXE(wabain): this really belongs below the rest of the result information -->
-<td colspan="5"><p class="volpiano"><%= result.volpiano %></p></td>
+<tr>
+    <td colspan="5"><p class="volpiano"><%= result.volpiano %></p></td>
+</tr>
 <% } %>

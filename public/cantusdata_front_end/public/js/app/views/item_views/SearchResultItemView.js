@@ -9,7 +9,10 @@ define(['marionette'],
         return Marionette.ItemView.extend({
             template: "#search-result-item-template",
 
-            tagName: 'tr',
+            // Note that having more than one tbody element is perfectly legal:
+            // see permitted content in
+            // <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/table>
+            tagName: 'tbody',
 
             showManuscriptName: true,
             searchType: null,

@@ -3,21 +3,18 @@
     <h4>Results: <%= numFound %></h4>
 </div>
 <% if (numFound > 0) { %>
-<table table class="table table-striped results-list">
+<table table class="table table-striped results-list child-container">
     <thead>
         <tr>
             <th>Name</th>
-            <th>Type</th>
             <% if (showManuscriptName === true) { %>
             <th>Manuscript</th>
             <% } %>
             <th>Mode</th>
             <th>Folio</th>
+            <th>Type</th>
         </tr>
     </thead>
-    <tbody class="child-container">
-        {# Children go here #}
-    </tbody>
 </table>
 <% } else { %>
 {# FIXME(wabain): use an emptyView so this isn't necessary #}
