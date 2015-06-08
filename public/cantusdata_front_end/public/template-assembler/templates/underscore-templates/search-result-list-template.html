@@ -2,7 +2,6 @@
     <h4>Query: <%= query %></h4>
     <h4>Results: <%= numFound %></h4>
 </div>
-<% if (numFound > 0) { %>
 <table table class="table table-striped results-list child-container">
     <thead>
         <tr>
@@ -16,7 +15,3 @@
         </tr>
     </thead>
 </table>
-<% } else { %>
-{# FIXME(wabain): use an emptyView so this isn't necessary #}
-<div class="child-container"></div>
-<% } %>

@@ -24,11 +24,18 @@ define( ['App', 'marionette', 'views/item_views/SearchResultItemView'],
 
             // Re-render even if hypothetically no items were added or removed, since metadata could change
             collectionEvents: {
-                "sync": "render"
+                "sync": "render",
+                "add remove reset": "updateResultListStyling"
+            },
+
+            ui: {
+                resultList: '.result-list'
             },
 
             initialize: function()
             {
+                _.bindAll(this, 'updateResultListStyling');
+
                 // FIXME(wabain): update this to use mergeOptions after updating Marionette
                 this.searchField = this.getOption('searchField');
                 this.showManuscriptName = this.getOption('showManuscriptName');
@@ -40,6 +47,18 @@ define( ['App', 'marionette', 'views/item_views/SearchResultItemView'],
                     searchField: this.searchField,
                     showManuscriptName: this.showManuscriptName
                 };
+            },
+
+            /**
+             * Hide the result table if there are no results in it
+             * (it doesn't make sense to show just a header)
+             */
+            updateResultListStyling: function ()
+            {
+                if (this.collection.length === 0)
+                    this.ui.resultList.hide();
+                else
+                    this.ui.resultList.show();
             },
 
             serializeData: function()
