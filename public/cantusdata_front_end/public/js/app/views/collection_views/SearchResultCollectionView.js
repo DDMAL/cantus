@@ -17,15 +17,9 @@ define( ['App', 'marionette', 'views/item_views/SearchResultItemView'],
 
             showManuscriptName: true,
 
-            /**
-             * The type of search.  "all", "volpiano", etc.
-             */
-            searchField: null,
-
-            // Re-render even if hypothetically no items were added or removed, since metadata could change
             collectionEvents: {
-                "sync": "render",
-                "add remove reset": "updateResultListStyling"
+                "sync reset": "render",
+                "add remove": "hideIfEmpty"
             },
 
             ui: {
@@ -34,39 +28,58 @@ define( ['App', 'marionette', 'views/item_views/SearchResultItemView'],
 
             initialize: function()
             {
-                _.bindAll(this, 'updateResultListStyling');
+                _.bindAll(this, 'hideIfEmpty');
 
                 // FIXME(wabain): update this to use mergeOptions after updating Marionette
-                this.searchField = this.getOption('searchField');
+                this.searchParameters = this.getOption('searchParameters');
                 this.showManuscriptName = this.getOption('showManuscriptName');
             },
 
             childViewOptions: function ()
             {
                 return {
-                    searchField: this.searchField,
+                    searchType: this.searchParameters.get('field'),
+                    query: this.searchParameters.get('query'),
                     showManuscriptName: this.showManuscriptName
                 };
             },
 
-            /**
-             * Hide the result table if there are no results in it
-             * (it doesn't make sense to show just a header)
-             */
-            updateResultListStyling: function ()
+            onRenderTemplate: function ()
             {
-                if (this.collection.length === 0)
-                    this.ui.resultList.hide();
+                this.hideIfEmpty();
+            },
+
+            /**
+             * If there is no query then hide the view. If there is a
+             * query but no results then hide the result table.
+             */
+            hideIfEmpty: function ()
+            {
+                // Catch the condition where this is fired before the template has been rendered
+                if (!this.$el)
+                    return;
+
+                if (!this.searchParameters.get('query'))
+                {
+                    this.$el.hide();
+                }
                 else
-                    this.ui.resultList.show();
+                {
+                    this.$el.show();
+
+                    if (this.collection.length === 0)
+                        this.ui.resultList.hide();
+                    else
+                        this.ui.resultList.show();
+                }
             },
 
             serializeData: function()
             {
                 return {
-                    query: this.collection.getQueryWithoutManuscript(),
+                    query: this.searchParameters.get('query'),
+                    searchType: this.searchParameters.get('field'),
                     numFound: this.collection.metadata ? this.collection.metadata.numFound : 0,
-                    searchType: this.collection.getSearchType(),
                     showManuscriptName: this.showManuscriptName
                 };
             }

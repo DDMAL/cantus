@@ -10,7 +10,7 @@ define(["jquery", "backbone", "config/GlobalVars"],
             /**
              * Formats the data to be printed in a search result list.
              */
-            getFormattedData: function()
+            getFormattedData: function(searchType, query)
             {
                 // FIXME(wabain): some of this should be happening in model.parse, and some
                 // in a template helper or something
@@ -38,7 +38,9 @@ define(["jquery", "backbone", "config/GlobalVars"],
                         newElement.manuscript = result.manuscript_name_hidden;
                         newElement.folio = result.folio;
                         newElement.mode = result.mode;
-                        newElement.volpiano = this.highlightVolpianoResult(result.volpiano);
+                        newElement.volpiano = searchType === 'volpiano' ?
+                            this.highlightVolpianoResult(result.volpiano, query) :
+                            result.volpiano;
                         newElement.url = "/manuscript/" + result.manuscript_id + "/?folio=" + result.folio + "&chant=" + result.sequence;
                         break;
 
@@ -65,23 +67,10 @@ define(["jquery", "backbone", "config/GlobalVars"],
              * @param result volpiano result string
              * @returns {string} highlighted string
              */
-            highlightVolpianoResult: function(result)
+            highlightVolpianoResult: function(result, query)
             {
-                if (!(this.metadata && this.metadata.query))
-                    return null;
-
-                // Try to match the regex first
-                var regexMatch = this.metadata.query.match(/volpiano: ?\(\"([^\"]*)\"\)/);
-
-                // Handle the case where there is no volpiano query
-                if (regexMatch === null || regexMatch === undefined)
-                    return result;
-
-                // The query string will always be the second value in the array
-                var rawVolpianoQuery = regexMatch[1];
-
                 // Format the volpiano as a regex with optional dashes
-                var regex = this.formatVolpianoWithDashesRegex(rawVolpianoQuery);
+                var regex = this.formatVolpianoWithDashesRegex(query);
                 // Grab all matches from that regex
                 var regexMatches = result.match(regex);
 

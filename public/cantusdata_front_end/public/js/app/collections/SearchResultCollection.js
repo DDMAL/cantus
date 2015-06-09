@@ -7,15 +7,13 @@ define(["jquery", "backbone", "models/SearchResult", "config/GlobalVars"],
         return Backbone.Collection.extend({
             // Sometimes overridden
             // TODO(wabain): find out what would override this and why
-            searchPage: "search/?q=",
-
-            searchType: undefined,
+            searchPage: "search/",
 
             model: SearchResult,
 
             initialize: function(pQuery)
             {
-                this.setQuery(pQuery);
+                this.setQuery(pQuery || '');
             },
 
             /**
@@ -25,17 +23,7 @@ define(["jquery", "backbone", "models/SearchResult", "config/GlobalVars"],
              */
             setQuery: function(query)
             {
-                this.query = query;
-            },
-
-            /**
-             * Set the type of query.
-             *
-             * @param type
-             */
-            setType: function(type)
-            {
-                this.searchType = String(type);
+                this.query = '' + query;
             },
 
             /**
@@ -45,7 +33,7 @@ define(["jquery", "backbone", "models/SearchResult", "config/GlobalVars"],
              */
             url: function ()
             {
-                return GlobalVars.siteUrl + this.searchPage + this.query;
+                return GlobalVars.siteUrl + this.searchPage + '?' + this.query;
             },
 
             /**
@@ -62,35 +50,6 @@ define(["jquery", "backbone", "models/SearchResult", "config/GlobalVars"],
 
                 this.metadata = response;
                 return response.results || [];
-            },
-
-            /**
-             * Get the type of search.
-             *
-             * @returns {*}
-             */
-            getSearchType: function()
-            {
-                return this.searchType;
-            },
-
-            /**
-             * Get the query field with the manuscript selection stripped.
-             *
-             * @returns {*}
-             */
-            getQueryWithoutManuscript: function()
-            {
-                var fullQuery = this.get("query");
-
-                if (fullQuery !== undefined)
-                {
-                    return this.get("query").replace(/AND manuscript:"[^\"]*"/g, '');
-                }
-                else
-                {
-                    return "";
-                }
             }
         });
     }

@@ -1,5 +1,5 @@
-define(['marionette'],
-    function(Marionette) {
+define(['backbone', 'marionette'],
+    function(Backbone, Marionette) {
 
         "use strict";
 
@@ -17,29 +17,41 @@ define(['marionette'],
             showManuscriptName: true,
             searchType: null,
 
-            initialize: function (options)
+            events: {
+                'click a.search-result': 'goToResult'
+            },
+
+            initialize: function ()
             {
                 // FIXME(wabain): use mergeOptions after upgrading marionette
-                if ('showManuscriptName' in options) {
-                    this.showManuscriptName = options.showManuscriptName;
-                }
+                this.showManuscriptName = this.getOption('showManuscriptName');
+                this.searchType = this.getOption('searchType');
+                this.query = this.getOption('query');
+            },
 
-                if ('searchType' in options) {
-                    this.searchType = options.searchType;
+            goToResult: function (event)
+            {
+                var href = $(event.currentTarget).attr('href');
+
+                // Navigate to the result
+                if (href)
+                {
+                    event.preventDefault();
+
+                    // FIXME(wabain): for now we need to trigger a page reload to
+                    // get to a result because events aren't fired properly to update
+                    // the UI if we navigate with trigger: false
+                    // See issue #187.
+                    Backbone.history.navigate(href, {trigger: true});
                 }
             },
 
             serializeData: function()
             {
-                // FIXME(wabain): this is terrible, but I'll be refactoring
-                // out the code that relies on having the index anyway
-                var index = this.model.collection.indexOf(this.model);
-
                 return {
-                    index: index,
                     showManuscriptName: this.showManuscriptName,
                     searchType: this.searchType,
-                    result: this.model.getFormattedData()
+                    result: this.model.getFormattedData(this.searchType, this.query)
                 };
             }
         });
