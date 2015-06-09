@@ -34,10 +34,14 @@ class SearchView(APIView):
 
         search_results = s.search()
 
-        result = dict({'query': querydict['q'],
-                       'numFound': search_results.numFound,
-                       'results': search_results,
-                       'facets': facets.facet_counts}.items()
-                      + s.solr_params.items())
+        result = {
+            'query': querydict['q'],
+            'numFound': search_results.numFound,
+            'results': search_results,
+            'facets': facets.facet_counts
+        }
+
+        result.update(s.solr_params)
+
         response = Response(result)
         return response
