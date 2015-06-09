@@ -29,7 +29,11 @@ class SearchView(APIView):
             return Response({'query': '', 'numFound': 0, 'results': [],
                              'facets': facets.facet_counts})
 
-        search_results = s.search(rows=15)
+        # Search for fifteen rows by default
+        s.solr_params.setdefault('rows', 15)
+
+        search_results = s.search()
+
         result = dict({'query': querydict['q'],
                        'numFound': search_results.numFound,
                        'results': search_results,
