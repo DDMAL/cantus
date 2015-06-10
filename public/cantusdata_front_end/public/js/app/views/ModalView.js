@@ -1,7 +1,7 @@
-define( ['App', 'backbone', 'marionette', 'jquery',
+define( ['App', 'jquery',
         "views/CantusAbstractView",
         "singletons/GlobalEventHandler"],
-    function(App, Backbone, Marionette, $, CantusAbstractView, GlobalEventHandler, template) {
+    function(App, $, CantusAbstractView, GlobalEventHandler) {
 
         "use strict";
 

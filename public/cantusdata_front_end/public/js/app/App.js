@@ -1,9 +1,9 @@
-define(['jquery', 'backbone', 'marionette', 'underscore'],
-    function ($, Backbone, Marionette, _) {
+define(['jquery', 'backbone', 'marionette'],
+    function ($, Backbone, Marionette) {
         "use strict";
 
 
-        var App = new Backbone.Marionette.Application();
+        var App = new Marionette.Application();
 
         //Organize Application into regions corresponding to DOM elements
         //Regions can contain views, Layouts, or subregions nested as necessary
@@ -13,7 +13,6 @@ define(['jquery', 'backbone', 'marionette', 'underscore'],
 //        });
 
         App.addInitializer(function () {
-            console.log('Starting history.');
             Backbone.history.start({ pushState: true });
         });
 

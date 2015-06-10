@@ -1,60 +1,86 @@
-define(["jquery", "backbone", "singletons/GlobalEventHandler"],
-    function($, Backbone, GlobalEventHandler) {
+define(["underscore", "backbone", "singletons/GlobalEventHandler", "objects/OpenChantState"],
+    function(_, Backbone, GlobalEventHandler, OpenChantState) {
 
         "use strict";
 
         /**
-         * Handles the global state.  Updates URLs.
+         * Handles the global state.  Updates URLs and page title
          */
         return Backbone.Model.extend
         ({
-            manuscript: undefined,
-            folio: undefined,
-            chant: undefined,
+            defaults: {
+                manuscript: undefined,
+                folio: undefined,
+                chant: undefined
+            },
 
             initialize: function()
             {
-                _.bindAll(this, "setManuscript", "setFolio", "setChant", "silentUrlUpdate");
+                _.bindAll(this, "setManuscript", "setFolio", "setChant");
+
+                this.on('change', this.updateUrl);
+
                 this.listenTo(GlobalEventHandler, 'ChangeManuscript', this.setManuscript);
                 this.listenTo(GlobalEventHandler, 'ChangeFolio', this.setFolio);
                 this.listenTo(GlobalEventHandler, 'ChangeChant', this.setChant);
-                this.listenTo(GlobalEventHandler, 'SilentUrlUpdate', this.silentUrlUpdate);
+                this.listenTo(GlobalEventHandler, 'ChangeDocumentTitle', this.setDocumentTitle);
             },
 
-            setManuscript: function(manuscript)
+            setManuscript: function(manuscript, params)
             {
-                this.manuscript = manuscript;
+                this.set('manuscript', manuscript, {stateChangeParams: params});
             },
 
-            setFolio: function(folio)
+            setFolio: function(folio, params)
             {
-                this.folio = folio;
+                this.set('folio', folio, {stateChangeParams: params});
             },
 
-            setChant: function(chant)
+            setChant: function(chant, params)
             {
-                this.chant = chant;
+                this.set('chant', chant, {stateChangeParams: params});
+            },
+
+            /**
+             * Set the title of the HTML document.
+             *
+             * @param title
+             */
+            setDocumentTitle: function(title)
+            {
+                this.documentTitle = "Cantus Ultimus — " + String(title);
+                document.title = this.documentTitle;
             },
 
             getUrl: function()
             {
-                var composed_url = "manuscript/" + this.manuscript + "/";
-                if (this.folio !== undefined && this.folio !== null)
+                /* jshint eqnull:true */
+
+                var composed_url = "manuscript/" + this.get('manuscript') + "/";
+
+                // Check that value is not null or undefined
+                if (this.get('folio') != null)
                 {
-                    composed_url = composed_url + "?folio=" + this.folio;
+                    composed_url = composed_url + "?folio=" + this.get('folio');
                 }
-                if (this.chant !== undefined && this.chant !== null)
+
+                if (this.get('chant') != null)
                 {
-                    composed_url = composed_url + "&chant=" + this.chant;
+                    composed_url = composed_url + "&chant=" + this.get('chant');
                 }
                 return composed_url;
             },
 
-            silentUrlUpdate: function()
+            /**
+             * Update the url without triggering a page reload
+             */
+            updateUrl: function(model, options)
             {
-                console.log("silentUrlUpdate()");
                 // Don't actually trigger the router!
-                Backbone.history.navigate(this.getUrl(), {trigger: false});
+                Backbone.history.navigate(this.getUrl(), {
+                    trigger: false,
+                    replace: _.result(options.stateChangeParams, 'replaceState')
+                });
             }
         });
     }

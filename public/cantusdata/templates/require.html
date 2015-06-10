@@ -1,0 +1,584 @@
+<!doctype html>
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7 ui-mobile-rendering" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8 ui-mobile-rendering" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9 ui-mobile-rendering" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js ui-mobile-rendering" lang="en"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" href="/static/css/bootstrap.css">
+    <link rel="stylesheet" href="/static/css/bootstrap-theme.css">
+    <link rel="stylesheet" href="/static/css/diva.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+
+    <!-- Use the .htaccess and remove these lines to avoid edge case issues.
+         More info: h5bp.com/i/378 -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+    <title>Cantus Ultimus</title>
+    <meta name="description" content="Marionette and Require.js Boilerplate Library">
+
+    <!-- Mobile viewport optimized: h5bp.com/viewport -->
+    <meta name="viewport" content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0, width=device-width">
+
+</head>
+<body>
+
+<div id="header-container">
+    <div id="page-header" class="header"></div>
+</div>
+<div id="content-container" class="container-fluid">
+    <div id="page-content" class="row content">
+        <div class="col-lg-12">
+            <div id="view-goes-here"></div>
+            <div id="search-modal"></div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/template" id="alert-template">
+<div class="alert alert-<%= role %>" role="alert"><%= content %></div>
+</script>
+
+<script type="text/template" id="chant-collection-template">
+<h4>Chants</h4>
+<div class="panel-group" id="accordion">
+    <% _.forEach(chants, function(chant, index) { %>
+    <div id="chant-<%= index %>" class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapse-<%= index %>">
+                    <%= chant.incipit %>
+                </a>
+            </h4>
+        </div>
+        <div id="collapse-<%= index %>" class="panel-collapse collapse <% if (index === unfoldedChant) { %>in<% } %>">
+            <div class="panel-body">
+                <% if (chant.marginalia) { %>
+                <p><b>Marginalia:</b> <%= chant.marginalia %></p>
+                <% } %>
+                <% if (chant.sequence) { %>
+                <p><b>Sequence: </b> <%= chant.sequence %></p>
+                <% } %>
+                <% if (chant.feast) { %>
+                <p><b>Feast: </b> <%= chant.feast %></p>
+                <% } %>
+                <% if (chant.office) { %>
+                <p><b>Office: </b> <%= chant.office %></p>
+                <% } %>
+                <% if (chant.genre) { %>
+                <p><b>Genre: </b> <%= chant.genre %></p>
+                <% } %>
+                <% if (chant.lit_position) { %>
+                <p><b>Lit Position: </b> <%= chant.lit_position %></p>
+                <% } %>
+                <% if (chant.mode) { %>
+                <p><b>Mode: </b> <%= chant.mode %></p>
+                <% } %>
+                <% if (chant.differentia) { %>
+                <p><b>Differentia: </b> <%= chant.differentia.replace('w', 'ω') %></p>
+                <% } %>
+                <% if (chant.finalis) { %>
+                <p><b>Finalis: </b> <%= chant.finalis %></p>
+                <% } %>
+                <hr/>
+                <h5>Full Text</h5>
+                <%= chant.full_text %>
+                <hr/>
+                <% if (chant.volpiano) { %>
+                <p class="volpiano"><%= chant.volpiano %></p>
+                <hr/>
+                <% } %>
+                <h5>Concordances</h5>
+                <ul>
+                    <% _.each(chant.concordances, function(concordance) { %>
+                    <li><%= concordance %></li>
+                    <% }); %>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <% }); %>
+</div>
+</script>
+
+<script type="text/template" id="chant-composite-template">
+<h4>Chants</h4>
+<div class="panel-group accordion"></div>
+<p class="error-messages"></p>
+</script>
+
+<script type="text/template" id="chant-item-template">
+{#    <div id="chant-<%= index %>" class="panel panel-default">#}
+{#    <div id="chant-<%= incipit %>" class="panel panel-default">#}
+<div class="panel-heading">
+    <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapse-<%= sequence %>">
+            {#                <a data-toggle="collapse" data-parent="#accordion" href="#collapse-<%= index %>">#}
+            <%= incipit %>
+        </a>
+    </h4>
+</div>
+<div id="collapse-<%= sequence %>" class="panel-collapse collapse">
+    <div class="panel-body">
+        <% if (marginalia) { %>
+        <p><b>Marginalia:</b> <%= marginalia %></p>
+        <% } %>
+        <% if (sequence) { %>
+        <p><b>Sequence: </b> <%= sequence %></p>
+        <% } %>
+        <% if (feast) { %>
+        <p><b>Feast: </b> <%= feast %></p>
+        <% } %>
+        <% if (office) { %>
+        <p><b>Office: </b> <%= office %></p>
+        <% } %>
+        <% if (genre) { %>
+        <p><b>Genre: </b> <%= genre %></p>
+        <% } %>
+        {#                <% if (lit_position) { %>#}
+        {#                <p><b>Lit Position: </b> <%= lit_position %></p>#}
+        {#                <% } %>#}
+        <% if (mode) { %>
+        <p><b>Mode: </b> <%= mode %></p>
+        <% } %>
+        <% if (differentia) { %>
+        <p><b>Differentia: </b> <%= differentia.replace('w', 'ω') %></p>
+        <% } %>
+        <% if (finalis) { %>
+        <p><b>Finalis: </b> <%= finalis %></p>
+        <% } %>
+        <hr/>
+        <h5>Full Text</h5>
+        <%= full_text %>
+        <% if (volpiano) { %>
+        <hr/>
+        <p class="volpiano"><%= volpiano %></p>
+        <% } %>
+    </div>
+</div>
+{#    </div>#}
+</script>
+
+<script type="text/template" id="concordance-collection-template">
+
+</script>
+
+<script type="text/template" id="diva-folio-advancer-template">
+<ul class="pager">
+    <li><a href="#" name="previous"><span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span> Previous Folio</a></li>
+    <li>
+        <a href="#" name="next">Next Folio <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></a>
+    </li>
+</ul>
+</script>
+
+<script type="text/template" id="diva-template">
+<div id="diva-toolbar"></div>
+<div id="diva-wrapper"></div>
+</script>
+
+<script type="text/template" id="empty-chant-collection-template">
+<h4>Chants</h4>
+<p>This folio does not contain musical data.</p>
+</script>
+
+<script type="text/template" id="folio-item-template">
+Folio <%= number %>
+</script>
+
+<script type="text/template" id="folio-template">
+<div class="row">
+    <div class="col-xs-6">
+        <div class="folio-item-region"></div>
+    </div>
+    <div class="col-xs-6">
+        <div class="diva-folio-advancer-region"></div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="chant-list-region"></div>
+    </div>
+</div>
+
+</script>
+
+<script type="text/template" id="folios-template">
+<h2>Folios</h2>
+<% _.forEach(folios, function(folio) { %>
+<p>Folio: <%= folio.number %></p>
+<% }); %>
+</script>
+
+<script type="text/template" id="header-template">
+<nav class="navbar navbar-default">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-responsive-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <a id="site-logo" class="navbar-brand" href="/">Cantus Ultimus</a>
+    </div>
+    <div class="navbar-collapse collapse navbar-responsive-collapse">
+        <ul id="top-menu" class="nav navbar-nav navbar-right">  </ul>
+    </div>
+</nav>
+</script>
+
+<script type="text/template" id="index-template">
+<div class="jumbotron">
+    <h1>Hey, do you like chants?</h1>
+    <p class="lead">If so, then we've got you covered!</p>
+    <p><a id="manuscripts-hero-button" class="btn btn-lg btn-primary" href="#" role="button">Check out the manuscripts</a></p>
+</div>
+</script>
+
+<script type="text/template" id="loading-bar-template">
+<div class="progress">
+    <div class="progress-bar" role="progressbar" aria-valuenow="<%= completion %>" aria-valuemin="0" aria-valuemax="100" style="width: <%= completion %>%;">
+        <% if (label) { %>
+        <%= label %>
+        <% } %>
+    </div>
+</div>
+</script>
+
+<script type="text/template" id="manuscript-collection-template">
+<table class="table table-striped">
+    <tr>
+        <th>Title</th>
+        <th>Siglum</th>
+        <th>Date</th>
+        <th>Provenance</th>
+        <th># Chants</th>
+    </tr>
+    <% for (var i = 0; i < manuscripts.length; i++) { %>
+    <tr>
+        <td><a id="manuscript-list-<%= i %>" href="<%= manuscripts[i].url %>" ><%= manuscripts[i].name %></a></td>
+        <td><%= manuscripts[i].siglum %></td>
+        <td><%= manuscripts[i].date %></td>
+        <td><%= manuscripts[i].provenance %></td>
+        <td><%= manuscripts[i].chant_count %></td>
+    </tr>
+    <% } %>
+</table>
+</script>
+
+<script type="text/template" id="manuscript-template">
+<div class="row">
+    <div id="diva-column" class="col-xs-6"></div>
+    <div class="col-xs-6">
+        <div id="manuscript-title-container" class="row">
+            <div class="column-md-12">
+                <h1 class="h3"><%= name %></h1>
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs nav-justified">
+                    <li class="active"><a href="#manuscript-folio-pane" data-toggle="tab">Folio</a></li>
+                    <li><a href="#manuscript-details-pane" data-toggle="tab">Manuscript Details</a></li>
+                    <li><a href="#manuscript-search-pane" data-toggle="tab">Search Manuscript</a></li>
+                </ul>
+            </div>
+        </div>
+        <div id="manuscript-data-container" class="row">
+            <div class="tab-pane col-md-12 active">
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div class="tab-pane active" id="manuscript-folio-pane" >
+                        <div id="folio"></div>
+                    </div>
+                    <div class="tab-pane" id="manuscript-details-pane">
+                        <h4>Siglum</h4>
+                        <p><%= siglum %></p>
+                        <h4>Date</h4>
+                        <p><%= date %></p>
+                        <h4>Provenance</h4>
+                        <p><%= provenance %></p>
+                        <h4>Description</h4>
+                        <p><%= description %></p>
+                    </div>
+                    <div class="tab-pane" id="manuscript-search-pane">
+                        <h3>Search this Manuscript</h3>
+
+                        <!-- Nav tabs -->
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="active"><a href="#text-search-container" role="tab" data-toggle="tab">Search</a></li>
+                            <li><a href="#notation-search-container" role="tab" data-toggle="tab">OMR Search</a></li>
+                        </ul>
+
+                        <!-- Tab panes -->
+                        <div class="tab-content">
+                            <div class="tab-pane active" id="text-search-container">
+                                <div id="manuscript-search"></div>
+                            </div>
+                            <div class="tab-pane" id="notation-search-container">
+                                <div id="search-notation"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</script>
+
+<script type="text/template" id="manuscripts-page-template">
+<h1>Manuscripts</h1>
+<div class="manuscript-list">Loading...</div>
+</script>
+
+<script type="text/template" id="modal-template">
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel"><%= title %></h4>
+            </div>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+</div>
+</script>
+
+<script type="text/template" id="pagination-template">
+<ul class="pagination">
+    <li class="page-back" <% if (currentPage <= 1) { %>class="disabled"<% } %> >
+    <a href="#">&laquo;</a>
+    </li>
+    <% for (var page = startPage; page <= endPage; page++) { %>
+    <li <% if (page == currentPage) { %>class="active"<% } %> >
+    <a href="#" class="page-<%= page %>"><%= page %></a>
+    </li>
+    <% } %>
+    <li class="page-forward" <% if (currentPage >= endPage) { %>class="disabled"<% } %> >
+    <a href="#">&raquo;</a>
+    </li>
+</ul>
+</script>
+
+<script type="text/template" id="search-all-template">
+<!-- Regular text input -->
+<input type="text" class="form-control search-input" placeholder="Search" value="<%= query %>">
+</script>
+
+<script type="text/template" id="search-mode-template">
+<select multiple class="form-control search-input">
+    <option value="1">Mode 1</option>
+    <option value="2">Mode 2</option>
+    <option value="3">Mode 3</option>
+    <option value="4">Mode 4</option>
+    <option value="5">Mode 5</option>
+    <option value="6">Mode 6</option>
+    <option value="7">Mode 7</option>
+    <option value="8">Mode 8</option>
+    <option>No Music</option>
+    <option>Responsory (simple)</option>
+    <option>Uncertain</option>
+    <option>Responsory (special)</option>
+    <option>Chant in Transposition</option>
+</select>
+</script>
+
+<script type="text/template" id="search-notation-template">
+<form class="form-inline" action="#">
+    <div class="form-group">
+        <select class="form-control search-field">
+            <% _.forEach(searchFields, function(field) { %>
+            <option value="<%= field.codeName %>"><%= field.name %>:</option>
+            <% }); %>
+        </select>
+    </div>
+    <div class="form-group">
+        <input class="form-control query-input" placeholder="Notation">
+    </div>
+    <button class="btn btn-default notation-search-submit-buttom" type="submit">Search</button>
+</form>
+
+<!--</form>-->
+<div class="note-search-results"></div>
+<div class="note-pagination"></div>
+
+<hr />
+<div class="glyph-types"></div>
+</script>
+
+<script type="text/template" id="search-page-template">
+<h1>Search</h1>
+<div id="search"></div>
+</script>
+
+<script type="text/template" id="search-result-item-template">
+<h4>Query: <%= query %></h4>
+<h4>Results: <%= numFound %></h4>
+
+<tbody>
+    <% for (var i = 0; i < results.length; i++) { %>
+    <tr>
+        <td><a href="<%= results[i].url %>" class="search-result-<%= i %>"><%= results[i].name %></a></td>
+        <td><%= results[i].model %></td>
+            <% if (showManuscriptName === true) { %>
+            <% if (results[i].manuscript !== undefined) { %>
+            <td><%= results[i].manuscript %></td>
+            <% } else { %>
+            <td></td>
+            <% } %>
+            <% } %>
+            <% if (searchType == "volpiano") { %>
+            <% if (results[i].volpiano !== undefined) { %>
+            <td class="volpiano"><%= results[i].volpiano %></td>
+            <% } else { %>
+            <td></td>
+            <% } %>
+            <% } %>
+        <% if (results[i].folio !== undefined) { %>
+        <td><%= results[i].folio %></td>
+        <% } else { %>
+        <td></td>
+        <% } %>
+    </tr>
+    <% } %>
+</tbody>
+</script>
+
+<script type="text/template" id="search-result-template">
+<div class="result-region"></div>
+<div class="pagination-region"></div>
+</script>
+
+<script type="text/template" id="search-template">
+<!--<form role="search">-->
+<div class="form-inline">
+    <div class="form-group">
+        <select class="form-control search-field">
+            <option value="all">All Fields:</option>
+            <option value="volpiano">Volpiano:</option>
+            <option value="mode">Mode:</option>
+            <option value="feast">Feast:</option>
+            <option value="office">Office:</option>
+        </select>
+    </div>
+    <div class="form-group input-section"></div>
+</div>
+<!--  <button type="submit" class="btn btn-default search-button">Submit</button>-->
+<!--</form>-->
+<div class="search-results"></div>
+</script>
+
+<script type="text/template" id="single-glyph-type-template">
+<img src="" class="glyph-list-image thumbnail img-responsive" />
+</script>
+
+<script type="text/template" id="top-menu-template">
+<% for (var i = 0; i < items.length; i++) { %>
+<li id="top-menu-button-<%= i %>"<% if (items[i].active) { %> class="active" <% } if (items[i].tags) { %><%= items[i].tags %><% } %> ><a href="<%= items[i].url %>"><%= items[i].name %></a></li>
+<% }%>
+</script>
+
+
+<script>
+
+    // Mobile/Desktop Detection script
+    (function(ua, w, d, undefined) {
+
+        // App Environment
+        var production = true,
+                filesToLoad,
+        //BoilerplateMVC Helper Methods
+                boilerplateMVC = {
+                    loadJS: function(file, callback) {
+                        var script = d.createElement("script");
+                        script.type = "text/javascript";
+                        if (script.readyState) {  // IE
+                            script.onreadystatechange = function() {
+                                if (script.readyState == "loaded" || script.readyState == "complete") {
+                                    script.onreadystatechange = null;
+                                    callback();
+                                }
+                            };
+                        } else {  // Other Browsers
+                            script.onload = function() {
+                                callback();
+                            };
+                        }
+                        if(((typeof file).toLowerCase()) === "object" && file["data-main"] !== undefined) {
+                            script.setAttribute("data-main", file["data-main"]);
+                            script.async = true;
+                            script.src = file.src;
+                        } else {
+                            script.src = file;
+                        }
+                        d.getElementsByTagName("head")[0].appendChild(script);
+                    },
+                    loadFiles: function(production, obj, callback) {
+                        var self = this;
+                        if(production) {
+                            self.loadJS(obj["prod-js"], callback);
+                        } else {
+                            self.loadJS(obj["dev-js"], callback);
+                        }
+                    }
+                };
+
+        // Mobile/Tablet Logic
+        if((/iPhone|iPod|iPad|Android|BlackBerry|Opera Mini|IEMobile/).test(ua)) {
+
+            // Mobile/Tablet CSS and JavaScript files to load
+            filesToLoad = {
+                // Require.js configuration file that is loaded when in development mode
+                "dev-js": { "data-main": "/static/js/app/config/config.js", "src": "/static/js/libs/require.js" },
+                // JavaScript initialization file that is also loaded when in development mode
+                "dev-init": "/static/js/app/init/MobileInit.js",
+                // JavaScript file that is loaded when in production mode
+                "prod-init": "/static/js/app/init/MobileInit.min.js",
+                "prod-js": { "data-main": "/static/js/app/config/config.js", "src": "/static/js/libs/require.js" }
+            };
+
+        }
+
+        // Desktop Logic
+        else {
+
+            // Desktop CSS and JavaScript files to load
+            filesToLoad = {
+                // Require.js configuration file that is also loaded when in development mode
+                "dev-js": { "data-main": "/static/js/app/config/config.js", "src": "/static/js/libs/require.js" },
+                // JavaScript initialization file that is loaded when in development mode
+                "dev-init": "/static/js/app/init/DesktopInit.js",
+                // JavaScript file that is loaded when in production mode
+                "prod-init": "/static/js/app/init/DesktopInit.min.js",
+                "prod-js": { "data-main": "/static/js/app/config/config.js", "src": "/static/js/libs/require.js" }
+            };
+
+        }
+
+        boilerplateMVC.loadFiles(production, filesToLoad, function() {
+            if(!production && window.require) {
+                require([filesToLoad["dev-init"]]);
+            } else if ( production ) {
+                require([filesToLoad["prod-init"]])
+            }
+        });
+
+    })(navigator.userAgent || navigator.vendor || window.opera, window, document);
+
+</script>
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-2371659-10', 'auto');
+    ga('send', 'pageview');
+
+</script>
+
+</body>
+</html>

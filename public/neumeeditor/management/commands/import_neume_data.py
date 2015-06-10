@@ -16,13 +16,11 @@ class Command(BaseCommand):
     def import_csv_file(self, file_name, style_name):
         csv_file = csv.DictReader(open("data_dumps/glyphs/" + str(file_name)))
         # Get the style object
-        style = Style.objects.get(name=str(style_name))
+        #style = Style.objects.get(name=str(style_name))
         index = 0
         for row in csv_file:
-            glyph = Glyph.objects.create(style=style,
-                                         short_code=str(row["short_code"]))
-            Name.objects.create(string=str(row["name"]),
-                                glyph=glyph)
+            glyph, glyph_created = Glyph.objects.get_or_create(short_code=str(row["short_code"]))
+            Name.objects.get_or_create(string=str(row["name"]), glyph=glyph)
             index += 1
 
         self.stdout.write(

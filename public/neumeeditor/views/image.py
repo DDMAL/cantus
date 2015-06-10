@@ -10,6 +10,7 @@ from rest_framework.renderers import JSONRenderer, JSONPRenderer
 class ImageList(generics.ListCreateAPIView):
     model = Image
     serializer_class = ImageSerializer
+    queryset = Image.objects.all()
     renderer_classes = (JSONRenderer, JSONPRenderer)
     authentication_classes = (ExpiringTokenAuthentication,
                               SessionAuthentication)
@@ -19,6 +20,7 @@ class ImageList(generics.ListCreateAPIView):
 class ImageDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Image
     serializer_class = ImageSerializer
+    queryset = Image.objects.all()
     renderer_classes = (JSONRenderer, JSONPRenderer)
     authentication_classes = (ExpiringTokenAuthentication,
                               SessionAuthentication)

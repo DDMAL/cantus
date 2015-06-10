@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models.signals import post_save, post_delete
-from django.dispatch import receiver
+
+from cantusdata.helpers.signal_wrangler import retrievable_receiver
 
 
 class Concordance(models.Model):
@@ -49,37 +50,59 @@ class Concordance(models.Model):
             self.rism_code
         )
 
+    def add_to_solr(self, solrconn):
+        """
+        Add a Solr entry for this concordance
 
-@receiver(post_save, sender=Concordance)
+        Return true if an entry was added
+        """
+        import uuid
+
+        d = {
+            'type': 'cantusdata_concordance',
+            'id': str(uuid.uuid4()),
+            'item_id': self.id,
+            'concordance_citation': self.unicode_citation
+        }
+
+        solrconn.add(**d)
+        return True
+
+    def delete_from_solr(self, solrconn):
+        """
+        Delete the Solr entry for this concordance if it exists
+
+        Return true if there was an entry
+        """
+        record = solrconn.query("type:cantusdata_concordance item_id:{0}"
+                                .format(self.id), q_op="AND")
+
+        if record:
+            solrconn.delete(self.results[0]['id'])
+            return True
+
+        return False
+
+
+@retrievable_receiver(post_save, sender=Concordance, dispatch_uid='cantusdata_concordance_solr_add')
 def solr_index(sender, instance, created, **kwargs):
-    import uuid
     from django.conf import settings
     import solr
 
     solrconn = solr.SolrConnection(settings.SOLR_SERVER)
-    record = solrconn.query("type:cantusdata_concordance item_id:{0}"
-                            .format(instance.id), q_op="AND")
-    if record:
-        solrconn.delete(record.results[0]['id'])
 
-    concordance = instance
-    d = {
-        'type': 'cantusdata_concordance',
-        'id': str(uuid.uuid4()),
-        'item_id': concordance.id,
-        'concordance_citation': concordance.citation.decode("utf-8")
-    }
-    solrconn.add(**d)
+    instance.delete_from_solr(solrconn)
+    instance.add_to_solr(solrconn)
+
     solrconn.commit()
 
 
-@receiver(post_delete, sender=Concordance)
+@retrievable_receiver(post_delete, sender=Concordance, dispatch_uid='cantusdata_concordance_solr_delete')
 def solr_delete(sender, instance, **kwargs):
     from django.conf import settings
     import solr
+
     solrconn = solr.SolrConnection(settings.SOLR_SERVER)
-    record = solrconn.query("type:cantusdata_concordance item_id:{0}"
-                            .format(instance.id), q_op="AND")
-    if record:
-        solrconn.delete(record.results[0]['id'])
+
+    if instance.delete_from_solr(solrconn):
         solrconn.commit()

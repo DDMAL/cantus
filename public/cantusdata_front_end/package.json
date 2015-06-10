@@ -1,37 +1,23 @@
 {
-    "name":"Marionette-Require-Boilerplate",
-    "title":"Marionette and Require Boilerplate",
-    "description":"A Marionette.js and Require.js Boilerplate that promotes decoupling your JavaScript into modules, separating business logic from application logic using Models and Views, organizing your application into Regions with default build-up/tear-down logic for you Views, reusing your JavaScript between Desktop and Mobile Web versions, including non-AMD Compatible Third Party Scripts in your project, and optimizing all of your JavaScript (minify, concatenate, etc).",
-    "version":"1.1.0",
-    "homepage":"https://github.com/BoilerplateMVC/Marionette-Require-Boilerplate",
-    "author":{
-        "name":"Brett Jones",
-        "email":"brettjonesdev@gmail.com",
-        "url":"http://www.brettjonesdev.com"
-    },
-    "repository":{
-        "type":"git",
-        "url":"git@github.com:BoilerplateMVC/Marionette-Require-Boilerplate.git"
-    },
-    "bugs":{
-        "url":"https://github.com/BoilerplateMVC/Marionette-Require-Boilerplate/issues"
-    },
-    "licenses":[
-        {
-            "type":"MIT",
-            "url":"https://github.com/BoilerplateMVC/Marionette-Require-Boilerplate/blob/master/LICENSE-MIT"
-        }
-    ],
-    "dependencies":{
-        "express":"3.x"
-    },
-    "devDependencies":{
-        "express":"3.x",
-        "grunt":"~0.4.1",
-        "grunt-contrib-requirejs":"~0.4.0",
-        "grunt-contrib-jshint":"~0.3.0",
-        "uglify-js":"~2.2.5"
-    },
-    "main":"./server/server",
-    "keywords":["Marionette.js", "Backbone.js", "Require.js", "Marionette and Require Boilerplate"]
+  "name": "Cantus-Ultimus-frontend",
+  "title": "Cantus Ultimus frontend",
+  "private": true,
+  "description": "Frontend for the Cantus Ultimus project",
+  "devDependencies": {
+    "del": "^1.2.0",
+    "gulp": "^3.8.11",
+    "gulp-shell": "^0.4.1",
+    "gulp-jshint": "^1.11.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-newer": "^0.5.0",
+    "jshint-stylish": "^2.0.0",
+    "requirejs": "^2.1.17",
+    "run-sequence": "^1.1.0",
+    "uglify-js": "~2.2.5"
+  },
+  "keywords": [
+    "Marionette.js",
+    "Backbone.js",
+    "Require.js"
+  ]
 }

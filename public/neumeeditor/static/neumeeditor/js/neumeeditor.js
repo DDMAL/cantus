@@ -61,28 +61,40 @@
         /* standard routes can be mixed with appRoutes/Controllers above */
         routes : {
             "neumeeditor/" : "openGlyphList",
-            "neumeeditor/glyph/:id/" : "openGlyphEditor"
+            "neumeeditor/glyph/:id/" : "openGlyphEditor",
+            "neumeeditor/nomenclatures/" : "openNomenclatureList",
+            "neumeeditor/nomenclature/:id/": "openNomenclatureEdit"
         },
 
-        openGlyphList: function(){
-            console.log("Open Glyph List.");
+        openGlyphList: function()
+        {
             // Start the glyph list module
             App.module("GlyphList").start();
         },
 
-        openGlyphEditor: function(id){
-            console.log("Open Glyph List.");
-            // Start the glyph list module
+        openGlyphEditor: function(id)
+        {
+            // Start the individual glyph editor
             App.module("GlyphEdit").start();
             App.module("GlyphEdit").initializeId(id);
         },
 
-        routeToPage: function(url) {
-            console.log("url:", url);
-            console.log("URL: ", url);
-            // var newPageUrl = String(url);
+        openNomenclatureList: function()
+        {
+            // Start the nomenclature list module
+            App.module("NomenclatureList").start();
+        },
+
+        openNomenclatureEdit: function(id)
+        {
+            App.module("NomenclatureEdit").start();
+            App.module("NomenclatureEdit").initializeId(id);
+        },
+
+
+        routeToPage: function(url)
+        {
             var newPageUrl = SITE_SUBFOLDER + String(url).replace(/.*\/neumeeditor\//g, "");
-            console.log(newPageUrl);
             this.navigate(
                     // Strip site url if need be
                     newPageUrl,
@@ -104,7 +116,6 @@
     });
     App.on('initialize:after', function(options)
     {
-        // console.log('Initialization Finished');
     });
     App.on('start', function(options)
     {
@@ -127,18 +138,26 @@
     */
 
     var Image = Backbone.Model.extend({
+
+        url: SITE_URL + "images/",
+
+        defaults: {
+            image_file: "",
+            glyph: 0,
+            thumbnail: "",
+            ulx: 0,
+            uly: 0,
+            width: 0,
+            height: 0,
+            folio_name: ""
+        },
+
         initialize: function(options)
         {
             if (options !== undefined && options.url !== undefined)
             {
                 this.url = String(options.url);
             }
-        },
-
-        url: SITE_URL + "images/",
-
-        defaults: {
-            image_file: ""
         },
 
         /**
@@ -148,23 +167,54 @@
          */
         getAbsoluteImageFile: function()
         {
-            return STATIC_URL + this.get("image_file");
+            var external_image = this.get("external_image");
+            if (external_image)
+            {
+                return this.get("external_image");
+            }
+            else {
+                return STATIC_URL + this.get("image_file");
+            }
+        },
+
+        getAbsoluteThumbnail: function()
+        {
+            return STATIC_URL + this.get("thumbnail");
+        },
+
+        getCantusUrl: function()
+        {
+            var folioName = this.get("folio_name");
+            if (!folioName || folioName === null || folioName === "")
+            {
+                // Handle empty case
+                return "";
+            }
+            else
+            {
+                // Get the folio code
+                var folio = folioName.split("_")[1];
+                return "http://cantus.simssa.ca/manuscript/127/?folio=" + folio
+                    + "#z=3&n=5&y=" + this.get("uly") + "&x=" + this.get("ulx");
+            }
         }
     });
 
     var Name = Backbone.Model.extend({
+
+        url: SITE_URL + "names/",
+
+        defaults: {
+            id: undefined,
+            string: ""
+        },
+
         initialize: function(options)
         {
             if (options !== undefined && options.url !== undefined)
             {
                 this.url = String(options.url);
             }
-        },
-
-        url: SITE_URL + "names/",
-
-        defaults: {
-            string: ""
         },
 
         /**
@@ -186,12 +236,52 @@
         }
     });
 
-    var Glyph = Backbone.Model.extend({
+    var Nomenclature = Backbone.Model.extend({
+        urlRoot: SITE_URL + "nomenclature/",
+
+        defaults: {
+            id: undefined,
+            nomenclature_name: ""
+        },
+
+        initialize: function(options)
+        {
+            this.url = String(options.url);
+        }
+    });
+
+    /**
+     * A relationship between a name and a nomenclature.
+     */
+    var NameNomenclatureMembership = Backbone.Model.extend({
+        urlRoot: SITE_URL + "name-nomenclature-membership/",
 
         initialize: function(options)
         {
             this.url = String(options.url);
         },
+
+        defaults: {
+            id: undefined,
+            name: undefined,
+            nomenclature: undefined,
+            glyph: undefined,
+            name_string: undefined,
+            nomenclature_string: undefined
+        }
+    });
+
+    /**
+     * A musical glyph, such as a punctum.
+     */
+    var Glyph = Backbone.Model.extend({
+
+        urlRoot: SITE_URL + "glyphs/",
+
+        //initialize: function(options)
+        //{
+        //    this.url = String(options.url);
+        //},
 
         /**
          * Get a collection containing the Glyph's names.
@@ -230,8 +320,9 @@
         },
 
         defaults: {
-            id: 0,
-            short_code: ""
+            //id: 0,
+            short_code: "",
+            comments: ""
         }
     });
 
@@ -249,6 +340,30 @@
         {
             // Newest names first
             return 0 - parseInt(name.get("id"));
+        }
+    });
+
+    var NomenclatureCollection = Backbone.Collection.extend({
+        model: Nomenclature,
+
+        initialize: function(options)
+        {
+            this.url = String(options.url);
+        },
+
+        comparator: function(name)
+        {
+            // Newest names first
+            return 0 - parseInt(name.get("id"));
+        }
+    });
+
+    var NameNomenclatureMembershipCollection = Backbone.Collection.extend({
+        model: NameNomenclatureMembership,
+
+        initialize: function(options)
+        {
+            this.url = String(options.url);
         }
     });
 
@@ -303,7 +418,6 @@
             },
 
             goToUrl: function(event) {
-                console.log(event);
                 event.preventDefault();
                 AppRouter.routeToPage(event.target.href);
             }
@@ -322,15 +436,246 @@
         Execution Code
         */
         var menuLinks = new Backbone.Collection();
-        menuLinks.add(new Link().set({url:SITE_URL + "", text: "List"}));
-        // menuLinks.add(new Link());
-        // menuLinks.add(new Link());
+        menuLinks.add(new Link().set({url:SITE_URL + "", text: "Neumes"}));
+        menuLinks.add(new Link().set({url:SITE_URL + "nomenclatures/", text: "Nomenclatures"}));
+        //menuLinks.add(new Link().set({url:SITE_URL + "styles/", text: "Styles"}));
+
         var menu = new MainMenuView({collection: menuLinks});
         App.navigation.show(menu);
     });
 
     App.module("Authentication", function(Authentication, App, Backbone, Marionette, $, _){
         this.startWithParent = false;
+    });
+
+    App.module("NomenclatureEdit", function(NomenclatureEdit, App, Backbone, Marionette, $, _){
+
+        var NomenclatureItemView = Backbone.Marionette.ItemView.extend({
+            template: "#edit-nomenclature-template",
+
+            modelEvents: {
+                sync: "render"
+            },
+
+            onRender: function()
+            {
+                console.log(this.model.toJSON());
+            }
+        });
+
+        /**
+         * A particular name.
+         */
+        var NameItemView = Backbone.Marionette.ItemView.extend({
+            template: "#nomenclature-name-list-name-template",
+            tagName: "tr",
+
+            ui: {
+                neumeButton: ".neume-button"
+            },
+
+            events: {
+                "click @ui.neumeButton": "onNeumeButtonClick"
+            },
+
+            onNeumeButtonClick: function(event)
+            {
+                event.preventDefault();
+                AppRouter.routeToPage(this.model.get("glyph"));
+            }
+        });
+
+        /**
+         * The list of names in the nomenclature.
+         */
+        var NameCompositeView = Backbone.Marionette.CompositeView.extend({
+            childView: NameItemView,
+            //tagName: "table class='table'",
+
+            childViewContainer: "tbody",
+            template: "#nomenclature-name-list-template"
+
+        });
+
+        var AppLayoutView = Backbone.Marionette.LayoutView.extend({
+
+            template: "#nomenclature-edit-template",
+
+            nameCollection: undefined,
+            nomenclature: undefined,
+            nomenclatureId: undefined,
+
+            regions: {
+                nameListRegion: ".name-list-region",
+                nomenclatureRegion: ".nomenclature-region"
+            },
+
+            initialize: function(options)
+            {
+                // Save the nomenclature
+                this.nomenclature = options.nomenclature;
+                this.nomenclatureId = options.id;
+                // Get the names
+                this.nameCollection = new NameCollection();
+                this.nameCollection.url = SITE_URL + "nomenclature/" + this.nomenclatureId + "/names/";
+                // Fetch the names
+                this.nameCollection.fetch();
+            },
+
+            onShow: function()
+            {
+                // Show the nomenclature
+                this.nomenclatureRegion.show(new NomenclatureItemView({model: this.nomenclature}));
+                // Show the names
+                this.nameListRegion.show(new NameCompositeView({collection: this.nameCollection}));
+            }
+        });
+
+        /*
+         ------------------------------------------------------
+         Execution Code
+         ------------------------------------------------------
+         */
+
+        this.initializeId = function(id)
+        {
+            var nomenclatureId = parseInt(id);
+            var nomenclature = new Nomenclature({url: "/neumeeditor/nomenclature/" + nomenclatureId + "/"});
+            console.log(nomenclature.toJSON());
+
+            // The main module
+            var editor = new AppLayoutView({
+                nomenclature: nomenclature,
+                id: nomenclatureId
+            });
+            App.container.show(editor);
+            nomenclature.fetch();
+        };
+
+    });
+
+    App.module("NomenclatureList", function(NomenclatureList, App, Backbone, Marionette, $, _){
+        this.startWithParent = false;
+
+        /*
+         Item Views
+         */
+
+        var NomenclatureView = Backbone.Marionette.ItemView.extend({
+            template: "#nomenclature-template",
+            tagName: "tr",
+
+            ui: {
+                viewNamesButton: '.neume-button',
+                deleteButton: 'button[name="delete"]'
+            },
+
+            events: {
+                "click @ui.viewNamesButton": "onClickViewNames",
+                "click @ui.deleteButton": "destroyModel"
+            },
+
+            onClickViewNames: function(event)
+            {
+                event.preventDefault();
+                AppRouter.routeToPage(this.model.get("url"));
+            },
+
+            destroyModel: function()
+            {
+                this.model.destroy();
+            }
+        });
+
+        var NomenclatureCompositeView = Backbone.Marionette.CompositeView.extend({
+            childView: NomenclatureView,
+
+            childViewContainer: "tbody",
+            template: "#nomenclature-collection-template"
+        });
+
+        var CreateNomenclatureView = Backbone.Marionette.ItemView.extend({
+            /**
+             * The collection that the new glyph will be added to.
+             */
+            createdCollection: undefined,
+            template: "#create-nomenclature-template",
+            tagName: 'form class="form" action="#"',
+
+            ui: {
+                "nameField": "[name='nomenclature-name-field']",
+                "statusDiv": ".status-message"
+            },
+
+            events: {
+                "submit": "createButtonCallback"
+            },
+
+            initialize: function (options) {
+                // Assign the collection which contains the created glyphs
+                this.createdCollection = options.createdCollection;
+            },
+
+            createButtonCallback: function (event) {
+                // Prevent the event from redirecting the page
+                event.preventDefault();
+                // Create the nomenclature
+                var nomenclature = new Nomenclature(
+                    {
+                        url: SITE_URL + "nomenclatures/",
+                        "nomenclature_name": this.ui.nameField.val()
+                    });
+                var that = this;
+                nomenclature.save(
+                    undefined,
+                    {
+                        success: function (event) {
+                            // Manually copy the url.
+                            nomenclature.url = nomenclature.get("url");
+                            that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Nomenclature "' + nomenclature.get("nomenclature_name") + '" saved successfully.</p>');
+                            //that.ui.statusDiv.find("p").fadeOut(5000);
+                            // Add the created glyph to the createdCollection
+                            that.createdCollection.add(nomenclature);
+                            // Empty the short code field
+                            that.ui.nameField.val('');
+                        },
+                        error: function (model, event) {
+                            that.ui.statusDiv.html('<p class="alert alert-danger" role="alert">Error saving nomenclature. - ' + event.responseText +  '<p>');
+                            //that.ui.statusDiv.find("p").fadeOut(5000);
+                        }
+                    }
+                );
+                // Redirect to the edit page
+
+            }
+        });
+
+        var NomenclatureDashboardView = Backbone.Marionette.LayoutView.extend({
+            template: "#glyph-dashboard-template",
+
+            regions: {
+                glyphCreateRegion: ".glyph-create-region",
+                glyphListRegion: ".glyph-list-region"
+            },
+
+            onShow: function() {
+                var nomenclatureCollection = new NomenclatureCollection({url: "/neumeeditor/nomenclatures/"});
+                nomenclatureCollection.fetch();
+                this.glyphCreateRegion.show(new CreateNomenclatureView({createdCollection: nomenclatureCollection}));
+                this.glyphListRegion.show(new NomenclatureCompositeView({collection: nomenclatureCollection}));
+            }
+        });
+
+        /*
+         ------------------------------------------------------
+         Execution Code
+         ------------------------------------------------------
+         */
+
+        this.start = function()
+        {
+            App.container.show(new NomenclatureDashboardView());
+        };
     });
 
     App.module("GlyphList", function(GlyphList, App, Backbone, Marionette, $, _){
@@ -348,10 +693,10 @@
             serializeData: function()
             {
                 return {
-                    "image_file": this.model.getAbsoluteImageFile(),
-                    // "image_file_absolute": this.model.getAbsoluteImageFile()
+                    image_file: this.model.getAbsoluteImageFile(),
+                    // thumbnail: this.model.getAbsoluteThumbnail()
                 };
-            },
+            }
         });
 
         var NameView = Backbone.Marionette.ItemView.extend({
@@ -386,12 +731,11 @@
             },
 
             goToEdit: function(event) {
-                console.log(event);
                 event.preventDefault();
                 AppRouter.routeToPage(this.model.get("url"));
             },
 
-            onRender: function() {
+            onShow: function() {
                 var nameCollection = this.model.getCollection("name_set", NameCollection, Name);
                 var imageCollection;
                 try {
@@ -414,7 +758,261 @@
             childView: GlyphView,
 
             childViewContainer: "tbody",
-            template: "#glyph-collection-template"
+            template: "#glyph-collection-template",
+        });
+
+        var CreateGlyphView = Backbone.Marionette.ItemView.extend({
+            /**
+             * The collection that the new glyph will be added to.
+             */
+            createdCollection: undefined,
+            template: "#create-glyph-template",
+            tagName: 'form class="form" action="#"',
+
+            ui: {
+                "shortCodeField": "[name='glyph-short-code-field']",
+                "statusDiv": ".status-message"
+            },
+
+            events: {
+                "submit": "createGlyphButtonCallback"
+            },
+
+            initialize: function(options)
+            {
+                // Assign the collection which contains the created glyphs
+                this.createdCollection = options.createdCollection;
+            },
+
+            createGlyphButtonCallback: function(event)
+            {
+                // Prevent the event from redirecting the page
+                event.preventDefault();
+                // Flip the reference
+                var newGlyph = new Glyph({
+                    "short_code": this.ui.shortCodeField.val()
+                });
+                var that = this;
+                newGlyph.save(undefined,
+                    {
+                        success: function(event) {
+                            that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Glyph "<a href="' + newGlyph.get("url") + '">' + newGlyph.get("short_code") + '</a>" saved successfully.</p>');
+                            // Add the created glyph to the createdCollection
+                            that.createdCollection.add(newGlyph);
+                            // Empty the short code field
+                            that.ui.shortCodeField.val('');
+                        },
+                        error: function(model, event) {
+                            that.ui.statusDiv.html('<p class="alert alert-danger" role="alert">Error saving glyph. - ' + event.responseText +  '<p>');
+                            //that.ui.statusDiv.find("p").fadeOut(5000);
+                        }
+                    }
+                );
+            }
+        });
+
+        var UploadGameraXMLView = Backbone.Marionette.LayoutView.extend({
+            createdCollection: undefined,
+            template: "#upload-gamera-xml-template",
+            dropzoneObject: undefined,
+
+            modalView: undefined,
+            modalViewTitle: "Uploading GameraXML file...",
+            modalViewText: "",
+
+            // API parameters
+            uploadUrl: SITE_URL + "upload/gamera-xml/",
+            paramName: "file",
+
+            ui: {
+                "dropzone": ".upload-gamera-xml-form"
+            },
+
+            regions: {
+                modalRegion: ".upload-modal"
+            },
+
+            initialize: function(options)
+            {
+                this.createdCollection = options.createdCollection;
+                // Build the progress modal
+                this.modalView = new UploadProgressModalView({title: this.modalViewTitle, text: this.modalViewText});
+            },
+
+            /**
+             * Set the view glyph ID.
+             *
+             * @param idNum Glyph ID int,
+             */
+            setGlyphId: function(idNum)
+            {
+                this.glyphId = getAbsoluteGlyphUrl(parseInt(idNum));
+            },
+
+            onShow: function()
+            {
+                // Show the modal
+                this.modalRegion.show(this.modalView);
+
+                // Build the dropzone
+                this.dropzoneObject = new Dropzone(this.ui.dropzone.selector,
+                    {
+                        url: this.uploadUrl,
+                        autoProcessQueue: true,
+                        paramName: this.paramName,
+                        //acceptedFiles: "image/*",
+                        headers: {
+                            // We need to include the CSRF token again
+                            "X-CSRFToken": csrftoken
+                        }
+                        //params: {
+                        //    glyph: this.glyphId
+                        //}
+                    }
+                );
+                // Set up the callbacks
+                var that = this;
+                this.dropzoneObject.on("processing", function(){
+                    that.modalView.open();
+                });
+                this.dropzoneObject.on("uploadprogress", function(file, percent, bytes) {
+                    //that.modalView.setPercent(percent);
+                });
+                this.dropzoneObject.on("complete", function()
+                {
+                    that.onSuccess();
+                });
+            },
+
+            onSuccess: function()
+            {
+                this.modalView.close();
+                // Fetch modal
+                this.createdCollection.trigger("open-modal");
+                // Re-fetch the data
+                this.createdCollection.fetch();
+            }
+        });
+
+        var UploadMEIView = UploadGameraXMLView.extend({
+            template: "#upload-mei-template",
+
+            modalViewTitle: "Uploading MEI file...",
+
+            // API parameters
+            uploadUrl: SITE_URL + "upload/mei/",
+            paramNameL: "image_file",
+
+            ui: {
+                "dropzone": ".upload-mei-form"
+            }
+        });
+
+        var UploadProgressModalView = Backbone.Marionette.ItemView.extend({
+            template: "#modal-upload-progress-template",
+            title: undefined,
+            text: undefined,
+            percent: 0,
+
+            ui: {
+                "modal": ".modal",
+                "percentBar": ".progress-bar"
+            },
+
+            initialize: function(options)
+            {
+                this.title = options.title;
+                this.text = options.text;
+            },
+
+            /**
+             * Set the percent value of the progress bar.
+             *
+             * @param newPercent
+             */
+            setPercent: function(newPercent)
+            {
+                this.percent = parseInt(newPercent, 10);
+                this.ui.percentBar.html(this.percent + "\%");
+            },
+
+            serializeData: function()
+            {
+                return {
+                    title: this.title,
+                    text: this.text
+                };
+            },
+
+            open: function()
+            {
+                console.log(this);
+                console.log(this.ui);
+                this.ui.modal.modal(
+                    {
+                        backdrop: 'static',
+                        keyboard: false
+                    }
+                );
+            },
+
+            close: function()
+            {
+                this.ui.modal.modal('hide');
+            }
+        });
+
+        var FetchModal = UploadProgressModalView.extend({
+            initialize: function(options)
+            {
+                this.title = options.title;
+                this.text = options.text;
+                this.collection = options.collection;
+
+                // Bind the events
+                var that = this;
+                console.log("Event bindings");
+                this.collection.on("open-modal", function()
+                {
+                    that.open();
+                });
+                this.collection.on("sync", function()
+                {
+                    that.close();
+                });
+            }
+        });
+
+        var GlyphDashboardView = Backbone.Marionette.LayoutView.extend({
+            template: "#glyph-dashboard-template",
+
+            regions: {
+                glyphCreateRegion: ".glyph-create-region",
+                glyphListRegion: ".glyph-list-region",
+                gameraXMLUploadRegion: ".gamera-xml-upload-region",
+                meiUploadRegion: ".mei-upload-region",
+                glyphListFetchModalRegion: ".glyph-list-fetch-modal-region"
+            },
+
+            onShow: function() {
+                var glyphCollection = new GlyphCollection({url: "/neumeeditor/glyphs/"});
+                var glyphFetchModal = new FetchModal(
+                    {
+                        title: "Fetching neumes...",
+                        text: "",
+                        collection: glyphCollection
+                    }
+                );
+                this.glyphListFetchModalRegion.show(glyphFetchModal);
+                this.glyphCreateRegion.show(new CreateGlyphView({createdCollection: glyphCollection}));
+                this.gameraXMLUploadRegion.show(new UploadGameraXMLView({createdCollection: glyphCollection}));
+                this.meiUploadRegion.show(new UploadMEIView({createdCollection: glyphCollection}));
+                this.glyphListRegion.show(new GlyphCompositeView({collection: glyphCollection}));
+                // Open the modal
+                glyphCollection.trigger("open-modal");
+                // Fetch the glyphs
+                glyphCollection.fetch();
+            }
         });
 
         /*  
@@ -425,16 +1023,7 @@
 
         this.start = function()
         {
-            var glyphCollection = new GlyphCollection({url: "/neumeeditor/glyphs/"});
-
-            // var glyph = new GlyphListLayoutView({model: glyph});
-            var glyphCompositeView = new GlyphCompositeView({collection: glyphCollection});
-
-
-            App.container.show(glyphCompositeView);
-
-            console.log("Starting...");
-            glyphCollection.fetch();
+            App.container.show(new GlyphDashboardView());
         };
     });
 
@@ -451,10 +1040,171 @@
         Item Views
          */
 
+        /**
+         * Edit the properties of the glyph.
+         */
+        var EditGlyphPropertiesView = Backbone.Marionette.ItemView.extend({
+            template: "#edit-glyph-properties-template",
+
+            events: {
+                "submit": "saveProperties"
+            },
+
+            ui: {
+                commentsBox: ".comments-box",
+                statusDiv: ".property-status-message"
+            },
+
+            saveProperties: function(event)
+            {
+                console.log("Saving properties");
+                // Prevent default functionality
+                event.preventDefault();
+                var that = this;
+                this.model.save(
+                    {
+                        comments: String(this.ui.commentsBox.val())
+                    },
+                    {
+                        success: function() {
+                            console.log("Success");
+                            that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Properties updated successfully.</p>');
+                            that.ui.statusDiv.find("p").fadeOut(2500);
+                        },
+                        error: function(model, event) {
+                            console.log("Failure.");
+                            that.ui.statusDiv.html('<p class="alert alert-danger">Error saving. - ' + event.responseText +  '<p>');
+                            that.ui.statusDiv.find("p").fadeOut(2500);
+                        }
+                    }
+                );
+            }
+        });
+
+        /**
+         * A view that allows the user to create a NameNomenclatureRelationship.
+         */
+        var CreateNameNomenclatureMembershipView = Backbone.Marionette.ItemView.extend({
+            tagName: "div",
+
+            template: "#create-name-nomenclature-membership-template",
+
+            /**
+             * Collection of names
+             */
+            names: undefined,
+            /**
+             * Collection of nomenclatures
+             */
+            nomenclatures: undefined,
+            /**
+             * Collection of nameNomenclatureMemberships for when it's done.
+             */
+            nameNomenclatureMemberships: undefined,
+
+            ui: {
+                'nameField': "select[name='name']",
+                'nomenclatureField': "select[name='nomenclature']",
+                'statusDiv': ".status-message"
+            },
+
+            events: {
+                'submit': 'onSubmit'
+            },
+
+            initialize: function(options)
+            {
+                this.names = options.names;
+                this.nomenclatures = options.nomenclatures;
+                this.nameNomenclatureMemberships = options.nameNomenclatureMemberships;
+
+                // Re-render if name and nomenclature list changes
+                this.listenTo(this.names, 'all', this.test);
+                this.listenTo(this.nomenclatures, 'all', this.test);
+            },
+
+            test: function() {
+                console.log("IT HAPPENED.");
+                this.render();
+            },
+
+            /**
+             * Serialize a list of names and nomenclatures.
+             *
+             * @returns {{names: string[], nomenclatures: string[]}}
+             */
+            serializeData: function()
+            {
+                return {
+                    names: this.names.toJSON(),
+                    nomenclatures: this.nomenclatures.toJSON()
+                };
+            },
+
+
+            onSubmit: function(event)
+            {
+                event.preventDefault();
+                console.log("submit");
+                // Create the membership object
+                var membership = new NameNomenclatureMembership(
+                    {
+                        url: SITE_URL + "name-nomenclature-memberships/",
+                        name: this.ui.nameField.val(),
+                        nomenclature: this.ui.nomenclatureField.val()
+                    }
+                );
+                console.log("membership:", membership.toJSON());
+                // Save it to the server
+                var that = this;
+                membership.save(null,
+                    {
+                        success: function()
+                        {
+                            // Manually copy the url
+                            membership.url = membership.get("url");
+                            // Add the membership to the created ones
+                            that.nameNomenclatureMemberships.add(membership);
+                            // Reset the option fields to default
+                            that.ui.nameField.val("null");
+                            that.ui.nomenclatureField.val("null");
+                            // Display the user status message
+                            that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Name - Nomenclature membership saved successfully.</p>');
+                            that.ui.statusDiv.find("p").fadeOut(2500);
+                        },
+                        error: function(model, event)
+                        {
+                            console.log("event:", model, event);
+                            that.ui.statusDiv.html('<p class="alert alert-warning" role="alert">Error: Name -' + event.responseText + '</p>');
+                            that.ui.statusDiv.find("p").fadeOut(2500);
+                        }
+                    }
+                );
+            }
+        });
+
+        var EditSingleNameNomenclatureMembershipView = Backbone.Marionette.ItemView.extend({
+            tagName: "tr",
+            template: "#edit-single-name-nomenclature-membership-template",
+
+            ui: {
+                'deleteButton': 'button[name="delete"]'
+            },
+
+            events: {
+                "click @ui.deleteButton": "destroyModel"
+            },
+
+            destroyModel: function()
+            {
+                this.model.destroy();
+            }
+        });
+
         var EditSingleImageView = Backbone.Marionette.ItemView.extend({
             tagName: "div",
 
-            template: _.template($('#edit-single-image-template').html()),
+            template: "#edit-single-image-template",
 
             modelEvents: {
                 "change": "render"
@@ -466,18 +1216,18 @@
 
             serializeData: function()
             {
-                return {
-                    "image_file": this.model.getAbsoluteImageFile(),
-                    // "image_file_absolute": this.model.getAbsoluteImageFile()
-                };
+                var json = this.model.toJSON();
+                json.image_file = this.model.getAbsoluteImageFile();
+                json.cantus_url = this.model.getCantusUrl();
+                // json.thumbnail = this.model.getAbsoluteThumbnail();
+                console.log(json);
+                return json;
             },
 
             destroyModel: function()
             {
-                console.log("Delete name.");
                 event.preventDefault();
                 this.model.destroy();
-                return this.trigger("destroy");
             }
         });
 
@@ -488,7 +1238,7 @@
 
             tagName: "form",
 
-            template: _.template($('#edit-single-name-template').html()),
+            template: "#edit-single-name-template",
 
             modelEvents: {
                 "change": "render"
@@ -515,14 +1265,12 @@
                 this.model.save(null,
                     {
                         success: function() {
-                            console.log("Success.");
-                            // console.log(that.ui.statusDiv);
-                            that.ui.statusDiv.html("<p>Name saved successfully.</p>");
+                            that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Name saved successfully.</p>');
                             that.ui.statusDiv.find("p").fadeOut(2500);
                             return that.trigger("submit");
                         },
-                        error: function() {
-                            that.ui.statusDiv.html("<p>Error saving name.<p>");
+                        error: function(model, event) {
+                            that.ui.statusDiv.html('<p class="alert alert-danger" role="alert">Error saving name. - ' + event.responseText +  '<p>');
                             that.ui.statusDiv.find("p").fadeOut(2500);
                         }
                     }
@@ -531,7 +1279,6 @@
 
             destroyModel: function()
             {
-                console.log("Delete name.");
                 event.preventDefault();
                 this.model.destroy();
                 return this.trigger("destroy");
@@ -540,49 +1287,42 @@
 
         var CreateImagesView = Backbone.Marionette.ItemView.extend({
             createdCollection: undefined,
-            childView: CreateSingleNameView,
-            childViewContainer: ".name-list",
             template: "#upload-image-template",
+            dropzoneObject: undefined,
+
+            ui: {
+                "dropzone": ".dropzone-form"
+            },
 
             initialize: function(options)
             {
-                if(options)
+                if(options !== undefined)
                 {
-                    if (options.createdCollection)
+                    if (options.createdCollection !== undefined)
                     {
                         this.createdCollection = options.createdCollection;
                     }
-                    if (options.glyphId)
+                    if (options.glyphId !== undefined)
                     {
-                        this.glyphId = getAbsoluteGlyphUrl(options.glyphId);
-                        console.log("DECLARING GLYPH ID: ", this);
+                        this.setGlyphId(options.glyphId);
                     }
                 }
             },
 
-            childEvents: {
-                "submit": "save"
-            },
-
-            ui: {
-                "dropzone": ".dropzone"
-            },
-
-            save: function(child)
+            /**
+             * Set the view glyph ID.
+             *
+             * @param idNum Glyph ID int,
+             */
+            setGlyphId: function(idNum)
             {
-                console.log("SAVE CALLBACK:");
+                this.glyphId = getAbsoluteGlyphUrl(parseInt(idNum));
             },
 
-            onRender: function()
+            onShow: function()
             {
-                console.log("DROPZONE DIV:");
-                console.log(this.ui.dropzone);
-                console.log("Uploader render.");
-                console.log(this.glyphId);
-                console.log(this.ui.dropzone.selector);
-                console.log(this.ui.dropzone);
-                this.ui.dropzone.dropzone(
-                // this.dropzone = new Dropzone(this.ui.dropzone.selector,
+                // Build the dropzone
+                this.dropzoneObject = new Dropzone(this.ui.dropzone.selector,
                     {
                         url: SITE_URL + "images/",
                         autoProcessQueue: true,
@@ -597,83 +1337,100 @@
                         }
                     }
                 );
-                this.ui.dropzone.on("error", function(error) { console.log(error); });
+                // Set up the callbacks
                 var that = this;
-                this.listenTo(this.ui.dropzone, "success",
-                    function(file, attributes)
-                    {
-                        console.log("Creating image model...", that);
-                        // console.log(attributes);
-                        // console.log(file);
+                this.dropzoneObject.on("success",
+                    function(file, attributes) {
                         var newModel = new Image({url: attributes.url});
                         newModel.set(attributes);
-                        // console.log("childviewcontainer: ", that.childViewContainer);
                         newModel.set("glyph", that.glyphId);
-                        // console.log(that.createdCollection);
                         that.createdCollection.add(newModel);
-                        newModel.save();
-                        // console.log(newModel);
                     }
                 );
             }
         });
 
-        var CreateSingleNameView = EditSingleNameView.extend({
-            template: _.template($('#create-single-name-template').html())
+        var CreateNameView = Backbone.Marionette.ItemView.extend({
+            glyphUrl: undefined,
+            nameCollection: undefined,
+            template: '#create-single-name-template',
+
+            events: {
+                "submit": "onSubmit"
+            },
+
+            ui: {
+                nameStringField: "input[name='string']",
+                statusDiv: ".status-message"
+            },
+
+            initialize: function(options)
+            {
+                // We will use the glyphId to construct the name
+                this.glyphUrl = options.glyphUrl;
+                // The collection of names we will add to
+                this.nameCollection = options.nameCollection;
+            },
+
+            onSubmit: function(event)
+            {
+                // Prevent default functionality
+                event.preventDefault();
+
+                // Flip the self reference.
+                var that = this;
+
+                // Grab values from the form fields
+                var name = new Name({
+                    glyph: this.glyphUrl,
+                    string: String(this.ui.nameStringField.val())
+                });
+
+                name.save(null,
+                    {
+                        success: function() {
+                            console.log("name test:", name);
+                            // For some reason URL isn't getting copied unless we do it manually
+                            name.url = name.get("url");
+                            // Add the new name to the collection
+                            that.nameCollection.add(name);
+                            // Print the success message
+                            that.ui.statusDiv.html('<p class="alert alert-success" role="alert">Name saved successfully.</p>');
+                            that.ui.statusDiv.find("p").fadeOut(2500);
+                            // Clear the user input
+                            that.ui.nameStringField.val("");
+                        },
+                        error: function(model, event) {
+                            that.ui.statusDiv.html('<p class="alert alert-danger" role="alert">Error saving name. - ' + event.responseText +  '<p>');
+                            that.ui.statusDiv.find("p").fadeOut(2500);
+                        }
+                    }
+                );
+            }
         });
 
         /*
         Composite Views
         */
 
-        var CreateNamesView = Backbone.Marionette.CompositeView.extend({
-
-            initialize: function(options)
-            {
-                var emptyName = new Name();
-
-                if(options)
-                {
-                    if (options.createdCollection)
-                    {
-                        this.createdCollection = options.createdCollection;
-                    }
-                    if (options.glyphId)
-                    {
-                        emptyName.setGlyph(parseInt(options.glyphId));
-                    }
-                }
-                this.collection = new NameCollection();
-                this.collection.add(emptyName);
-            },
-
-            childView: CreateSingleNameView,
+        var EditNameNomenclatureMembershipsView = Backbone.Marionette.CompositeView.extend({
+            childView: EditSingleNameNomenclatureMembershipView,
 
             childViewContainer: ".name-list",
-            template: "#create-name-collection-template",
-
-            childEvents: {
-                "submit": "save"
-            },
-
-            save: function(child)
-            {
-                console.log("SAVE CALLBACK:");
-                // Remove model from this collection
-                // console.log(child.model);
-                // Set the new URL
-                child.model.transferUrl();
-                this.createdCollection.add(child.model);
-                this.collection.remove(child.model);
-                this.collection.add(new Name());
-            }
+            template: "#edit-name-nomenclature-membership-collection-template"
         });
 
-        var EditNamesView = Backbone.Marionette.CompositeView.extend({
+        var EditNamesView = Backbone.Marionette.CollectionView.extend({
             childView: EditSingleNameView,
 
             childViewContainer: ".name-list",
-            template: "#edit-name-collection-template"
+
+            childViewOptions: {},
+
+            initialize: function(options)
+            {
+                this.childViewOptions.nomenclatures = options.nomenclatures;
+            }
         });
 
         var EditImagesView = Backbone.Marionette.CompositeView.extend({
@@ -682,12 +1439,6 @@
             childViewContainer: ".images",
             template: "#edit-image-collection-template"
         });
-
-        var EditSingleGlyphView = Backbone.Marionette.CompositeView.extend({
-            tagName: "li",
-            template: _.template("#edit-single-glyph-template")
-        });
-
 
         /*
         Layout Views
@@ -703,12 +1454,85 @@
             regions: {
                 namesArea: ".names-area",
                 nameCreateArea: ".name-create-area",
+                nameNomenclatureMembershipCreateArea: ".name-nomenclature-membership-create-area",
+                nameNomenclatureMembershipViewArea: ".name-nomenclature-membership-view-area",
                 imageUploadArea: ".image-upload-area",
-                imagesEditArea: ".images-area"
+                imagesEditArea: ".images-area",
+                glyphPropertiesArea: ".glyph-properties-area"
             },
 
-            modelEvents: {
-                "change": "render"
+            initialize: function(options)
+            {
+                this.glyphNames = new NameCollection();
+                this.glyphImages = new ImageCollection();
+                this.nomenclatures = options.nomenclatures;
+
+                // Create the subViews
+                this.editNamesView = new EditNamesView(
+                    {
+                        collection: this.glyphNames,
+                        nomenclatures: this.nomenclatures
+                    }
+                );
+                this.createNamesView = new CreateNameView({
+                    glyphUrl: this.model.get("url"),
+                    nameCollection: this.glyphNames
+                });
+                this.editImagesView = new EditImagesView({
+                    collection: this.glyphImages
+                });
+                this.createImagesView = new CreateImagesView({
+                    glyphId: this.model.get("id"),
+                    createdCollection: this.glyphImages
+                });
+
+                // Load the names and images
+                this.loadNamesAndImages();
+            },
+
+
+
+            /**
+             * Extract the names and images from the model.
+             */
+            loadNamesAndImages: function()
+            {
+                // Set the glyph ids on the child views
+                this.createImagesView.setGlyphId(this.model.get("id"));
+                // Load the models into the collections
+                this.glyphNames.reset(this.model.get("name_set"));
+                this.glyphImages.reset(this.model.get("image_set"));
+            },
+
+            onShow: function()
+            {
+                // Show the subviews
+                this.namesArea.show(this.editNamesView,{ preventDestroy: true });
+                this.nameCreateArea.show(this.createNamesView,{ preventDestroy: true });
+                this.imagesEditArea.show(this.editImagesView,{ preventDestroy: true });
+                this.imageUploadArea.show(this.createImagesView,{ preventDestroy: true });
+
+                this.glyphPropertiesArea.show(new EditGlyphPropertiesView({model: this.model}));
+
+                // NameNomenclatureMembershipCollection
+                var memberships = new NameNomenclatureMembershipCollection({url: SITE_URL + "name-nomenclature-memberships/glyph/" + this.model.get("id")});
+                memberships.fetch();
+
+                this.nameNomenclatureMembershipCreateArea.show(new CreateNameNomenclatureMembershipView(
+                    {
+                        names: this.glyphNames,
+                        nomenclatures: this.nomenclatures,
+                        nameNomenclatureMemberships: memberships
+                    }));
+                this.nameNomenclatureMembershipViewArea.show(new EditNameNomenclatureMembershipsView({collection: memberships}));
+            },
+
+            onRender: function()
+            {
+                this.editNamesView.render();
+                this.createNamesView.render();
+                this.editImagesView.render();
+                this.createImagesView.render();
             }
 
         });
@@ -725,57 +1549,36 @@
             url: "/neumeeditor/glyph/" + glyphId + "/"
         });
 
-        var editor;
-
-        this.start = function() {
-            editor = new AppLayoutView({model: glyph});   
-        };
+        //var editor;
+        //
+        //this.start = function() {
+        //    editor = new AppLayoutView({model: glyph});
+        //};
         
         this.initializeId = function(id)
         {
             glyphId = parseInt(id);
-            glyph.url = "/neumeeditor/glyph/" + glyphId + "/";  
+            glyph.url = "/neumeeditor/glyph/" + glyphId + "/";
 
-            // Render the LayoutView
-            App.container.show(editor);
+            // Get the nomenclature list that we will use
+            var nomenclatures = new NomenclatureCollection({url: "/neumeeditor/nomenclatures"});
+            nomenclatures.fetch({success: function() {console.log("Got nomenclatures", nomenclatures);}});
 
-            console.log("Starting...");
-            glyph.fetch({success: function(){
-
-                // console.log(editor.model);
-
-                var glyphNames = glyph.getCollection("name_set", NameCollection, Name);
-                var glyphImages = glyph.getCollection("image_set", ImageCollection, Image);
-                // console.log(glyphNames);
-
-                editor.namesArea.show(new EditNamesView({collection: glyphNames}));
-
-                editor.nameCreateArea.show(
-                    new CreateNamesView({
-                        glyphId: glyph.get("id"),
-                        createdCollection: glyphNames
-                    })
+            glyph.fetch({success: function() {
+                // Build the main view
+                var editor = new AppLayoutView(
+                    {
+                        model: glyph,
+                        nomenclatures: nomenclatures
+                    }
                 );
-
-                editor.imagesEditArea.show(
-                    new EditImagesView({
-                        collection: glyphImages
-                    })
-                );
-
-                editor.imageUploadArea.show(
-                    new CreateImagesView({
-                        glyphId: 1,
-                        createdCollection: glyphImages
-                    })
-                );
-
+                // Render the LayoutView
+                // Glyph data loaded, so load the names, etc.
+                editor.loadNamesAndImages();
+                App.container.show(editor);
             }});
         };
-
-
     });
-    console.log("start app");
     App.start();
 
 })(jQuery);

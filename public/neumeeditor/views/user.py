@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    queryset = User.objects.all()
     authentication_classes = (ExpiringTokenAuthentication,
                               SessionAuthentication)
     permission_classes = (IsAuthenticated,)
@@ -17,6 +18,7 @@ class UserList(generics.ListAPIView):
 class UserDetail(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    queryset = User.objects.all()
     authentication_classes = (ExpiringTokenAuthentication,
                               SessionAuthentication)
     permission_classes = (IsAuthenticated,)

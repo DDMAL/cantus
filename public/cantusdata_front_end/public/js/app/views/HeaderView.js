@@ -1,15 +1,10 @@
-//var CantusAbstractView = require(["views/CantusAbstractView"]);
-//var SearchView = require(["views/SearchView"]);
-//var ModalView = require(["views/ModalView"]);
-//var TopMenuView = require(["views/TopMenuView"]);
-
 define( ['App', 'backbone', 'marionette', 'jquery',
         "views/CantusAbstractView",
         "views/SearchView",
         "views/ModalView",
         "views/TopMenuView",
         "singletons/GlobalEventHandler"],
-    function(App, Backbone, Marionette, $, CantusAbstractView, SearchView, ModalView, TopMenuView, GlobalEventHandler, template) {
+    function(App, Backbone, Marionette, $, CantusAbstractView, SearchView, ModalView, TopMenuView, GlobalEventHandler) {
 
         /**
          * Provide an alert message to the user.
@@ -21,7 +16,8 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             searchView: null,
             searchModalView: null,
 
-            events: {
+            events:
+            {
                 "click #site-logo": function(event)
                 {
                     // Prevent page from reloading
@@ -60,6 +56,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
 
             render: function()
             {
+                // Render the template
                 $(this.el).html(this.template());
                 // Render subviews
                 this.assign(this.topMenuView, '#top-menu');

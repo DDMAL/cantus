@@ -11,15 +11,16 @@ class NameList(generics.ListCreateAPIView):
     model = Name
     serializer_class = NameSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer)
-    authentication_classes = (ExpiringTokenAuthentication,
-                              SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
+    queryset = Name.objects.all()
+    # authentication_classes = (ExpiringTokenAuthentication,
+    #                           SessionAuthentication)
+    # permission_classes = (IsAuthenticated,)
 
 
 class NameDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Name
     serializer_class = NameSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer)
-    authentication_classes = (ExpiringTokenAuthentication,
-                              SessionAuthentication)
-    permission_classes = (IsAuthenticated,)
+    queryset = Name.objects.all()
+    # authentication_classes = (SessionAuthentication,)
+    # permission_classes = (IsAuthenticated,)

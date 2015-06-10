@@ -9,7 +9,7 @@ from cantusdata.helpers.solrsearch import SolrSearch
 
 
 class SearchViewHTMLRenderer(CustomHTMLRenderer):
-    template_name = "backbone.html"
+    template_name = "require.html"
 
 
 class SearchView(APIView):
@@ -26,13 +26,22 @@ class SearchView(APIView):
                            'differentia', 'finalis'])
 
         if not querydict:
-            return Response({'numFound': 0, 'results': [],
+            return Response({'query': '', 'numFound': 0, 'results': [],
                              'facets': facets.facet_counts})
 
-        search_results = s.search(rows=10)
-        result = dict({'numFound': search_results.numFound,
-                  'results': search_results,
-                  'facets': facets.facet_counts}.items()
-                      + s.solr_params.items())
+        # Search for fifteen rows by default
+        s.solr_params.setdefault('rows', 15)
+
+        search_results = s.search()
+
+        result = {
+            'query': querydict['q'],
+            'numFound': search_results.numFound,
+            'results': search_results,
+            'facets': facets.facet_counts
+        }
+
+        result.update(s.solr_params)
+
         response = Response(result)
         return response

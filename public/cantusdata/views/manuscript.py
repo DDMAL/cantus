@@ -6,11 +6,11 @@ from rest_framework.renderers import JSONRenderer, JSONPRenderer
 
 
 class ManuscriptListHTMLRenderer(CustomHTMLRenderer):
-    template_name = "backbone.html"
+    template_name = "require.html"
 
 
 class ManuscriptDetailHTMLRenderer(CustomHTMLRenderer):
-    template_name = "backbone.html"
+    template_name = "require.html"
 
 
 class ManuscriptHasChantsMixin(object):
@@ -24,6 +24,7 @@ class ManuscriptHasChantsMixin(object):
 
 class ManuscriptList(ManuscriptHasChantsMixin, generics.ListCreateAPIView):
     model = Manuscript
+    queryset = Manuscript.objects.all()
     serializer_class = ManuscriptSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer,
                         ManuscriptListHTMLRenderer)
@@ -31,6 +32,7 @@ class ManuscriptList(ManuscriptHasChantsMixin, generics.ListCreateAPIView):
 
 class ManuscriptDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Manuscript
+    queryset = Manuscript.objects.all()
     serializer_class = ManuscriptSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer,
                         ManuscriptDetailHTMLRenderer)
