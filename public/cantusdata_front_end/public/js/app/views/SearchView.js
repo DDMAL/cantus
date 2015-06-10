@@ -51,10 +51,10 @@ define(['backbone', 'marionette',
                 this.listenTo(this.searchParameters, 'change', this.search);
 
                 if (this.getOption('query'))
-                    this.searchParameters.set('query', this.query);
+                    this.searchParameters.set('query', this.getOption('query'));
 
                 if (this.getOption('field'))
-                    this.searchParameters.set('field', this.field);
+                    this.searchParameters.set('field', this.getOption('field'));
             },
 
             /**
