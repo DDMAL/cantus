@@ -36,7 +36,8 @@ define(["underscore", "marionette"], function (_, Marionette)
          */
         setField: function (field, value, connective)
         {
-            if (_.isArray(value)) {
+            if (_.isArray(value))
+            {
                 value = {terms: value, connective: connective || 'AND'};
             }
 
