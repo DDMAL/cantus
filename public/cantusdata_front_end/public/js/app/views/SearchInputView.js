@@ -44,6 +44,12 @@ define(["marionette"],
             {
                 if (this.model.get('field') === 'mode' || this.model.previous('field') === 'mode')
                     this.render();
+            },
+
+            onRender: function ()
+            {
+                // Set the search field
+                this.ui.searchField.val(this.model.get('field'));
             }
         });
     }
