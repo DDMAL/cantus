@@ -444,7 +444,7 @@ return Marionette.ItemView.extend
     },
 
     triggerFolioChange: _.debounce(function (folio) {
-        GlobalEventHandler.trigger("ChangeFolio", folio);
+        GlobalEventHandler.trigger("ChangeFolio", folio, {replaceState: true});
     }, 250),
 
     /**

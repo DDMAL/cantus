@@ -1,5 +1,5 @@
-define(["jquery", "backbone", "singletons/GlobalEventHandler", "objects/OpenChantState"],
-    function($, Backbone, GlobalEventHandler, OpenChantState) {
+define(["underscore", "backbone", "singletons/GlobalEventHandler", "objects/OpenChantState"],
+    function(_, Backbone, GlobalEventHandler, OpenChantState) {
 
         "use strict";
 
@@ -26,19 +26,19 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler", "objects/OpenChan
                 this.listenTo(GlobalEventHandler, 'ChangeDocumentTitle', this.setDocumentTitle);
             },
 
-            setManuscript: function(manuscript)
+            setManuscript: function(manuscript, params)
             {
-                this.set('manuscript', manuscript);
+                this.set('manuscript', manuscript, {stateChangeParams: params});
             },
 
-            setFolio: function(folio)
+            setFolio: function(folio, params)
             {
-                this.set('folio', folio);
+                this.set('folio', folio, {stateChangeParams: params});
             },
 
-            setChant: function(chant)
+            setChant: function(chant, params)
             {
-                this.set('chant', chant);
+                this.set('chant', chant, {stateChangeParams: params});
             },
 
             /**
@@ -74,10 +74,13 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler", "objects/OpenChan
             /**
              * Update the url without triggering a page reload
              */
-            updateUrl: function()
+            updateUrl: function(model, options)
             {
                 // Don't actually trigger the router!
-                Backbone.history.navigate(this.getUrl(), {trigger: false});
+                Backbone.history.navigate(this.getUrl(), {
+                    trigger: false,
+                    replace: _.result(options.stateChangeParams, 'replaceState')
+                });
             }
         });
     }
