@@ -16,14 +16,42 @@ define(["underscore", "backbone", "singletons/GlobalEventHandler", "objects/Open
 
             initialize: function()
             {
-                _.bindAll(this, "setManuscript", "setFolio", "setChant");
+                _.bindAll(this, "setManuscript", "setFolio", "setChant", "restoreOpenChant", "saveOpenChant");
+
+                this.chantStateManager = new OpenChantState();
 
                 this.on('change', this.updateUrl);
+                this.on('change:folio', this.restoreOpenChant);
+                this.on('change:chant', this.saveOpenChant);
 
                 this.listenTo(GlobalEventHandler, 'ChangeManuscript', this.setManuscript);
                 this.listenTo(GlobalEventHandler, 'ChangeFolio', this.setFolio);
                 this.listenTo(GlobalEventHandler, 'ChangeChant', this.setChant);
                 this.listenTo(GlobalEventHandler, 'ChangeDocumentTitle', this.setDocumentTitle);
+            },
+
+            /**
+             * On folio change, get the stored chant state for the new folio and set it
+             */
+            restoreOpenChant: function ()
+            {
+                var currentChant = this.get('chant');
+
+                if (currentChant === void 0)
+                    currentChant = null;
+
+                var newChant = this.chantStateManager.get(this.get('manuscript'), this.get('folio'));
+
+                if (newChant !== currentChant)
+                    GlobalEventHandler.trigger('ChangeChant', newChant, {replaceState: true});
+            },
+
+            /**
+             * On chant change, save the new chant state
+             */
+            saveOpenChant: function ()
+            {
+                this.chantStateManager.set(this.get('manuscript'), this.get('folio'), this.get('chant'));
             },
 
             setManuscript: function(manuscript, params)

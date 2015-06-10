@@ -107,16 +107,6 @@ return Marionette.CompositeView.extend
     {
         this.collection.url = url;
         this.collection.fetch({success: this.render});
-        // Reset the chant if this isn't the initial load
-        if (this.alreadyLoaded === true)
-        {
-            this.unfoldedChant = undefined;
-            GlobalEventHandler.trigger("ChangeChant", undefined);
-        }
-        else
-        {
-            this.alreadyLoaded = true;
-        }
     },
 
     /**
