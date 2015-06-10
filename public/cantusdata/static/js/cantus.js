@@ -1157,8 +1157,8 @@
             "click #site-logo": function()
             {
                 // Prevent page from reloading
-                event.preventDefault();
-                app.navigate("/", {trigger: true});
+                // event.preventDefault();
+                // app.navigate("/", {trigger: true});
             }
         },
 
