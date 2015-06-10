@@ -8,33 +8,37 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler", "objects/OpenChan
          */
         return Backbone.Model.extend
         ({
-            manuscript: undefined,
-            folio: undefined,
-            chant: undefined,
+            defaults: {
+                manuscript: undefined,
+                folio: undefined,
+                chant: undefined
+            },
 
             initialize: function()
             {
-                _.bindAll(this, "setManuscript", "setFolio", "setChant", "silentUrlUpdate");
+                _.bindAll(this, "setManuscript", "setFolio", "setChant");
+
+                this.on('change', this.updateUrl);
+
                 this.listenTo(GlobalEventHandler, 'ChangeManuscript', this.setManuscript);
                 this.listenTo(GlobalEventHandler, 'ChangeFolio', this.setFolio);
                 this.listenTo(GlobalEventHandler, 'ChangeChant', this.setChant);
-                this.listenTo(GlobalEventHandler, 'SilentUrlUpdate', this.silentUrlUpdate);
                 this.listenTo(GlobalEventHandler, 'ChangeDocumentTitle', this.setDocumentTitle);
             },
 
             setManuscript: function(manuscript)
             {
-                this.manuscript = manuscript;
+                this.set('manuscript', manuscript);
             },
 
             setFolio: function(folio)
             {
-                this.folio = folio;
+                this.set('folio', folio);
             },
 
             setChant: function(chant)
             {
-                this.chant = chant;
+                this.set('chant', chant);
             },
 
             /**
@@ -50,19 +54,27 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler", "objects/OpenChan
 
             getUrl: function()
             {
-                var composed_url = "manuscript/" + this.manuscript + "/";
-                if (this.folio !== undefined && this.folio !== null)
+                /* jshint eqnull:true */
+
+                var composed_url = "manuscript/" + this.get('manuscript') + "/";
+
+                // Check that value is not null or undefined
+                if (this.get('folio') != null)
                 {
-                    composed_url = composed_url + "?folio=" + this.folio;
+                    composed_url = composed_url + "?folio=" + this.get('folio');
                 }
-                if (this.chant !== undefined && this.chant !== null)
+
+                if (this.get('chant') != null)
                 {
-                    composed_url = composed_url + "&chant=" + this.chant;
+                    composed_url = composed_url + "&chant=" + this.get('chant');
                 }
                 return composed_url;
             },
 
-            silentUrlUpdate: function()
+            /**
+             * Update the url without triggering a page reload
+             */
+            updateUrl: function()
             {
                 // Don't actually trigger the router!
                 Backbone.history.navigate(this.getUrl(), {trigger: false});

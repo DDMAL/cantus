@@ -52,7 +52,6 @@ return Marionette.CompositeView.extend
         var chant = parseInt(event.target.id.split('-')[1], 10);
         this.chantStateSwitch.setValue(chant - 1, true);
         GlobalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue() + 1);
-        GlobalEventHandler.trigger("SilentUrlUpdate");
     },
 
     foldChantCallback: function(event)
@@ -66,7 +65,6 @@ return Marionette.CompositeView.extend
             newGlobalValue += 1;
         }
         GlobalEventHandler.trigger("ChangeChant", newGlobalValue);
-        GlobalEventHandler.trigger("SilentUrlUpdate");
     },
 
     /**
@@ -114,9 +112,6 @@ return Marionette.CompositeView.extend
         {
             this.unfoldedChant = undefined;
             GlobalEventHandler.trigger("ChangeChant", undefined);
-            // If we don't update the URL then the chant persists when we
-            // change the folio...
-            GlobalEventHandler.trigger("SilentUrlUpdate");
         }
         else
         {
