@@ -51,13 +51,7 @@ return Marionette.CompositeView.extend
         // "collapse-1" becomes 1, etc.
         var chant = parseInt(event.target.id.split('-')[1], 10);
         this.chantStateSwitch.setValue(chant - 1, true);
-
-        var changeChantEventParameters = {
-            chantIndex: this.chantStateSwitch.getValue() + 1,
-            isFirstLoad: false
-        };
-
-        GlobalEventHandler.trigger("ChangeChant", changeChantEventParameters);
+        GlobalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue() + 1);
         GlobalEventHandler.trigger("SilentUrlUpdate");
     },
 
@@ -71,26 +65,17 @@ return Marionette.CompositeView.extend
             // Increase it by one because the GUI isn't 0-indexed, but the StateSwitch is.
             newGlobalValue += 1;
         }
-
-        // Parameters for the ChangeChant event
-        var changeChantEventParameters = {
-            chantIndex: newGlobalValue,
-            isFirstLoad: false
-        };
-
-        GlobalEventHandler.trigger("ChangeChant", changeChantEventParameters);
+        GlobalEventHandler.trigger("ChangeChant", newGlobalValue);
         GlobalEventHandler.trigger("SilentUrlUpdate");
     },
 
     /**
      * Set the "unfolded" chant.
      *
-     * @param event { chantIndex: int, isFirstLoad: bool }
+     * @param index 0 to infinity
      */
-    setUnfoldedChant: function(event)
+    setUnfoldedChant: function(index)
     {
-        var index = event.chantIndex;
-
         if (index !== undefined && index !== null)
         {
             this.unfoldedChant = parseInt(index, 10) - 1;
@@ -128,14 +113,7 @@ return Marionette.CompositeView.extend
         if (this.alreadyLoaded === true)
         {
             this.unfoldedChant = undefined;
-
-            // Parameters for ChangeChant event
-            var changeChantEventParameters = {
-                chantIndex: undefined,
-                isFirstLoad: false
-            };
-
-            GlobalEventHandler.trigger("ChangeChant", changeChantEventParameters);
+            GlobalEventHandler.trigger("ChangeChant", undefined);
             // If we don't update the URL then the chant persists when we
             // change the folio...
             GlobalEventHandler.trigger("SilentUrlUpdate");
