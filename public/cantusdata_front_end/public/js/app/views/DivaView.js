@@ -1,4 +1,5 @@
 define( ['App', 'backbone', 'marionette', 'jquery',
+        "underscore",
         "diva",
         "diva-highlight",
         "diva-download",
@@ -8,6 +9,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
         "singletons/GlobalEventHandler",
         "config/GlobalVars"],
 function(App, Backbone, Marionette, $,
+         _,
          Diva,
          DivaHighlight,
          DivaDownload,
@@ -43,8 +45,6 @@ return Marionette.ItemView.extend
     imagePrefix: null,
     imageSuffix: "",
 
-    timer: null,
-
     ui: {
         divaToolbar: "#diva-toolbar",
         divaWrapper: "#diva-wrapper"
@@ -75,7 +75,6 @@ return Marionette.ItemView.extend
         this.currentFolioIndex = null;
         this.imagePrefix = null;
         this.imageSuffix = null;
-        this.timer = null;
         this.viewerLoadEvent = null;
         this.pageAliasingInitEvent = null;
         this.modeSwitchEvent = null;
@@ -440,20 +439,13 @@ return Marionette.ItemView.extend
         {
             this.currentFolioIndex = index;
             this.currentFolioName = fileName;
-
-            if (this.timer !== null)
-            {
-                window.clearTimeout(this.timer);
-            }
-
-            this.timer = window.setTimeout(
-                function ()
-                {
-                    GlobalEventHandler.trigger("manuscriptChangeFolio");
-                },
-                250);
+            this.triggerFolioChange();
         }
     },
+
+    triggerFolioChange: _.debounce(function () {
+        GlobalEventHandler.trigger("manuscriptChangeFolio");
+    }, 250),
 
     /**
      * Get the stored Diva data.
