@@ -102,35 +102,7 @@ define(['backbone', 'marionette',
                     queryBuilder.setField(field, value);
                 });
 
-                this.executeQuery(queryBuilder);
-            },
-
-            executeQuery: function (solrQuery)
-            {
-                var ROWS = 20;
-
-                var baseRequest = solrQuery.extend({
-                    params: {rows: ROWS}
-                });
-
-                var loaded = 0;
-
-                this.collection.setQuery(baseRequest.toString());
-                this.collection.fetch({reset: true, success: continueLoading});
-
-                function continueLoading(collection, response) {
-                    loaded += ROWS;
-
-                    if (response.numFound > loaded)
-                    {
-                        var request = baseRequest.extend({
-                            params: {start: loaded}
-                        });
-
-                        collection.setQuery(request.toString());
-                        collection.fetch({remove: false, success: continueLoading});
-                    }
-                }
+                this.collection.fetch({baseSolrQuery: queryBuilder});
             },
 
             onRender: function ()
