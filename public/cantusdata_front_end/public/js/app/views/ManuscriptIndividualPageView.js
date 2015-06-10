@@ -69,7 +69,7 @@ return Marionette.LayoutView.extend
         // Render every time the model changes...
         this.listenTo(this.manuscript, 'change', this.afterFetch);
         // Switch page when necessary
-        this.listenTo(GlobalEventHandler, "manuscriptChangeFolio", this.updateFolio);
+        this.listenTo(GlobalEventHandler, "ChangeFolio", this.updateFolio);
     },
 
     remove: function()
@@ -100,19 +100,16 @@ return Marionette.LayoutView.extend
     },
 
     /**
-     *
+     * Update the view for a changed folio
      */
-    updateFolio: function()
+    updateFolio: function(folio)
     {
-        var folio = this.divaView.getFolio();
         // Query the folio set at that specific manuscript number
         var newUrl =  GlobalVars.siteUrl + "folio-set/manuscript/" + this.manuscript.get("id") + "/" + folio + "/";
 
         // Rebuild the folio View
         this.folioView.setCustomNumber(folio);
         this.folioView.setUrl(newUrl);
-        GlobalEventHandler.trigger("ChangeFolio", folio);
-        GlobalEventHandler.trigger("SilentUrlUpdate");
     },
 
     /**

@@ -439,12 +439,13 @@ return Marionette.ItemView.extend
         {
             this.currentFolioIndex = index;
             this.currentFolioName = fileName;
-            this.triggerFolioChange();
+            this.triggerFolioChange(this.imageNameToFolio(fileName));
         }
     },
 
-    triggerFolioChange: _.debounce(function () {
-        GlobalEventHandler.trigger("manuscriptChangeFolio");
+    triggerFolioChange: _.debounce(function (folio) {
+        GlobalEventHandler.trigger("ChangeFolio", folio);
+        GlobalEventHandler.trigger("SilentUrlUpdate");
     }, 250),
 
     /**
