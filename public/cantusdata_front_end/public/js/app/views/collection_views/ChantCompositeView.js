@@ -1,90 +1,164 @@
 define( ['App', 'backbone', 'marionette', 'jquery',
         "views/item_views/ChantItemView",
-        "singletons/GlobalEventHandler",
-        "models/StateSwitch"],
+        "singletons/GlobalEventHandler"],
     function(App, Backbone, Marionette, $,
              ChantItemView,
-             GlobalEventHandler,
-             StateSwitch) {
+             GlobalEventHandler) {
 
 "use strict";
 
 /**
  * A composite view.
  */
-return Marionette.CompositeView.extend
-({
+return Marionette.CompositeView.extend({
     childView: ChantItemView,
     childViewContainer: ".accordion",
     template: "#chant-composite-template",
 
     /**
-     * The chant that bootstrap has unfolded!
+     * The chant that bootstrap has unfolded
      */
-    unfoldedChant: undefined,
-
-    chantStateSwitch: undefined,
-
-    events: {
-        'hidden.bs.collapse': 'foldChantCallback',
-        'show.bs.collapse': 'unfoldChantCallback'
-    },
+    unfoldedChant: null,
 
     ui: {
         errorMessages: ".error-messages"
     },
 
+    collectionEvents: {
+        'sync reset': 'collectionLoad'
+    },
+
+    childEvents: {
+        'fold:chant': 'chantFolded',
+        'unfold:chant': 'chantUnfolded'
+    },
+
     initialize: function()
     {
-        this.collection = new Backbone.Collection();
-        // Unfold a chant when changechant event happens
+        // Set the initial open chant state
+        this.unfoldedChant = this.getOption('unfoldedChant');
+
+        // Convert undefined to null and numerical strings to numbers
+        /* jshint eqnull:true */
+        if (this.unfoldedChant == null)
+            this.unfoldedChant = null;
+        else
+            this.unfoldedChant |= 0;
+
+        // Unfold a chant when the global ChangeChant event is triggered
         this.listenTo(GlobalEventHandler, "ChangeChant", this.setUnfoldedChant);
     },
 
     /**
-     * Callback for when a chant is "unfolded" by Bootstrap.
+     * Pass child views their initial state when they are created
      *
-     * @param event
+     * @param model
+     * @param index
+     * @returns {{open: boolean}}
      */
-    unfoldChantCallback: function(event)
+    childViewOptions: function (model, index)
     {
-        // "collapse-1" becomes 1, etc.
-        var chant = parseInt(event.target.id.split('-')[1], 10);
-        this.chantStateSwitch.setValue(chant - 1, true);
-        GlobalEventHandler.trigger("ChangeChant", this.chantStateSwitch.getValue() + 1);
-    },
+        /* jshint eqnull:true */
 
-    foldChantCallback: function(event)
-    {
-        var chant = parseInt(event.target.id.split('-')[1], 10);
-        this.chantStateSwitch.setValue(chant - 1, false);
-        var newGlobalValue = this.chantStateSwitch.getValue();
-        if (newGlobalValue !== undefined)
-        {
-            // Increase it by one because the GUI isn't 0-indexed, but the StateSwitch is.
-            newGlobalValue += 1;
-        }
-        GlobalEventHandler.trigger("ChangeChant", newGlobalValue);
+        return {
+            open: this.unfoldedChant != null && this.unfoldedChant - 1 === index
+        };
     },
 
     /**
-     * Set the "unfolded" chant.
+     * Callback triggered when a child view's panel is collapsed
+     * by the user
+     *
+     * @param child the child view
+     */
+    chantFolded: function (child)
+    {
+        // Get the 1-indexed position of the child
+        var chant = this.collection.indexOf(child.model) + 1;
+
+        if (this.unfoldedChant === chant)
+        {
+            this.unfoldedChant = null;
+            GlobalEventHandler.trigger("ChangeChant", null);
+        }
+    },
+
+    /**
+     * Callback triggered when a child view's panel is unfolded
+     * by the user
+     *
+     * @param child the child view
+     */
+    chantUnfolded: function (child)
+    {
+        // Get the 1-indexed position of the child
+        var chant = this.collection.indexOf(child.model) + 1;
+
+        if (this.unfoldedChant !== chant)
+        {
+            this.unfoldedChant = chant;
+            GlobalEventHandler.trigger("ChangeChant", chant);
+        }
+    },
+
+    /**
+     * Update the UI when the global open chant is changed
      *
      * @param index 0 to infinity
      */
     setUnfoldedChant: function(index)
     {
-        if (index !== undefined && index !== null)
+        var child;
+
+        /* Check for a chant value of null or undefined */
+        /* jshint eqnull:true */
+        if (index == null)
         {
-            this.unfoldedChant = parseInt(index, 10) - 1;
+            // If the chant is closed then collapse the chant panel
+            if (this.unfoldedChant !== null)
+            {
+                var chant = this.unfoldedChant;
+                this.unfoldedChant = null;
+
+                child = this.children.findByIndex(chant - 1);
+                if (child)
+                    child.ui.collapse.collapse('hide');
+            }
+        }
+        else
+        {
+            // Coerce to integer
+            index |= 0;
+
+            // If the chant has changed then expand the correct panel
+            // (this will automatically collapse other panels as necessary)
+            if (this.unfoldedChant !== index)
+            {
+                this.unfoldedChant = index;
+
+                child = this.children.findByIndex(this.unfoldedChant - 1);
+                if (child)
+                    child.ui.collapse.collapse('show');
+            }
         }
     },
 
-    onRender: function()
+    onRender: function ()
     {
-        // Make a new StateSwitch object that we will use to keep track
-        // of the open chant.
-        this.chantStateSwitch = new StateSwitch(this.collection.length);
+        this.collectionLoad();
+    },
+
+    /**
+     * Update the error messages when the collection is loaded or reset
+     *
+     * TODO(wabain): refactor the error messages to be an emptyView
+     */
+    collectionLoad: function()
+    {
+        // Catch the case where the collection is loaded before the view is rendered
+        if (typeof this.ui.errorMessages === 'string')
+            return;
+
         // We need to display messages if there are no chants.
         if (this.collection.length === 0)
         {
@@ -94,28 +168,8 @@ return Marionette.CompositeView.extend
         else
         {
             // Some chants
-            this.ui.errorMessages.html();
+            this.ui.errorMessages.empty();
         }
-    },
-
-    /**
-     * Set the URL of the collection and fetch the data.
-     *
-     * @param url
-     */
-    setUrl: function(url)
-    {
-        this.collection.url = url;
-        this.collection.fetch({success: this.render});
-    },
-
-    /**
-     * Reset the collection.
-     */
-    resetCollection: function()
-    {
-        this.collection.reset();
-        this.render();
     }
 });
 });

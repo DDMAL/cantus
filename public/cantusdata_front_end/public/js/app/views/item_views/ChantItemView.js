@@ -6,25 +6,49 @@ function(App, Marionette) {
 /**
  * A chant.
  */
-return Marionette.ItemView.extend
-({
+return Marionette.ItemView.extend({
     template: "#chant-item-template",
+    tagName: 'div class="panel panel-default"',
 
-    open: false,
+    ui: {
+        collapse: '.collapse'
+    },
+
+    events: {
+        'hide.bs.collapse': 'triggerFoldChant',
+        'show.bs.collapse': 'triggerUnfoldChant'
+    },
 
     /**
-     * Generate the containing div's tag name
+     * Expose the the state of the chant to the template
      *
-     * @returns {string}
+     * @returns {{isOpen: Function}}
      */
-    tagName: function() {
-        // "item_id" is what solr calls the standard django id
-        var output =  'div id="chant-' + parseInt(this.model.get("sequence"), 10) + '" class="panel panel-default';
-        if (this.open) {
-            // Append "in" if open
-            output += " in ";
-        }
-        return output + '"';
+    templateHelpers: function ()
+    {
+        var self = this;
+
+        return {
+            isOpen: function () {
+                return self.getOption('open');
+            }
+        };
+    },
+
+    /**
+     * Trigger a fold event when the chant is collapsed by Bootstrap
+     */
+    triggerFoldChant: function ()
+    {
+        this.trigger('fold:chant');
+    },
+
+    /**
+     * Trigger a unfold event when the chant is expanded by Bootstrap
+     */
+    triggerUnfoldChant: function ()
+    {
+        this.trigger('unfold:chant');
     }
 });
 });
