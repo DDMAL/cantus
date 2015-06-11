@@ -20,7 +20,7 @@ define(['underscore', 'marionette'],
             {
                 if (!(_.isString(manuscript) && _.isString(folio)))
                 {
-                    console.error('Invalid values for chant state; need strings but got:', manuscript, folio);
+                    console.error('Invalid manuscript/folio ids for chant state; need strings but got:', manuscript, folio);
                     return;
                 }
 
