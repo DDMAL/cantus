@@ -21,7 +21,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 "click #site-logo": function(event)
                 {
                     // Prevent page from reloading
-                    event.preventDefault();
+                    // event.preventDefault();
                     Backbone.history.navigate("/", {trigger: true});
                 }
             },
