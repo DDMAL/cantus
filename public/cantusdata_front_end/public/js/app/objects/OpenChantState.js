@@ -30,12 +30,24 @@ define(['underscore', 'marionette'],
                 var prevChant = this.manuscripts[manuscript][folio];
 
                 // Normalize undefined chants to null
+                if (prevChant === void 0)
+                    prevChant = null;
+
                 if (chantNumber === void 0)
                     chantNumber = null;
 
                 if (chantNumber !== prevChant)
                 {
-                    this.manuscripts[manuscript][folio] = chantNumber;
+                    // If the chant has been removed, delete it from the manuscript
+                    if (chantNumber === null)
+                    {
+                        delete this.manuscripts[manuscript][folio];
+                    }
+                    else
+                    {
+                        this.manuscripts[manuscript][folio] = chantNumber;
+                    }
+
                     this.persist(manuscript);
                 }
             },
