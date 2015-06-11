@@ -66,7 +66,20 @@ define(['underscore', 'marionette'],
              */
             persist: function (manuscript)
             {
-                // TODO(wabain): hook up localStorage
+                if (window.localStorage)
+                {
+                    var key = this.getLocalStorageKey(manuscript);
+                    var data = JSON.stringify(this.manuscripts[manuscript]);
+
+                    try
+                    {
+                        window.localStorage.setItem(key, data);
+                    }
+                    catch(e)
+                    {
+                        console.error('Failed to save open chants to local storage:\n', e);
+                    }
+                }
             },
 
             /**
@@ -77,21 +90,51 @@ define(['underscore', 'marionette'],
              */
             ensureCreated: function(manuscript)
             {
-                // If the key doesn't exist, then add it
-                if (!(manuscript in this.manuscripts))
+                if (manuscript in this.manuscripts)
                 {
-                    // TODO(wabain): check localStorage here
-
-                    // Create a new folio set
-                    this.manuscripts[manuscript] = {};
-                    // It has been created, so return true
-                    return true;
-                }
-                else
-                {
-                    // It already exists!
                     return false;
                 }
+
+                // Try to load the data from localStorage
+                if (window.localStorage)
+                {
+                    var key = this.getLocalStorageKey(manuscript);
+                    var data;
+
+                    try
+                    {
+                        data = window.localStorage.getItem(key);
+                    }
+                    catch (e)
+                    {
+                        console.error('Failed to load open chants for manuscript', manuscript,
+                            'from local storage:\n', e);
+                    }
+
+                    if (data)
+                    {
+                        try
+                        {
+                            this.manuscripts[manuscript] = JSON.parse(data);
+                            return true;
+                        }
+                        catch (e)
+                        {
+                            console.error('Failed to read open chant data for manuscript', manuscript, ':\n', e);
+                        }
+                    }
+                }
+
+                // Otherwise, create a new folio set
+                this.manuscripts[manuscript] = {};
+
+                // It has been created, so return true
+                return true;
+            },
+
+            getLocalStorageKey: function(manuscript)
+            {
+                return 'openChants:' + manuscript;
             }
         });
     });
