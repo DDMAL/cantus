@@ -35,12 +35,21 @@ define(["underscore", "backbone", "singletons/GlobalEventHandler", "objects/Open
              */
             restoreOpenChant: function ()
             {
+                /* jshint eqnull:true */
+
+                var manuscript = this.get('manuscript');
+                var folio = this.get('folio');
+
+                // Ensure that the manuscript and folio are not null or undefined
+                if (manuscript == null || folio == null)
+                    return;
+
                 var currentChant = this.get('chant');
 
                 if (currentChant === void 0)
                     currentChant = null;
 
-                var newChant = this.chantStateManager.get(this.get('manuscript'), this.get('folio'));
+                var newChant = this.chantStateManager.get(manuscript, folio);
 
                 if (newChant !== currentChant)
                     GlobalEventHandler.trigger('ChangeChant', newChant, {replaceState: true});
@@ -51,7 +60,16 @@ define(["underscore", "backbone", "singletons/GlobalEventHandler", "objects/Open
              */
             saveOpenChant: function ()
             {
-                this.chantStateManager.set(this.get('manuscript'), this.get('folio'), this.get('chant'));
+                /* jshint eqnull:true */
+
+                var manuscript = this.get('manuscript');
+                var folio = this.get('folio');
+
+                // Ensure that the manuscript and folio are not null or undefined
+                if (manuscript == null || folio == null)
+                    return;
+
+                this.chantStateManager.set(manuscript, folio, this.get('chant'));
             },
 
             setManuscript: function(manuscript, params)
