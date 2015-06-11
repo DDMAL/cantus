@@ -37,11 +37,6 @@ define(['backbone', 'marionette'],
                 if (href)
                 {
                     event.preventDefault();
-
-                    // FIXME(wabain): for now we need to trigger a page reload to
-                    // get to a result because events aren't fired properly to update
-                    // the UI if we navigate with trigger: false
-                    // See issue #187.
                     Backbone.history.navigate(href, {trigger: true});
                 }
             },
