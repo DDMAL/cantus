@@ -127,6 +127,7 @@ define(["underscore", "backbone", "models/SearchResult", "config/GlobalVars"],
                 options = options || {};
 
                 var baseRequest = options.baseSolrQuery;
+                var fetchCount = ++this._fetchCount;
 
                 if (!baseRequest)
                 {
@@ -134,7 +135,6 @@ define(["underscore", "backbone", "models/SearchResult", "config/GlobalVars"],
                     return;
                 }
 
-                var fetchCount = ++this._fetchCount;
                 var successCb = options.success;
                 var loaded = 0;
                 var collection = this;
