@@ -140,11 +140,12 @@ define(["underscore", "backbone", "models/SearchResult", "config/GlobalVars"],
                 var collection = this;
 
                 // Set default Solr parameters if needed
-                baseRequest = this.setSolrQueryDefaults(baseRequest); 
-                // Set some option defaults we'll always need
+                baseRequest = this.setSolrQueryDefaults(baseRequest);
+
+                // Set some sync option defaults we'll need for each request
                 options = _.defaults({success: continueLoading}, options, {parse: true});
 
-
+                // Set options for the initial request
                 var requestOptions = _.defaults({
                     url: this.baseUrl() + '?' + baseRequest.toString()
                 }, options);
