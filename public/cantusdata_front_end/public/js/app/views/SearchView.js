@@ -51,14 +51,18 @@ define(['backbone', 'marionette',
                     comparisonParameters: this.searchParameters
                 });
 
+                // Set initial values for query and field if they are provided
+                this.searchParameters.set(_.filter({
+                    query: this.getOption('query'),
+                    field: this.getOption('field')
+                },  _.identity));
+
                 // Trigger a search when the search query or field changes
                 this.listenTo(this.searchParameters, 'change:query change:field', this.search);
 
-                if (this.getOption('query'))
-                    this.searchParameters.set('query', this.getOption('query'));
-
-                if (this.getOption('field'))
-                    this.searchParameters.set('field', this.getOption('field'));
+                // Execute an initial search if there is a query
+                if (this.searchParameters.get('query'))
+                    this.search();
             },
 
             /**
