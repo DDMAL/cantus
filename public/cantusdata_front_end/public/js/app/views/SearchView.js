@@ -51,8 +51,8 @@ define(['backbone', 'marionette',
                     comparisonParameters: this.searchParameters
                 });
 
-                // Trigger a search when the search parameters change
-                this.listenTo(this.searchParameters, 'change', this.search);
+                // Trigger a search when the search query or field changes
+                this.listenTo(this.searchParameters, 'change:query change:field', this.search);
 
                 if (this.getOption('query'))
                     this.searchParameters.set('query', this.getOption('query'));
