@@ -35,6 +35,18 @@ html {
     overflow: hidden;
 }
 
+/* Make table headers black in the search result list, even though they're links */
+table.result-list th a {
+    color: #333;
+}
+
+/* Support reversible (i.e. upwards-pointing) carets without setting classes on ancestors */
+.caret.caret-reversed {
+    content: "";
+    border-top: 0;
+    border-bottom: 4px solid;
+}
+
 #diva-wrapper {
     width: 100%;
 }
