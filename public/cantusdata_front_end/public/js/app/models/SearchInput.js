@@ -3,7 +3,9 @@ define(["backbone"], function (Backbone)
     return Backbone.Model.extend({
         defaults: {
             field: 'all',
-            query: ''
+            query: '',
+            sortBy: 'folio',
+            reverseSort: false
         }
     });
 });

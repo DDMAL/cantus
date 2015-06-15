@@ -1,75 +1,152 @@
-define(['marionette'],
-    function (Marionette) {
+define(['underscore', 'marionette'],
+    function (_, Marionette) {
 
         "use strict";
 
-        return Marionette.Object.extend
-        ({
-            manuscripts: {},
+        return Marionette.Object.extend({
+            initialize: function ()
+            {
+                this.manuscripts = {};
+            },
 
             /**
              * Set which chant is open for some particular manuscript folio.
              *
-             * @param manuscript
-             * @param folio
-             * @param chantNumber
+             * @param {string} manuscript the id of the manuscript
+             * @param {string} folio the name of the folio
+             * @param {?number} chantNumber the open chant
              */
-            setOpenChant: function(manuscript, folio, chantNumber)
+            set: function(manuscript, folio, chantNumber)
             {
-                // Create the manuscript if it doesn't exist
-                this.createManuscript(manuscript);
+                if (!(_.isString(manuscript) && _.isString(folio)))
+                {
+                    console.error('Invalid manuscript/folio ids for chant state; need strings but got:', manuscript, folio);
+                    return;
+                }
 
-                this.manuscripts[String(manuscript)][String(folio)] = parseInt(chantNumber, 10);
+                // Create the manuscript if it doesn't exist
+                this.ensureCreated(manuscript);
+
+                var prevChant = this.manuscripts[manuscript][folio];
+
+                // Normalize undefined chants to null
+                if (prevChant === void 0)
+                    prevChant = null;
+
+                if (chantNumber === void 0)
+                    chantNumber = null;
+
+                if (chantNumber !== prevChant)
+                {
+                    // If the chant has been removed, delete it from the manuscript
+                    if (chantNumber === null)
+                    {
+                        delete this.manuscripts[manuscript][folio];
+                    }
+                    else
+                    {
+                        this.manuscripts[manuscript][folio] = chantNumber;
+                    }
+
+                    this.persist(manuscript);
+                }
             },
 
             /**
              * Get which chant is open for a particular manuscript folio
              *
-             * @param manuscript siglum_slug
-             * @param folio folio code
-             * @returns {*}
+             * @param {string} manuscript manuscript id
+             * @param {string} folio folio code
+             * @returns {?number}
              */
-            getOpenChant: function(manuscript, folio)
+            get: function(manuscript, folio)
             {
-                var manuscriptString = String(manuscript);
-                var folioString = String(folio);
+                var folios = this.manuscripts[manuscript];
 
-                // Return the number if it is open
-                if (manuscriptString in this.manuscripts && folioString in this.manuscripts[manuscriptString])
+                if (!folios)
+                    return null;
+
+                var chant = folios[folio];
+
+                return chant === void 0 ? null : chant;
+            },
+
+            /**
+             * Save the chant state for the manuscript persistently on the client side
+             *
+             * @param {string} manuscript the manuscript id
+             */
+            persist: function (manuscript)
+            {
+                if (window.localStorage)
                 {
-                    // A chant number has been stored, so lets return it
-                    return this.manuscripts[manuscriptString][folioString];
-                }
-                else
-                {
-                    // No chant number has been stored
-                    return undefined;
+                    var key = this.getLocalStorageKey(manuscript);
+                    var data = JSON.stringify(this.manuscripts[manuscript]);
+
+                    try
+                    {
+                        window.localStorage.setItem(key, data);
+                    }
+                    catch(e)
+                    {
+                        console.error('Failed to save open chants to local storage:\n', e);
+                    }
                 }
             },
 
             /**
-             * Add a manuscript to the OpenChantState.
+             * Ensure that a registry exists for a manuscript
              *
-             * @param manuscript siglum_slug
+             * @param {string} manuscript the manuscript id
              * @returns {boolean} true if created, false if already exists
              */
-            createManuscript: function(manuscript)
+            ensureCreated: function(manuscript)
             {
-                // Make sure the manuscript is a string for our key
-                var manuscriptString = String(manuscript);
-                // If the key doesn't exist, then add it
-                if (!(manuscriptString in this.manuscripts))
+                if (manuscript in this.manuscripts)
                 {
-                    // Create a new folio set
-                    this.manuscripts[manuscriptString] = {};
-                    // It has been created, so return true
-                    return true;
-                }
-                else
-                {
-                    // It already exists!
                     return false;
                 }
+
+                // Try to load the data from localStorage
+                if (window.localStorage)
+                {
+                    var key = this.getLocalStorageKey(manuscript);
+                    var data;
+
+                    try
+                    {
+                        data = window.localStorage.getItem(key);
+                    }
+                    catch (e)
+                    {
+                        console.error('Failed to load open chants for manuscript', manuscript,
+                            'from local storage:\n', e);
+                    }
+
+                    if (data)
+                    {
+                        try
+                        {
+                            this.manuscripts[manuscript] = JSON.parse(data);
+                            return true;
+                        }
+                        catch (e)
+                        {
+                            console.error('Failed to read open chant data for manuscript', manuscript, ':\n', e);
+                        }
+                    }
+                }
+
+                // Otherwise, create a new folio set
+                this.manuscripts[manuscript] = {};
+
+                // It has been created, so return true
+                return true;
+            },
+
+            getLocalStorageKey: function(manuscript)
+            {
+                return 'openChants:' + manuscript;
             }
         });
     });

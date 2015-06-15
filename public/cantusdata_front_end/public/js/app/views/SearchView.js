@@ -42,19 +42,27 @@ define(['backbone', 'marionette',
                 this.restrictions = this.getOption('restrictions') || {};
                 this.showManuscriptName = this.getOption('showManuscriptName');
 
-                // Initialize search result collection
-                this.collection = new SearchResultCollection();
-
                 // Initialize search input model
                 this.searchParameters = new SearchInput();
 
-                this.listenTo(this.searchParameters, 'change', this.search);
+                // Initialize search result collection which is sorted
+                // by the criteria specified by the search input
+                this.collection = new SearchResultCollection(null, {
+                    comparisonParameters: this.searchParameters
+                });
 
-                if (this.getOption('query'))
-                    this.searchParameters.set('query', this.getOption('query'));
+                // Set initial values for query and field if they are provided
+                this.searchParameters.set(_.filter({
+                    query: this.getOption('query'),
+                    field: this.getOption('field')
+                },  _.identity));
 
-                if (this.getOption('field'))
-                    this.searchParameters.set('field', this.getOption('field'));
+                // Trigger a search when the search query or field changes
+                this.listenTo(this.searchParameters, 'change:query change:field', this.search);
+
+                // Execute an initial search if there is a query
+                if (this.searchParameters.get('query'))
+                    this.search();
             },
 
             /**

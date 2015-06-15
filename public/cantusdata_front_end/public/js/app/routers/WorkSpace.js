@@ -115,6 +115,7 @@ return Backbone.Router.extend
         //this.manuscriptView.render();
 
         GlobalEventHandler.trigger("ChangeManuscript", query);
+        GlobalEventHandler.trigger("ChangeFolio", folio);
         GlobalEventHandler.trigger("ChangeChant", chant);
     },
 

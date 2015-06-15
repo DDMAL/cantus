@@ -8,7 +8,7 @@
         </a>
     </h4>
 </div>
-<div id="collapse-<%= sequence %>" class="panel-collapse collapse">
+<div id="collapse-<%= sequence %>" class="panel-collapse collapse <%= isOpen() ? 'in' : '' %>">
     <div class="panel-body">
         <% if (marginalia) { %>
         <p><b>Marginalia:</b> <%= marginalia %></p>

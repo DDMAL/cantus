@@ -104,8 +104,15 @@ return Marionette.LayoutView.extend
      */
     updateFolio: function(folio)
     {
+        // FIXME(wabain): this is a patch to get an ID reliably
+        // but the underlying issue here is the unclear division of responsibility
+        // between models and views
+        var id = this.manuscript.get('id');
+        if (id === void 0)
+            id = this.id;
+
         // Query the folio set at that specific manuscript number
-        var newUrl =  GlobalVars.siteUrl + "folio-set/manuscript/" + this.manuscript.get("id") + "/" + folio + "/";
+        var newUrl =  GlobalVars.siteUrl + "folio-set/manuscript/" + id + "/" + folio + "/";
 
         // Rebuild the folio View
         this.folioView.setCustomNumber(folio);

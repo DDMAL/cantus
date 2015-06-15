@@ -53,17 +53,22 @@ return Marionette.LayoutView.extend
         // doesn't have a url but subsequent ones do.
 
         this.model = new Folio();
+        this.chantCollection = new Backbone.Collection();
+
         this.listenTo(this.model, 'sync', this.afterFetch);
 
         if (options && options.url)
         {
             this.setUrl(options.url);
         }
+
         this.folioItemView = new FolioItemView({
             model: this.model
         });
+
         this.chantCompositeView = new ChantCompositeView({
-            collection: new Backbone.Collection()
+            collection: this.chantCollection,
+            unfoldedChant: App.appRouter.globalState.get('chant')
         });
     },
 
@@ -103,7 +108,6 @@ return Marionette.LayoutView.extend
     afterFetch: function()
     {
         this.assignChants();
-        this.chantListRegion.show(this.chantCompositeView);
     },
 
     /**
@@ -111,31 +115,31 @@ return Marionette.LayoutView.extend
      */
     assignChants: function()
     {
+        // TODO(wabain): normalize Solr differences in model.parse methods
         // We are going to query this data from SOLR because it's faster.
         // So we need the manuscript siglum and folio name.
         // We need to handle the data differently depending on whether
         // we're getting the information from Django or Solr.
-        var folio_id;
         if (this.model.get("item_id"))
         {
-            folio_id = this.model.get("item_id");
             // Compose the url
-            var composedUrl = GlobalVars.siteUrl + "chant-set/folio/" + folio_id + "/";
-            // Build a new view with the new data
-            this.chantCompositeView.setUrl(composedUrl);
+            var composedUrl = GlobalVars.siteUrl + "chant-set/folio/" + this.model.get("item_id") + "/";
+
+            // Update the chant collection
+            this.chantCollection.fetch({reset: true, url: composedUrl});
         }
         else
         {
-            this.chantCompositeView.resetCollection();
+            this.chantCollection.reset();
         }
     },
 
     onShow: function()
     {
-        //// Show the chant list without destroying the original
-        ////this.chantListRegion.show(this.chantCompositeView);
-        this.folioItemRegion.show(this.folioItemView);
+        this.folioItemRegion.show(this.folioItemView, {preventDestroy: true});
+        this.chantListRegion.show(this.chantCompositeView, {preventDestroy: true});
         this.divaFolioAdvancerRegion.show(new DivaFolioAdvancerView());
+
         GlobalEventHandler.trigger("renderView");
     }
 });

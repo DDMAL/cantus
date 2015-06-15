@@ -5,13 +5,28 @@
 <table class="table table-striped result-list child-container">
     <thead>
         <tr>
-            <th>Name</th>
+            <th data-sort-field="incipit">
+                <a href="#">Name</a>
+                <span class="search-caret"></span>
+            </th>
             <% if (showManuscriptName === true) { %>
-            <th>Manuscript</th>
+            <th>
+                <a href="#">Manuscript</a>
+                <span class="search-caret"></span>
+            </th>
             <% } %>
-            <th>Mode</th>
-            <th>Folio</th>
-            <th>Type</th>
+            <th>
+                <a href="#">Mode</a>
+                <span class="search-caret"></span>
+            </th>
+            <th>
+                <a href="#">Folio</a>
+                <span class="search-caret"></span>
+            </th>
+            <th>
+                <a href="#">Type</a>
+                <span class="search-caret"></span>
+            </th>
         </tr>
     </thead>
 </table>
