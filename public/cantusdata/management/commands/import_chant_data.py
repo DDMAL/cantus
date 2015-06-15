@@ -180,7 +180,7 @@ class ChantImporter:
         # Get all the unique folios and manuscripts affected by adding the chants
         chants = [info[0] for info in self.new_chant_info]
         self.affected_folios = dict((chant.folio.pk, chant.folio)
-                                    for chant in chants).values()
+                                    for chant in chants if chant.folio).values()
 
         self.affected_manuscripts = dict((folio.manuscript.pk, folio.manuscript)
                                          for folio in self.affected_folios).values()
