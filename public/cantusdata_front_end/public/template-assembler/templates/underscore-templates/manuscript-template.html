@@ -28,8 +28,10 @@
                         <p><%= date %></p>
                         <h4>Provenance</h4>
                         <p><%= provenance %></p>
+                        <% if (description) { %>
                         <h4>Description</h4>
-                        <p><%= description %></p>
+                        <pre class="preformatted-text"><%= description %></pre>
+                        <% } %>
                     </div>
                     <div class="tab-pane" id="manuscript-search-pane">
                         <h3>Search this Manuscript</h3>
