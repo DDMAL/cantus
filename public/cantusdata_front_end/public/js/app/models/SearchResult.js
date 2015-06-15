@@ -39,9 +39,16 @@ define(["jquery", "backbone", "config/GlobalVars"],
                         newElement.folio = result.folio;
                         newElement.mode = result.mode;
                         newElement.office = result.office;
-                        newElement.volpiano = searchType === 'volpiano' ?
-                            this.highlightVolpianoResult(result.volpiano, query) :
-                            result.volpiano;
+
+                        if (searchType === 'volpiano')
+                        {
+                            newElement.volpiano = this.highlightVolpianoResult(result.volpiano, query);
+                        }
+                        else
+                        {
+                            newElement.volpiano = result.volpiano;
+                        }
+
                         newElement.url = "/manuscript/" + result.manuscript_id + "/?folio=" + result.folio + "&chant=" + result.sequence;
                         break;
 
@@ -75,6 +82,13 @@ define(["jquery", "backbone", "config/GlobalVars"],
                 // Grab all matches from that regex
                 var regexMatches = result.match(regex);
 
+                // If something went wrong and there is no match, fail unobtrusively
+                if (!regexMatches)
+                {
+                    console.error('Failed to find the match for', query, 'in Volpiano string', result);
+                    return result;
+                }
+
                 // Highlight the matches with the proper span tag
                 for (var i = 0; i < regexMatches.length; i++)
                 {
@@ -98,6 +112,10 @@ define(["jquery", "backbone", "config/GlobalVars"],
             {
                 // Empty string that we will fill up
                 var outputAsString = "";
+
+                // Normalize the case of the query: the Volpiano string will always
+                // be lower-cased
+                volpianoWithoutDashes = volpianoWithoutDashes.toLowerCase();
 
                 for (var i = 0; i < volpianoWithoutDashes.length; i++)
                 {
