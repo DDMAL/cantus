@@ -83,7 +83,7 @@ class ChantImporter:
         # Map siglum to manuscript model
         self._manuscript_cache = {}
 
-        self.chants_and_concordances = []
+        self.new_chant_info = []
         self.new_folios = []
 
         # These are set after adding is complete
@@ -139,8 +139,13 @@ class ChantImporter:
             except Folio.DoesNotExist:
                 # If the folio doesn't exist, prepare to create it
                 self.add_folio(folio_code, manuscript)
+                folio = None
 
-        chant.folio = folio
+        else:
+            folio = None
+
+        if folio:
+            chant.folio = folio
 
         # Concordances
         concordances = []
@@ -149,7 +154,9 @@ class ChantImporter:
             if matching_concordance:
                 concordances.append(matching_concordance[0])
 
-        self.chants_and_concordances.append((chant, concordances))
+        # Along with the unsaved chant, store the concordances to add to it, and the
+        # folio to add if it still needs to be created
+        self.new_chant_info.append((chant, concordances, None if folio else folio_code))
 
     def add_folio(self, folio_code, manuscript):
         folio = Folio()
@@ -171,7 +178,7 @@ class ChantImporter:
             return
 
         # Get all the unique folios and manuscripts affected by adding the chants
-        chants = [pair[0] for pair in self.chants_and_concordances]
+        chants = [info[0] for info in self.new_chant_info]
         self.affected_folios = dict((chant.folio.pk, chant.folio)
                                     for chant in chants).values()
 
@@ -233,10 +240,19 @@ class ChantImporter:
         ]
 
         with signal_receivers_disconnected(*receivers):
+            new_folio_map = {}
+
             for folio in self.new_folios:
                 folio.save()
 
-            for index, (chant, concordances) in enumerate(self.chants_and_concordances):
+                # Keep track of the new folios so that we can add them to the chant field
+                new_folio_map[folio.number] = folio
+
+            for index, (chant, concordances, folio_code) in enumerate(self.new_chant_info):
+                # We can now safely reference newly created folios
+                if folio_code is not None:
+                    chant.folio = new_folio_map[folio_code]
+
                 chant.save()
 
                 # Now that the chant is saved, add the concordances
@@ -265,7 +281,7 @@ class ChantImporter:
 
         new_records = []
 
-        for (chant, _) in self.chants_and_concordances:
+        for (chant, _, _) in self.new_chant_info:
             new_records.append(chant.create_solr_record())
 
         for folio in self.affected_folios:
