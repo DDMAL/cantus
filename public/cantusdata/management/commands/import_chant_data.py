@@ -1,4 +1,5 @@
 import csv
+from optparse import make_option
 
 from django.core.management.base import BaseCommand
 from django.utils.text import slugify
@@ -11,13 +12,25 @@ from cantusdata.helpers import expandr
 from cantusdata.helpers.signal_wrangler import signal_receivers_disconnected
 
 
-# FIXME: this command is much slower than it could be
-#   see https://github.com/DDMAL/cantus/issues/185
-
 class Command(BaseCommand):
-    args = ""
+    args = 'filename.csv'
 
-    def handle(self, *args, **kwargs):
+    option_list = BaseCommand.option_list + (
+        make_option('--delete-existing',
+                    action='store_true',
+                    dest='delete_existing',
+                    default=False,
+                    help='Delete existing chant records for all manuscripts touched by the import'),
+
+        make_option('--no-save',
+                    action='store_true',
+                    dest='no_save',
+                    default=False,
+                    help=("Process but don't save the new chants (useful for testing). "
+                          "NOTE: This does NOT affect the --delete-existing flag."))
+    )
+
+    def handle(self, *args, **options):
         """
         Run "python manage.py import_chant_data filename.csv" to import a chant
         file into the db.  filename.csv must exist in /public/data_dumps/.
@@ -42,8 +55,17 @@ class Command(BaseCommand):
                 if (index % 100) == 0:
                     self.stdout.write(u"{0} chants processed for import.".format(index))
 
+        if options['delete_existing']:
+            self.stdout.write(u"Deleting existing chants for the affected manuscripts")
+            importer.delete_existing_chants()
+
+        if options['no_save']:
+            self.stdout.write(u"Found {0} chants to import. Exiting.".format(index))
+            return
+
         self.stdout.write(u"Preparing to import {0} chants into the database".format(index))
 
+        # Save the new chants
         importer.save()
 
         self.stdout.write(u"Indexing chants in Solr...")
@@ -65,6 +87,7 @@ class ChantImporter:
         self.new_folios = []
 
         # These are set after adding is complete
+        self._affected_entries_determined = False
         self.affected_folios = self.affected_manuscripts = None
 
         self.folio_registry = set()
@@ -77,6 +100,9 @@ class ChantImporter:
 
         Prepare a folio object to add if necessary.
         """
+
+        if self._affected_entries_determined:
+            raise ValueError('cannot add new chants: affected values have already been found')
 
         # Get the corresponding manuscript
         manuscript = self.get_manuscript(row['Siglum'])
@@ -140,10 +166,66 @@ class ChantImporter:
             manuscript = self._manuscript_cache[siglum] = Manuscript.objects.get(siglum=siglum)
             return manuscript
 
-    def save(self):
-        # Disconnect the post_save signals so that we don't update Solr yet
+    def determine_affected_entries(self):
+        if self._affected_entries_determined:
+            return
+
+        # Get all the unique folios and manuscripts affected by adding the chants
+        chants = [pair[0] for pair in self.chants_and_concordances]
+        self.affected_folios = dict((chant.folio.pk, chant.folio)
+                                    for chant in chants).values()
+
+        self.affected_manuscripts = dict((folio.manuscript.pk, folio.manuscript)
+                                         for folio in self.affected_folios).values()
+
+        self._affected_entries_determined = True
+
+    def delete_existing_chants(self):
+        """Delete chants for all manuscripts we've encountered"""
+        import solr
+        from cantusdata import settings
+
+        self.determine_affected_entries()
+
+        # Disconnect the post_delete signals so that we don't update Solr yet
         # Note that the bulk_create methods wouldn't fire the post_save
         # receivers anyway
+        receivers = [
+            'cantusdata_chant_solr_delete',
+            'cantusdata_folio_decrement_chant_count',
+            'cantusdata_manuscript_update_chant_count'
+        ]
+
+        manuscript_pks = [manuscript.pk for manuscript in self.affected_manuscripts]
+
+        with signal_receivers_disconnected(*receivers):
+            if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+                # sqlite has trouble with bulk deletion so we need to delete in increments
+                increment = 100
+                chants = [chant.pk for chant in Chant.objects.filter(manuscript__pk__in=manuscript_pks)]
+
+                for i in xrange(0, len(chants), increment):
+                    # Can't delete a slice so we need to query again
+                    Chant.objects.filter(pk__in=chants[i:i + increment]).delete()
+
+            else:
+                Chant.objects.filter(manuscript__pk__in=manuscript_pks).delete()
+
+        # All folios in the manuscripts will now be affected
+        self.affected_folios = list(Folio.objects.filter(manuscript__pk__in=manuscript_pks))
+
+        solrconn = solr.SolrConnection(settings.SOLR_SERVER)
+
+        manuscripts_query = ' OR '.join('manuscript_id:' + str(pk) for pk in manuscript_pks)
+        solrconn.delete_query('type:cantusdata_chant AND ({})'.format(manuscripts_query))
+
+        solrconn.commit()
+
+    def save(self):
+        self.determine_affected_entries()
+
+        # Disconnect the post_save signals so that we don't update Solr yet
+        # We'll do that in bulk afterward
         receivers = [
             'cantusdata_folio_solr_add',
             'cantusdata_manuscript_solr_add',
@@ -164,14 +246,6 @@ class ChantImporter:
                 # Tracking
                 if (index % 100) == 0:
                     self.stdout.write(u"{0} chants saved in the Django database.".format(index))
-
-            # Get all the unique folios and manuscripts affected by adding the chants
-            chants = [pair[0] for pair in self.chants_and_concordances]
-            self.affected_folios = dict((chant.folio.pk, chant.folio)
-                                        for chant in chants).values()
-
-            self.affected_manuscripts = dict((folio.manuscript.pk, folio.manuscript)
-                                             for folio in self.affected_folios).values()
 
             # Update the chant counts
             for folio in self.affected_folios:
