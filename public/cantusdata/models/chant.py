@@ -49,15 +49,11 @@ class Chant(models.Model):
         output.sort()
         return output
 
-    def add_to_solr(self, solrconn):
-        """
-        Add a Solr entry for this chant
-
-        Return true
-        """
+    def create_solr_record(self):
+        """Return a dict representing a new Solr record for this object"""
         import uuid
 
-        d = {
+        return {
             'type': 'cantusdata_chant',
             'id': str(uuid.uuid4()),
             'item_id': self.id,
@@ -82,7 +78,18 @@ class Chant(models.Model):
             'concordances': self.concordance_citation_list
         }
 
-        solrconn.add(**d)
+    def fetch_solr_records(self, solrconn):
+        """Query Solr for this object, returning a list of results"""
+        return solrconn.query("type:cantusdata_chant item_id:{0}"
+                              .format(self.id), q_op="AND")
+
+    def add_to_solr(self, solrconn):
+        """
+        Add a Solr entry for this chant
+
+        Return true
+        """
+        solrconn.add(self.create_solr_record())
         return True
 
     def delete_from_solr(self, solrconn):
@@ -91,8 +98,7 @@ class Chant(models.Model):
 
         Return true if there was an entry
         """
-        record = solrconn.query("type:cantusdata_chant item_id:{0}"
-                                .format(self.id), q_op="AND")
+        record = self.fetch_solr_records()
 
         if record:
             solrconn.delete(self.results[0]['id'])

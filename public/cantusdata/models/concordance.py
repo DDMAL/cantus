@@ -50,22 +50,29 @@ class Concordance(models.Model):
             self.rism_code
         )
 
-    def add_to_solr(self, solrconn):
-        """
-        Add a Solr entry for this concordance
-
-        Return true if an entry was added
-        """
+    def create_solr_record(self):
+        """Return a dict representing a new Solr record for this object"""
         import uuid
 
-        d = {
+        return {
             'type': 'cantusdata_concordance',
             'id': str(uuid.uuid4()),
             'item_id': self.id,
             'concordance_citation': self.unicode_citation
         }
 
-        solrconn.add(**d)
+    def fetch_solr_records(self, solrconn):
+        """Query Solr for this object, returning a list of results"""
+        return solrconn.query("type:cantusdata_concordance item_id:{0}"
+                              .format(self.id), q_op="AND")
+
+    def add_to_solr(self, solrconn):
+        """
+        Add a Solr entry for this concordance
+
+        Return true if an entry was added
+        """
+        solrconn.add(self.create_solr_record())
         return True
 
     def delete_from_solr(self, solrconn):
@@ -74,8 +81,7 @@ class Concordance(models.Model):
 
         Return true if there was an entry
         """
-        record = solrconn.query("type:cantusdata_concordance item_id:{0}"
-                                .format(self.id), q_op="AND")
+        record = self.fetch_solr_records()
 
         if record:
             solrconn.delete(self.results[0]['id'])
