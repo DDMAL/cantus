@@ -194,6 +194,9 @@ class ChantImporter:
 
         self.determine_affected_entries()
 
+        if not self.affected_manuscripts:
+            return
+
         # Disconnect the post_delete signals so that we don't update Solr yet
         # We'll do that in bulk afterward
         receivers = [
@@ -276,9 +279,17 @@ class ChantImporter:
 
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
 
-        # Build lists of all previously indexed values and all new values
-        # to index
+        # Delete the old records from Solr
+        if self.affected_folios:
+            existing_folios = ' OR '.join('item_id:' + str(folio.pk) for folio in self.affected_folios)
+            existing_manuscripts = ' OR '.join('item_id:' + str(man.pk) for man in self.affected_manuscripts)
 
+            deletion_query = ('(type:cantusdata_folio AND ({0})) OR '
+                              '(type:cantusdata_manuscript AND ({1}))').format(existing_folios, existing_manuscripts)
+
+            solrconn.delete_query(deletion_query)
+
+        # Build a list of all new files to index
         new_records = []
 
         for (chant, _, _) in self.new_chant_info:
@@ -289,16 +300,6 @@ class ChantImporter:
 
         for manuscript in self.affected_manuscripts:
             new_records.append(manuscript.create_solr_record())
-
-        # Delete the old records
-        existing_folio_query = ' OR '.join('item_id:' + str(folio.pk) for folio in self.affected_folios)
-        existing_manuscript_query = ' OR '.join('item_id:' + str(man.pk) for man in self.affected_manuscripts)
-
-        deletion_query = (
-            '(type:cantusdata_folio AND ({0})) OR (type:cantusdata_manuscript AND ({1}))'
-        ).format(existing_folio_query, existing_manuscript_query)
-
-        solrconn.delete_query(deletion_query)
 
         # Add the new records
         solrconn.add_many(new_records)
