@@ -38,6 +38,7 @@ define(["jquery", "backbone", "config/GlobalVars"],
                         newElement.manuscript = result.manuscript_name_hidden;
                         newElement.folio = result.folio;
                         newElement.mode = result.mode;
+                        newElement.office = result.office;
                         newElement.volpiano = searchType === 'volpiano' ?
                             this.highlightVolpianoResult(result.volpiano, query) :
                             result.volpiano;
