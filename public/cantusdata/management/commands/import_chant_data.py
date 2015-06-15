@@ -186,15 +186,31 @@ class ChantImporter:
 
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
 
+        # Build lists of all previously indexed values and all new values
+        # to index
+
+        new_records = []
+
         for (chant, _) in self.chants_and_concordances:
-            chant.add_to_solr(solrconn)
+            new_records.append(chant.create_solr_record())
 
         for folio in self.affected_folios:
-            folio.delete_from_solr(solrconn)
-            folio.add_to_solr(solrconn)
+            new_records.append(folio.create_solr_record())
 
         for manuscript in self.affected_manuscripts:
-            manuscript.delete_from_solr(solrconn)
-            manuscript.add_to_solr(solrconn)
+            new_records.append(manuscript.create_solr_record())
+
+        # Delete the old records
+        existing_folio_query = ' OR '.join('item_id:' + str(folio.pk) for folio in self.affected_folios)
+        existing_manuscript_query = ' OR '.join('item_id:' + str(man.pk) for man in self.affected_manuscripts)
+
+        deletion_query = (
+            '(type:cantusdata_folio AND ({0})) OR (type:cantusdata_manuscript AND ({1}))'
+        ).format(existing_folio_query, existing_manuscript_query)
+
+        solrconn.delete_query(deletion_query)
+
+        # Add the new records
+        solrconn.add_many(new_records)
 
         solrconn.commit()
