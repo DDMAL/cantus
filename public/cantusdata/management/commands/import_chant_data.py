@@ -188,8 +188,7 @@ class ChantImporter:
         self.determine_affected_entries()
 
         # Disconnect the post_delete signals so that we don't update Solr yet
-        # Note that the bulk_create methods wouldn't fire the post_save
-        # receivers anyway
+        # We'll do that in bulk afterward
         receivers = [
             'cantusdata_chant_solr_delete',
             'cantusdata_folio_decrement_chant_count',
@@ -228,6 +227,7 @@ class ChantImporter:
         # We'll do that in bulk afterward
         receivers = [
             'cantusdata_folio_solr_add',
+            'cantusdata_folio_increment_chant_count',
             'cantusdata_manuscript_solr_add',
             'cantusdata_manuscript_update_chant_count'
         ]
