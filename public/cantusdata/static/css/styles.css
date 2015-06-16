@@ -17,6 +17,23 @@ html {
     min-width: 880px;
 }
 
+/* This is textual information, so we want to make it resemble normal text as much as possible
+ * FIXME(wabain): things like this are a good reason to use a pre-processor language */
+pre.preformatted-text {
+    border: inherit;
+    background: none;
+
+    padding: 0;
+
+    white-space: pre-wrap;
+    word-break: normal;
+
+    /* Copy and paste from the html element */
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.42857;
+    color: #222;
+}
 
 .navbar {
     /** So that we don't have a space below the navbar. **/
