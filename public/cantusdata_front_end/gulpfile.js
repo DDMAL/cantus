@@ -79,6 +79,11 @@ gulp.task('bundle:js', function (cb)
         cb();
     };
 
+    var bundlingError = function (err)
+    {
+        cb(err);
+    };
+
     requirejs.optimize({
         baseUrl: "public/js/app",
         wrap: true,
@@ -90,7 +95,7 @@ gulp.task('bundle:js', function (cb)
         mainConfigFile: "public/js/app/config/config.js",
         include: ["init/Init"],
         out: "../cantusdata/static/js/app/cantus.min.js"
-    }, bundlingComplete);
+    }, bundlingComplete, bundlingError);
 });
 
 gulp.task('clean:js', function (done)
