@@ -59,7 +59,7 @@ table.result-list th {
 
 /* Make table headers black in the search result list, even though they're links */
 table.result-list th a {
-    color: #333;
+    color: inherit;
 }
 
 /* Support reversible (i.e. upwards-pointing) carets without setting classes on ancestors */
