@@ -34,6 +34,10 @@ define( ['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView", 
 
             buttonClickCallback: function(event)
             {
+                // If for some reason backbone history hasn't been initialized then just return
+                if (!Backbone.history.started)
+                    return;
+
                 // Stop the page from auto-reloading
                 event.preventDefault();
                 // Figure out which button was pressed
