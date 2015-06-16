@@ -65,8 +65,7 @@ class Command(BaseCommand):
             self.stdout.write("Loading CSV file...")
             data = csv.DictReader(open(csv_location))
             self.stdout.write("Adding CSV to Solr...")
-            for row in data:
-                solrconn.add(**row)
+            solrconn.add_many(list(data))
             self.stdout.write("Committing Solr additions.")
             solrconn.commit()
             self.stdout.write("CSV committed to Solr.")
@@ -102,7 +101,10 @@ class Command(BaseCommand):
         :param solrconn:
         :return:
         """
+        rows = []
+
         for page in data:
-            for row in page:
-                solrconn.add(**row)
+            rows.extend(page)
+
+        solrconn.add_many(rows)
         solrconn.commit()

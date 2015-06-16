@@ -36,6 +36,11 @@ html {
     overflow: hidden;
 }
 
+table.result-list th {
+    white-space: nowrap;
+    overflow: hidden;
+}
+
 /* Make table headers black in the search result list, even though they're links */
 table.result-list th a {
     color: #333;

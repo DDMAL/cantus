@@ -20,14 +20,9 @@ class SearchView(APIView):
         querydict = request.GET
 
         s = SolrSearch(request)
-        facets = s.facets(['name', 'siglum', 'date', 'provenance', 'mode',
-                           'manuscript', 'marginalia', 'folio', 'sequence',
-                           'feast', 'office', 'genre', 'position',
-                           'differentia', 'finalis'])
 
         if not querydict:
-            return Response({'query': '', 'numFound': 0, 'results': [],
-                             'facets': facets.facet_counts})
+            return Response({'query': '', 'numFound': 0, 'results': []})
 
         # Search for fifteen rows by default
         s.solr_params.setdefault('rows', 15)
@@ -37,8 +32,7 @@ class SearchView(APIView):
         result = {
             'query': querydict['q'],
             'numFound': search_results.numFound,
-            'results': search_results,
-            'facets': facets.facet_counts
+            'results': search_results
         }
 
         result.update(s.solr_params)

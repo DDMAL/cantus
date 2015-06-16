@@ -18,15 +18,11 @@ class Folio(models.Model):
     manuscript = models.ForeignKey("Manuscript")
     chant_count = models.IntegerField(default=0)
 
-    def add_to_solr(self, solrconn):
-        """
-        Add a Solr entry for this folio
-
-        Return true if an entry was added
-        """
+    def create_solr_record(self):
+        """Return a dict representing a new Solr record for this object"""
         import uuid
 
-        d = {
+        return {
             'type': 'cantusdata_folio',
             'id': str(uuid.uuid4()),
             'number': self.number,
@@ -34,7 +30,17 @@ class Folio(models.Model):
             'manuscript_id': self.manuscript.id,
         }
 
-        solrconn.add(**d)
+    def fetch_solr_records(self, solrconn):
+        """Query Solr for this object, returning a list of results"""
+        return solrconn.query("type:cantusdata_folio item_id:{0}".format(self.id), q_op="AND")
+
+    def add_to_solr(self, solrconn):
+        """
+        Add a Solr entry for this folio
+
+        Return true if an entry was added
+        """
+        solrconn.add(self.get_solr_entry())
         return True
 
     def delete_from_solr(self, solrconn):
@@ -43,8 +49,7 @@ class Folio(models.Model):
 
         Return true if there was an entry
         """
-        record = solrconn.query("type:cantusdata_folio item_id:{0}"
-                                .format(self.id), q_op="AND")
+        record = self.fetch_solr_records(solrconn)
 
         if record:
             solrconn.delete(record.results[0]['id'])

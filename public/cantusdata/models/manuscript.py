@@ -46,19 +46,11 @@ class Manuscript(models.Model):
     def siglum_slug(self):
         return slugify(self.siglum)
 
-    def add_to_solr(self, solrconn):
-        """
-        Add a Solr entry for this manuscript if it has chants
-
-        Return true if an entry was added
-        """
+    def create_solr_record(self):
+        """Return a dict representing a new Solr record for this object"""
         import uuid
 
-        # We only want to index the manuscript if it has chants!
-        if self.chant_count == 0:
-            return False
-
-        d = {
+        return {
             'type': 'cantusdata_manuscript',
             'id': str(uuid.uuid4()),
             'item_id': self.id,
@@ -72,7 +64,23 @@ class Manuscript(models.Model):
             'description': self.description
         }
 
-        solrconn.add(**d)
+    def fetch_solr_records(self, solrconn):
+        """Query Solr for this object, returning a list of results"""
+        return solrconn.query("type:cantusdata_manuscript item_id:{0}"
+                              .format(self.id), q_op="AND")
+
+    def add_to_solr(self, solrconn):
+        """
+        Add a Solr entry for this manuscript if it has chants
+
+        Return true if an entry was added
+        """
+        # We only want to index the manuscript if it has chants!
+
+        if self.chant_count == 0:
+            return False
+
+        solrconn.add(self.create_solr_record())
 
         return True
 
@@ -82,8 +90,7 @@ class Manuscript(models.Model):
 
         Return true if there was an entry
         """
-        record = solrconn.query("type:cantusdata_manuscript item_id:{0}"
-                                .format(self.id), q_op="AND")
+        record = self.fetch_solr_records(solrconn)
 
         if record:
             solrconn.delete(record.results[0]['id'])
