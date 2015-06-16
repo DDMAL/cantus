@@ -36,8 +36,17 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Flat pages
+    'django.contrib.sites',
+    'django.contrib.flatpages',
+    'django_markdown',
+    # Auth tokens
+    'rest_framework',
+    'rest_framework.authtoken',
     'cantusdata',
+    'neumeeditor',
     'django_extensions',
+    'coverage'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -94,7 +103,7 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
     ),
-    }
+}
 
 SOLR_SERVER = "http://localhost:8080/cantusdata-solr/"
 
@@ -102,3 +111,6 @@ LOGGING_CONFIG = None
 
 # AUTHENTICATION
 MAX_TOKEN_AGE_DAYS = 3
+
+# Sites Plugin
+SITE_ID = 1
