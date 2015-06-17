@@ -131,18 +131,18 @@
     <field name="sequence" type="int" indexed="true" stored="true" />
     <field name="cantus_id" type="text_general" indexed="true" stored="true"/>
 
-    <field name="feast" type="string" indexed="true" stored="true"/>
+    <field name="feast" type="text_general" indexed="true" stored="true"/>
     <field name="feast_date" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="feast_code" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="feast_explanation" type="text_general" indexed="true" stored="true" multiValued="false" />
 
 
-    <field name="office" type="string" indexed="true" stored="true" multiValued="false" />
-    <field name="genre" type="string" indexed="true" stored="true" multiValued="false" />
-    <field name="position" type="string" indexed="true" stored="true" multiValued="false" />
-    <field name="mode" type="string" indexed="true" stored="true" multiValued="false" />
-    <field name="differentia" type="string" indexed="true" stored="true" multiValued="false" />
-    <field name="finalis" type="string" indexed="true" stored="true" multiValued="false" />
+    <field name="office" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="genre" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="position" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="mode" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="differentia" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="finalis" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="incipit" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="full_text" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="volpiano" type="volpiano_general" indexed="true" stored="true" multiValued="false" />
