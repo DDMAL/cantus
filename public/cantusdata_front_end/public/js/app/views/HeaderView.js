@@ -16,16 +16,6 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             searchView: null,
             searchModalView: null,
 
-            events:
-            {
-                "click #site-logo": function(event)
-                {
-                    // Prevent page from reloading
-                    event.preventDefault();
-                    Backbone.history.navigate("/", {trigger: true});
-                }
-            },
-
             initialize: function()
             {
                 _.bindAll(this, 'render');
@@ -40,7 +30,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                         menuItems: [
                             {
                                 name: "Manuscripts",
-                                url: "/",
+                                url: "/manuscripts/",
                                 active: false
                             },
                             {

@@ -34,7 +34,7 @@ define(['backbone', 'marionette'],
                 var href = $(event.currentTarget).attr('href');
 
                 // Navigate to the result
-                if (href)
+                if (href && Backbone.history.started)
                 {
                     event.preventDefault();
                     Backbone.history.navigate(href, {trigger: true});
