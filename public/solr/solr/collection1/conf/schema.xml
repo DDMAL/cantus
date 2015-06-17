@@ -314,6 +314,9 @@
         or to add multiple fields to the same field for easier/faster searching.  -->
 
     <copyField source="name" dest="text" />
+    <copyField source="mode" dest="text" />
+    <copyField source="feast" dest="text" />
+    <copyField source="office" dest="text" />
     <copyField source="siglum" dest="text" />
     <copyField source="date" dest="text" />
     <copyField source="provenance" dest="text" />
