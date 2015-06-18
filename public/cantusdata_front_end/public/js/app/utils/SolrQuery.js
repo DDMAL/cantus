@@ -92,7 +92,7 @@ define(["underscore", "marionette"], function (_, Marionette)
                 }
             }
 
-            return value;
+            return '(' + value + ')';
         },
 
         toString: function ()
