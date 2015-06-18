@@ -11,7 +11,12 @@
 
     <td><%= result.folio %></td>
 
+    <td><%= result.genre %></td>
+
+    <% if (showManuscriptName) { %>
     <td><%= result.office %></td>
+    <% } %>
+
 </tr>
 <% if (searchType === "volpiano" && result.volpiano !== undefined) { %>
 <tr>

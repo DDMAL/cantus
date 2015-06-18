@@ -9,24 +9,37 @@
                 <a href="#">Name</a>
                 <span class="search-caret"></span>
             </th>
+
             <% if (showManuscriptName === true) { %>
             <th>
                 <a href="#">Manuscript</a>
                 <span class="search-caret"></span>
             </th>
             <% } %>
+
             <th>
                 <a href="#">Mode</a>
                 <span class="search-caret"></span>
             </th>
+
             <th>
                 <a href="#">Folio</a>
                 <span class="search-caret"></span>
             </th>
+
+            <th>
+                <a href="#">Genre</a>
+                <span class="search-caret"></span>
+            </th>
+
+            <!-- FIXME(wabain): find a better way of varying displayed fields than using showManuscriptName
+                 as an ad hoc mode switch-->
+            <% if (showManuscriptName) { %>
             <th>
                 <a href="#">Office</a>
                 <span class="search-caret"></span>
             </th>
+            <% } %>
         </tr>
     </thead>
 </table>

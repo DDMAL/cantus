@@ -39,6 +39,7 @@ define(["jquery", "backbone", "config/GlobalVars"],
                         newElement.folio = result.folio;
                         newElement.mode = result.mode;
                         newElement.office = result.office;
+                        newElement.genre = result.genre;
 
                         if (searchType === 'volpiano')
                         {
