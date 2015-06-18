@@ -94,6 +94,7 @@
             <option value="volpiano">Volpiano:</option>
             <option value="mode">Mode:</option>
             <option value="feast">Feast:</option>
+            <option value="genre">Genre:</option>
             <option value="office">Office:</option>
         </select>
     </div>
@@ -137,7 +138,12 @@
 
         <td><%= result.folio %></td>
 
+        <td><%= result.genre %></td>
+
+        <% if (showManuscriptName) { %>
         <td><%= result.office %></td>
+        <% } %>
+
     </tr>
     <% if (searchType === "volpiano" && result.volpiano !== undefined) { %>
     <tr>
@@ -159,24 +165,35 @@
                 <a href="#">Name</a>
                 <span class="search-caret"></span>
             </th>
+
             <% if (showManuscriptName === true) { %>
             <th>
                 <a href="#">Manuscript</a>
                 <span class="search-caret"></span>
             </th>
             <% } %>
+
             <th>
                 <a href="#">Mode</a>
                 <span class="search-caret"></span>
             </th>
+
             <th>
                 <a href="#">Folio</a>
                 <span class="search-caret"></span>
             </th>
+
+            <th>
+                <a href="#">Genre</a>
+                <span class="search-caret"></span>
+            </th>
+
+            <% if (showManuscriptName) { %>
             <th>
                 <a href="#">Office</a>
                 <span class="search-caret"></span>
             </th>
+            <% } %>
         </tr>
         </thead>
     </table>
