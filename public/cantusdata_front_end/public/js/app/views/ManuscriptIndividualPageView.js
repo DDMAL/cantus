@@ -142,7 +142,7 @@ return Marionette.LayoutView.extend
         }
 
         // Set the search view to only search this manuscript
-        this.searchView.setRestriction('manuscript', this.manuscript.get("siglum"));
+        this.searchView.setRestriction('manuscript', '"' + this.manuscript.get("siglum") + '"');
         this.divaView.setManuscript(this.manuscript.get("siglum_slug"));
         this.searchNotationView.setManuscript(this.manuscript.get("siglum_slug"));
         this.searchNotationView.setSearchFields(notationSearchFields);

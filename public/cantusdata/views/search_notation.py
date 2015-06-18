@@ -49,7 +49,7 @@ class SearchNotationView(APIView):
         query = query.lower()
 
         if qtype == "neumes":
-            query_stmt = 'neumes:"{0}"'.format(
+            query_stmt = 'neumes:{0}'.format(
                 # query
                 query.replace(' ', '_')
             )
@@ -61,7 +61,7 @@ class SearchNotationView(APIView):
         elif qtype == "contour":
             query_stmt = 'contour:{0}'.format(query)
         elif qtype == "text":
-            query_stmt = 'text:"{0}"'.format(query)
+            query_stmt = 'text:{0}'.format(query)
         elif qtype == "intervals":
             query_stmt = 'intervals:{0}'.format(query.replace(' ', '_'))
         elif qtype == "incipit":

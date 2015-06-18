@@ -1,7 +1,5 @@
 define(["underscore", "marionette"], function (_, Marionette)
 {
-    var SAFE_QUERY_REGEX = /^\w+$/i;
-
     /**
      * @constructor
      *
@@ -20,7 +18,7 @@ define(["underscore", "marionette"], function (_, Marionette)
     var SolrQuery = Marionette.Object.extend({
         initialize: function ()
         {
-            _.bindAll(this, 'quote', 'getSolrTerm');
+            _.bindAll(this, 'getSolrTerm');
 
             this.fields = this.getOption('fields') || {};
             this.params = this.getOption('params') || {};
@@ -69,22 +67,6 @@ define(["underscore", "marionette"], function (_, Marionette)
         },
 
         /**
-         * Add quotes to a value
-         * @param {string} value
-         * @returns {string}
-         */
-        quote: function (value)
-        {
-            // Implement some minimal escaping
-            if (SAFE_QUERY_REGEX.test(value))
-            {
-                return value;
-            }
-
-            return '"' + value + '"';
-        },
-
-        /**
          *
          * @param value
          * @returns {*}
@@ -110,7 +92,7 @@ define(["underscore", "marionette"], function (_, Marionette)
                 }
             }
 
-            return this.quote(value);
+            return value;
         },
 
         toString: function ()
@@ -121,7 +103,7 @@ define(["underscore", "marionette"], function (_, Marionette)
 
             if (_.has(this.fields, 'all'))
             {
-                constructedTerms.push(this.quote(this.fields.all));
+                constructedTerms.push(this.fields.all);
                 fields = _.omit(this.fields, 'all');
             }
             else
