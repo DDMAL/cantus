@@ -21,6 +21,21 @@ define(['backbone', 'marionette',
 
             showManuscriptName: true,
 
+            // Fields which are indexed in Solr as strings.
+            // We need to get text_general variants of these
+            // for search. (Note that we don't actually search
+            // by all of these at the moment.)
+            stringFields: [
+                "feast",
+                "office",
+                "genre",
+                "position",
+                "mode",
+                "differentia",
+                "finalis",
+                "folio"
+            ],
+
             regions: {
                 searchResultRegion: ".search-results",
                 searchInputRegion: ".search-input-container"
@@ -104,13 +119,29 @@ define(['backbone', 'marionette',
                 }
 
                 var queryBuilder = new SolrQuery();
-                queryBuilder.setField(field, query, 'OR');
+                queryBuilder.setField(this.getSearchField(field), query, 'OR');
 
                 _.forEach(this.restrictions, function (value, field) {
-                    queryBuilder.setField(field, value);
-                });
+                    queryBuilder.setField(this.getSearchField(field), value);
+                }, this);
 
                 this.collection.fetch({baseSolrQuery: queryBuilder});
+            },
+
+            /**
+             * Get a searchable variant of the field. String fields need
+             * to be converted to text_general to be properly searchable
+             * by Solr.
+             *
+             * @param {string} field
+             * @returns {string} a searchable field
+             */
+            getSearchField: function (field)
+            {
+                if (_.contains(this.stringFields, field))
+                    return field + '_t_hidden';
+
+                return field;
             },
 
             onRender: function ()

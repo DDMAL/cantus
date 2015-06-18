@@ -126,7 +126,7 @@
     <field name="folio_count" type="int" indexed="true" stored="true"/>
 
     <field name="marginalia" type="text_general" indexed="true" stored="true"/>
-    <field name="folio" type="text_general" indexed="true" stored="true"/>
+    <field name="folio" type="string" indexed="true" stored="true"/>
     <field name="folio_id" type="int" indexed="true" stored="true"/>
     <field name="sequence" type="int" indexed="true" stored="true" />
     <field name="cantus_id" type="text_general" indexed="true" stored="true"/>
@@ -168,12 +168,6 @@
     <!--<dynamicField name="*_txt" type="text_general" indexed="true" stored="true" multiValued="true"/>-->
     <dynamicField name="*_strm" type="string" indexed="true" stored="true" multiValued="true"/>
     <dynamicField name="*_stored" type="string" indexed="false" stored="true" />
-
-    <copyField source="feastnameeng_t" dest="feastnameeng_s" />
-    <copyField source="genre_t" dest="genre_s" />
-    <copyField source="mode_t" dest="mode_s" />
-    <copyField source="office_t" dest="office_s" />
-    <copyField source="position_t" dest="position_s" />
 
      <!-- Some fields I made up to match the python file output -->
      <field name="project" type="int" indexed="true" stored="true" required="false" />
@@ -249,6 +243,7 @@
     <dynamicField name="*_l"  type="long"   indexed="true"  stored="true"/>
     <dynamicField name="*_ls" type="long"   indexed="true"  stored="true"  multiValued="true"/>
     <dynamicField name="*_t"  type="text_general"    indexed="true"  stored="true"/>
+    <dynamicField name="*_t_hidden"  type="text_general"    indexed="true"  stored="false"/>
     <dynamicField name="*_txt" type="text_general"   indexed="true"  stored="true" multiValued="true"/>
     <dynamicField name="*_en"  type="text_en"    indexed="true"  stored="true" multiValued="true"/>
     <dynamicField name="*_b"  type="boolean" indexed="true" stored="true"/>
@@ -331,6 +326,17 @@
 	  copyField also supports a maxChars to copy setting.  -->
 	   
    <!-- <copyField source="*_t" dest="text" maxChars="3000"/> -->
+
+
+    <!-- Copy string fields we want to search by into dynamic text fields -->
+    <copyField source="feast" dest="feast_t_hidden" />
+    <copyField source="office" dest="office_t_hidden" />
+    <copyField source="genre" dest="genre_t_hidden" />
+    <copyField source="position" dest="position_t_hidden" />
+    <copyField source="mode" dest="mode_t_hidden" />
+    <copyField source="differentia" dest="differentia_t_hidden" />
+    <copyField source="finalis" dest="finalis_t_hidden" />
+    <copyField source="folio" dest="folio_t_hidden" />
 
    <!-- copy name to alphaNameSort, a field designed for sorting by name -->
    <!-- <copyField source="name" dest="alphaNameSort"/> -->
