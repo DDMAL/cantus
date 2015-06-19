@@ -61,10 +61,12 @@ class MEI2Parser():
 
     ##### Constructor #####
 
-    def __init__(self, folder_name, siglum_slug):
+    def __init__(self, folder_name, siglum_slug, min_gram=2, max_gram=10):
         self.folder_name = folder_name
         self.siglum_slug = siglum_slug
 
+        self.min_gram = min_gram
+        self.max_gram = max_gram
 
     #*****************************FUNCTIONS*******************************
 
@@ -299,7 +301,7 @@ class MEI2Parser():
     #     return 1
 
 
-    def processMeiFile(self, ffile, shortest_gram, longest_gram):
+    def processMeiFile(self, ffile):
         """
         Process the MEI file.
 
@@ -339,7 +341,7 @@ class MEI2Parser():
         #longest_gram = 10
         mydocs = []
 
-        for i in range(shortest_gram, longest_gram + 1):
+        for i in range(self.min_gram, self.max_gram + 1):
 
             # uncomment the lines below if you want to process only files that aren't already in the couch
             # only proceed with the rest of the script if a query for pagen returns 0 hits
@@ -428,10 +430,6 @@ class MEI2Parser():
 
         path = self.folder_name
 
-        # TEMP
-        shortest_gram = 2
-        longest_gram = 10
-
         # Generate list of files to process, preferring human-corrected MEI files
         meifiles = []
         for bd, dn, fn in os.walk(path):
@@ -450,6 +448,5 @@ class MEI2Parser():
         # This list will represent one manuscript
         output = []
         for ffile in meifiles:
-            output.append(
-                self.processMeiFile(ffile, shortest_gram, longest_gram))
+            output.append(self.processMeiFile(ffile))
         return output
