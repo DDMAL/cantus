@@ -1,6 +1,8 @@
 from django.conf import settings
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.exceptions import APIException
 
 from cantusdata.helpers import search_utils
 import solr
@@ -9,11 +11,9 @@ import types
 from operator import itemgetter
 
 
-class NotationException(Exception):
-    def __init__(self, message):
-        self.message = message
-    def __str__(self):
-        return repr(self.message)
+class NotationException(APIException):
+    status_code = 400
+    default_detail = 'Notation search request invalid'
 
 
 class SearchNotationView(APIView):
@@ -29,13 +29,9 @@ class SearchNotationView(APIView):
         rows = request.GET.get("rows", "100")
         start = request.GET.get("start", "0")
 
-        try:
-            results = self.do_query(manuscript, stype, q, 5, 5)
-        except Exception as e:
-            # Something went wrong in the search
-            print "Exception: {0}".format(e)
-            # So we want an empty list to avoid server error 500
-            results = []
+        # Give a 400 if there's a notation exception, and let
+        # anything else give a 500
+        results = self.do_query(manuscript, stype, q, 5, 5)
 
         return Response({'numFound': len(results), 'results': results})
 
