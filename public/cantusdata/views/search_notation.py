@@ -42,7 +42,8 @@ class SearchNotationView(APIView):
 
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
 
-        query = query.lower()
+        # Normalize case and whitespace
+        query = ' '.join(elem for elem in query.lower().split())
 
         if qtype == "neumes":
             query_stmt = 'neumes:{0}'.format(
