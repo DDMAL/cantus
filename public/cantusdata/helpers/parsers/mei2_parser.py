@@ -2,7 +2,7 @@ import uuid
 from music21.pitch import STEPREF
 import os
 from music21.interval import convertSemitoneToSpecifierGeneric
-from pymei import XmlImport
+import pymei
 
 
 class MEI2Parser():
@@ -311,11 +311,8 @@ class MEI2Parser():
         :return: list of dictionaries
         """
         print '\nProcessing ' + str(ffile) + '...'
-        try:
-            meifile = XmlImport.documentFromFile(str(ffile))
-        except Exception, e:
-            print "E: ", e
-            print "Whoops!"
+
+        meifile = pymei.documentFromFile(str(ffile)).getMeiDocument()
 
         print "ffile:"
         print ffile

@@ -1,6 +1,6 @@
 import uuid
 import string
-from pymei import XmlImport
+import pymei
 from cantusdata.helpers.parsers.mei2_parser import MEI2Parser
 
 
@@ -117,11 +117,8 @@ class GallenMEI2Parser(MEI2Parser):
         :return: list of dictionaries
         """
         print '\nProcessing ' + str(ffile) + '...'
-        try:
-            meifile = XmlImport.documentFromFile(str(ffile))
-        except Exception, e:
-            print "E: ", e
-            print "Whoops!"
+
+        meifile = pymei.documentFromFile(str(ffile)).getMeiDocument()
 
         print "ffile:"
         print ffile
