@@ -6,7 +6,7 @@ from cantusdata.helpers.parsers.csv_parser import CSVParser
 
 
 class Command(BaseCommand):
-    args = ""
+    args = "mode manuscript"
 
     def handle(self, *args, **kwargs):
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
