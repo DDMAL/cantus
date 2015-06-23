@@ -66,10 +66,37 @@ pre.preformatted-text {
     margin-bottom: 0px;
 }
 
-.volpiano {
+.volpiano, .field-volpiano {
     font-family: 'Volpiano';
     font-size: 22pt;
     line-height: 2em;
+}
+
+.field-volpiano {
+    color: #333;
+}
+
+.field-volpiano.search-text-entered {
+    height: 2em;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+/* FIXME(wabain): use autoprefixer */
+.field-volpiano::-moz-placeholder {
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 15px;
+}
+
+.field-volpiano::-webkit-input-placeholder {
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.42857143;
+}
+
+.field-volpiano:-ms-input-placeholder {
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 15px;
 }
 
 .cantus-container {

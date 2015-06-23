@@ -28,6 +28,7 @@
         <option>Chant in Transposition</option>
     </select>
     <% } else { %>
-    <input type="text" class="form-control search-input" placeholder="Search" value="<%= query %>">
+    <input type="text" class="form-control search-input field-<%= field %>"
+           placeholder="Search" value="<%= query %>">
     <% } %>
 </div>
