@@ -84,12 +84,22 @@ class Command(BaseCommand):
         :param path:
         :return:
         """
+        heading_order = {
+            h: i for (i, h) in enumerate((
+                'folio', 'pnames', 'neumes', 'siglum_slug', 'intervals', 'id',
+                'semitones', 'contour', 'project', 'location', 'type'
+            ))
+        }
+
+        # Maintain a stable heading order for Salzinnes-style CSV so that it's possible to run word-by-word
+        # diffs on the output
+        headings = list(sorted(data[0][0].keys(), key=lambda h: heading_order.get(h, -1)))
+
         csv_file = open(path, 'wb')
-        w = csv.DictWriter(csv_file, data[0][0].keys())
+        w = csv.DictWriter(csv_file, headings)
         w.writeheader()
         for page in data:
             for row in page:
-                w = csv.DictWriter(csv_file, row.keys())
                 w.writerow(row)
         csv_file.close()
 
