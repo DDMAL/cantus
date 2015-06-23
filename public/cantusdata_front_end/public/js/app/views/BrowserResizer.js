@@ -66,9 +66,9 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
             setManuscriptContentContainerHeight: function()
             {
                 $('#manuscript-data-container').css("height",
-                        $("#content-container").height()
-                            - $("#manuscript-title-container").height()
-                            - $("#manuscript-nav-container").height());
+                        $("#content-container").height() -
+                            $("#manuscript-title-container").height() -
+                            $("#manuscript-nav-container").height());
             },
 
             /**
