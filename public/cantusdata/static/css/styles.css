@@ -30,11 +30,11 @@ pre.preformatted-text {
     white-space: pre-wrap;
     word-break: normal;
 
-    /* Copy and paste from the html element */
-    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 15px;
-    line-height: 1.42857;
-    color: #222;
+    /* Inherit font properties to match wherever we drop it */
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    color: inherit;
 }
 
 .navbar {
