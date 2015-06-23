@@ -5,6 +5,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
         "views/DivaView",
         "views/InternalSearchView",
         "views/SearchNotationView",
+        "views/ManuscriptDataPopoverView",
         "singletons/GlobalEventHandler",
         "config/GlobalVars"],
 function(App, Backbone, Marionette, $,
@@ -14,6 +15,7 @@ function(App, Backbone, Marionette, $,
          DivaView,
          InternalSearchView,
          SearchNotationView,
+         ManuscriptDataPopoverView,
          GlobalEventHandler,
          GlobalVars) {
 
@@ -34,13 +36,24 @@ return Marionette.LayoutView.extend
     manuscript: null,
     searchView: null,
     searchNotationView: null,
+    popoverContent: null,
 
     // Subviews
     divaView: null,
     folioView: null,
 
-    regions:
-    {
+    ui: {
+        manuscriptTitleContainer: '#manuscript-title-container',
+        manuscriptTitlePopoverLink: '#manuscript-title-popover-link'
+    },
+
+    // FIXME(wabain): use inserted.bs.popover after updating bootstrap
+    events: {
+        'shown.bs.popover @ui.manuscriptTitlePopoverLink': 'instantiatePopoverView',
+        'hidden.bs.popover @ui.manuscriptTitlePopoverLink': 'destroyPopoverView'
+    },
+
+    regions: {
         divaViewRegion: "#diva-column",
         folioViewRegion: "#folio",
         searchViewRegion: "#manuscript-search",
@@ -49,6 +62,8 @@ return Marionette.LayoutView.extend
 
     initialize: function (options)
     {
+        _.bindAll(this, 'getPopoverContent');
+
         this.manuscript = new Manuscript(
             String(GlobalVars.siteUrl + "manuscript/" + this.id.toString() + "/"));
         // Build the subviews
@@ -97,6 +112,23 @@ return Marionette.LayoutView.extend
         this.searchView.destroy();
         this.searchNotationView.destroy();
         this.folioView.destroy();
+        this.destroyPopoverView();
+    },
+
+    instantiatePopoverView: function ()
+    {
+        this.popoverView = new ManuscriptDataPopoverView({
+            el: this.ui.manuscriptTitleContainer.find('.popover')
+        });
+    },
+
+    destroyPopoverView: function ()
+    {
+        if (this.popoverView)
+        {
+            this.popoverView.destroy();
+            this.popoverView = null;
+        }
     },
 
     /**
@@ -125,6 +157,20 @@ return Marionette.LayoutView.extend
     getData: function()
     {
         this.manuscript.fetch();
+    },
+
+    /**
+     * Get the HTML content for the manuscript data popover, generating it from a template if it has not
+     * already been initialized.
+     *
+     * @returns {string}
+     */
+    getPopoverContent: function ()
+    {
+        if (!this.popoverContent)
+            this.popoverContent = Marionette.TemplateCache.get('#manuscript-data-template')(this.serializeData());
+
+        return this.popoverContent;
     },
 
     afterFetch: function()
@@ -164,6 +210,11 @@ return Marionette.LayoutView.extend
 
     onRender: function()
     {
+        this.ui.manuscriptTitlePopoverLink.popover({
+            content: this.getPopoverContent,
+            html: true
+        });
+
         // Render subviews
         if (this.divaView !== undefined)
         {

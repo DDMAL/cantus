@@ -37,6 +37,30 @@ pre.preformatted-text {
     color: inherit;
 }
 
+#manuscript-title-popover-link {
+    outline: none;
+    text-decoration: none;
+    color: inherit;
+}
+
+#manuscript-title-container .popover {
+    max-width: 500px;
+    /*font-size: 15px;*/
+}
+
+/*#manuscript-title-container .popover .popover-title {
+    font-size: 19px;
+}*/
+
+#manuscript-title-container .popover-content {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+#manuscript-title-container dl.manuscript-data {
+    margin-bottom: 0;
+}
+
 .navbar {
     /** So that we don't have a space below the navbar. **/
     margin-bottom: 0px;
