@@ -317,25 +317,22 @@ class MEI2Parser():
         print "ffile:"
         print ffile
 
-        page = meifile.getElementsByName('page')
-
         # Taken directly from file name!!!
         pagen = \
             str(ffile).split('_')[len(str(ffile).split('_')) - 1].split('.')[0]
 
+        docs = self.getPitchSequences(pagen, meifile)
+
+        self.systemcache.clear()
+        self.idcache.clear()
+
+        return docs
+
+    def getPitchSequences(self, pagen, meifile):
         notes = meifile.getElementsByName('note')
         zones = meifile.getElementsByName('zone')
         nnotes = len(notes)  # number of notes in file
-        #print str(nnotes) + 'notes\n'
 
-        # get and store text
-        # if dotext:
-        # lines = meifile.search('l')
-        # storeText(lines, zones, textdb)
-
-        #Set these to control which databases you access
-        #shortest_gram = 2
-        #longest_gram = 10
         mydocs = []
 
         for i in range(self.min_gram, self.max_gram + 1):
@@ -405,11 +402,7 @@ class MEI2Parser():
                     }
                 )
 
-        self.systemcache.clear()
-        self.idcache.clear()
-
         return mydocs
-
 
     #***************************** MEI PROCESSING ****************************
 
