@@ -314,7 +314,7 @@ class MEI2Parser():
 
         meifile = pymei.documentFromFile(str(ffile)).getMeiDocument()
 
-        print "ffile:"
+        print "file:"
         print ffile
 
         # Taken directly from file name!!!
