@@ -321,16 +321,21 @@ class MEI2Parser():
         pagen = \
             str(ffile).split('_')[len(str(ffile).split('_')) - 1].split('.')[0]
 
-        docs = self.getPitchSequences(pagen, meifile)
+        zones = meifile.getElementsByName('zone')
+
+        docs = self.getPitchSequences(pagen, meifile, zones)
+
+        if self.min_gram > 1:
+            docs.extend(self.getShortNeumes(pagen, meifile, zones))
 
         self.systemcache.clear()
         self.idcache.clear()
 
         return docs
 
-    def getPitchSequences(self, pagen, meifile):
+    def getPitchSequences(self, pagen, meifile, zones):
+        """Extract ngrams for note sequences from the MEI file"""
         notes = meifile.getElementsByName('note')
-        zones = meifile.getElementsByName('zone')
         nnotes = len(notes)  # number of notes in file
 
         mydocs = []
@@ -403,6 +408,33 @@ class MEI2Parser():
                 )
 
         return mydocs
+
+    def getShortNeumes(self, pagen, meifile, zones):
+        """Extract single neumes whose note sequences are too short to be ngrams.
+
+        Usually it is possible to do single neume search using the records
+        created for note sequences. However, neumes whose note sequences are too
+        short will only be indexed along with adjacent neumes. To be able to index
+        them for single neume search we need to add them separately.
+        """
+        neume_docs = []
+
+        for neume in meifile.getElementsByName('neume'):
+            notes = neume.getDescendantsByName('note')
+
+            if len(notes) < self.min_gram:
+                location = self.getLocation(notes, meifile, zones)
+
+                neume_docs.append({
+                    'id': str(uuid.uuid4()),
+                    'type': "cantusdata_music_notation",
+                    'siglum_slug': self.siglum_slug,
+                    'folio': pagen,
+                    'neumes': str(neume.getAttribute('name').value),
+                    'location': str(location)
+                })
+
+        return neume_docs
 
     #***************************** MEI PROCESSING ****************************
 

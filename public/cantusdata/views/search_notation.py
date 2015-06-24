@@ -81,13 +81,14 @@ class SearchNotationView(APIView):
         results = []
         boxes = []
 
-        # get only the longest ngram in the results
+        # get only the longest ngram in the results, for results which are associated with
+        # a pitch sequence
         if qtype == "neumes":
             if manuscript == "ch-sgs-390":
                 pass
             else:
                 notegrams_num = search_utils.get_neumes_length(query)
-                response = [r for r in response if len(r['pnames']) == notegrams_num]
+                response = [r for r in response if not r.get('pnames') or len(r['pnames']) == notegrams_num]
 
         for d in response:
             page_number = d['folio']
