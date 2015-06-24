@@ -340,80 +340,70 @@ class MEI2Parser():
 
         for i in range(self.min_gram, self.max_gram + 1):
 
-            # uncomment the lines below if you want to process only files that aren't already in the couch
-            # only proceed with the rest of the script if a query for pagen returns 0 hits
-            # map_fun = '''function(doc) {
-            #            emit(doc.pagen, null)
-            #        }'''
-            # rows = db.query(map_fun, key=pagen)
-            # lrows = len(rows)
-            lrows = 0  #comment out this line if you want to process files that aren't already in the couch
-            if lrows == 0:
-                #*******************TEST************************
-                # for note in notes:
-                #             s = meifile.get_system(note)
-                #             neume = str(note.parent.parent.attribute_by_name('name').value)
-                #             print 'pitch: '+ str(note.pitch[0])+ ' neume: ' + neume + " system: " +str(s)
-                #***********************************************
+            #*******************TEST************************
+            # for note in notes:
+            #             s = meifile.get_system(note)
+            #             neume = str(note.parent.parent.attribute_by_name('name').value)
+            #             print 'pitch: '+ str(note.pitch[0])+ ' neume: ' + neume + " system: " +str(s)
+            #***********************************************
 
-                print "Processing pitch sequences... "
-                # for j,note in enumerate(notes):
-                for j in range(0, nnotes - i):
-                    seq = notes[j:j + i]
-                    # get box coordinates of sequence
-                    # if ffile == "/Volumes/Copland/Users/ahankins/Documents/code/testing/Liber_Usualis_Final_Output/0012/0012_corr.mei":
-                    #     pdb.set_trace()
+            print "Processing pitch sequences... "
+            # for j,note in enumerate(notes):
+            for j in range(0, nnotes - i):
+                seq = notes[j:j + i]
+                # get box coordinates of sequence
+                # if ffile == "/Volumes/Copland/Users/ahankins/Documents/code/testing/Liber_Usualis_Final_Output/0012/0012_corr.mei":
+                #     pdb.set_trace()
 
-                    location = self.getLocation(seq, meifile, zones)
-                    #print 'location: ' + str(location)
+                location = self.getLocation(seq, meifile, zones)
+                #print 'location: ' + str(location)
 
-                    # get neumes
-                    neumes = self.getNeumes(seq, i)
+                # get neumes
+                neumes = self.getNeumes(seq, i)
 
-                    # get pitch names
-                    [pnames, midipitch] = self.getPitchNames(seq)
+                # get pitch names
+                [pnames, midipitch] = self.getPitchNames(seq)
 
-                    # get semitones
-                    # calculate difference between each adjacent entry in midipitch list
-                    semitones = [m - n for n, m in
-                                 zip(midipitch[:-1], midipitch[1:])]
-                    str_semitones = str(semitones)[
-                                    1:-1]  # string will be stored instead of array for easy searching
-                    str_semitones = str_semitones.replace(', ', '_')
+                # get semitones
+                # calculate difference between each adjacent entry in midipitch list
+                semitones = [m - n for n, m in
+                             zip(midipitch[:-1], midipitch[1:])]
+                str_semitones = str(semitones)[
+                                1:-1]  # string will be stored instead of array for easy searching
+                str_semitones = str_semitones.replace(', ', '_')
 
-                    # get quality invariant interval name and direction
-                    # for example, an ascending major second and an ascending
-                    # minor second will both be encoded as 'u2'
+                # get quality invariant interval name and direction
+                # for example, an ascending major second and an ascending
+                # minor second will both be encoded as 'u2'
 
-                    # the only tritone to occur would be between b and f, in the
-                    #  context of this application we will assume that the be
-                    # will always be sung as b flat
+                # the only tritone to occur would be between b and f, in the
+                #  context of this application we will assume that the be
+                # will always be sung as b flat
 
-                    # thus the tritone is never encoded as such and will always
-                    # be represented as either a fifth or a fourth, depending
-                    # on inversion
-                    intervals = self.getIntervals(semitones, pnames)
+                # thus the tritone is never encoded as such and will always
+                # be represented as either a fifth or a fourth, depending
+                # on inversion
+                intervals = self.getIntervals(semitones, pnames)
 
-                    # get contour - encode with Parsons code for musical contour
-                    contour = self.getContour(semitones)
-                    # save new document
-                    mydocs.append(
-                        {
-                            'id': str(uuid.uuid4()),
-                            'type': "cantusdata_music_notation",
-                            'siglum_slug': self.siglum_slug,
-                            'folio': pagen,
-                            # 'project': int(project_id),
-                            'pnames': pnames,
-                            'neumes': neumes,
-                            'contour': contour,
-                            'semitones': str_semitones,
-                            'intervals': intervals,
-                            'location': str(location)
-                        }
-                    )
-            else:
-                print 'page ' + str(pagen) + ' already processed\n'
+                # get contour - encode with Parsons code for musical contour
+                contour = self.getContour(semitones)
+
+                # save new document
+                mydocs.append(
+                    {
+                        'id': str(uuid.uuid4()),
+                        'type': "cantusdata_music_notation",
+                        'siglum_slug': self.siglum_slug,
+                        'folio': pagen,
+                        # 'project': int(project_id),
+                        'pnames': pnames,
+                        'neumes': neumes,
+                        'contour': contour,
+                        'semitones': str_semitones,
+                        'intervals': intervals,
+                        'location': str(location)
+                    }
+                )
 
         self.systemcache.clear()
         self.idcache.clear()
