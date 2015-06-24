@@ -14,6 +14,11 @@ class Command(BaseCommand):
 
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
 
+        self.stdout.write('Flushing chant data...')
         solrconn.delete_query('type:cantusdata_chant')
+
+        self.stdout.write('Re-adding chant data...')
         solrconn.add_many(chant.create_solr_record() for chant in Chant.objects.all())
+
+        self.stdout.write('Comitting changes...')
         solrconn.commit()
