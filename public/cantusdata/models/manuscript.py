@@ -80,7 +80,7 @@ class Manuscript(models.Model):
         if self.chant_count == 0:
             return False
 
-        solrconn.add(self.create_solr_record())
+        solrconn.add(**self.create_solr_record())
 
         return True
 

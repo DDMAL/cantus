@@ -72,7 +72,7 @@ class Concordance(models.Model):
 
         Return true if an entry was added
         """
-        solrconn.add(self.create_solr_record())
+        solrconn.add(**self.create_solr_record())
         return True
 
     def delete_from_solr(self, solrconn):

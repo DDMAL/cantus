@@ -89,7 +89,7 @@ class Chant(models.Model):
 
         Return true
         """
-        solrconn.add(self.create_solr_record())
+        solrconn.add(**self.create_solr_record())
         return True
 
     def delete_from_solr(self, solrconn):

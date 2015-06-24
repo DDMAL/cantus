@@ -40,7 +40,7 @@ class Folio(models.Model):
 
         Return true if an entry was added
         """
-        solrconn.add(self.get_solr_entry())
+        solrconn.add(**self.create_solr_record())
         return True
 
     def delete_from_solr(self, solrconn):
