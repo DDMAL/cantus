@@ -130,7 +130,7 @@ class ChantImporter:
             row["Position"].strip()).decode('utf-8')
         chant.manuscript = manuscript
 
-        folio_code = slugify(row["Folio"].decode("utf-8"))
+        folio_code = row["Folio"].decode("utf-8")
 
         # See if this folio already exists or is set to be created
         if (folio_code, manuscript.pk) not in self.folio_registry:
