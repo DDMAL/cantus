@@ -1,6 +1,10 @@
-import solr
+import os
+import subprocess
 import csv
+
+import solr
 from django.core.management.base import BaseCommand
+
 from cantusdata import settings
 from cantusdata.helpers.parsers.csv_parser import CSVParser
 
@@ -50,6 +54,7 @@ class Command(BaseCommand):
             data = parser.parse()
             self.data_to_csv(data, csv_location)
             self.stdout.write("MEI dumped to CSV.")
+
         elif mode == "mei_to_solr":
             self.stdout.write("Committing MEI to Solr.")
             if manuscript == "st_gallen_390" or manuscript == "st_gallen_391":
@@ -61,18 +66,15 @@ class Command(BaseCommand):
             data = parser.parse()
             self.data_to_solr(data, solrconn)
             self.stdout.write("MEI committed to Solr.")
+
         elif mode == "csv_to_solr":
-            self.stdout.write("Loading CSV file...")
-            data = csv.DictReader(open(csv_location))
-            self.stdout.write("Adding CSV to Solr...")
-            solrconn.add_many(list(data))
-            self.stdout.write("Committing Solr additions.")
-            solrconn.commit()
-            self.stdout.write("CSV committed to Solr.")
+            self.csv_to_solr(csv_location)
+
         elif mode == "gall_hack":
             data = CSVParser("data_dumps/hacky_csv_mei/csg_390_ordered_2.csv",
                              "ch-sgs-390").parse()
             self.data_to_solr(data, solrconn)
+
         else:
             raise Exception("Please provide mode!")
 
@@ -118,3 +120,22 @@ class Command(BaseCommand):
 
         solrconn.add_many(rows)
         solrconn.commit()
+
+    def csv_to_solr(self, filename):
+        """Commit a CSV file to Solr using a stream"""
+
+        # Build the Solr upload URL
+        url = ('"{server}/update?stream.file={path}&stream.contentType=text/csv;charset=utf-8&commit=true"'
+                .format(server=settings.SOLR_SERVER, path=os.path.abspath(filename)))
+
+        command = 'curl -s -o /dev/null -w "%{http_code}" ' + url
+
+        print 'Sending CSV to Solr.'
+
+        status = subprocess.check_output(command, shell=True)
+
+        if not status or status[0] != '2':
+            print 'Upload failed (status {}). See the Solr logs for details.'.format(status)
+        else:
+            print 'CSV upload successful.'
+
