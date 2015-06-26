@@ -1,0 +1,77 @@
+# Remove empty staff segments, clefs and bar lines
+# We assume that we're working with a treble clef in C major (this should be checked before upload!)
+"-" => ""
+"1" => ""
+"2" => ""
+"3" => ""
+"4" => ""
+"5" => ""
+"6" => ""
+"7" => ""
+
+
+# Normalize accidentals: these differ by their vertical positioning, but that
+# shouldn't matter for search
+
+# Flats
+"w" => "i"
+"x" => "i"
+"y" => "i"
+"z" => "i"
+
+# Naturals
+"W" => "I"
+"X" => "I"
+"Y" => "I"
+"Z" => "I"
+
+
+# Normalize notes: change variant shapes and make the notes octave invariant
+# We're using the values efghjkl, which are the most used values for efgabcd
+
+# Same-octave note shape fixes
+"E" => "e"
+"F" => "f"
+"G" => "g"
+"H" => "h"
+"J" => "j"
+"K" => "k"
+"L" => "l"
+
+# Raise notes
+"9" => "g"
+")" => "g"
+
+"a" => "h"
+"A" => "h"
+
+"b" => "j"
+"B" => "j"
+
+"c" => "k"
+"C" => "k"
+
+"d" => "l"
+"D" => "l"
+
+# Lower notes
+"m" => "e"
+"M" => "e"
+
+"n" => "f"
+"N" => "f"
+
+"o" => "g"
+"O" => "g"
+
+"p" => "h"
+"P" => "h"
+
+"q" => "j"
+"Q" => "j"
+
+"r" => "k"
+"R" => "k"
+
+"s" => "l"
+"S" => "l"

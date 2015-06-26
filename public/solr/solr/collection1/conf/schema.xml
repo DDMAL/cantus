@@ -512,19 +512,16 @@
       </analyzer>
     </fieldType>
 
-    <!-- A text field for "Volpiano" music notation data. -->
+    <!-- A text field for Volpiano music notation data. -->
     <fieldType name="volpiano_general" class="solr.TextField" positionIncrementGap="100">
       <analyzer type="index">
-        <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="-*" replacement=""/>
+        <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ExtractVolpianoNotes.txt"/>
         <tokenizer class="solr.StandardTokenizerFactory"/>
-        <!-- <filter class="solr.WordDelimiterFilterFactory" splitOnCaseChange="0" splitOnNumerics="0" stemEnglishPossessive="0" catenateAll="1" /> -->
-        <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.NGramFilterFactory" minGramSize="2" maxGramSize="15"/>
       </analyzer>
       <analyzer type="query">
-        <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="-*" replacement=""/>
+        <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ExtractVolpianoNotes.txt"/>
         <tokenizer class="solr.StandardTokenizerFactory"/>
-        <filter class="solr.LowerCaseFilterFactory"/>
       </analyzer>
     </fieldType>
 
