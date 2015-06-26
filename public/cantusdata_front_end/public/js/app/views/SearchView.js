@@ -106,6 +106,7 @@ define(['backbone', 'marionette',
 
                 if (!query)
                 {
+                    this.collection.invalidateFetch();
                     this.collection.reset();
                     return;
                 }

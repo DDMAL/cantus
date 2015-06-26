@@ -109,6 +109,14 @@ define(["underscore", "backbone", "models/SearchResult", "config/GlobalVars"],
             },
 
             /**
+             * Stop an ongoing multi-request fetch from loading.
+             */
+            invalidateFetch: function ()
+            {
+                this._fetchCount++;
+            },
+
+            /**
              * Override the default Backbone fetch to support atomic multi-request
              * loads.
              *
