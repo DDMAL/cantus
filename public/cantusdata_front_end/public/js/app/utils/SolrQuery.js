@@ -1,5 +1,9 @@
 define(["underscore", "marionette"], function (_, Marionette)
 {
+    // Match delimiters, "!", and (this is a bit hacky) strings which are entirely whitespace
+    // FIXME(wabain): find a full spec of what should be escaped
+    var SPECIAL_SOLR_QUERY_VALUE = /[()[\]{}!]|^\s+$/g;
+
     /**
      * @constructor
      *
@@ -92,7 +96,21 @@ define(["underscore", "marionette"], function (_, Marionette)
                 }
             }
 
-            return '(' + value + ')';
+            return '(' + this.escapeSolrTerm(value) + ')';
+        },
+
+        /**
+         * Return a string where characters that have special values in the
+         * query syntax have been escaped
+         *
+         * FIXME: this escaping probably isn't comprehensive
+         *
+         * @param {string} value
+         * @returns {string}
+         */
+        escapeSolrTerm: function (value)
+        {
+            return value.replace(SPECIAL_SOLR_QUERY_VALUE, '\\$&');
         },
 
         toString: function ()
@@ -103,7 +121,7 @@ define(["underscore", "marionette"], function (_, Marionette)
 
             if (_.has(this.fields, 'all'))
             {
-                constructedTerms.push(this.fields.all);
+                constructedTerms.push(this.escapeSolrTerm(this.fields.all));
                 fields = _.omit(this.fields, 'all');
             }
             else
