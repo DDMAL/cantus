@@ -314,9 +314,6 @@ class MEI2Parser():
 
         meifile = pymei.documentFromFile(str(ffile)).getMeiDocument()
 
-        print "file:"
-        print ffile
-
         # Taken directly from file name!!!
         pagen = \
             str(ffile).split('_')[len(str(ffile).split('_')) - 1].split('.')[0]
