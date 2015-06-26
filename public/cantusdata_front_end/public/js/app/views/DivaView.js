@@ -156,10 +156,10 @@ return Marionette.ItemView.extend
     },
 
     /**
-     * Return the folio for the page at the given index
+     * Return an alias for display based on the folio for the page at the given index
      *
      * @param pageIndex
-     * @returns {*|string}
+     * @returns {string}
      */
     getPageAlias: function (pageIndex)
     {
