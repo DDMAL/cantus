@@ -24,8 +24,18 @@ define(["underscore", "marionette"], function (_, Marionette)
         {
             _.bindAll(this, 'getSolrTerm');
 
-            this.fields = this.getOption('fields') || {};
             this.params = this.getOption('params') || {};
+            this.fields = {};
+
+            var fields = this.getOption('fields');
+
+            if (fields)
+            {
+                _.forEach(fields, function (value, field)
+                {
+                    this.setField(field, value);
+                }, this);
+            }
         },
 
         /**
