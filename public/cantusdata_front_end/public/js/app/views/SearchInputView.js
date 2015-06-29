@@ -25,6 +25,9 @@ define(["marionette"],
             initialize: function ()
             {
                 _.bindAll(this, 'setField', 'setQuery');
+
+                this.cachedQueries = {};
+
                 this.setQueryDebounced = _.debounce(this.setQuery, 250);
             },
 
@@ -48,6 +51,13 @@ define(["marionette"],
                 var field = this.model.get('field'),
                     prev = this.model.previous('field');
 
+                // Store the old field value
+                this.cachedQueries[prev] = this.ui.searchInput.val();
+
+                // Restore the value for the new field
+                var cachedQuery = this.cachedQueries[field] || '';
+                this.model.set('query', cachedQuery);
+
                 if (this.requiresRerender(field) || this.requiresRerender(prev))
                 {
                     this.render();
@@ -56,6 +66,11 @@ define(["marionette"],
                 {
                     this.ui.searchInput.removeClass('field-' + prev).addClass('field-' + field);
                 }
+
+                // FIXME(wabain): setting this manually is pretty fragile
+                // Really, things should be organized s.t. the search input value is always
+                // the same as the model value without needing this to be a special case
+                this.ui.searchInput.val(cachedQuery);
             },
 
             /**
@@ -63,7 +78,7 @@ define(["marionette"],
              */
             updateQueryInput: function ()
             {
-                if (this.ui.searchInput.val())
+                if (this.model.get('query'))
                 {
                     this.ui.searchInput.addClass('search-text-entered');
                 }
@@ -89,6 +104,9 @@ define(["marionette"],
             {
                 // Set the search field
                 this.ui.searchField.val(this.model.get('field'));
+
+                // Set dynamic classes on the query input
+                this.updateQueryInput();
             }
         });
     }
