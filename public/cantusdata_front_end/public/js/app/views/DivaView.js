@@ -55,12 +55,14 @@ return Marionette.ItemView.extend
     pageAliasingInitEvent: null,
     pageChangeEvent: null,
     modeSwitchEvent: null,
+    docLoadEvent: null,
 
     initialize: function(options)
     {
         _.bindAll(this, 'storeFolioIndex', 'storeInitialFolio', 'setFolio',
             'setGlobalFullScreen', 'zoomToLocation', 'getPageAlias',
-            'initializePageAliasing', 'gotoInputPage', 'getPageWhichMatchesAlias');
+            'initializePageAliasing', 'gotoInputPage', 'getPageWhichMatchesAlias',
+            'onDocLoad');
         //this.el = options.el;
         this.setManuscript(options.siglum, options.folio);
     },
@@ -107,6 +109,10 @@ return Marionette.ItemView.extend
             {
                 diva.Events.unsubscribe(this.modeSwitchEvent);
             }
+            if (this.docLoadEvent !== null)
+            {
+                diva.Events.unsubscribe(this.docLoadEvent);
+            }
         }
     },
 
@@ -151,8 +157,36 @@ return Marionette.ItemView.extend
         this.pageAliasingInitEvent = diva.Events.subscribe("ViewerDidLoad", this.initializePageAliasing);
         this.pageChangeEvent = diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
         this.modeSwitchEvent = diva.Events.subscribe("ModeDidSwitch", this.setGlobalFullScreen);
+
+        this.docLoadEvent = diva.Events.subscribe("DocumentDidLoad", this.onDocLoad);
+
         // Remember that we've initialized diva
         this.divaInitialized = true;
+    },
+
+    /**
+     * Workaround for a weird Chrome bug - sometimes setting the style on the
+     * diva-inner element doesn't work. The CSS value is changed, but the width
+     * of the element itself is not. Manually re-applying the change in the Developer
+     * Console makes it work, so it doesn't seem to be a styling issue.
+     *
+     * When this happens, setting the width to a different but close value seems to work.
+     */
+    onDocLoad: function ()
+    {
+        var inner = this.ui.divaWrapper.find('.diva-inner');
+        var cssWidth = parseInt(inner[0].style.width, 10);
+
+        if (cssWidth && cssWidth !== inner.width())
+        {
+            // jshint devel:true
+            console.warn(
+                "Trying to mitigate a Diva zooming bug...\n" +
+                "If you're not using Chrome, you shouldn't be seeing this.\n" +
+                "See https://github.com/DDMAL/cantus/issues/206");
+
+            inner[0].style.width = (cssWidth + 1) + 'px';
+        }
     },
 
     /**
