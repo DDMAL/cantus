@@ -121,7 +121,7 @@ define(["underscore", "marionette"], function (_, Marionette)
 
             if (_.has(this.fields, 'all'))
             {
-                constructedTerms.push(this.escapeSolrTerm(this.fields.all));
+                constructedTerms.push(this.getSolrTerm(this.fields.all));
                 fields = _.omit(this.fields, 'all');
             }
             else
