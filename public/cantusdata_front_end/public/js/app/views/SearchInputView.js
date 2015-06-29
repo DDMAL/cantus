@@ -82,7 +82,7 @@ define(["marionette"],
              */
             requiresRerender: function (fieldType)
             {
-                return fieldType === 'volpiano';
+                return fieldType === 'mode';
             },
 
             onRender: function ()
