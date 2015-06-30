@@ -1,7 +1,22 @@
-define(["jquery", "backbone", "config/GlobalVars"],
-    function($, Backbone, GlobalVars) {
+define(["jquery", "underscore", "backbone", "config/GlobalVars"],
+    function($, _, Backbone, GlobalVars) {
 
         "use strict";
+
+        // Cache the Volpiano query which  was last turned into a regex
+        var lastVolpianoQuery = null,
+            lastVolpianoRegex = null,
+            volpianoMap = {};
+
+        // Build a mapping of equivalent Volpiano characters
+        _.forEach(['iwxyz', 'IWXYZ', 'eEmM', 'fFnN', 'gG9)oO', 'hHaApP',
+            'jJbBqQ', 'kKcCrR', 'lLdDsS'], function (equivalent)
+        {
+            _.forEach(equivalent, function (value)
+            {
+                volpianoMap[value] = equivalent;
+            });
+        });
 
         /**
          * This represents a search result.  It is experimental.
@@ -78,57 +93,67 @@ define(["jquery", "backbone", "config/GlobalVars"],
              */
             highlightVolpianoResult: function(result, query)
             {
-                // Format the volpiano as a regex with optional dashes
-                var regex = this.formatVolpianoWithDashesRegex(query);
-                // Grab all matches from that regex
-                var regexMatches = result.match(regex);
+                // Format the Volpiano as a lenient regex
+                var regex = this.getVolpianoRegex(query);
+
+                var highlighted = result.replace(regex, '<span class="bg-info">$&</span>');
 
                 // If something went wrong and there is no match, fail unobtrusively
-                if (!regexMatches)
-                {
+                if (highlighted === result)
                     console.error('Failed to find the match for', query, 'in Volpiano string', result);
-                    return result;
-                }
 
-                // Highlight the matches with the proper span tag
-                for (var i = 0; i < regexMatches.length; i++)
-                {
-                    // Add the span tag
-                    result = result.replace(regexMatches[i], '<span class="bg-info">' + regexMatches[i] + '</span>');
-                }
-
-                return result;
+                return highlighted;
             },
 
             /**
-             * Create a RegEx matching volpiano with optional dashes from a string
-             * representing a volpiano search query.
+             * Create a RegExp which supports lenient matching against a Volpiano query.
+             * Its behaviour should match that in the Solr installation at
+             * mapping-ExtractVolpianoNotes.txt
              *
-             * So, "abc" becomes a-*b-*c-* etc.
+             * TODO: if we ever add highlighting for other fields, it would be good to
+             * use Solr's built in highlighting functionality. But configuring that to
+             * work character by character is non-trivial, so we'll just highlight on the
+             * client side for now.
              *
-             * @param volpianoWithoutDashes string representing the volpiano without dashes
+             * @param volpiano {string} a Volpiano query
              * @returns {RegExp}
              */
-            formatVolpianoWithDashesRegex: function(volpianoWithoutDashes)
+            getVolpianoRegex: function(volpiano)
             {
+                // Use a cached regex if one is available
+                if (volpiano === lastVolpianoQuery)
+                    return lastVolpianoRegex;
+
                 // Empty string that we will fill up
                 var outputAsString = "";
 
-                // Normalize the case of the query: the Volpiano string will always
-                // be lower-cased
-                volpianoWithoutDashes = volpianoWithoutDashes.toLowerCase();
+                var queryLength = volpiano.length;
 
-                for (var i = 0; i < volpianoWithoutDashes.length; i++)
+                for (var i = 0; i < queryLength; i++)
                 {
-                    // Add the char at i
-                    outputAsString += volpianoWithoutDashes.charAt(i);
-                    // Add the optional dashes
-                    outputAsString += "-*";
+                    var char = volpiano.charAt(i);
+
+                    // Ignore unsupported characters
+                    if (!(char in volpianoMap))
+                        continue;
+
+                    // If this is not the start of the regex, allow optional
+                    // characters in between the new character and the prior ones
+                    if (outputAsString)
+                        outputAsString += "[-1-7]*";
+
+                    outputAsString += '[' + volpianoMap[char] + ']';
                 }
 
                 // Now we have a string representing a good regex, so we must
                 // create an actual regex object
-                return new RegExp(outputAsString, "g");
+                var regex = new RegExp(outputAsString, "g");
+
+                // Cache the generated regex
+                lastVolpianoQuery = volpiano;
+                lastVolpianoRegex = regex;
+
+                return regex;
             }
         });
     }
