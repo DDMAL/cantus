@@ -24,7 +24,8 @@ require.config({
         "diva-annotate": "../libs/diva/plugins/annotate",
         "diva-canvas": "../libs/diva/plugins/canvas",
         "diva-download": "../libs/diva/plugins/download",
-        "diva-highlight": "../libs/diva/plugins/highlight"
+        "diva-highlight": "../libs/diva/plugins/highlight",
+        "diva-pagealias": "../libs/diva/plugins/pagealias"
     },
     // Sets the configuration for your third party scripts that are not AMD compatible
     shim:{
@@ -56,6 +57,7 @@ require.config({
         "diva-annotate": ["jquery", "diva"],
         "diva-canvas": ["jquery", "diva"],
         "diva-download": ["jquery", "diva"],
-        "diva-highlight": ["jquery", "diva"]
+        "diva-highlight": ["jquery", "diva"],
+        "diva-pagealias": ["jquery", "diva"]
     }
 });

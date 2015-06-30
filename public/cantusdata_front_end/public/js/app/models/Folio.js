@@ -7,15 +7,12 @@ define(["jquery", "backbone", "models/CantusAbstractModel"],
 
         return CantusAbstractModel.extend
         ({
-            //defaults: function()
-            //{
-            //    return {
-            //        number: "000",
-            //        manuscript: null,
-            //        chant_count: 0,
-            //        chant_set: []
-            //    }
-            //}
+            defaults: function()
+            {
+                return {
+                    number: "000"
+                };
+            }
         });
     }
 

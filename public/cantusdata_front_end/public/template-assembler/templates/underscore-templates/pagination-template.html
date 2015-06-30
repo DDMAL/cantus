@@ -1,0 +1,13 @@
+<ul class="pagination">
+    <li class="page-back" <% if (currentPage <= 1) { %>class="disabled"<% } %> >
+    <a href="#">&laquo;</a>
+    </li>
+    <% for (var page = startPage; page <= endPage; page++) { %>
+    <li <% if (page == currentPage) { %>class="active"<% } %> >
+    <a href="#" class="page-<%= page %>"><%= page %></a>
+    </li>
+    <% } %>
+    <li class="page-forward" <% if (currentPage >= endPage) { %>class="disabled"<% } %> >
+    <a href="#">&raquo;</a>
+    </li>
+</ul>

@@ -1,196 +1,159 @@
-//var CantusAbstractView = require(["views/CantusAbstractView"]);
-//var SearchResultView = require(["views/SearchResultView"]);
+define(['backbone', 'marionette',
+        "utils/SolrQuery",
+        "models/SearchInput",
+        "collections/SearchResultCollection",
+        "views/collection_views/SearchResultCollectionView",
+        "views/SearchInputView"],
+    function(Backbone, Marionette,
+             SolrQuery,
+             SearchInput,
+             SearchResultCollection,
+             SearchResultCollectionView,
+             SearchInputView) {
 
-define( ['App', 'backbone', 'marionette', 'jquery',
-        "models/SolrDisjunctiveQueryBuilder",
-        "views/CantusAbstractView",
-        "views/SearchResultView",
-        "singletons/GlobalEventHandler"],
-    function(App, Backbone, Marionette, $, SolrDisjunctiveQueryBuilder, CantusAbstractView, SearchResultView, GlobalEventHandler, template) {
+        "use strict";
 
         /**
-         * Provide an alert message to the user.
+         * Top-level search view
          */
-        return CantusAbstractView.extend
-        ({
-            /**
-             *
-             */
-            query: null,
-            field: "all",
+        return Marionette.LayoutView.extend({
+            template: "#search-template",
 
-            /**
-             * Some additional text added to all queries.  For example, you might
-             * want this view to only search through chants.  In that case,
-             * you would set this.queryPostScript to "AND type:cantusdata_chant".
-             */
-            queryPostScript: null,
-            timer: null,
-
-            // Subviews
-            searchResultView: null,
             showManuscriptName: true,
 
-            // Search template dictionary
-            currentSearchFormTemplate: "all",
-            searchFormTemplates: {},
+            // Fields which are indexed in Solr as strings.
+            // We need to get text_general variants of these
+            // for search. (Note that we don't actually search
+            // by all of these at the moment.)
+            stringFields: [
+                "feast",
+                "office",
+                "genre",
+                "position",
+                "mode",
+                "differentia",
+                "finalis",
+                "folio"
+            ],
 
-            events: {},
-
-            initialize: function(options)
-            {
-                _.bindAll(this, 'render', 'newSearch', 'autoNewSearch',
-                    'changeSearchField', 'registerEvents');
-                this.template= _.template($('#search-template').html());
-                // The search form templates
-                this.searchFormTemplates.all = _.template( $('#search-all-template').html());
-                this.searchFormTemplates.mode = _.template( $('#search-mode-template').html());
-                this.searchFormTemplates.volpiano = this.searchFormTemplates.all;
-                this.searchFormTemplates.feast = this.searchFormTemplates.all;
-                this.searchFormTemplates.office = this.searchFormTemplates.all;
-
-                // If not supplied, the query is blank
-                if (options !== undefined)
-                {
-                    // Is there a query?
-                    if (options.query !== undefined)
-                    {
-                        this.query = options.query;
-                    }
-                    else
-                    {
-                        this.query = "";
-                    }
-                    // Is there a query post script?
-                    if (options.queryPostScript !== undefined)
-                    {
-                        this.setQueryPostScript(options.queryPostScript);
-                    }
-                }
-                this.searchResultView = new SearchResultView(
-                    {
-                        query: this.query,
-                        showManuscriptName: this.showManuscriptName
-                    }
-                );
+            regions: {
+                searchResultRegion: ".search-results",
+                searchInputRegion: ".search-input-container"
             },
 
             /**
-             * Set this.queryPostScript.
+             * Initialization options:
              *
-             * @param postScript string
+             * - `restriction`: restrictions to apply to all queries originating
+             *    from the view
+             * - `query`: initial query to search for
+             * - `field`: initial field to search with
              */
-            setQueryPostScript: function(postScript)
+            initialize: function()
             {
-                this.queryPostScript = String(postScript);
+                _.bindAll(this, 'search', 'setRestriction');
+
+                // Set options
+                this.restrictions = this.getOption('restrictions') || {};
+                this.showManuscriptName = this.getOption('showManuscriptName');
+
+                // Initialize search input model
+                this.searchParameters = new SearchInput();
+
+                // Initialize search result collection which is sorted
+                // by the criteria specified by the search input
+                this.collection = new SearchResultCollection(null, {
+                    comparisonParameters: this.searchParameters
+                });
+
+                // Set initial values for query and field if they are provided
+                this.searchParameters.set(_.filter({
+                    query: this.getOption('query'),
+                    field: this.getOption('field')
+                },  _.identity));
+
+                // Trigger a search when the search query or field changes
+                this.listenTo(this.searchParameters, 'change:query change:field', this.search);
+
+                // Execute an initial search if there is a query
+                if (this.searchParameters.get('query'))
+                    this.search();
             },
 
-            changeSearchField: function()
+            /**
+             * Add a restriction to apply to all queries originating in the view.
+             * @param {string} field
+             * @param {string} value
+             */
+            setRestriction: function (field, value)
             {
-                // Grab the field name
-                var newField = encodeURIComponent($(this.$el.selector + ' .search-field').val());
-                // We want to make sure that we aren't just loading the same template again
-                if (this.searchFormTemplates[newField] !== this.searchFormTemplates[this.field])
-                {
-                    // Store the field
-                    this.field = newField;
-                    // Render with the new template
-                    $(this.$el.selector  + " .input-section").html(
-                        this.searchFormTemplates[String(this.field)](
-                            {query: this.query}));
-                }
-                // We want to fire off a search
-                this.newSearch();
+                this.restrictions[field] = value;
+
+                // If there is a search active then redo it
+                if (this.searchParameters.get('query'))
+                    this.search();
             },
 
             /**
              * Take the value of the search input box and perform a search query
-             * with it.  This function hits the API every time it is called.
+             * with it. This function hits the API (possibly multiple times) every
+             * time it is called if the query is non-empty.
              */
-            newSearch: function()
+            search: function()
             {
-                // Grab the new search query
-                var newQuery = encodeURIComponent($(this.$el.selector + ' .search-input').val());
-                // Grab the field name
-                var fieldSelection = encodeURIComponent($(this.$el.selector + ' .search-field').val());
-                if (newQuery !== this.query || fieldSelection !== this.field) {
-                    this.query = newQuery;
-                    this.field = fieldSelection;
-                    if (newQuery === "")
-                    {
-                        // Empty search, so hide the searchResultView
-                        this.searchResultView.hide();
-                    }
-                    else {
-                        // Append the field selector if necessary!
-                        if (fieldSelection !== "all")
-                        {
-                            // Split the query into multiple things
-                            var queryList = decodeURIComponent(newQuery).split(",");
-                            var disjunctive = new SolrDisjunctiveQueryBuilder(fieldSelection, queryList);
-                            newQuery = disjunctive.getQuery();
-                        }
-                        if (this.queryPostScript !== null)
-                        {
-                            // Attach this.queryPostScript if available
-                            this.searchResultView.changeQuery(newQuery + " " + this.queryPostScript, this.field);
-                        }
-                        else
-                        {
-                            // Set the new search results view
-                            this.searchResultView.changeQuery(newQuery, this.field);
-                        }
-                    }
+                var query = this.searchParameters.get('query');
+                var field = this.searchParameters.get('field');
+
+                if (!query)
+                {
+                    this.collection.invalidateFetch();
+                    this.collection.reset();
+                    return;
                 }
+
+                if (field !== 'all')
+                {
+                    // FIXME(wabain): I don't think this is ever actually triggered
+                    // If the field is a mode then the value is already an array
+                    if (_.isString(query))
+                        query = query.split(',');
+                }
+
+                var queryBuilder = new SolrQuery();
+                queryBuilder.setField(this.getSearchField(field), query, 'OR');
+
+                _.forEach(this.restrictions, function (value, field) {
+                    queryBuilder.setField(this.getSearchField(field), value);
+                }, this);
+
+                this.collection.fetch({baseSolrQuery: queryBuilder});
             },
 
             /**
-             * Register the events that are necessary to have search input.
+             * Get a searchable variant of the field. String fields need
+             * to be converted to text_general to be properly searchable
+             * by Solr.
+             *
+             * @param {string} field
+             * @returns {string} a searchable field
              */
-            registerEvents: function()
+            getSearchField: function (field)
             {
-                // Clear out the events
-                this.events = {};
-                // Register them
-                this.events["change .search-input"] = "newSearch";
-                this.events["change .search-field"] = "changeSearchField";
-                this.events["input .search-input"] = "autoNewSearch";
-                // Delegate the new events
-                this.delegateEvents();
+                if (_.contains(this.stringFields, field))
+                    return field + '_t_hidden';
+
+                return field;
             },
 
-            /**
-             * Set the timer to perform a new search.
-             * This is called when you want to avoid making multiple querie
-             * very quickly.
-             */
-            autoNewSearch: function()
+            onRender: function ()
             {
-                if (this.timer !== null)
-                {
-                    window.clearTimeout(this.timer);
-                }
-                this.timer = window.setTimeout(this.newSearch, 250);
-            },
+                this.searchInputRegion.show(new SearchInputView({model: this.searchParameters}));
 
-            render: function()
-            {
-                this.registerEvents();
-                $(this.el).html(this.template());
-                if (this.field in this.searchFormTemplates)
-                {
-                    $(this.$el.selector  + " .input-section").html(
-                        this.searchFormTemplates[this.field]({query: this.query}));
-                }
-                else
-                {
-                    $(this.$el.selector  + " .input-section").html("Error!");
-                }
-                // Render subviews
-                $(this.$el.selector + ' .search-results').html("SEARCH RESULT VIEW!");
-                this.assign(this.searchResultView, this.$el.selector + ' .search-results');
-                GlobalEventHandler.trigger("renderView");
-                return this.trigger('render', this);
+                this.searchResultRegion.show(new SearchResultCollectionView({
+                    collection: this.collection,
+                    showManuscriptName: this.showManuscriptName,
+                    searchParameters: this.searchParameters
+                }));
             }
         });
     });

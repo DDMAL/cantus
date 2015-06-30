@@ -21,6 +21,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
          */
         return CantusAbstractView.extend
         ({
+            // TODO: Re-write this as a Marionette LayoutView
             el: '#view-goes-here',
 
             loaded: false,
@@ -55,9 +56,6 @@ define( ['App', 'backbone', 'marionette', 'jquery',
 
             render: function()
             {
-                console.log("Rendering ManuscriptsPageView");
-                console.log(this.$el);
-                console.log(this.template());
                 $(this.el).html(this.template());
                 if (this.loaded)
                 {

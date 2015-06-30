@@ -1,6 +1,8 @@
 from django.conf import settings
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.exceptions import APIException
 
 from cantusdata.helpers import search_utils
 import solr
@@ -9,11 +11,9 @@ import types
 from operator import itemgetter
 
 
-class NotationException(Exception):
-    def __init__(self, message):
-        self.message = message
-    def __str__(self):
-        return repr(self.message)
+class NotationException(APIException):
+    status_code = 400
+    default_detail = 'Notation search request invalid'
 
 
 class SearchNotationView(APIView):
@@ -29,13 +29,9 @@ class SearchNotationView(APIView):
         rows = request.GET.get("rows", "100")
         start = request.GET.get("start", "0")
 
-        try:
-            results = self.do_query(manuscript, stype, q, 5, 5)
-        except Exception as e:
-            # Something went wrong in the search
-            print "Exception: {0}".format(e)
-            # So we want an empty list to avoid server error 500
-            results = []
+        # Give a 400 if there's a notation exception, and let
+        # anything else give a 500
+        results = self.do_query(manuscript, stype, q, 5, 5)
 
         return Response({'numFound': len(results), 'results': results})
 
@@ -46,10 +42,11 @@ class SearchNotationView(APIView):
 
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
 
-        query = query.lower()
+        # Normalize case and whitespace
+        query = ' '.join(elem for elem in query.lower().split())
 
         if qtype == "neumes":
-            query_stmt = 'neumes:"{0}"'.format(
+            query_stmt = 'neumes:{0}'.format(
                 # query
                 query.replace(' ', '_')
             )
@@ -61,7 +58,7 @@ class SearchNotationView(APIView):
         elif qtype == "contour":
             query_stmt = 'contour:{0}'.format(query)
         elif qtype == "text":
-            query_stmt = 'text:"{0}"'.format(query)
+            query_stmt = 'text:{0}'.format(query)
         elif qtype == "intervals":
             query_stmt = 'intervals:{0}'.format(query.replace(' ', '_'))
         elif qtype == "incipit":
@@ -84,13 +81,14 @@ class SearchNotationView(APIView):
         results = []
         boxes = []
 
-        # get only the longest ngram in the results
+        # get only the longest ngram in the results, for results which are associated with
+        # a pitch sequence
         if qtype == "neumes":
             if manuscript == "ch-sgs-390":
                 pass
             else:
                 notegrams_num = search_utils.get_neumes_length(query)
-                response = [r for r in response if len(r['pnames']) == notegrams_num]
+                response = [r for r in response if not r.get('pnames') or len(r['pnames']) == notegrams_num]
 
         for d in response:
             page_number = d['folio']

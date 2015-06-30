@@ -1,12 +1,9 @@
-//var CantusAbstractView = require(["views/CantusAbstractView"]);
-
-define( ['App', 'backbone', 'marionette', 'jquery',
+define( ['App', 'marionette', 'jquery',
         "views/CantusAbstractView",
         "singletons/GlobalEventHandler"],
-    function(App, Backbone, Marionette, $,
+    function(App, Marionette, $,
              CantusAbstractView,
-             GlobalEventHandler,
-             template) {
+             GlobalEventHandler) {
 
         /**
          * Provide an alert message to the user.

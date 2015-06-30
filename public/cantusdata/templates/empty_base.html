@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cantus Ultimus</title>
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="/static/css/bootstrap.css">
+    <link rel="stylesheet" href="/static/css/bootstrap-theme.css">
+    <link rel="stylesheet" href="/static/css/diva.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/ico" href="/static/img/favicon.ico">
+</head>
+<body>
+    <div id="header-container">
+        <div id="page-header" class="header"></div>
+    </div>
+    <div id="content-container" class="container-fluid">
+{#        <hr/>#}
+        <div id="page-content" class="row content">
+            <div class="col-lg-12">
+                <!-- Templates -->
+                <div id="view-goes-here"></div>
+                <div id="search-modal"></div>
+            </div>
+        </div>
+    </div>
+
+<script type="text/template" id="header-template">
+    <nav class="navbar navbar-default" role="navigation">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a id="site-logo" class="navbar-brand" href="/">Cantus Ultimus</a>
+          <button type="button" class="navbar-toggle" data-toggle="collapse" 
+          data-target="#top-menu">
+          
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          
+          </button>
+
+        </div>
+        <div>
+          <ul class="nav navbar-nav">
+            <li><a href="/about/">About</a></li>
+            <li><a href="/activities/">Activities</a></li>
+            <li><a href="/team/">Team</a></li>
+          </ul>
+
+          <ul id="top-menu" class="nav navbar-nav"></ul>
+        </div>
+
+      </div>
+    </nav>
+</script>
+
+
+
+
+
+
+
+<script type="text/template" id="top-menu-template">
+{#<% _.forEach(items, function(item) { %>#}
+<% for (var i = 0; i < items.length; i++) { %>
+    <li id="top-menu-button-<%= i %>"<% if (items[i].active) { %> class="active" <% } if (items[i].tags) { %><%= items[i].tags %><% } %> ><a href="<%= items[i].url %>"><%= items[i].name %></a></li>
+<% }%>
+</script>
+
+
+
+<script type="text/template" id="modal-template">
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel"><%= title %></h4>
+            </div>
+            <div class="modal-body"></div>
+        </div>
+    </div>
+</div>
+</script>
+
+
+<script type="text/template" id="search-input-template">
+    <div class="form-group">
+        <select class="form-control search-field">
+            <option value="all">All Text Fields:</option>
+            <option value="volpiano">Volpiano:</option>
+            <option value="mode">Mode:</option>
+            <option value="feast">Feast:</option>
+            <option value="genre">Genre:</option>
+            <option value="office">Office:</option>
+        </select>
+    </div>
+    <div class="form-group input-section">
+        <% // Use a fixed selection if field is 'mode' %>
+        <% // FIXME(wabain): would a typeahead be better? %>
+        <% if (field === 'mode') { %>
+        <select multiple class="form-control search-input">
+            <option value="1">Mode 1</option>
+            <option value="2">Mode 2</option>
+            <option value="3">Mode 3</option>
+            <option value="4">Mode 4</option>
+            <option value="5">Mode 5</option>
+            <option value="6">Mode 6</option>
+            <option value="7">Mode 7</option>
+            <option value="8">Mode 8</option>
+            <option>No Music</option>
+            <option>Responsory (simple)</option>
+            <option>Uncertain</option>
+            <option>Responsory (special)</option>
+            <option>Chant in Transposition</option>
+        </select>
+        <% } else { %>
+        <input type="text" class="form-control search-input" placeholder="Search" value="<%= query %>">
+        <% } %>
+    </div>
+
+</script>
+
+<script type="text/template" id="search-result-item-template">
+    <tr>
+        <td>
+            <a href="<%= result.url %>" class="search-result"><%= result.name %></a>
+        </td>
+
+        <% if (showManuscriptName) { %>
+        <td><%= result.manuscript %></td>
+        <% } %>
+
+        <td><%= result.mode %></td>
+
+        <td><%= result.folio %></td>
+
+        <td><%= result.genre %></td>
+
+        <% if (showManuscriptName) { %>
+        <td><%= result.office %></td>
+        <% } %>
+
+    </tr>
+    <% if (searchType === "volpiano" && result.volpiano !== undefined) { %>
+    <tr>
+        <td colspan="5"><p class="volpiano"><%= result.volpiano %></p></td>
+    </tr>
+    <% } %>
+
+</script>
+
+<script type="text/template" id="search-result-list-template">
+    <div class="search-results-meta">
+        <h4>Query: <%= query %></h4>
+        <h4>Results: <%= numFound %></h4>
+    </div>
+    <table class="table table-striped result-list child-container">
+        <thead>
+        <tr>
+            <th data-sort-field="incipit">
+                <a href="#">Name</a>
+                <span class="search-caret"></span>
+            </th>
+
+            <% if (showManuscriptName === true) { %>
+            <th>
+                <a href="#">Manuscript</a>
+                <span class="search-caret"></span>
+            </th>
+            <% } %>
+
+            <th>
+                <a href="#">Mode</a>
+                <span class="search-caret"></span>
+            </th>
+
+            <th>
+                <a href="#">Folio</a>
+                <span class="search-caret"></span>
+            </th>
+
+            <th>
+                <a href="#">Genre</a>
+                <span class="search-caret"></span>
+            </th>
+
+            <% if (showManuscriptName) { %>
+            <th>
+                <a href="#">Office</a>
+                <span class="search-caret"></span>
+            </th>
+            <% } %>
+        </tr>
+        </thead>
+    </table>
+
+</script>
+
+<script type="text/template" id="search-template">
+    <div class="form-inline">
+        <div class="search-input-container"></div>
+    </div>
+    <div class="search-results"></div>
+</script>
+
+
+
+<div id="content-container" class="container-fluid">
+    {% block body %}
+    {% endblock %}
+</div>
+    <!--Load scripts last-->
+    <script src="/static/js/app/cantus.min.js"></script>
+
+
+
+
+</body>
+</html>

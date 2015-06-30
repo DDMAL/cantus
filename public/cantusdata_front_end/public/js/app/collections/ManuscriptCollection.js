@@ -1,8 +1,8 @@
-//var Manuscript = require(["models/Manuscript"]);
-//var CantusAbstractCollection = require(["collections/CantusAbstractCollection"]);
+define(["models/Manuscript", "collections/CantusAbstractCollection"],
+    function(Manuscript, CantusAbstractCollection) {
 
-define(["jquery","backbone", "models/Manuscript", "collections/CantusAbstractCollection"],
-    function($, Backbone, Manuscript, CantusAbstractCollection) {
+        'use strict';
+
         return CantusAbstractCollection.extend
         ({
             model: Manuscript

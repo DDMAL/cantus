@@ -20,7 +20,7 @@ class ManuscriptFolioSetView(APIView):
             folio_number = kwargs['number']
             composed_request =\
                 u'type:"cantusdata_folio" AND manuscript_id:{0} AND number:{1}'\
-                .format(manuscript_id, folio_number.lower())
+                .format(manuscript_id, folio_number)
             result = solrconn.query(composed_request, sort="number asc",
                         rows=1)
             # We only want the single result!

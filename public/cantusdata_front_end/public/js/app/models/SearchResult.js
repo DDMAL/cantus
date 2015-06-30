@@ -1,84 +1,159 @@
-define(["jquery", "backbone", "config/GlobalVars"],
-    function($, Backbone, GlobalVars) {
+define(["jquery", "underscore", "backbone", "config/GlobalVars"],
+    function($, _, Backbone, GlobalVars) {
 
         "use strict";
+
+        // Cache the Volpiano query which  was last turned into a regex
+        var lastVolpianoQuery = null,
+            lastVolpianoRegex = null,
+            volpianoMap = {};
+
+        // Build a mapping of equivalent Volpiano characters
+        _.forEach(['iwxyz', 'IWXYZ', 'eEmM', 'fFnN', 'gG9)oO', 'hHaApP',
+            'jJbBqQ', 'kKcCrR', 'lLdDsS'], function (equivalent)
+        {
+            _.forEach(equivalent, function (value)
+            {
+                volpianoMap[value] = equivalent;
+            });
+        });
 
         /**
          * This represents a search result.  It is experimental.
          */
-        return Backbone.Model.extend
-        ({
-            // Sometimes overridden
-            searchPage: "search/?q=",
-
-            initialize: function(pQuery)
-            {
-                this.setQuery(pQuery);
-            },
-
-            setQuery: function(query)
-            {
-                this.url = GlobalVars.siteUrl + this.searchPage + query;
-            },
-
+        return Backbone.Model.extend({
             /**
              * Formats the data to be printed in a search result list.
              */
-            getFormattedData: function()
+            getFormattedData: function(searchType, query)
             {
-                var output = [];
+                // FIXME(wabain): some of this should be happening in model.parse, and some
+                // in a template helper or something
 
-                _.each(this.get("results"), function(current)
+                var result = this.attributes;
+
+                var newElement = {};
+                // Remove "cantusdata_" from the type string
+                newElement.model = result.type.split("_")[1];
+                newElement.name = result.Name;
+
+                // Figure out what the name is based on the model in question
+                switch(newElement.model)
                 {
-                    var newElement = {};
-                    // Remove "cantusdata_" from the type string
-                    newElement.model = current.type.split("_")[1];
-                    newElement.name = current.Name;
+                    case "manuscript":
+                        newElement.name = result.name;
+                        // Build the url
+                        newElement.url = "/" + newElement.model + "/" + result.item_id + "/";
+                        break;
 
-                    // Figure out what the name is based on the model in question
-                    switch(newElement.model)
-                    {
-                        case "manuscript":
-                            newElement.name = current.name;
-                            // Build the url
-                            newElement.url = "/" + newElement.model + "/" + current.item_id + "/";
-                            break;
+                    case "chant":
+                        newElement.name = result.incipit;
+                        // Build the url
+                        // We have stored the manuscript name in Solr
+                        newElement.manuscript = result.manuscript_name_hidden;
+                        newElement.folio = result.folio;
+                        newElement.mode = result.mode;
+                        newElement.office = result.office;
+                        newElement.genre = result.genre;
 
-                        case "chant":
-                            newElement.name = current.incipit;
-                            // Build the url
-                            // We have stored the manuscript name in Solr
-                            newElement.manuscript = current.manuscript_name_hidden;
-                            newElement.folio = current.folio;
-                            newElement.volpiano = current.volpiano;
-                            newElement.url = "/manuscript/" + current.manuscript_id + "/?folio=" + current.folio + "&chant=" + current.sequence;
-                            break;
+                        if (searchType === 'volpiano')
+                        {
+                            newElement.volpiano = this.highlightVolpianoResult(result.volpiano, query);
+                        }
+                        else
+                        {
+                            newElement.volpiano = result.volpiano;
+                        }
 
-                        case "concordance":
-                            newElement.name = current.name;
-                            // Build the url
-                            newElement.url = "/" + newElement.model + "/" + current.item_id + "/";
-                            break;
+                        newElement.url = "/manuscript/" + result.manuscript_id + "/?folio=" + result.folio + "&chant=" + result.sequence;
+                        break;
 
-                        case "folio":
-                            newElement.name = current.name;
-                            // Build the url
-                            newElement.url = "/" + newElement.model + "/" + current.item_id + "/";
-                            break;
-                    }
-                    output.push(newElement);
-                });
-                return output;
+                    case "concordance":
+                        newElement.name = result.name;
+                        // Build the url
+                        newElement.url = "/" + newElement.model + "/" + result.item_id + "/";
+                        break;
+
+                    case "folio":
+                        newElement.name = result.name;
+                        // Build the url
+                        newElement.url = "/" + newElement.model + "/" + result.item_id + "/";
+                        break;
+                }
+
+                return newElement;
             },
 
             /**
-             * An empty search is empty.
+             *  Take a volpiano result string and highlight the substrings
+             *  that are part of the query.
+             *
+             * @param result volpiano result string
+             * @returns {string} highlighted string
              */
-            defaults: function()
+            highlightVolpianoResult: function(result, query)
             {
-                return {
-                    results: []
-                };
+                // Format the Volpiano as a lenient regex
+                var regex = this.getVolpianoRegex(query);
+
+                var highlighted = result.replace(regex, '<span class="bg-info">$&</span>');
+
+                // If something went wrong and there is no match, fail unobtrusively
+                if (highlighted === result)
+                    console.error('Failed to find the match for', query, 'in Volpiano string', result);
+
+                return highlighted;
+            },
+
+            /**
+             * Create a RegExp which supports lenient matching against a Volpiano query.
+             * Its behaviour should match that in the Solr installation at
+             * mapping-ExtractVolpianoNotes.txt
+             *
+             * TODO: if we ever add highlighting for other fields, it would be good to
+             * use Solr's built in highlighting functionality. But configuring that to
+             * work character by character is non-trivial, so we'll just highlight on the
+             * client side for now.
+             *
+             * @param volpiano {string} a Volpiano query
+             * @returns {RegExp}
+             */
+            getVolpianoRegex: function(volpiano)
+            {
+                // Use a cached regex if one is available
+                if (volpiano === lastVolpianoQuery)
+                    return lastVolpianoRegex;
+
+                // Empty string that we will fill up
+                var outputAsString = "";
+
+                var queryLength = volpiano.length;
+
+                for (var i = 0; i < queryLength; i++)
+                {
+                    var char = volpiano.charAt(i);
+
+                    // Ignore unsupported characters
+                    if (!(char in volpianoMap))
+                        continue;
+
+                    // If this is not the start of the regex, allow optional
+                    // characters in between the new character and the prior ones
+                    if (outputAsString)
+                        outputAsString += "[-1-7]*";
+
+                    outputAsString += '[' + volpianoMap[char] + ']';
+                }
+
+                // Now we have a string representing a good regex, so we must
+                // create an actual regex object
+                var regex = new RegExp(outputAsString, "g");
+
+                // Cache the generated regex
+                lastVolpianoQuery = volpiano;
+                lastVolpianoRegex = regex;
+
+                return regex;
             }
         });
     }

@@ -1,0 +1,27 @@
+<ul>
+    <% _.forEach(manuscripts, function (manuscript) { %>
+    <li>
+        <a href="<%= manuscript.url %>"><%= manuscript.provenance %>, <%= manuscript.siglum %></a><br>
+        <%= manuscript.name %>, <%= manuscript.date %>
+    </li>
+    <% }); %>
+</ul>
+
+<h2 class="h3">Future Manuscripts (in preparation)</h2>
+<ul>
+    <li><a href="http://gallica.bnf.fr/ark:/12148/btv1b6000531z.r=latin+12044.langEN">Paris 12044</a><br>
+        Bibliothèque nationale, Département des manuscrits, Latin 12044, 12th C
+    </li>
+    <li><a href="http://www.ceec.uni-koeln.de/ceec-cgi/kleioc/0010/exec/pagemed/%22kn28-1161_001.jpg%22/segment/%22body%22">Cologne 1161</a><br>
+        Köln, Dombibliothek, Codex 1161, 13th century
+    </li>
+    <li><a href="http://gallica.bnf.fr/ark:/12148/btv1b8447768b/f9.image.r=latin%2015181.langEN">Paris 15181</a><br>
+        Bibliothèque nationale, Département des manuscrits, Latin 15181, 14th C
+    </li>
+    <li><a href="http://www.e-codices.unifr.ch/en/sbe/0611/1r">Einsiedeln 611</a><br>
+        Einsiedeln, Stiftsbibliothek, Codex 611(89), 14th C
+    </li>
+    <li><a href="http://www.diamm.ac.uk/jsp/Descriptions?op=SOURCE&sourceKey=1355">Utrecht 406</a><br>
+        Utrecht, Universiteitsbibliotheek, MS 3 J 7, ca. 12th–15th C
+    </li>
+</ul>

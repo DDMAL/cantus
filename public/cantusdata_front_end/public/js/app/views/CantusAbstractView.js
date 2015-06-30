@@ -1,5 +1,7 @@
-define( ['App', 'backbone', 'marionette', 'jquery'],
-    function(App, Backbone, Marionette, $, template) {
+define( ['App', 'backbone'],
+    function(App, Backbone) {
+
+        'use strict';
 
         return Backbone.View.extend
         ({
@@ -12,9 +14,5 @@ define( ['App', 'backbone', 'marionette', 'jquery'],
             assign : function (view, selector) {
                 view.setElement(selector).render();
             }
-
-//        unAssign : function (view, selector) {
-//            $(selector).empty();
-//        }
         });
     });

@@ -15,6 +15,7 @@ class ChantDetailHTMLRenderer(CustomHTMLRenderer):
 
 class ChantList(generics.ListCreateAPIView):
     model = Chant
+    queryset = Chant.objects.all()
     serializer_class = ChantSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer,
     ChantListHTMLRenderer)
@@ -22,6 +23,7 @@ class ChantList(generics.ListCreateAPIView):
 
 class ChantDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Chant
+    queryset = Chant.objects.all()
     serializer_class = ChantSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer,
     ChantDetailHTMLRenderer)

@@ -1,9 +1,7 @@
-//var Chant = require(["models/Chant"]);
-//var CantusAbstractCollection = require(["collections/CantusAbstractCollection"]);
+define(["models/Chant", "collections/CantusAbstractCollection"],
+    function(Chant, CantusAbstractCollection) {
 
-define(["jquery","backbone",
-        "models/Chant", "collections/CantusAbstractCollection"],
-    function($, Backbone, Chant, CantusAbstractCollection) {
+        'use strict';
 
         return CantusAbstractCollection.extend
         ({

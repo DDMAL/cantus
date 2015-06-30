@@ -1,4 +1,4 @@
-define(["jquery", "backbone",
+define(["jquery", "backbone", "marionette",
         "models/GlobalStateModel",
         "views/HeaderView",
         "views/IndexPageView",
@@ -7,116 +7,134 @@ define(["jquery", "backbone",
         "views/ManuscriptIndividualPageView",
         "views/SearchPageView",
         "singletons/GlobalEventHandler"],
-    function($, Backbone,
-             GlobalStateModel,
-             HeaderView,
-             IndexPageView,
-             ManuscriptsPageView,
-             BrowserResizer,
-             ManuscriptIndividualPageView,
-             SearchPageView,
-             GlobalEventHandler) {
+function($, Backbone,
+         Marionette,
+         GlobalStateModel,
+         HeaderView,
+         IndexPageView,
+         ManuscriptsPageView,
+         BrowserResizer,
+         ManuscriptIndividualPageView,
+         SearchPageView,
+         GlobalEventHandler) {
 
-        "use strict";
+"use strict";
 
-        return Backbone.Router.extend
-        ({
-            // The global state model
-            globalState: null,
-            // Common to all routes
-            headerView: null,
-            // Only on certain routes
-            indexView: null,
-            manuscriptsPageView: null,
-            manuscriptView: null,
-            searchPageView: null,
-            // Browser resizer
-            resizer: null,
+return Backbone.Router.extend
+({
+    // The global state model
+    globalState: null,
+    // Common to all routes
+    headerView: null,
+    // Only on certain routes
+    indexView: null,
+    manuscriptsPageView: null,
+    manuscriptView: null,
+    searchPageView: null,
+    // Browser resizer
+    resizer: null,
 
-            routes: {
-                "" : "manuscripts",
-                "manuscript/:query/?folio=(:folio)&chant=(:chant)": "manuscriptSingle",
-                "manuscript/:query/?folio=(:folio)": "manuscriptSingle",
-                "manuscript/:query/": "manuscriptSingle",
-                "manuscripts/": "manuscripts",
-                "search/?q=(:query)": "search",
-                "search/": "search",
-                '*path': "notFound"
-            },
+    headerRegion: null,
+    mainBodyRegion: null,
 
-            // We always want the header
-            initialize: function()
-            {
-                this.globalState = new GlobalStateModel();
-                // There is always a header!
-                this.headerView = new HeaderView({el:".header"});
-                this.headerView.render();
+    routes: {
+        "" : "manuscripts",
+        "manuscript/:query/?folio=(:folio)&chant=(:chant)": "manuscriptSingle",
+        "manuscript/:query/?folio=(:folio)": "manuscriptSingle",
+        "manuscript/:query/": "manuscriptSingle",
+        "manuscripts/": "manuscripts",
+        "search/?q=(:query)": "search",
+        "search/": "search",
+        '*path': "notFound"
+    },
 
-                // IndexPageView has no state, so we might as well instantiate it
-                this.indexView = new IndexPageView();
-                // Same with manuscripts page
-                this.manuscriptsPageView = new ManuscriptsPageView();
-                // Get the resizer going
-                this.resizer = new BrowserResizer();
-            },
+    // We always want the header
+    initialize: function()
+    {
+        this.globalState = new GlobalStateModel();
 
-            index: function()
-            {
-                console.log("index route");
-                this.indexView.render();
-            },
+        // Regions
+        // There is always a header!
+        this.headerView = new HeaderView({el:".header"});
+        this.headerView.render();
 
-            manuscripts: function()
-            {
-                console.log("manuscripts route");
-                this.manuscriptsPageView.update();
-                this.manuscriptsPageView.render();
-            },
-
-            manuscriptSingle: function(query, folio, chant)
-            {
-                console.log("manuscript single route");
-                if (this.manuscriptView !== null)
-                {
-                    // We want to make sure that the old view, if it exists, is
-                    // completely cleared-out.
-                    this.manuscriptView.divaView.uninitializeDiva();
-                    this.manuscriptView.remove();
-                    this.manuscriptView = null;
-                }
-
-                this.manuscriptView = new ManuscriptIndividualPageView(
-                    {
-                        id: query,
-                        folio: folio
-                    }
-                );
-                // Fetch the data
-                this.manuscriptView.getData();
-
-                GlobalEventHandler.trigger("ChangeManuscript", query);
-                GlobalEventHandler.trigger("ChangeChant", chant);
-            },
-
-            search: function(query)
-            {
-                console.log("search view");
-                // Delete a search view if it exists
-                if (this.searchView !== null && this.searchView !== undefined)
-                {
-                    this.searchView.remove();
-                    this.searchView = null;
-                }
-
-                this.searchView = new SearchPageView({query: query});
-                this.searchView.render();
-            },
-
-            notFound: function()
-            {
-                // TODO: Handle 404 somehow
-            }
+        //this.headerRegion = new Marionette.Region({el: '.header'});
+        this.mainBodyRegion = new Marionette.Region({
+            el: document.querySelector("#view-goes-here")
         });
-    }
+        //
+        //this.headerRegion.show(new HeaderView());
 
-);
+        // IndexPageView has no state, so we might as well instantiate it
+        this.indexView = new IndexPageView();
+        // Same with manuscripts page
+        this.manuscriptsPageView = new ManuscriptsPageView();
+        // Get the resizer going
+        this.resizer = new BrowserResizer();
+    },
+
+    index: function()
+    {
+        //this.indexView.render();
+        //this.mainBodyRegion
+    },
+
+    manuscripts: function()
+    {
+        //var view = new ManuscriptsPageView();
+        //view.update();
+        if (this.manuscriptView !== null)
+        {
+            this.manuscriptView.destroy();
+        }
+        this.manuscriptView = null;
+        this.manuscriptsPageView.update();
+        this.manuscriptsPageView.render();
+
+        // Set the document title to reflect the manuscripts route
+        GlobalEventHandler.trigger("ChangeDocumentTitle", "Manuscripts");
+    },
+
+    manuscriptSingle: function(query, folio, chant)
+    {
+        if (this.manuscriptView !== null)
+        {
+            // We want to make sure that the old view, if it exists, is completely cleared-out.
+            this.manuscriptView.destroy();
+            this.manuscriptView = null;
+        }
+
+        this.manuscriptView = new ManuscriptIndividualPageView(
+            {
+                id: query,
+                folio: folio
+            }
+        );
+        // Fetch the data
+        this.manuscriptView.getData();
+        //this.manuscriptView.render();
+
+        GlobalEventHandler.trigger("ChangeManuscript", query);
+        GlobalEventHandler.trigger("ChangeFolio", folio);
+        GlobalEventHandler.trigger("ChangeChant", chant);
+    },
+
+    search: function(query)
+    {
+        // Delete a search view if it exists
+        if (this.searchView !== null && this.searchView !== undefined)
+        {
+            this.searchView.remove();
+            this.searchView = null;
+        }
+
+        this.searchView = new SearchPageView({query: query});
+        this.searchView.render();
+    },
+
+    notFound: function()
+    {
+        // TODO: Handle 404 somehow
+    }
+});
+});

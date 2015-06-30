@@ -1,161 +1,146 @@
-//var Folio = require(["models/Folio"]);
-//var CantusAbstractView = require(["views/CantusAbstractView"]);
-//var ChantCollectionView = require(["views/ChantCollectionView"]);
-
 define( ['App', 'backbone', 'marionette', 'jquery',
         "models/Folio",
         "views/CantusAbstractView",
-        "views/ChantCollectionView",
+        "views/collection_views/ChantCompositeView",
+        "views/DivaFolioAdvancerView",
+        "views/item_views/FolioItemView",
         "singletons/GlobalEventHandler",
         "config/GlobalVars"],
-    function(App, Backbone, Marionette, $,
-             Folio,
-             CantusAbstractView,
-             ChantCollectionView,
-             GlobalEventHandler,
-             GlobalVars,
-             template) {
+function(App, Backbone, Marionette, $,
+         Folio,
+         CantusAbstractView,
+         ChantCompositeView,
+         DivaFolioAdvancerView,
+         FolioItemView,
+         GlobalEventHandler,
+         GlobalVars)
+{
 
-        /**
-         * Provide an alert message to the user.
-         */
-        return CantusAbstractView.extend
-        ({
-            /**
-             * customNumber is the folio number that we actually render.
-             */
-            customNumber: 0,
+"use strict";
 
-            // Subviews
-            chantCollectionView: null,
+/**
+ * Provide an alert message to the user.
+ */
+return Marionette.LayoutView.extend
+({
+    /**
+     * customNumber is the folio number that we actually render.
+     */
+    customNumber: 0,
 
-            /**
-             *
-             *
-             * @param {type} options
-             * @returns null
-             */
-            initialize: function(options)
-            {
-                _.bindAll(this, 'render', 'afterFetch', 'assignChants');
-                this.template= _.template($('#folio-template').html());
-                // This can handle situations where the first folio
-                // doesn't have a url but subsequent ones do.
-                if (options && options.url)
-                {
-                    this.setUrl(options.url);
-                }
-                else
-                {
-                    this.model = new Folio();
-                    this.listenTo(this.model, 'sync', this.afterFetch);
-                }
-                this.chantCollectionView = new ChantCollectionView();
-            },
+    // Subviews
+    chantCompositeView: null,
+    folioItemView: null,
 
-            remove: function()
-            {
-                this.chantCollectionView.remove();
+    template: "#folio-template",
 
-                // Deal with the event listeners
-                this.stopListening();
-                this.undelegateEvents();
-            },
+    regions: {
+        chantListRegion: '.chant-list-region',
+        folioItemRegion: '.folio-item-region',
+        divaFolioAdvancerRegion: '.diva-folio-advancer-region'
+    },
 
-            /**
-             * Set the model URL.
-             *
-             * @param url
-             */
-            setUrl: function(url)
-            {
-                this.model = new Folio(url);
-                this.listenTo(this.model, 'sync', this.afterFetch);
-            },
+    /**
+     *
+     *
+     * @param {type} options
+     * @returns null
+     */
+    initialize: function(options)
+    {
+        _.bindAll(this, 'afterFetch', 'assignChants');
+        // This can handle situations where the first folio
+        // doesn't have a url but subsequent ones do.
 
-            /**
-             * Set the parameter that overrides the number that's rendered to the
-             * screen.
-             *
-             * @param number
-             */
-            setCustomNumber: function(number)
-            {
-                this.customNumber = number;
-            },
+        this.model = new Folio();
+        this.chantCollection = new Backbone.Collection();
 
-            /**
-             * Fetch the latest version of the model.
-             */
-            update: function()
-            {
-                this.model.fetch();
-            },
+        this.listenTo(this.model, 'sync', this.afterFetch);
 
-            /**
-             * If the model is empty, un-render the view.  Otherwise, assign
-             * the chants and render the view.
-             */
-            afterFetch: function()
-            {
-                this.assignChants();
-                this.render();
-            },
+        if (options && options.url)
+        {
+            this.setUrl(options.url);
+        }
 
-            /**
-             * Rebuild the list of chants
-             */
-            assignChants: function()
-            {
-                // We are going to query this data from SOLR because it's faster.
-                // So we need the manuscript siglum and folio name.
-                // We need to handle the data differently depending on whether
-                // we're getting the information from Django or Solr.
-                var folio_id;
-                if (this.model.get("item_id"))
-                {
-                    folio_id = this.model.get("item_id");
-                }
-                else
-                {
-                    folio_id = this.model.get("id");
-                }
-
-                if (folio_id !== undefined)
-                {
-                    // Compose the url
-                    var composedUrl = GlobalVars.siteUrl + "chant-set/folio/" + folio_id + "/";
-                    // Build a new view with the new data
-                    this.chantCollectionView.setUrl(composedUrl);
-                }
-                else
-                {
-                    this.chantCollectionView.resetCollection();
-                }
-            },
-
-            render: function()
-            {
-                $(this.el).html(this.template(
-                    {
-                        number: this.customNumber,
-                        model: this.model.toJSON()
-                    }
-                ));
-                this.renderChantCollectionView();
-                GlobalEventHandler.trigger("renderView");
-                return this.trigger('render', this);
-            },
-
-            /**
-             * Render the collection of chants.
-             */
-            renderChantCollectionView: function()
-            {
-                if (this.chantCollectionView !== null)
-                {
-                    this.assign(this.chantCollectionView, '#chant-list');
-                }
-            }
+        this.folioItemView = new FolioItemView({
+            model: this.model
         });
-    });
+
+        this.chantCompositeView = new ChantCompositeView({
+            collection: this.chantCollection,
+            unfoldedChant: App.appRouter.globalState.get('chant')
+        });
+    },
+
+    onDestroy: function()
+    {
+        this.chantCompositeView.destroy();
+        this.folioItemView.destroy();
+    },
+
+    /**
+     * Set the model URL.
+     *
+     * @param url
+     */
+    setUrl: function(url)
+    {
+        this.model.url = String(url);
+        this.model.fetch();
+    },
+
+    /**
+     * Set the parameter that overrides the number that's rendered to the
+     * screen.
+     *
+     * @param number
+     */
+    setCustomNumber: function(number)
+    {
+        this.customNumber = number;
+        this.model.set({number: number, item_id: undefined});
+    },
+
+    /**
+     * If the model is empty, un-render the view.  Otherwise, assign
+     * the chants and render the view.
+     */
+    afterFetch: function()
+    {
+        this.assignChants();
+    },
+
+    /**
+     * Rebuild the list of chants
+     */
+    assignChants: function()
+    {
+        // TODO(wabain): normalize Solr differences in model.parse methods
+        // We are going to query this data from SOLR because it's faster.
+        // So we need the manuscript siglum and folio name.
+        // We need to handle the data differently depending on whether
+        // we're getting the information from Django or Solr.
+        if (this.model.get("item_id"))
+        {
+            // Compose the url
+            var composedUrl = GlobalVars.siteUrl + "chant-set/folio/" + this.model.get("item_id") + "/";
+
+            // Update the chant collection
+            this.chantCollection.fetch({reset: true, url: composedUrl});
+        }
+        else
+        {
+            this.chantCollection.reset();
+        }
+    },
+
+    onShow: function()
+    {
+        this.folioItemRegion.show(this.folioItemView, {preventDestroy: true});
+        this.chantListRegion.show(this.chantCompositeView, {preventDestroy: true});
+        this.divaFolioAdvancerRegion.show(new DivaFolioAdvancerView());
+
+        GlobalEventHandler.trigger("renderView");
+    }
+});
+});
