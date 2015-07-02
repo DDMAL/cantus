@@ -118,17 +118,27 @@ return Marionette.LayoutView.extend
         event.preventDefault();
         // Grab the query
         this.query  = this.getSearchValue();
+
+        // If we pass an empty array, then all boxes are erased.
+        this.divaView.paintBoxes([]);
+
         // Handle the empty case
         if (this.query  === "")
         {
-            // If we pass an empty array, then all boxes are erased.
-            this.divaView.paintBoxes([]);
             this.clearResults("<h4>Please enter a search query.</h4>");
         }
         else
         {
             // Grab the field name
             this.field = this.getSearchType();
+
+            // Throw up a placeholder
+            this.clearResults('<h3>' + this.searchFields[this.field] + ' search</h3>' +
+                              '<h4>Searching...</h4>' +
+                              '<div class="text-center">' +
+                              '<img src="/static/img/loading.gif">' +
+                              '</div>');
+
             this.results.url = GlobalVars.siteUrl + "notation-search/?q=" + this.query + "&type=" + this.field + "&manuscript=" + this.manuscript;
             this.results.fetch();
         }
