@@ -37,7 +37,8 @@ return Marionette.LayoutView.extend
 
     ui: {
         typeSelector: ".search-field",
-        searchBox: ".query-input"
+        searchBox: ".query-input",
+        searchResults: ".note-search-results"
     },
 
     regions: {
@@ -189,13 +190,15 @@ return Marionette.LayoutView.extend
 
     clearResults: function(message)
     {
-        $(this.$el.selector + ' .note-search-results').html(message);
-        $(this.$el.selector + ' .note-pagination').empty();
+        // FIXME(wabain): make this an emptyView
+        this.ui.searchResults.html(message);
+        this.paginatorRegion.empty({preventDestroy: true});
     },
 
     renderResults: function()
     {
-        $(this.$el.selector + ' .note-search-results').html(
+        // FIXME(wabain): use a child view for this
+        this.ui.searchResults.html(
                 "<h3>" + this.searchFields[this.field] + " search</h3><h4>" +
                 this.results.get("numFound") + ' results found for query "' +
                 decodeURIComponent(this.query) + '"</h4>'
