@@ -5,6 +5,7 @@
   "description": "Frontend for the Cantus Ultimus project",
   "devDependencies": {
     "del": "^1.2.0",
+    "exports-loader": "^0.6.2",
     "gulp": "^3.8.11",
     "gulp-shell": "^0.4.1",
     "gulp-jscs": "^1.6.0",
@@ -12,13 +13,9 @@
     "gulp-rename": "^1.2.2",
     "gulp-newer": "^0.5.0",
     "jshint-stylish": "^2.0.0",
-    "requirejs": "^2.1.17",
     "run-sequence": "^1.1.0",
-    "uglify-js": "~2.2.5"
-  },
-  "keywords": [
-    "Marionette.js",
-    "Backbone.js",
-    "Require.js"
-  ]
+    "node-libs-browser": "~0.5.2",
+    "underscore": "^1.8.3",
+    "webpack": "~1.10.0"
+  }
 }

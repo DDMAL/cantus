@@ -7,7 +7,7 @@ var jscs = require('gulp-jscs');
 var shell = require('gulp-shell');
 var rename = require('gulp-rename');
 var newer = require('gulp-newer');
-var requirejs = require('requirejs');
+var webpack = require('webpack');
 var del = require('del');
 var path = require('path');
 
@@ -15,10 +15,23 @@ var path = require('path');
 var scripts = {
     appJS: ['public/js/app/**/*.js'],
     clientJS: ['public/js/app/**/*.js', 'public/js/libs/**/*.js'],
-    buildJS: ['gulpfile.js'],
+    buildJS: ['gulpfile.js', 'webpack.config.js'],
 
     templates: ['public/template-assembler/templates/**/*.html']
 };
+
+var getWebpackCompiler = (function ()
+{
+    var compiler = null;
+
+    return function ()
+    {
+        if (!compiler)
+            compiler = webpack(require('./webpack.config'));
+
+        return compiler;
+    };
+})();
 
 /*
  * High-level tasks
@@ -79,28 +92,21 @@ gulp.task('copySources:js', function ()
 
 gulp.task('bundle:js', function (cb)
 {
-    var bundlingComplete = function ()
+    var onBundleComplete = function (err, stats)
     {
-        cb();
+        console.log(stats.toString({
+            colors: true,
+            hash: false,
+            version: false
+        }));
+
+        if (err)
+            cb(err);
+        else
+            cb();
     };
 
-    var bundlingError = function (err)
-    {
-        cb(err);
-    };
-
-    requirejs.optimize({
-        baseUrl: "public/js/app",
-        wrap: true,
-        // Cannot use almond since it does not currently appear to support requireJS's config-map
-        name: "../libs/almond",
-        preserveLicenseComments: false,
-        optimize: "uglify2",
-        generateSourceMaps: true,
-        mainConfigFile: "public/js/app/config/config.js",
-        include: ["init/Init"],
-        out: "../cantusdata/static/js/app/cantus.min.js"
-    }, bundlingComplete, bundlingError);
+    getWebpackCompiler().run(onBundleComplete);
 });
 
 gulp.task('clean:js', function (done)
