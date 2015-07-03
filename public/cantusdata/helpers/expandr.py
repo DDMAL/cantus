@@ -64,7 +64,7 @@ def feast_code_lookup(feast_code, feast_file):
 
 
 def expand_mode(mode_code):
-    input_list = mode_code.strip().split()
+    input_list = mode_code.strip()
     mode_output = []
     if "1" in input_list:
         mode_output.append("1")
