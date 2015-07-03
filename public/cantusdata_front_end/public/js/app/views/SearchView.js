@@ -120,13 +120,67 @@ define(['backbone', 'marionette',
                 }
 
                 var queryBuilder = new SolrQuery();
-                queryBuilder.setField(this.getSearchField(field), query, 'OR');
+
+                this.setSearchQueryOnBuilder(queryBuilder, field, query);
 
                 _.forEach(this.restrictions, function (value, field) {
                     queryBuilder.setField(this.getSearchField(field), value);
                 }, this);
 
                 this.collection.fetch({baseSolrQuery: queryBuilder});
+            },
+
+            /**
+             * FIXME(wabain)
+             *
+             * This is an overly complicated workaround to push single-character
+             * mode searches into a field
+             *
+             * @param queryBuilder
+             * @param field
+             * @param query
+             */
+            setSearchQueryOnBuilder: function (queryBuilder, field, query)
+            {
+                if (field !== 'mode')
+                {
+                    queryBuilder.setField(this.getSearchField(field), query, 'OR');
+                    return;
+                }
+
+                if (_.isString(query))
+                {
+                    queryBuilder.setField(
+                        query.length === 1 ? 'mode' : 'mode_t_hidden',
+                        query);
+                    return;
+                }
+
+                var modeStringValues = [];
+                var modeTextValues = [];
+
+                _.forEach(query, function (value)
+                {
+                    if (value.length == 1)
+                        modeStringValues.push(value);
+                    else
+                        modeTextValues.push(value);
+                });
+
+                if (modeStringValues.length === 0)
+                    queryBuilder.setField('mode_t_hidden', modeTextValues, 'OR');
+                else if (modeTextValues.length === 0)
+                    queryBuilder.setField('mode', modeStringValues, 'OR');
+                else
+                {
+                    var hardCodedQuery = '(mode:(' +
+                            modeStringValues.join(' OR ') +
+                        ') OR mode_t_hidden:(' +
+                            modeTextValues.join(' OR ') +
+                        '))';
+
+                    queryBuilder.setField('_hardcodedSpecialQuery', hardCodedQuery);
+                }
             },
 
             /**

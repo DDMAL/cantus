@@ -127,16 +127,20 @@ define(["underscore", "marionette"], function (_, Marionette)
         {
             var constructedTerms = [];
 
-            var fields;
+            var fields = this.fields;
 
             if (_.has(this.fields, 'all'))
             {
                 constructedTerms.push(this.getSolrTerm(this.fields.all));
-                fields = _.omit(this.fields, 'all');
+                fields = _.omit(fields, 'all');
             }
-            else
+
+            // FIXME(wabain): This is a workaround for limitations with
+            // the current query representation
+            if (_.has(this.fields, '_hardcodedSpecialQuery'))
             {
-                fields = this.fields;
+                constructedTerms.push(fields._hardcodedSpecialQuery);
+                fields = _.omit(fields, '_hardcodedSpecialQuery');
             }
 
             _.forEach(fields, function(value, key)
