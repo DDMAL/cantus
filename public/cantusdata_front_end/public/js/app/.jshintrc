@@ -1,8 +1,14 @@
 {
-    "node": true,
-    "esnext": true,
+    "browser": true,
+    "browserify": true,
+    "jquery": true,
 
-    "bitwise": true,
+    "globals": {
+        "define": false,
+        "diva": false,
+        "_": false
+    },
+
     "es3": true,
     "eqeqeq": true,
     "forin": true,
