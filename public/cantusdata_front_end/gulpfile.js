@@ -39,7 +39,11 @@ var getWebpackCompiler = (function ()
  * High-level tasks
  */
 
-gulp.task('default', ['lint-nofail:js', 'build']);
+gulp.task('default', function (cb)
+{
+    runSequence(['lint-nofail:js', 'build'], 'watch', cb);
+});
+
 gulp.task('build', ['build:js', 'build:templates']);
 
 /*
