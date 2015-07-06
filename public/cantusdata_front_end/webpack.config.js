@@ -2,7 +2,8 @@
 
 var path = require('path'),
     _ = require('underscore'),
-    webpack = require('webpack');
+    webpack = require('webpack'),
+    yargs = require('yargs').argv;
 
 var APP_DIR = path.resolve(__dirname, 'public/js/app'),
     LIB_DIR = path.resolve(__dirname, 'public/js/libs');
@@ -18,7 +19,25 @@ function libPath(lib)
     return path.resolve(LIB_DIR, lib);
 }
 
-module.exports = {
+function configureBuildMode(config)
+{
+    if (yargs.release)
+    {
+        config.plugins.push(new webpack.optimize.UglifyJsPlugin({
+            compress: {
+                warnings: false
+            }
+        }));
+    }
+    else
+    {
+        config.devtool = 'cheap-module-source-map';
+    }
+
+    return config;
+}
+
+module.exports = configureBuildMode({
     context: APP_DIR,
 
     entry: {
@@ -75,14 +94,6 @@ module.exports = {
         // modules, this requires explicit configuration.
         new webpack.optimize.LimitChunkCountPlugin({
             maxChunks: 1
-        }),
-
-        // Minify source
-        // TODO(wabain): add a command-line switch to disable this for development
-        new webpack.optimize.UglifyJsPlugin({
-            compress: {
-                warnings: false
-            }
         })
     ]
-};
+});

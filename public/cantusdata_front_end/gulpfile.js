@@ -7,6 +7,8 @@ var jscs = require('gulp-jscs');
 var shell = require('gulp-shell');
 var rename = require('gulp-rename');
 var newer = require('gulp-newer');
+
+var yargs = require('yargs').argv;
 var webpack = require('webpack');
 var del = require('del');
 var path = require('path');
@@ -85,7 +87,10 @@ gulp.task('copySources:js', function ()
 {
     var dest = '../cantusdata/static/js/';
 
-    return gulp.src(scripts.clientJS, {base: './public/js'})
+    // Make this a no-op when doing a release build
+    var files = yargs.release ? [] : scripts.clientJS;
+
+    return gulp.src(files, {base: './public/js'})
         .pipe(newer(dest))
         .pipe(gulp.dest(dest));
 });
