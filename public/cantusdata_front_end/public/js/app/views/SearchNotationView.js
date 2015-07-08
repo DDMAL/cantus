@@ -177,16 +177,14 @@ function(App, Backbone, Marionette, $,
         serializeData: function()
         {
             // Create an array with the field types
-            var searchFieldArray = [];
-            for (var fieldCode in this.searchFields)
+            var searchFieldArray = _.map(this.searchFields, function (name, code)
             {
-                searchFieldArray.push(
-                    {
-                        codeName: fieldCode,
-                        name: this.searchFields[fieldCode]
-                    }
-                );
-            }
+                return {
+                    codeName: code,
+                    name: name
+                };
+            });
+
             return {
                 searchFields: searchFieldArray
             };

@@ -1,5 +1,5 @@
-define(["jquery", "underscore", "backbone", "config/GlobalVars"],
-    function($, _, Backbone, GlobalVars)
+define(["jquery", "underscore", "backbone"],
+    function($, _, Backbone)
     {
 
         "use strict";
@@ -106,7 +106,10 @@ define(["jquery", "underscore", "backbone", "config/GlobalVars"],
 
                 // If something went wrong and there is no match, fail unobtrusively
                 if (highlighted === result)
+                {
+                    // jshint devel:true
                     console.error('Failed to find the match for', query, 'in Volpiano string', result);
+                }
 
                 return highlighted;
             },
@@ -137,10 +140,10 @@ define(["jquery", "underscore", "backbone", "config/GlobalVars"],
 
                 for (var i = 0; i < queryLength; i++)
                 {
-                    var char = volpiano.charAt(i);
+                    var symbol = volpiano.charAt(i);
 
                     // Ignore unsupported characters
-                    if (!(char in volpianoMap))
+                    if (!(symbol in volpianoMap))
                         continue;
 
                     // If this is not the start of the regex, allow optional
@@ -148,7 +151,7 @@ define(["jquery", "underscore", "backbone", "config/GlobalVars"],
                     if (outputAsString)
                         outputAsString += "[-1-7]*";
 
-                    outputAsString += '[' + volpianoMap[char] + ']';
+                    outputAsString += '[' + volpianoMap[symbol] + ']';
                 }
 
                 // Now we have a string representing a good regex, so we must

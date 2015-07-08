@@ -9,8 +9,7 @@ define(['App', 'backbone', 'marionette', 'jquery',
              AlertView,
              ManuscriptCollectionView,
              GlobalEventHandler,
-             GlobalVars,
-             template)
+             GlobalVars)
     {
 
         "use strict";

@@ -1,7 +1,6 @@
 define(['underscore', 'marionette'],
     function (_, Marionette)
     {
-
         "use strict";
 
         return Marionette.Object.extend({
@@ -21,6 +20,7 @@ define(['underscore', 'marionette'],
             {
                 if (!(_.isString(manuscript) && _.isString(folio)))
                 {
+                    // jshint devel:true
                     console.error('Invalid manuscript/folio ids for chant state; need strings but got:',
                         manuscript, folio);
                     return;
@@ -91,6 +91,7 @@ define(['underscore', 'marionette'],
                     }
                     catch (e)
                     {
+                        // jshint devel:true
                         console.error('Failed to save open chants to local storage:\n', e);
                     }
                 }
@@ -121,6 +122,7 @@ define(['underscore', 'marionette'],
                     }
                     catch (e)
                     {
+                        // jshint devel:true
                         console.error('Failed to load open chants for manuscript', manuscript,
                             'from local storage:\n', e);
                     }
@@ -134,6 +136,7 @@ define(['underscore', 'marionette'],
                         }
                         catch (e)
                         {
+                            // jshint devel:true
                             console.error('Failed to read open chant data for manuscript', manuscript, ':\n', e);
                         }
                     }

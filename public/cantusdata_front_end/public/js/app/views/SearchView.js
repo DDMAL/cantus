@@ -163,7 +163,7 @@ define(['backbone', 'marionette',
 
                 _.forEach(query, function (value)
                 {
-                    if (value.length == 1)
+                    if (value.length === 1)
                         modeStringValues.push(value);
                     else
                         modeTextValues.push(value);
