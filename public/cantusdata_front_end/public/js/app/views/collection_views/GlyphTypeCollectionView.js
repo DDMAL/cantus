@@ -1,5 +1,5 @@
-define(['App', 'backbone', 'marionette', "views/item_views/GlyphTypeView"],
-    function(App, Backbone, Marionette, GlyphTypeView)
+define(['marionette', "views/item_views/GlyphTypeView"],
+    function(Marionette, GlyphTypeView)
     {
 
         "use strict";

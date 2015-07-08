@@ -1,5 +1,5 @@
-define(['App', 'marionette'],
-    function(App, Marionette)
+define(['marionette'],
+    function(Marionette)
     {
 
         "use strict";

@@ -1,8 +1,8 @@
-define(['App', 'jquery',
+define(['jquery',
         "views/CantusAbstractView",
         "views/SearchView",
         "singletons/GlobalEventHandler"],
-    function(App, $,
+    function($,
              CantusAbstractView,
              SearchView,
              GlobalEventHandler)

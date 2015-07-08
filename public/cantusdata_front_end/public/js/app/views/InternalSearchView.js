@@ -1,5 +1,5 @@
-define(['App', "views/SearchView"],
-    function(App, SearchView)
+define(["views/SearchView"],
+    function(SearchView)
     {
 
         'use strict';

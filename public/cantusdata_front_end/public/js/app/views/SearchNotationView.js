@@ -1,16 +1,10 @@
-define(['App', 'backbone', 'marionette', 'jquery',
+define(['marionette',
         "models/CantusAbstractModel",
-        "models/SearchResult",
-        "views/CantusAbstractView",
         "views/PaginationView",
-        "views/collection_views/GlyphTypeCollectionView",
         "config/GlobalVars"],
-function(App, Backbone, Marionette, $,
+function(Marionette,
          CantusAbstractModel,
-         SearchResult,
-         CantusAbstractView,
          PaginationView,
-         GlyphTypeCollectionView,
          GlobalVars)
 {
     "use strict";

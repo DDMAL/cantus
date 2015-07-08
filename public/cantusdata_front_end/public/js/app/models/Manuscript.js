@@ -1,7 +1,7 @@
 //var CantusAbstractModel = require(["models/CantusAbstractModel"]);
 
-define(["jquery", "backbone", "models/CantusAbstractModel"],
-    function($, Backbone, CantusAbstractModel)
+define(["models/CantusAbstractModel"],
+    function(CantusAbstractModel)
     {
 
         "use strict";

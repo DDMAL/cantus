@@ -1,7 +1,7 @@
 //var CantusAbstractView = require(["views/CantusAbstractView"]);
 
-define(['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView", "singletons/GlobalEventHandler"],
-    function(App, Backbone, Marionette, $, CantusAbstractView, GlobalEventHandler)
+define(['backbone', 'jquery', "views/CantusAbstractView", "singletons/GlobalEventHandler"],
+    function(Backbone, $, CantusAbstractView, GlobalEventHandler)
     {
 
         return CantusAbstractView.extend

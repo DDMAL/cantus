@@ -1,8 +1,8 @@
-define(['App', 'backbone', 'marionette', 'jquery',
+define(['backbone', 'jquery',
         "collections/ManuscriptCollection",
         "views/CantusAbstractView",
         "singletons/GlobalEventHandler"],
-    function(App, Backbone, Marionette, $,
+    function(Backbone, $,
              ManuscriptCollection,
              CantusAbstractView,
              GlobalEventHandler)

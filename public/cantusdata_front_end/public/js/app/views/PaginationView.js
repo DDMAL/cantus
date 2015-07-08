@@ -1,7 +1,7 @@
-define(['App', 'backbone', 'marionette', 'jquery',
+define(['jquery',
         "views/CantusAbstractView",
         "singletons/GlobalEventHandler"],
-    function(App, Backbone, Marionette, $,
+    function($,
              CantusAbstractView,
              GlobalEventHandler)
     {

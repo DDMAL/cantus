@@ -1,5 +1,5 @@
-define(['App', 'marionette', 'jquery'],
-function(App, Marionette, $)
+define(['marionette', 'jquery'],
+function(Marionette, $)
 {
 
 "use strict";

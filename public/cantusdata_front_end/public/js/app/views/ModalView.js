@@ -1,7 +1,7 @@
-define(['App', 'jquery',
+define(['jquery',
         "views/CantusAbstractView",
         "singletons/GlobalEventHandler"],
-    function(App, $, CantusAbstractView, GlobalEventHandler)
+    function($, CantusAbstractView, GlobalEventHandler)
     {
 
         "use strict";

@@ -1,5 +1,5 @@
-define(['jquery', 'backbone', 'marionette'],
-    function ($, Backbone, Marionette)
+define(['backbone', 'marionette'],
+    function (Backbone, Marionette)
     {
         "use strict";
 
