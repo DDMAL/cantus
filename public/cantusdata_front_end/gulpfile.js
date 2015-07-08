@@ -25,7 +25,6 @@ var scripts = {
 gulp.task('default', ['lint-nofail:js', 'build']);
 gulp.task('build', ['build:js', 'build:templates']);
 
-
 /*
  * JavaScript linting
  */

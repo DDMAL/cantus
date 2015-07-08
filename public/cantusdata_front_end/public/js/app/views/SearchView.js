@@ -9,7 +9,8 @@ define(['backbone', 'marionette',
              SearchInput,
              SearchResultCollection,
              SearchResultCollectionView,
-             SearchInputView) {
+             SearchInputView)
+    {
 
         "use strict";
 
@@ -123,7 +124,8 @@ define(['backbone', 'marionette',
 
                 this.setSearchQueryOnBuilder(queryBuilder, field, query);
 
-                _.forEach(this.restrictions, function (value, field) {
+                _.forEach(this.restrictions, function (value, field)
+                {
                     queryBuilder.setField(this.getSearchField(field), value);
                 }, this);
 

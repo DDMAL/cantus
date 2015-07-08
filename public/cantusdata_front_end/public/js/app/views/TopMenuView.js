@@ -1,7 +1,8 @@
 //var CantusAbstractView = require(["views/CantusAbstractView"]);
 
-define( ['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView", "singletons/GlobalEventHandler"],
-    function(App, Backbone, Marionette, $, CantusAbstractView, GlobalEventHandler) {
+define(['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView", "singletons/GlobalEventHandler"],
+    function(App, Backbone, Marionette, $, CantusAbstractView, GlobalEventHandler)
+    {
 
         return CantusAbstractView.extend
         ({
@@ -10,7 +11,7 @@ define( ['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView", 
             initialize: function(options)
             {
                 _.bindAll(this, 'render', 'registerClickEvents', "buttonClickCallback");
-                this.template= _.template($('#top-menu-template').html());
+                this.template = _.template($('#top-menu-template').html());
                 // Menu list items provided
                 this.items = options.menuItems;
                 this.registerClickEvents();
@@ -41,13 +42,13 @@ define( ['App', 'backbone', 'marionette', 'jquery', "views/CantusAbstractView", 
                 // Stop the page from auto-reloading
                 event.preventDefault();
                 // Figure out which button was pressed
-                var button_name = String(event.currentTarget.id);
-                var id = button_name.split('-')[button_name.split('-').length - 1];
+                var buttonName = String(event.currentTarget.id);
+                var id = buttonName.split('-')[buttonName.split('-').length - 1];
                 // Now that we have that id, route the application to it's URL!
-                var new_url = this.items[id].url;
-                var old_url = Backbone.history.fragment;
+                var newUrl = this.items[id].url;
+                var oldUrl = Backbone.history.fragment;
                 // Only route to the new URL if it really is a new url!
-                if (!(new_url === "#" || new_url.trim('/') === old_url.trim('/')))
+                if (!(newUrl === "#" || newUrl.trim('/') === oldUrl.trim('/')))
                 {
                     Backbone.history.navigate(this.items[id].url, {trigger: true});
                     this.setActiveButton(id);

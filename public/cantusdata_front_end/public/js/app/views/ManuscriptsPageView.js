@@ -1,4 +1,4 @@
-define( ['App', 'backbone', 'marionette', 'jquery',
+define(['App', 'backbone', 'marionette', 'jquery',
         "views/CantusAbstractView",
         "views/AlertView",
         "views/ManuscriptCollectionView",
@@ -10,7 +10,8 @@ define( ['App', 'backbone', 'marionette', 'jquery',
              ManuscriptCollectionView,
              GlobalEventHandler,
              GlobalVars,
-             template) {
+             template)
+    {
 
         "use strict";
 
@@ -33,11 +34,11 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             initialize: function()
             {
                 _.bindAll(this, "render", "update", "afterFetch");
-                this.template= _.template($('#manuscripts-page-template').html());
+                this.template = _.template($('#manuscripts-page-template').html());
                 //Subviews
                 this.manuscriptCollectionView = new ManuscriptCollectionView(
                     {url: GlobalVars.siteUrl + "manuscripts/"});
-                this.loadingAlertView = new AlertView({content:"Loading manuscripts...", role:"info"});
+                this.loadingAlertView = new AlertView({content: "Loading manuscripts...", role: "info"});
                 // Listen for changes
                 this.listenTo(this.manuscriptCollectionView.collection, 'sync', this.afterFetch);
             },

@@ -1,10 +1,11 @@
-define( ['App', 'backbone', 'marionette', 'jquery',
+define(['App', 'backbone', 'marionette', 'jquery',
         "views/CantusAbstractView",
         "views/SearchView",
         "views/ModalView",
         "views/TopMenuView",
         "singletons/GlobalEventHandler"],
-    function(App, Backbone, Marionette, $, CantusAbstractView, SearchView, ModalView, TopMenuView, GlobalEventHandler) {
+    function(App, Backbone, Marionette, $, CantusAbstractView, SearchView, ModalView, TopMenuView, GlobalEventHandler)
+    {
 
         /**
          * Provide an alert message to the user.
@@ -19,7 +20,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             initialize: function()
             {
                 _.bindAll(this, 'render');
-                this.template= _.template($('#header-template').html());
+                this.template = _.template($('#header-template').html());
                 // The search view that we will shove into the modal box
                 this.searchView = new SearchView({showManuscriptName: true});
                 // The modal box for the search pop-up

@@ -1,4 +1,4 @@
-define( ['App', 'marionette', 'jquery'],
+define(['App', 'marionette', 'jquery'],
 function(App, Marionette, $)
 {
 

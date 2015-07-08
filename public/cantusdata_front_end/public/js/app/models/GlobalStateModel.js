@@ -1,5 +1,6 @@
 define(["underscore", "backbone", "singletons/GlobalEventHandler", "objects/OpenChantState"],
-    function(_, Backbone, GlobalEventHandler, OpenChantState) {
+    function(_, Backbone, GlobalEventHandler, OpenChantState)
+    {
 
         "use strict";
 
@@ -102,19 +103,19 @@ define(["underscore", "backbone", "singletons/GlobalEventHandler", "objects/Open
             {
                 /* jshint eqnull:true */
 
-                var composed_url = "manuscript/" + this.get('manuscript') + "/";
+                var composedUrl = "manuscript/" + this.get('manuscript') + "/";
 
                 // Check that value is not null or undefined
                 if (this.get('folio') != null)
                 {
-                    composed_url = composed_url + "?folio=" + this.get('folio');
+                    composedUrl = composedUrl + "?folio=" + this.get('folio');
                 }
 
                 if (this.get('chant') != null)
                 {
-                    composed_url = composed_url + "&chant=" + this.get('chant');
+                    composedUrl = composedUrl + "&chant=" + this.get('chant');
                 }
-                return composed_url;
+                return composedUrl;
             },
 
             /**

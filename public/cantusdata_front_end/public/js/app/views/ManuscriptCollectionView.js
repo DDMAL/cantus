@@ -1,11 +1,12 @@
-define( ['App', 'backbone', 'marionette', 'jquery',
+define(['App', 'backbone', 'marionette', 'jquery',
         "collections/ManuscriptCollection",
         "views/CantusAbstractView",
         "singletons/GlobalEventHandler"],
     function(App, Backbone, Marionette, $,
              ManuscriptCollection,
              CantusAbstractView,
-             GlobalEventHandler) {
+             GlobalEventHandler)
+    {
 
         "use strict";
 
@@ -17,7 +18,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             {
                 _.bindAll(this, 'render', 'update', 'registerClickEvents',
                     'buttonClickCallback');
-                this.template= _.template($('#manuscript-collection-template ').html());
+                this.template = _.template($('#manuscript-collection-template ').html());
                 this.collection = new ManuscriptCollection(options.url);
                 this.listenTo(this.collection, 'sync', this.registerClickEvents);
                 this.listenTo(this.collection, 'sync', this.render);
@@ -41,8 +42,8 @@ define( ['App', 'backbone', 'marionette', 'jquery',
                 // Prevent page from reloading
                 event.preventDefault();
                 // Figure out which button was pressed
-                var button_name = String(event.currentTarget.id);
-                var id = button_name.split('-')[button_name.split('-').length - 1];
+                var buttonName = String(event.currentTarget.id);
+                var id = buttonName.split('-')[buttonName.split('-').length - 1];
                 // Now that we have that id, route the application to it's URL!
                 var newUrl = "manuscript/" + this.collection.toJSON()[id].id + "/";
                 var oldUrl = Backbone.history.fragment;

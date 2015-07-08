@@ -1,4 +1,4 @@
-define( ['App', 'backbone', 'marionette', 'jquery',
+define(['App', 'backbone', 'marionette', 'jquery',
         "models/Manuscript",
         "views/CantusAbstractView",
         "views/FolioView",
@@ -17,7 +17,8 @@ function(App, Backbone, Marionette, $,
          SearchNotationView,
          ManuscriptDataPopoverView,
          GlobalEventHandler,
-         GlobalVars) {
+         GlobalVars)
+{
 
 "use strict";
 

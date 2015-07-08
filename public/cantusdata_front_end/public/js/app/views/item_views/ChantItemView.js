@@ -1,5 +1,6 @@
-define( ['App', 'marionette'],
-function(App, Marionette) {
+define(['App', 'marionette'],
+function(App, Marionette)
+{
 
 "use strict";
 
@@ -29,7 +30,8 @@ return Marionette.ItemView.extend({
         var self = this;
 
         return {
-            isOpen: function () {
+            isOpen: function ()
+            {
                 return self.getOption('open');
             }
         };

@@ -1,5 +1,6 @@
 define(['underscore', 'marionette'],
-    function (_, Marionette) {
+    function (_, Marionette)
+    {
 
         "use strict";
 
@@ -20,7 +21,8 @@ define(['underscore', 'marionette'],
             {
                 if (!(_.isString(manuscript) && _.isString(folio)))
                 {
-                    console.error('Invalid manuscript/folio ids for chant state; need strings but got:', manuscript, folio);
+                    console.error('Invalid manuscript/folio ids for chant state; need strings but got:',
+                        manuscript, folio);
                     return;
                 }
 
@@ -87,7 +89,7 @@ define(['underscore', 'marionette'],
                     {
                         window.localStorage.setItem(key, data);
                     }
-                    catch(e)
+                    catch (e)
                     {
                         console.error('Failed to save open chants to local storage:\n', e);
                     }

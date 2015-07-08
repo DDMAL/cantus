@@ -1,5 +1,6 @@
 define(["jquery", "underscore", "backbone", "config/GlobalVars"],
-    function($, _, Backbone, GlobalVars) {
+    function($, _, Backbone, GlobalVars)
+    {
 
         "use strict";
 
@@ -9,8 +10,8 @@ define(["jquery", "underscore", "backbone", "config/GlobalVars"],
             volpianoMap = {};
 
         // Build a mapping of equivalent Volpiano characters
-        _.forEach(['iwxyz', 'IWXYZ', 'eEmM', 'fFnN', 'gG9)oO', 'hHaApP',
-            'jJbBqQ', 'kKcCrR', 'lLdDsS'], function (equivalent)
+        _.forEach(['iwxyz', 'IWXYZ', 'eEmM', 'fFnN', 'gG9)oO', 'hHaApP', 'jJbBqQ', 'kKcCrR', 'lLdDsS'],
+        function (equivalent)
         {
             _.forEach(equivalent, function (value)
             {
@@ -30,6 +31,8 @@ define(["jquery", "underscore", "backbone", "config/GlobalVars"],
                 // FIXME(wabain): some of this should be happening in model.parse, and some
                 // in a template helper or something
 
+                // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
+
                 var result = this.attributes;
 
                 var newElement = {};
@@ -38,7 +41,7 @@ define(["jquery", "underscore", "backbone", "config/GlobalVars"],
                 newElement.name = result.Name;
 
                 // Figure out what the name is based on the model in question
-                switch(newElement.model)
+                switch (newElement.model)
                 {
                     case "manuscript":
                         newElement.name = result.name;
@@ -65,7 +68,8 @@ define(["jquery", "underscore", "backbone", "config/GlobalVars"],
                             newElement.volpiano = result.volpiano;
                         }
 
-                        newElement.url = "/manuscript/" + result.manuscript_id + "/?folio=" + result.folio + "&chant=" + result.sequence;
+                        newElement.url = "/manuscript/" + result.manuscript_id + "/?folio=" + result.folio +
+                            "&chant=" + result.sequence;
                         break;
 
                     case "concordance":
@@ -80,6 +84,8 @@ define(["jquery", "underscore", "backbone", "config/GlobalVars"],
                         newElement.url = "/" + newElement.model + "/" + result.item_id + "/";
                         break;
                 }
+
+                // jscs:enable
 
                 return newElement;
             },

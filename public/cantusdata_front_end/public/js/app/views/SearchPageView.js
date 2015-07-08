@@ -1,11 +1,12 @@
-define( ['App', 'jquery',
+define(['App', 'jquery',
         "views/CantusAbstractView",
         "views/SearchView",
         "singletons/GlobalEventHandler"],
     function(App, $,
              CantusAbstractView,
              SearchView,
-             GlobalEventHandler) {
+             GlobalEventHandler)
+    {
 
         "use strict";
 
@@ -24,7 +25,7 @@ define( ['App', 'jquery',
             initialize: function(options)
             {
                 _.bindAll(this, 'render');
-                this.template= _.template($('#search-page-template').html());
+                this.template = _.template($('#search-page-template').html());
                 // Initialize the subviews
                 this.searchView = new SearchView(
                     {

@@ -1,5 +1,6 @@
 define(['backbone', 'marionette'],
-    function(Backbone, Marionette) {
+    function(Backbone, Marionette)
+    {
 
         "use strict";
 

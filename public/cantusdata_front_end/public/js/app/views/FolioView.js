@@ -1,4 +1,4 @@
-define( ['App', 'backbone', 'marionette', 'jquery',
+define(['App', 'backbone', 'marionette', 'jquery',
         "models/Folio",
         "views/CantusAbstractView",
         "views/collection_views/ChantCompositeView",
@@ -98,7 +98,7 @@ return Marionette.LayoutView.extend
     setCustomNumber: function(number)
     {
         this.customNumber = number;
-        this.model.set({number: number, item_id: undefined});
+        this.model.set({number: number, 'item_id': undefined});
     },
 
     /**

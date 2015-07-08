@@ -1,5 +1,6 @@
 define(["models/Chant", "collections/CantusAbstractCollection"],
-    function(Chant, CantusAbstractCollection) {
+    function(Chant, CantusAbstractCollection)
+    {
 
         'use strict';
 

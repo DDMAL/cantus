@@ -1,5 +1,6 @@
 define(["jquery", "backbone", "singletons/GlobalEventHandler"],
-    function($, Backbone, GlobalEventHandler) {
+    function($, Backbone, GlobalEventHandler)
+    {
 
         "use strict";
 
@@ -22,7 +23,8 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
 
                 // Create a debounced function to alert Diva that its panel size
                 // has changed
-                this.publishDivaPanelResizedEvent = _.debounce(function () {
+                this.publishDivaPanelResizedEvent = _.debounce(function ()
+                {
                     diva.Events.publish("PanelSizeDidChange");
                 }, 500);
 
@@ -35,10 +37,14 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
 
                 this.divaFullScreen = "lol";
                 this.listenTo(GlobalEventHandler, "renderView", debouncedSetAll);
-                this.listenTo(GlobalEventHandler, "divaFullScreen",
-                    function(){this.setDivaFullScreen(true);});
-                this.listenTo(GlobalEventHandler, "divaNotFullScreen",
-                    function(){this.setDivaFullScreen(false);});
+                this.listenTo(GlobalEventHandler, "divaFullScreen", function()
+                {
+                    this.setDivaFullScreen(true);
+                });
+                this.listenTo(GlobalEventHandler, "divaNotFullScreen", function()
+                {
+                    this.setDivaFullScreen(false);
+                });
 
                 // We also want to do stuff when the viewport is rotated
                 this.listenTo($(window), "orientationchange", this.setViewPortSize);
@@ -96,16 +102,17 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
                 if ($(window).width() <= 880)
                 {
                     // Small screens
-                    var window_width = $(window).width();
-                    var window_height = $(window).height();
-                    var computed_height = 880 * (window_height / window_width);
-                    var zoom_factor = 880 / window_width;
-                    $('meta[name=viewport]').attr('content','width=880, height=' + computed_height + 'initial-scale=' + zoom_factor + ', user-scalable=no');
+                    var windowWidth = $(window).width();
+                    var windowHeight = $(window).height();
+                    var computedHeight = 880 * (windowHeight / windowWidth);
+                    var zoomFactor = 880 / windowWidth;
+                    $('meta[name=viewport]').attr('content',
+                        'width=880, height=' + computedHeight + 'initial-scale=' + zoomFactor + ', user-scalable=no');
                 }
                 else
                 {
                     // Big screens
-                    $('meta[name=viewport]').attr('content','width=device-width');
+                    $('meta[name=viewport]').attr('content', 'width=device-width');
                 }
             },
 

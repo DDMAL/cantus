@@ -1,4 +1,4 @@
-define( ['App', 'backbone', 'marionette', 'jquery',
+define(['App', 'backbone', 'marionette', 'jquery',
         "underscore",
         "diva",
         "diva-highlight",
@@ -17,7 +17,8 @@ function(App, Backbone, Marionette, $,
          DivaPagealias,
          CantusAbstractView,
          GlobalEventHandler,
-         GlobalVars) {
+         GlobalVars)
+{
 
 "use strict";
 
@@ -269,7 +270,8 @@ return Marionette.ItemView.extend
 
             leading = this.escapeRegex(leading);
 
-            if (trailing) {
+            if (trailing)
+            {
                 trailing = this.escapeRegex(trailing);
             }
             else
@@ -325,12 +327,7 @@ return Marionette.ItemView.extend
 
     onShow: function()
     {
-        // We only want to initialize Diva once!
-        //if (!this.divaInitialized)
-        //{
-            this.initializeDiva();
-        //}
-
+        this.initializeDiva();
         GlobalEventHandler.trigger("renderView");
     },
 
@@ -465,7 +462,8 @@ return Marionette.ItemView.extend
     storeFolioIndex: function(index, fileName)
     {
         // The first time it's ever called
-        if (this.initialFolio === undefined) {
+        if (this.initialFolio === undefined)
+        {
             this.initialFolio = 0;
         }
         // Not the first time
@@ -477,7 +475,8 @@ return Marionette.ItemView.extend
         }
     },
 
-    triggerFolioChange: _.debounce(function (folio) {
+    triggerFolioChange: _.debounce(function (folio)
+    {
         GlobalEventHandler.trigger("ChangeFolio", folio, {replaceState: true});
     }, 250),
 
@@ -486,7 +485,8 @@ return Marionette.ItemView.extend
      *
      * @returns {*|jQuery}
      */
-    getDivaData: function() {
+    getDivaData: function()
+    {
         return this.ui.divaWrapper.data('diva');
     },
 
@@ -581,9 +581,14 @@ return Marionette.ItemView.extend
         var boxTop = divaData.translateFromMaxZoomLevel(box.y);
         var currentScrollTop = parseInt(divaOuter.scrollTop(), 10);
 
-        var topMarginConsiderations = divaData.getSettings().averageHeights[zoomLevel] * divaData.getSettings().adaptivePadding;
-        var leftMarginConsiderations = divaData.getSettings().averageWidths[zoomLevel] * divaData.getSettings().adaptivePadding;
-        divaOuter.scrollTop(boxTop + currentScrollTop - (divaOuter.height() / 2) + (box.h / 2) + topMarginConsiderations);
+        var topMarginConsiderations = divaData.getSettings().averageHeights[zoomLevel] *
+            divaData.getSettings().adaptivePadding;
+        var leftMarginConsiderations = divaData.getSettings().averageWidths[zoomLevel] *
+            divaData.getSettings().adaptivePadding;
+
+        divaOuter.scrollTop(boxTop + currentScrollTop - (divaOuter.height() / 2) + (box.h / 2) +
+            topMarginConsiderations);
+
         // Now get the horizontal scroll
         var boxLeft = divaData.translateFromMaxZoomLevel(box.x);
         divaOuter.scrollLeft(boxLeft - (divaOuter.width() / 2) + (box.w / 2) + leftMarginConsiderations);

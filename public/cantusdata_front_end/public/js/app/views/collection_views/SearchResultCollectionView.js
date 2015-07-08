@@ -1,5 +1,6 @@
-define( ['jquery', 'marionette', 'views/item_views/SearchResultItemView'],
-    function($, Marionette, SearchResultItemView) {
+define(['jquery', 'marionette', 'views/item_views/SearchResultItemView'],
+    function($, Marionette, SearchResultItemView)
+    {
 
         "use strict";
 
@@ -165,7 +166,8 @@ define( ['jquery', 'marionette', 'views/item_views/SearchResultItemView'],
              */
             updateHeadingCaretOnNextChange: function (heading)
             {
-                var updateOnNextChange = _.bind(function () {
+                var updateOnNextChange = _.bind(function ()
+                {
                     if (this.searchParameters.get('sortBy') !== this.getHeadingSearchField(heading))
                         heading.children('.search-caret').removeClass('caret caret-reversed');
 

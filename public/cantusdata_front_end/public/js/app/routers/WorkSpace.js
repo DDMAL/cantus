@@ -16,7 +16,8 @@ function($, Backbone,
          BrowserResizer,
          ManuscriptIndividualPageView,
          SearchPageView,
-         GlobalEventHandler) {
+         GlobalEventHandler)
+{
 
 "use strict";
 
@@ -38,7 +39,7 @@ return Backbone.Router.extend
     mainBodyRegion: null,
 
     routes: {
-        "" : "manuscripts",
+        "": "manuscripts",
         "manuscript/:query/?folio=(:folio)&chant=(:chant)": "manuscriptSingle",
         "manuscript/:query/?folio=(:folio)": "manuscriptSingle",
         "manuscript/:query/": "manuscriptSingle",
@@ -55,7 +56,7 @@ return Backbone.Router.extend
 
         // Regions
         // There is always a header!
-        this.headerView = new HeaderView({el:".header"});
+        this.headerView = new HeaderView({el: ".header"});
         this.headerView.render();
 
         //this.headerRegion = new Marionette.Region({el: '.header'});

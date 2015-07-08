@@ -1,9 +1,10 @@
-define( ['App', 'marionette', 'jquery',
+define(['App', 'marionette', 'jquery',
         "views/CantusAbstractView",
         "singletons/GlobalEventHandler"],
     function(App, Marionette, $,
              CantusAbstractView,
-             GlobalEventHandler) {
+             GlobalEventHandler)
+    {
 
         /**
          * Provide an alert message to the user.

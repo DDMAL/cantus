@@ -1,8 +1,9 @@
 define(['jquery', 'backbone', 'marionette'],
-    function ($, Backbone, Marionette) {
+    function ($, Backbone, Marionette)
+    {
         "use strict";
 
-
+        // jscs:disable validateIndentation
         var App = new Marionette.Application();
 
         //Organize Application into regions corresponding to DOM elements
@@ -12,11 +13,14 @@ define(['jquery', 'backbone', 'marionette'],
 //            mainRegion:"#main"
 //        });
 
-        App.addInitializer(function () {
-            Backbone.history.start({ pushState: true });
+        App.addInitializer(function ()
+        {
+            Backbone.history.start({pushState: true});
         });
 
 //        App.mobile = isMobile();
+
+        // jscs:enable
 
         return App;
     });

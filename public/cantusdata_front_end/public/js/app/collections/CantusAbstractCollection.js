@@ -1,11 +1,13 @@
-define(["jquery","backbone"],
-    function($, Backbone) {
+define(["jquery", "backbone"],
+    function($, Backbone)
+    {
 
         return Backbone.Collection.extend
         ({
             initialize: function(url)
             {
-                if (url) {
+                if (url)
+                {
                     this.url = url;
                 }
             },

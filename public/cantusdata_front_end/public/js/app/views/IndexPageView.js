@@ -1,9 +1,10 @@
-define( ['App', 'backbone', 'marionette', 'jquery',
+define(['App', 'backbone', 'marionette', 'jquery',
         "views/CantusAbstractView",
         "singletons/GlobalEventHandler"],
     function(App, Backbone, Marionette, $,
              CantusAbstractView,
-             GlobalEventHandler) {
+             GlobalEventHandler)
+    {
 
         "use strict";
 
@@ -17,7 +18,7 @@ define( ['App', 'backbone', 'marionette', 'jquery',
             el: '#view-goes-here',
 
             events: {
-                "click #manuscripts-hero-button" : function()
+                "click #manuscripts-hero-button": function()
                 {
                     Backbone.history.navigate("/manuscripts/", {trigger: true});
                 }
