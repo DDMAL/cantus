@@ -143,6 +143,9 @@ gulp.task('clean:templates', function (done)
 
 gulp.task('watch', function (done)
 {
+    // jshint unused:false
+    // Never call the callback: this runs forever
+
     var jsWatcher = gulp.watch(scripts.clientJS, ['lint-nofail:js', 'rebuild:js']);
     var templateWatcher = gulp.watch(scripts.templates, ['build:templates']);
 
