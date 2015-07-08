@@ -1,6 +1,7 @@
 var gulp = require('gulp');
 var runSequence = require('run-sequence');
 var jshint = require('gulp-jshint');
+var jscs = require('gulp-jscs');
 var shell = require('gulp-shell');
 var rename = require('gulp-rename');
 var newer = require('gulp-newer');
@@ -42,9 +43,12 @@ gulp.task('lint-nofail:js', function ()
 
 function lintJS(sources)
 {
+    // FIXME: this errors on jscs failure, even when we'd only
+    // want it to print a warning
     return gulp.src(sources)
         .pipe(jshint({lookup: true}))
-        .pipe(jshint.reporter('jshint-stylish'));
+        .pipe(jshint.reporter('jshint-stylish'))
+        .pipe(jscs());
 }
 
 /*
