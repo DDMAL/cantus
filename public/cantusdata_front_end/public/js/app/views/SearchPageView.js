@@ -1,9 +1,7 @@
-define(['jquery',
-        "views/CantusAbstractView",
+define(["marionette",
         "views/SearchView",
         "singletons/GlobalEventHandler"],
-    function($,
-             CantusAbstractView,
+    function(Marionette,
              SearchView,
              GlobalEventHandler)
     {
@@ -13,35 +11,32 @@ define(['jquery',
         /**
          * This page is for searching.
          *
-         * @type {*|void}
+         * @constructor
          */
-        return CantusAbstractView.extend
-        ({
+        return Marionette.LayoutView.extend({
             el: '#view-goes-here',
+            template: '#search-page-template',
+
+            regions: {
+                searchRegion: '#search'
+            },
 
             // Subviews
             searchView: null,
 
             initialize: function(options)
             {
-                _.bindAll(this, 'render');
-                this.template = _.template($('#search-page-template').html());
-                // Initialize the subviews
-                this.searchView = new SearchView(
-                    {
-                        query: options.query,
-                        showManuscriptName: true
-                    }
-                );
+                // Initialize the subview
+                this.searchView = new SearchView({
+                    query: options.query,
+                    showManuscriptName: true
+                });
             },
 
-            render: function()
+            onRender: function()
             {
-                $(this.el).html(this.template());
-                // Render subviews
-                this.assign(this.searchView, '#search');
+                this.searchRegion.show(this.searchView, {preventDestroy: true});
                 GlobalEventHandler.trigger("renderView");
-                return this.trigger('render', this);
             }
         });
     });
