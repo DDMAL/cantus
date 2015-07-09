@@ -1,6 +1,8 @@
 define(["marionette"],
     function(Marionette)
     {
+        "use strict";
+
         /** Control an input for a search field. Takes a SearchInput model. */
         return Marionette.ItemView.extend({
             template: '#search-input-template',

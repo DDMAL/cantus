@@ -4,6 +4,7 @@ define(["marionette",
         "singletons/GlobalEventHandler"],
     function(Marionette, SearchView, ModalView, GlobalEventHandler)
     {
+        "use strict";
 
         /**
          * Provide an alert message to the user.

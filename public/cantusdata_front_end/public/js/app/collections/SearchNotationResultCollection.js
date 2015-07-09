@@ -1,5 +1,7 @@
 define(['underscore', 'backbone', 'config/GlobalVars'], function (_, Backbone, GlobalVars)
 {
+    "use strict";
+
     /**
      * Collection for results of notation searches
      *

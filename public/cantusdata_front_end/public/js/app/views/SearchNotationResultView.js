@@ -1,5 +1,7 @@
 define(["marionette"], function (Marionette)
 {
+    "use strict";
+
     return Marionette.CompositeView.extend({
         template: '#search-notation-result-list-view',
 
