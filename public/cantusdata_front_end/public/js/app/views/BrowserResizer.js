@@ -64,11 +64,6 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
                         $(window).height() - $("#header-container").height());
             },
 
-            setScrollableHeight: function()
-            {
-                $('.scrollable').css("height", $("#content-container").height());
-            },
-
             setManuscriptContentContainerHeight: function()
             {
                 $('#manuscript-data-container').css("height",
