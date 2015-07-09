@@ -16,76 +16,52 @@
     <div id="header-container">
         <div id="page-header" class="header"></div>
     </div>
-    <div id="content-container" class="container-fluid">
-{#        <hr/>#}
-        <div id="page-content" class="row content">
-            <div class="col-lg-12">
-                <!-- Templates -->
-                <div id="view-goes-here"></div>
-                <div id="search-modal"></div>
-            </div>
-        </div>
-    </div>
 
 <script type="text/template" id="header-template">
     <nav class="navbar navbar-default" role="navigation">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <a id="site-logo" class="navbar-brand" href="/">Cantus Ultimus</a>
-          <button type="button" class="navbar-toggle" data-toggle="collapse" 
-          data-target="#top-menu">
-          
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          
-          </button>
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a id="site-logo" class="navbar-brand" href="/">Cantus Ultimus</a>
+                <button type="button" class="navbar-toggle" data-toggle="collapse"
+                        data-target="#top-menu">
 
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+
+                </button>
+
+            </div>
+            <div>
+                <ul class="nav navbar-nav" id="top-menu">
+                    <li><a href="/about/">About</a></li>
+                    <li><a href="/activities/">Activities</a></li>
+                    <li><a href="/team/">Team</a></li>
+                    <li><a href="/manuscripts/">Manuscripts</a></li>
+                    <li><a href="/search/" class="search-modal-link">Search</a></li>
+                </ul>
+            </div>
         </div>
-        <div>
-          <ul class="nav navbar-nav">
-            <li><a href="/about/">About</a></li>
-            <li><a href="/activities/">Activities</a></li>
-            <li><a href="/team/">Team</a></li>
-          </ul>
-
-          <ul id="top-menu" class="nav navbar-nav"></ul>
-        </div>
-
-      </div>
     </nav>
+    <div id="search-modal"></div>
+
+
 </script>
-
-
-
-
-
-
-
-<script type="text/template" id="top-menu-template">
-{#<% _.forEach(items, function(item) { %>#}
-<% for (var i = 0; i < items.length; i++) { %>
-    <li id="top-menu-button-<%= i %>"<% if (items[i].active) { %> class="active" <% } if (items[i].tags) { %><%= items[i].tags %><% } %> ><a href="<%= items[i].url %>"><%= items[i].name %></a></li>
-<% }%>
-</script>
-
-
 
 <script type="text/template" id="modal-template">
-<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title" id="myModalLabel"><%= title %></h4>
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel"><%= title %></h4>
+                </div>
+                <div class="modal-body"></div>
             </div>
-            <div class="modal-body"></div>
         </div>
     </div>
-</div>
 </script>
-
 
 <script type="text/template" id="search-input-template">
     <div class="form-group">
@@ -118,7 +94,8 @@
             <option>Chant in Transposition</option>
         </select>
         <% } else { %>
-        <input type="text" class="form-control search-input" placeholder="Search" value="<%= query %>">
+        <input type="text" class="form-control search-input field-<%= field %>"
+               placeholder="Search" value="<%= query %>">
         <% } %>
     </div>
 
@@ -188,6 +165,8 @@
                 <span class="search-caret"></span>
             </th>
 
+            <!-- FIXME(wabain): find a better way of varying displayed fields than using showManuscriptName
+                 as an ad hoc mode switch-->
             <% if (showManuscriptName) { %>
             <th>
                 <a href="#">Office</a>

@@ -1,59 +1,44 @@
-define(['jquery',
-        "views/CantusAbstractView",
+define(["marionette",
         "views/SearchView",
         "views/ModalView",
-        "views/TopMenuView",
         "singletons/GlobalEventHandler"],
-    function($, CantusAbstractView, SearchView, ModalView, TopMenuView, GlobalEventHandler)
+    function(Marionette, SearchView, ModalView, GlobalEventHandler)
     {
 
         /**
          * Provide an alert message to the user.
          */
-        return CantusAbstractView.extend
-        ({
+        return Marionette.LayoutView.extend({
+            template: '#header-template',
+
             // Subviews
-            topMenuView: null,
             searchView: null,
             searchModalView: null,
 
-            initialize: function()
-            {
-                _.bindAll(this, 'render');
-                this.template = _.template($('#header-template').html());
-                // The search view that we will shove into the modal box
-                this.searchView = new SearchView({showManuscriptName: true});
-                // The modal box for the search pop-up
-                this.searchModalView = new ModalView({title: "Search", view: this.searchView});
-                // Create the TopMenuView with all of its options
-                this.topMenuView = new TopMenuView(
-                    {
-                        menuItems: [
-                            {
-                                name: "Manuscripts",
-                                url: "/manuscripts/",
-                                active: false
-                            },
-                            {
-                                name: "Search",
-                                tags: 'data-toggle="modal" data-target="#myModal"',
-                                url: "#",
-                                active: false
-                            }
-                        ]
-                    }
-                );
+            regions: {
+                searchModalRegion: '#search-modal'
             },
 
-            render: function()
+            ui: {
+                searchModalLink: '.search-modal-link'
+            },
+
+            initialize: function()
             {
-                // Render the template
-                $(this.el).html(this.template());
-                // Render subviews
-                this.assign(this.topMenuView, '#top-menu');
-                this.assign(this.searchModalView, '#search-modal');
+                // The search view that we will shove into the modal box
+                this.searchView = new SearchView({showManuscriptName: true});
+
+                // The modal box for the search pop-up
+                this.searchModalView = new ModalView({title: "Search", view: this.searchView});
+            },
+
+            onRender: function ()
+            {
+                // Turn the search link into a modal target dynamically
+                this.ui.searchModalLink.attr({'data-toggle': 'modal', href: '#myModal'});
+
+                this.searchModalRegion.show(this.searchModalView, {preventDestroy: true});
                 GlobalEventHandler.trigger("renderView");
-                return this.trigger('render', this);
             }
         });
     });

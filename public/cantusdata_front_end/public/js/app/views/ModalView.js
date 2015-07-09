@@ -1,7 +1,6 @@
-define(['jquery',
-        "views/CantusAbstractView",
+define(["marionette",
         "singletons/GlobalEventHandler"],
-    function($, CantusAbstractView, GlobalEventHandler)
+    function(Marionette, GlobalEventHandler)
     {
 
         "use strict";
@@ -12,31 +11,38 @@ define(['jquery',
          *
          * @type {*|void}
          */
-        return CantusAbstractView.extend
-        ({
+        return Marionette.LayoutView.extend({
             title: null,
             visitorView: null,
 
+            template: '#modal-template',
+
+            regions: {
+                body: '.modal-body'
+            },
+
             initialize: function(options)
             {
-                _.bindAll(this, 'render');
-                this.template = _.template($('#modal-template').html());
-
                 this.title = options.title;
                 this.visitorView = options.view;
             },
 
-            render: function()
+            onRender: function()
             {
                 // Render out the modal template
                 if (this.visitorView !== null)
                 {
-                    $(this.el).html(this.template({title: this.title}));
+                    this.body.show(this.visitorView, {preventDestroy: true});
                 }
-                // Render out the visitor
-                this.assign(this.visitorView, '.modal-body');
+
                 GlobalEventHandler.trigger("renderView");
-                return this.trigger('render', this);
+            },
+
+            serializeData: function()
+            {
+                return {
+                    title: this.title
+                };
             }
         });
     });
