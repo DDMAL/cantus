@@ -16,6 +16,7 @@ class Manuscript(models.Model):
     """
     class Meta:
         app_label = "cantusdata"
+        ordering = ['name']
 
     name = models.CharField(max_length=255, blank=True, null=True)
     siglum = models.CharField(max_length=255, blank=True, null=True)
