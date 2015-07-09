@@ -1,11 +1,9 @@
 define(['marionette',
-        "models/CantusAbstractModel",
-        "views/PaginationView",
-        "config/GlobalVars"],
+        "collections/SearchNotationResultCollection",
+        "views/SearchNotationResultView"],
 function(Marionette,
-         CantusAbstractModel,
-         PaginationView,
-         GlobalVars)
+         SearchNotationResultCollection,
+         SearchNotationResultView)
 {
     "use strict";
 
@@ -19,7 +17,6 @@ function(Marionette,
 
         results: null,
         divaView: null,
-        paginator: null,
         manuscript: undefined,
 
         template: "#search-notation-template",
@@ -31,24 +28,24 @@ function(Marionette,
 
         ui: {
             typeSelector: ".search-field",
-            searchBox: ".query-input",
-            searchResults: ".note-search-results"
+            searchBox: ".query-input"
+        },
+
+        events: {
+            submit: 'newSearch'
         },
 
         regions: {
             glyphTypesRegion: ".glyph-types",
-            paginatorRegion: ".note-pagination"
+            searchResults: ".note-search-results"
         },
 
         initialize: function(options)
         {
-            _.bindAll(this, 'registerEvents', 'newSearch',
-                'resultFetchCallback', 'zoomToResult');
+            _.bindAll(this, 'newSearch', 'resultFetchCallback', 'zoomToResult');
             // The diva view which we will act upon!
             this.divaView = options.divaView;
-            this.results = new CantusAbstractModel();
-            this.paginator = new PaginationView({name: "notation-paginator"});
-            this.registerEvents();
+            this.results = new SearchNotationResultCollection();
             this.listenTo(this.results, "sync", this.resultFetchCallback);
         },
 
@@ -56,11 +53,6 @@ function(Marionette,
         {
             this.query = null;
             this.results = null;
-            if (this.paginator !== null)
-            {
-                this.paginator.remove();
-                this.paginator = null;
-            }
 
             // We don't actually need to call remove() on this again
             this.divaView = null;
@@ -96,19 +88,6 @@ function(Marionette,
             this.searchFields = fields;
         },
 
-        /**
-         * Register the events that are necessary to have search input.
-         */
-        registerEvents: function()
-        {
-            // Clear out the events
-            this.events = {};
-            // Register them
-            this.events.submit = "newSearch";
-            // Delegate the new events
-            this.delegateEvents();
-        },
-
         newSearch: function(event)
         {
             // Stop the page from auto-reloading
@@ -120,24 +99,22 @@ function(Marionette,
             this.divaView.paintBoxes([]);
 
             // Handle the empty case
-            if (this.query  === "")
+            if (!this.query)
             {
-                this.clearResults("<h4>Please enter a search query.</h4>");
+                this.results.reset(null, {message: 'Please enter a search query.'});
             }
             else
             {
                 // Grab the field name
                 this.field = this.getSearchType();
 
-                // Throw up a placeholder
-                this.clearResults('<h3>' + this.searchFields[this.field] + ' search</h3>' +
-                                  '<h4>Searching...</h4>' +
-                                  '<div class="text-center">' +
-                                  '<img src="/static/img/loading.gif">' +
-                                  '</div>');
+                this.results.updateParameters({
+                    field: this.field,
+                    fieldName: this.searchFields[this.field],
+                    query: this.query,
+                    manuscript: this.manuscript
+                });
 
-                this.results.url = GlobalVars.siteUrl + "notation-search/?q=" +
-                    this.query + "&type=" + this.field + "&manuscript=" + this.manuscript;
                 this.results.fetch();
             }
             return false;
@@ -145,27 +122,18 @@ function(Marionette,
 
         resultFetchCallback: function()
         {
-            this.divaView.paintBoxes(this.results.get("results"));
-            // We need a new paginator
-            this.paginator = new PaginationView(
-                {
-                    name: "notation-paginator",
-                    currentPage: 1,
-                    elementCount: this.results.get("numFound"),
-                    pageSize: 1
-                }
-            );
-            // Automatically go to the first result
-            this.zoomToResult();
-            this.listenTo(this.paginator, 'change', this.zoomToResult);
+            this.divaView.paintBoxes(this.results.map(function (model)
+            {
+                return _.clone(model.attributes);
+            }));
 
-            this.renderResults();
+            if (this.results.length > 0)
+                this.zoomToResult(this.results.at(0));
         },
 
-        zoomToResult: function()
+        zoomToResult: function(model)
         {
-            var newIndex = this.paginator.getPage() - 1;
-            this.divaView.zoomToLocation(this.results.get("results")[newIndex]);
+            this.divaView.zoomToLocation(_.clone(model.attributes));
         },
 
         serializeData: function()
@@ -194,22 +162,15 @@ function(Marionette,
         //    //}));
         //},
 
-        clearResults: function(message)
+        onRender: function()
         {
-            // FIXME(wabain): make this an emptyView
-            this.ui.searchResults.html(message);
-            this.paginatorRegion.empty({preventDestroy: true});
-        },
+            var resultView = new SearchNotationResultView({
+                collection: this.results
+            });
 
-        renderResults: function()
-        {
-            // FIXME(wabain): use a child view for this
-            this.ui.searchResults.html(
-                    "<h3>" + this.searchFields[this.field] + " search</h3><h4>" +
-                    this.results.get("numFound") + ' results found for query "' +
-                    decodeURIComponent(this.query) + '"</h4>'
-            );
-            this.paginatorRegion.show(this.paginator);
+            this.listenTo(resultView, 'zoomToResult', this.zoomToResult);
+
+            this.searchResults.show(resultView);
         }
     });
 });
