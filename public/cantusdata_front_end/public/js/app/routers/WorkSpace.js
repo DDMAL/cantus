@@ -2,7 +2,6 @@ define(["backbone",
         "marionette",
         "models/GlobalStateModel",
         "views/HeaderView",
-        "views/IndexPageView",
         "views/ManuscriptsPageView",
         "views/BrowserResizer",
         "views/ManuscriptIndividualPageView",
@@ -12,7 +11,6 @@ function(Backbone,
          Marionette,
          GlobalStateModel,
          HeaderView,
-         IndexPageView,
          ManuscriptsPageView,
          BrowserResizer,
          ManuscriptIndividualPageView,
@@ -29,7 +27,6 @@ return Backbone.Router.extend
     // Common to all routes
     headerView: null,
     // Only on certain routes
-    indexView: null,
     manuscriptsPageView: null,
     manuscriptView: null,
     searchPageView: null,
@@ -67,18 +64,10 @@ return Backbone.Router.extend
         //
         //this.headerRegion.show(new HeaderView());
 
-        // IndexPageView has no state, so we might as well instantiate it
-        this.indexView = new IndexPageView();
-        // Same with manuscripts page
+        // The manuscripts page has no state, so we might as well instantiate it
         this.manuscriptsPageView = new ManuscriptsPageView();
         // Get the resizer going
         this.resizer = new BrowserResizer();
-    },
-
-    index: function()
-    {
-        //this.indexView.render();
-        //this.mainBodyRegion
     },
 
     manuscripts: function()
