@@ -8,7 +8,7 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
          * This object handles resizing the browser
          *
          *
-         * @type {{setContainerHeight: setContainerHeight, setScrollableHeight: setScrollableHeight, setManuscriptContentContainerHeight: setManuscriptContentContainerHeight, setDivaHeight: setDivaHeight}}
+         * @constructor
          */
         return Backbone.View.extend
         ({
@@ -17,7 +17,7 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
 
             initialize: function()
             {
-                _.bindAll(this, 'setAll', 'setContainerHeight', 'setScrollableHeight',
+                _.bindAll(this, 'setAll', 'getBaseHeight',
                     'setManuscriptContentContainerHeight', 'setDivaSize',
                     'setDivaFullScreen', 'setViewPortSize');
 
@@ -52,22 +52,25 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
 
             setAll: function()
             {
-                this.setContainerHeight();
-                this.setManuscriptContentContainerHeight();
-                this.setDivaSize();
+                var baseHeight = this.getBaseHeight();
+
+                this.setManuscriptContentContainerHeight(baseHeight);
+                this.setDivaSize(baseHeight);
                 this.setViewPortSize();
             },
 
-            setContainerHeight: function()
+            /** Get the base height to compute the height of other elements against.
+             * This corresponds to all the space in the viewport which isn't taken
+             * up by the header. */
+            getBaseHeight: function ()
             {
-                $('#content-container').css("height",
-                        $(window).height() - $("#header-container").height());
+                return $(window).height() - $("#header-container").height();
             },
 
-            setManuscriptContentContainerHeight: function()
+            setManuscriptContentContainerHeight: function(baseHeight)
             {
                 $('#manuscript-data-container').css("height",
-                        $("#content-container").height() -
+                        baseHeight -
                             $("#manuscript-title-container").height() -
                             $("#manuscript-nav-container").height());
             },
@@ -75,12 +78,11 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
             /**
              * Recalculate and set the new size of the Diva viewer.
              */
-            setDivaSize: function()
+            setDivaSize: function(baseHeight)
             {
                 if (this.divaFullScreen !== true)
                 {
-                    $('.diva-outer').css("height",
-                            $("#content-container").height() - 75);
+                    $('.diva-outer').css("height", baseHeight - 75);
 
                     var divaData = $('#diva-wrapper').data('diva');
                     if (divaData !== undefined)
@@ -126,7 +128,7 @@ define(["jquery", "backbone", "singletons/GlobalEventHandler"],
                 {
                     this.divaFullScreen = false;
                 }
-                this.setDivaSize();
+                this.setDivaSize(this.getBaseHeight());
             }
         });
     }
