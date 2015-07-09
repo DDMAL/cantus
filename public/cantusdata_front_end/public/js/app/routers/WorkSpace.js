@@ -90,7 +90,6 @@ return Backbone.Router.extend
             this.manuscriptView.destroy();
         }
         this.manuscriptView = null;
-        this.manuscriptsPageView.update();
         this.manuscriptsPageView.render();
 
         // Set the document title to reflect the manuscripts route
