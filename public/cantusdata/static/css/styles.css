@@ -123,6 +123,15 @@ table.result-list th a {
     color: inherit;
 }
 
+.search-notation-result-list {
+    counter-reset: search-notation-count;
+}
+
+.search-notation-result-list .result-index::after {
+    counter-increment: search-notation-count;
+    content: " " counter(search-notation-count);
+}
+
 /* Support reversible (i.e. upwards-pointing) carets without setting classes on ancestors */
 .caret.caret-reversed {
     content: "";
