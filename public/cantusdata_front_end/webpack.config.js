@@ -6,7 +6,8 @@ var path = require('path'),
     yargs = require('yargs').argv;
 
 var APP_DIR = path.resolve(__dirname, 'public/js/app'),
-    LIB_DIR = path.resolve(__dirname, 'public/js/libs');
+    LIB_DIR = path.resolve(__dirname, 'public/js/libs'),
+    TMP_DIR = path.resolve(__dirname, '.tmp');
 
 /**
  * Return the absolute path to a library file
@@ -51,7 +52,7 @@ module.exports = configureBuildMode({
     },
 
     resolve: {
-        root: [APP_DIR, LIB_DIR],
+        root: [APP_DIR, LIB_DIR, TMP_DIR],
 
         alias: _.mapObject({
             marionette: 'backbone.marionette.js',

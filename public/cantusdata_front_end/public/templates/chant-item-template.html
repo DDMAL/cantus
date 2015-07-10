@@ -1,9 +1,6 @@
-{#    <div id="chant-<%= index %>" class="panel panel-default">#}
-{#    <div id="chant-<%= incipit %>" class="panel panel-default">#}
 <div class="panel-heading">
     <h4 class="panel-title">
         <a data-toggle="collapse" data-parent=".accordion" href="#collapse-<%= sequence %>">
-            {#                <a data-toggle="collapse" data-parent="#accordion" href="#collapse-<%= index %>">#}
             <%= incipit %>
         </a>
     </h4>
@@ -25,9 +22,6 @@
         <% if (genre) { %>
         <p><b>Genre: </b> <%= genre %></p>
         <% } %>
-        {#                <% if (lit_position) { %>#}
-        {#                <p><b>Lit Position: </b> <%= lit_position %></p>#}
-        {#                <% } %>#}
         <% if (mode) { %>
         <p><b>Mode: </b> <%= mode %></p>
         <% } %>
@@ -46,4 +40,3 @@
         <% } %>
     </div>
 </div>
-{#    </div>#}

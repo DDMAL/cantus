@@ -4,8 +4,6 @@ var gulp = require('gulp');
 var runSequence = require('run-sequence');
 var jshint = require('gulp-jshint');
 var jscs = require('gulp-jscs');
-var shell = require('gulp-shell');
-var rename = require('gulp-rename');
 var newer = require('gulp-newer');
 
 var yargs = require('yargs').argv;
@@ -13,13 +11,14 @@ var webpack = require('webpack');
 var del = require('del');
 var path = require('path');
 
+var bundleTemplates = require('./bundle-templates').bundle;
+
 // Set path variables
 var scripts = {
     appJS: ['public/js/app/**/*.js'],
     clientJS: ['public/js/app/**/*.js', 'public/js/libs/**/*.js'],
-    buildJS: ['gulpfile.js', 'webpack.config.js'],
-
-    templates: ['public/template-assembler/templates/**/*.html']
+    buildJS: ['./*.js'],
+    templates: ['public/templates/**/*.html']
 };
 
 var getWebpackCompiler = (function ()
@@ -44,7 +43,7 @@ gulp.task('default', function (cb)
     runSequence(['lint-nofail:js', 'build'], 'watch', cb);
 });
 
-gulp.task('build', ['build:js', 'build:templates']);
+gulp.task('build', ['build:js']);
 
 /*
  * JavaScript linting
@@ -99,7 +98,7 @@ gulp.task('copySources:js', function ()
         .pipe(gulp.dest(dest));
 });
 
-gulp.task('bundle:js', function (cb)
+gulp.task('bundle:js', ['bundle:templates'], function (cb)
 {
     var onBundleComplete = function (err, stats)
     {
@@ -120,7 +119,7 @@ gulp.task('bundle:js', function (cb)
 
 gulp.task('clean:js', function (done)
 {
-    del('../cantusdata/static/js/', {force: true}, function (err)
+    del(['../cantusdata/static/js/', './.tmp'], {force: true}, function (err)
     {
         if (err)
             done(err);
@@ -133,29 +132,9 @@ gulp.task('clean:js', function (done)
  * Template build tasks
  */
 
-// Copy templates into the Django template directory
-gulp.task('build:templates', ['bundle:templates'], function ()
+gulp.task('bundle:templates', function ()
 {
-    return gulp.src('public/template-assembler/build/index.html')
-        .pipe(rename('require.html'))
-        .pipe(gulp.dest('../cantusdata/templates'));
-});
-
-gulp.task('bundle:templates', ['clean:templates'], shell.task([
-    'python build-template.py build/'
-], {
-    cwd: __dirname + '/public/template-assembler/'
-}));
-
-gulp.task('clean:templates', function (done)
-{
-    del('../cantusdata/templates/require.html', {force: true}, function (err)
-    {
-        if (err)
-            done(err);
-        else
-            done();
-    });
+    return bundleTemplates('public/templates', '.tmp/templates.js');
 });
 
 gulp.task('watch', function (done)
@@ -163,12 +142,9 @@ gulp.task('watch', function (done)
     // jshint unused:false
     // Never call the callback: this runs forever
 
-    var jsWatcher = gulp.watch(scripts.clientJS, ['lint-nofail:js', 'rebuild:js']);
-    var templateWatcher = gulp.watch(scripts.templates, ['build:templates']);
+    var jsWatcher = gulp.watch(scripts.clientJS.concat(scripts.templates), ['lint-nofail:js', 'rebuild:js']);
 
     jsWatcher.on('change', logWatchedChange);
-    templateWatcher.on('change', logWatchedChange);
-
     jsWatcher.on('change', getWatchDeletionCb('public/js', '../cantusdata/static/js'));
 });
 
