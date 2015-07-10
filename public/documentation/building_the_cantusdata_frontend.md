@@ -12,7 +12,7 @@ Building
 
 The build system supplies the following top-level commands:
 
+  - `gulp`: Run the lint, build, and watch tasks.
   - `gulp build`: Combine and minify the JavaScript files and build an index.html file which includes all the view templates.
   - `gulp lint`: Lint the JavaScript files.
-  - `gulp`: Run both the lint and build tasks.
-  - `gulp watch`: Watch for changes to the source files and lint and build incrementally as needed. (*Note*: this is still under development; currently rebuilding the JavaScript is quite slow.)
+  - `gulp watch`: Watch for changes to the source files and lint and build as needed.
