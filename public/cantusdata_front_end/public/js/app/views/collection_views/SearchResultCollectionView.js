@@ -1,5 +1,5 @@
-define(['jquery', 'marionette', 'views/item_views/SearchResultItemView'],
-    function($, Marionette, SearchResultItemView)
+define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItemView'],
+    function(_, $, Marionette, SearchResultItemView)
     {
 
         "use strict";

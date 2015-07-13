@@ -1,5 +1,5 @@
-require(["App", "routers/WorkSpace", "templates", "marionette", "jquery", "backbone", "bootstrap"],
-    function (App, WorkSpace, templates, Marionette)
+require(["underscore", "App", "routers/WorkSpace", "templates", "marionette", "jquery", "backbone", "bootstrap"],
+    function (_, App, WorkSpace, templates, Marionette)
     {
         "use strict";
 

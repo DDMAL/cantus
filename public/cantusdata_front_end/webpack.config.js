@@ -87,8 +87,7 @@ module.exports = configureBuildMode({
             diva: 'diva-utils',
             jQuery: 'jquery',
             'window.jQuery': 'jquery',
-            $: 'jquery',
-            _: 'underscore'
+            $: 'jquery'
         }),
 
         // For now we only want a single file. Since we're using AMD

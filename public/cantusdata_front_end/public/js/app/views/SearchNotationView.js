@@ -1,7 +1,9 @@
-define(['marionette',
+define(["underscore",
+        "marionette",
         "collections/SearchNotationResultCollection",
         "views/SearchNotationResultView"],
-function(Marionette,
+function(_,
+         Marionette,
          SearchNotationResultCollection,
          SearchNotationResultView)
 {
