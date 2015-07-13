@@ -60,7 +60,6 @@ module.exports = configureBuildMode({
 
             // All the Diva things
             "diva": "diva/diva",
-            "diva-utils": "diva/utils",
             "diva-annotate": "diva/plugins/annotate",
             "diva-canvas": "diva/plugins/canvas",
             "diva-download": "diva/plugins/download",
@@ -72,19 +71,26 @@ module.exports = configureBuildMode({
     module: {
         loaders: [
             // Export the Diva global, which for mysterious
-            // reasons is defined in the utils file. This export
-            // complements the ProvidePlugin injection below.
+            // reasons is defined in the utils file
             {
                 include: [libPath('diva/utils.js')],
                 loader: 'exports?diva'
+            },
+
+            // Import and re-export the Diva global from the diva.js file
+            {
+                include: [libPath('diva/diva.js')],
+                loaders: ['imports?diva=./utils', 'exports?diva']
             }
         ]
     },
 
     plugins: [
-        // Inject globals that various things rely on (grrrr...)
+        // Inject globals that Diva relies on. While this plugin applies
+        // globally, JSHint should ensure that these aren't injected in
+        // app code.
         new webpack.ProvidePlugin({
-            diva: 'diva-utils',
+            diva: 'diva',
             jQuery: 'jquery',
             'window.jQuery': 'jquery',
             $: 'jquery'

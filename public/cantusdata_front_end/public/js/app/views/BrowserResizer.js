@@ -1,5 +1,5 @@
-define(["jquery", "underscore", "backbone", "singletons/GlobalEventHandler"],
-    function($, _, Backbone, GlobalEventHandler)
+define(["jquery", "underscore", "backbone", "diva", "singletons/GlobalEventHandler"],
+    function($, _, Backbone, diva, GlobalEventHandler)
     {
 
         "use strict";

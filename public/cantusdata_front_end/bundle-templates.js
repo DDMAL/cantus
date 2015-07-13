@@ -15,13 +15,15 @@ module.exports = {
 };
 
 /**
- * Bundle all templates in templateDir
+ * Bundle all templates in a directory into a CommonJS module. Currently,
+ * template search is non-recursive.
  *
- * @param templateDir
- * @param bundleFile
+ * @param templateDir Path to the input directory
+ * @param bundleFile Path to the output file
+ * @param options Options passed to `writeBundle`
  * @returns A promise which resolves once the bundle file has been written
  */
-function bundle(templateDir, bundleFile)
+function bundle(templateDir, bundleFile, options)
 {
     return getTemplates(templateDir).then(function (data)
     {
@@ -33,7 +35,7 @@ function bundle(templateDir, bundleFile)
 
         stream.on('open', function ()
         {
-            writeBundle(data, stream);
+            writeBundle(data, stream, options);
             stream.end();
         });
 
@@ -51,11 +53,22 @@ function bundle(templateDir, bundleFile)
  * writeable stream, output the source for a CommonJS module containing
  * the template functions to the stream.
  *
+ * Accepts an optional `options` argument, which is a dict of
+ * configuration values. Currently the only accepted option is `preface`,
+ * which defines an optional string that is inserted at the start of the
+ * file.
+ *
  * @param templates
  * @param stream
+ * @param options
  */
-function writeBundle(templates, stream)
+function writeBundle(templates, stream, options)
 {
+    var preface = _.result(options, 'preface');
+
+    if (preface)
+        stream.write(preface);
+
     var len = templates.length;
 
     stream.write('module.exports={\n');

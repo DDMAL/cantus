@@ -134,7 +134,9 @@ gulp.task('clean:js', function (done)
 
 gulp.task('bundle:templates', function ()
 {
-    return bundleTemplates('public/templates', '.tmp/templates.js');
+    return bundleTemplates('public/templates', '.tmp/templates.js', {
+        preface: '_ = require("underscore");'
+    });
 });
 
 gulp.task('watch', function (done)
