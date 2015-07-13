@@ -88,7 +88,7 @@ gulp.task('rebuild:js', ['copySources:js', 'bundle:js']);
 /** Copy needed files into the Django static directory */
 gulp.task('copySources:js', function ()
 {
-    var dest = '../cantusdata/static/js/';
+    var dest = '../static/js/';
 
     // Make this a no-op when doing a release build
     var files = yargs.release ? [] : scripts.clientJS;
@@ -119,7 +119,7 @@ gulp.task('bundle:js', ['bundle:templates'], function (cb)
 
 gulp.task('clean:js', function (done)
 {
-    del(['../cantusdata/static/js/', './.tmp'], {force: true}, function (err)
+    del(['../static/js/', './.tmp'], {force: true}, function (err)
     {
         if (err)
             done(err);
@@ -147,7 +147,7 @@ gulp.task('watch', function (done)
     var jsWatcher = gulp.watch(scripts.clientJS.concat(scripts.templates), ['lint-nofail:js', 'rebuild:js']);
 
     jsWatcher.on('change', logWatchedChange);
-    jsWatcher.on('change', getWatchDeletionCb('public/js', '../cantusdata/static/js'));
+    jsWatcher.on('change', getWatchDeletionCb('public/js', '../static/js'));
 });
 
 /**

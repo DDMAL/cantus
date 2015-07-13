@@ -47,7 +47,7 @@ module.exports = configureBuildMode({
 
     output: {
         filename: '[name].min.js',
-        path: path.resolve(__dirname, '../cantusdata/static/js/app'),
+        path: path.resolve(__dirname, '../static/js/app'),
         publicPath: '/static/js/app/'
     },
 
