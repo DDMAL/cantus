@@ -14,7 +14,6 @@ define(["marionette",
          * @constructor
          */
         return Marionette.LayoutView.extend({
-            el: '#view-goes-here',
             template: '#search-page-template',
 
             regions: {

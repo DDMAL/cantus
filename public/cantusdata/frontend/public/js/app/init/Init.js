@@ -1,5 +1,5 @@
-require(["underscore", "App", "routers/WorkSpace", "templates", "marionette", "jquery", "backbone", "bootstrap"],
-    function (_, App, WorkSpace, templates, Marionette)
+require(["underscore", "App", "templates", "marionette", "jquery", "backbone", "bootstrap"],
+    function (_, App, templates, Marionette)
     {
         "use strict";
 
@@ -29,10 +29,5 @@ require(["underscore", "App", "routers/WorkSpace", "templates", "marionette", "j
         /** Return the pre-compiled template untouched. */
         Marionette.TemplateCache.prototype.compileTemplate = _.identity;
 
-        App.appRouter = new WorkSpace({
-//            controller:new AppController()
-        });
-        // Start Marionette Application in desktop mode (default)
         App.start();
-
     });

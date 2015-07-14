@@ -30,7 +30,6 @@ function(_,
  */
 return Marionette.LayoutView.extend
 ({
-    el: '#view-goes-here',
     template: '#manuscript-template',
 
     id: null,
@@ -155,9 +154,9 @@ return Marionette.LayoutView.extend
     /**
      * Fetch the manuscript's data from the API.
      */
-    getData: function()
+    getData: function(options)
     {
-        this.manuscript.fetch();
+        this.manuscript.fetch(options);
     },
 
     /**
@@ -193,7 +192,6 @@ return Marionette.LayoutView.extend
         this.divaView.setManuscript(this.manuscript.get("siglum_slug"));
         this.searchNotationView.setManuscript(this.manuscript.get("siglum_slug"));
         this.searchNotationView.setSearchFields(notationSearchFields);
-        this.render();
 
         // Set the document title to reflect the manuscript name
         GlobalEventHandler.trigger("ChangeDocumentTitle", this.manuscript.get("name"));
@@ -209,7 +207,7 @@ return Marionette.LayoutView.extend
         return this.manuscript.toJSON();
     },
 
-    onRender: function()
+    onShow: function()
     {
         this.ui.manuscriptTitlePopoverLink.popover({
             content: this.getPopoverContent,

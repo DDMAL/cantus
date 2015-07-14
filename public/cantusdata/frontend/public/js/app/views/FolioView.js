@@ -1,11 +1,11 @@
-define(['underscore', 'App', 'backbone', 'marionette',
+define(['underscore', 'backbone', 'marionette',
         "models/Folio",
         "views/collection_views/ChantCompositeView",
         "views/DivaFolioAdvancerView",
         "views/item_views/FolioItemView",
         "singletons/GlobalEventHandler",
         "config/GlobalVars"],
-function(_, App, Backbone, Marionette,
+function(_, Backbone, Marionette,
          Folio,
          ChantCompositeView,
          DivaFolioAdvancerView,
@@ -66,8 +66,19 @@ return Marionette.LayoutView.extend
 
         this.chantCompositeView = new ChantCompositeView({
             collection: this.chantCollection,
-            unfoldedChant: App.appRouter.globalState.get('chant')
+            unfoldedChant: this.getActiveChant()
         });
+    },
+
+    /**
+     * Return the current active chant for the application
+     */
+    getActiveChant: function()
+    {
+        // FIXME(wabain): requiring the app in a closure resolves a circular import issue, but it's
+        // a little iffy in terms of bundler tooling and goes against the general CU code style. This
+        // should probably use a channel or something.
+        return require('App').routeController.globalState.get('chant');
     },
 
     onDestroy: function()

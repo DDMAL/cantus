@@ -1,26 +1,25 @@
-define(['backbone', 'marionette'],
-    function (Backbone, Marionette)
+define(['underscore', 'backbone', 'marionette', 'routers/WorkSpace', 'routers/RouteController'],
+    function (_, Backbone, Marionette, WorkSpace, RouteController)
     {
         "use strict";
 
-        // jscs:disable validateIndentation
-        var App = new Marionette.Application();
+        var App = new Marionette.Application({
+            onBeforeStart: function ()
+            {
+                this.routeController = new RouteController();
 
-        //Organize Application into regions corresponding to DOM elements
-        //Regions can contain views, Layouts, or subregions nested as necessary
-//        App.addRegions({
-//            headerRegion:"header",
-//            mainRegion:"#main"
-//        });
+                this.appRouter = new WorkSpace({
+                    controller: this.routeController
+                });
+
+                this.routeController.onBeforeStart();
+            }
+        });
 
         App.addInitializer(function ()
         {
             Backbone.history.start({pushState: true});
         });
-
-//        App.mobile = isMobile();
-
-        // jscs:enable
 
         return App;
     });

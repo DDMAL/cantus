@@ -12,7 +12,6 @@ define(["marionette",
          * This page is a big list of manuscripts.
          */
         return Marionette.LayoutView.extend({
-            el: '#view-goes-here',
             template: '#manuscripts-page-template',
 
             regions: {
