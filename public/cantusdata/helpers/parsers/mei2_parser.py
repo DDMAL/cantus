@@ -2,7 +2,7 @@ import uuid
 from music21.pitch import STEPREF
 import os
 from music21.interval import convertSemitoneToSpecifierGeneric
-from pymei import XmlImport
+import pymei
 
 
 class MEI2Parser():
@@ -61,10 +61,12 @@ class MEI2Parser():
 
     ##### Constructor #####
 
-    def __init__(self, folder_name, siglum_slug):
+    def __init__(self, folder_name, siglum_slug, min_gram=2, max_gram=10):
         self.folder_name = folder_name
         self.siglum_slug = siglum_slug
 
+        self.min_gram = min_gram
+        self.max_gram = max_gram
 
     #*****************************FUNCTIONS*******************************
 
@@ -299,7 +301,7 @@ class MEI2Parser():
     #     return 1
 
 
-    def processMeiFile(self, ffile, shortest_gram, longest_gram):
+    def processMeiFile(self, ffile):
         """
         Process the MEI file.
 
@@ -309,128 +311,133 @@ class MEI2Parser():
         :return: list of dictionaries
         """
         print '\nProcessing ' + str(ffile) + '...'
-        try:
-            meifile = XmlImport.documentFromFile(str(ffile))
-        except Exception, e:
-            print "E: ", e
-            print "Whoops!"
 
-        print "ffile:"
-        print ffile
-
-        page = meifile.getElementsByName('page')
+        meifile = pymei.documentFromFile(str(ffile)).getMeiDocument()
 
         # Taken directly from file name!!!
         pagen = \
             str(ffile).split('_')[len(str(ffile).split('_')) - 1].split('.')[0]
 
-        notes = meifile.getElementsByName('note')
         zones = meifile.getElementsByName('zone')
-        nnotes = len(notes)  # number of notes in file
-        #print str(nnotes) + 'notes\n'
 
-        # get and store text
-        # if dotext:
-        # lines = meifile.search('l')
-        # storeText(lines, zones, textdb)
+        docs = self.getPitchSequences(pagen, meifile, zones)
 
-        #Set these to control which databases you access
-        #shortest_gram = 2
-        #longest_gram = 10
-        mydocs = []
-
-        for i in range(shortest_gram, longest_gram + 1):
-
-            # uncomment the lines below if you want to process only files that aren't already in the couch
-            # only proceed with the rest of the script if a query for pagen returns 0 hits
-            # map_fun = '''function(doc) {
-            #            emit(doc.pagen, null)
-            #        }'''
-            # rows = db.query(map_fun, key=pagen)
-            # lrows = len(rows)
-            lrows = 0  #comment out this line if you want to process files that aren't already in the couch
-            if lrows == 0:
-                #*******************TEST************************
-                # for note in notes:
-                #             s = meifile.get_system(note)
-                #             neume = str(note.parent.parent.attribute_by_name('name').value)
-                #             print 'pitch: '+ str(note.pitch[0])+ ' neume: ' + neume + " system: " +str(s)
-                #***********************************************
-
-                print "Processing pitch sequences... "
-                # for j,note in enumerate(notes):
-                for j in range(0, nnotes - i):
-                    seq = notes[j:j + i]
-                    # get box coordinates of sequence
-                    # if ffile == "/Volumes/Copland/Users/ahankins/Documents/code/testing/Liber_Usualis_Final_Output/0012/0012_corr.mei":
-                    #     pdb.set_trace()
-
-                    location = self.getLocation(seq, meifile, zones)
-                    #print 'location: ' + str(location)
-
-                    # get neumes
-                    neumes = self.getNeumes(seq, i)
-
-                    # get pitch names
-                    [pnames, midipitch] = self.getPitchNames(seq)
-
-                    # get semitones
-                    # calculate difference between each adjacent entry in midipitch list
-                    semitones = [m - n for n, m in
-                                 zip(midipitch[:-1], midipitch[1:])]
-                    str_semitones = str(semitones)[
-                                    1:-1]  # string will be stored instead of array for easy searching
-                    str_semitones = str_semitones.replace(', ', '_')
-
-                    # get quality invariant interval name and direction
-                    # for example, an ascending major second and an ascending
-                    # minor second will both be encoded as 'u2'
-
-                    # the only tritone to occur would be between b and f, in the
-                    #  context of this application we will assume that the be
-                    # will always be sung as b flat
-
-                    # thus the tritone is never encoded as such and will always
-                    # be represented as either a fifth or a fourth, depending
-                    # on inversion
-                    intervals = self.getIntervals(semitones, pnames)
-
-                    # get contour - encode with Parsons code for musical contour
-                    contour = self.getContour(semitones)
-                    # save new document
-                    mydocs.append(
-                        {
-                            'id': str(uuid.uuid4()),
-                            'type': "cantusdata_music_notation",
-                            'siglum_slug': self.siglum_slug,
-                            'folio': pagen,
-                            # 'project': int(project_id),
-                            'pnames': pnames,
-                            'neumes': neumes,
-                            'contour': contour,
-                            'semitones': str_semitones,
-                            'intervals': intervals,
-                            'location': str(location)
-                        }
-                    )
-            else:
-                print 'page ' + str(pagen) + ' already processed\n'
+        if self.min_gram > 1:
+            docs.extend(self.getShortNeumes(pagen, meifile, zones))
 
         self.systemcache.clear()
         self.idcache.clear()
 
+        return docs
+
+    def getPitchSequences(self, pagen, meifile, zones):
+        """Extract ngrams for note sequences from the MEI file"""
+        notes = meifile.getElementsByName('note')
+        nnotes = len(notes)  # number of notes in file
+
+        mydocs = []
+
+        for i in range(self.min_gram, self.max_gram + 1):
+
+            #*******************TEST************************
+            # for note in notes:
+            #             s = meifile.get_system(note)
+            #             neume = str(note.parent.parent.attribute_by_name('name').value)
+            #             print 'pitch: '+ str(note.pitch[0])+ ' neume: ' + neume + " system: " +str(s)
+            #***********************************************
+
+            print "Processing pitch sequences... "
+            # for j,note in enumerate(notes):
+            for j in range(0, nnotes - i):
+                seq = notes[j:j + i]
+                # get box coordinates of sequence
+                # if ffile == "/Volumes/Copland/Users/ahankins/Documents/code/testing/Liber_Usualis_Final_Output/0012/0012_corr.mei":
+                #     pdb.set_trace()
+
+                location = self.getLocation(seq, meifile, zones)
+                #print 'location: ' + str(location)
+
+                # get neumes
+                neumes = self.getNeumes(seq, i)
+
+                # get pitch names
+                [pnames, midipitch] = self.getPitchNames(seq)
+
+                # get semitones
+                # calculate difference between each adjacent entry in midipitch list
+                semitones = [m - n for n, m in
+                             zip(midipitch[:-1], midipitch[1:])]
+                str_semitones = str(semitones)[
+                                1:-1]  # string will be stored instead of array for easy searching
+                str_semitones = str_semitones.replace(', ', '_')
+
+                # get quality invariant interval name and direction
+                # for example, an ascending major second and an ascending
+                # minor second will both be encoded as 'u2'
+
+                # the only tritone to occur would be between b and f, in the
+                #  context of this application we will assume that the be
+                # will always be sung as b flat
+
+                # thus the tritone is never encoded as such and will always
+                # be represented as either a fifth or a fourth, depending
+                # on inversion
+                intervals = self.getIntervals(semitones, pnames)
+
+                # get contour - encode with Parsons code for musical contour
+                contour = self.getContour(semitones)
+
+                # save new document
+                mydocs.append(
+                    {
+                        'id': str(uuid.uuid4()),
+                        'type': "cantusdata_music_notation",
+                        'siglum_slug': self.siglum_slug,
+                        'folio': pagen,
+                        # 'project': int(project_id),
+                        'pnames': pnames,
+                        'neumes': neumes,
+                        'contour': contour,
+                        'semitones': str_semitones,
+                        'intervals': intervals,
+                        'location': str(location)
+                    }
+                )
+
         return mydocs
 
+    def getShortNeumes(self, pagen, meifile, zones):
+        """Extract single neumes whose note sequences are too short to be ngrams.
+
+        Usually it is possible to do single neume search using the records
+        created for note sequences. However, neumes whose note sequences are too
+        short will only be indexed along with adjacent neumes. To be able to index
+        them for single neume search we need to add them separately.
+        """
+        neume_docs = []
+
+        for neume in meifile.getElementsByName('neume'):
+            notes = neume.getDescendantsByName('note')
+
+            if len(notes) < self.min_gram:
+                location = self.getLocation(notes, meifile, zones)
+
+                neume_docs.append({
+                    'id': str(uuid.uuid4()),
+                    'type': "cantusdata_music_notation",
+                    'siglum_slug': self.siglum_slug,
+                    'folio': pagen,
+                    'neumes': str(neume.getAttribute('name').value),
+                    'location': str(location)
+                })
+
+        return neume_docs
 
     #***************************** MEI PROCESSING ****************************
 
     def parse(self):
 
         path = self.folder_name
-
-        # TEMP
-        shortest_gram = 2
-        longest_gram = 10
 
         # Generate list of files to process, preferring human-corrected MEI files
         meifiles = []
@@ -450,6 +457,5 @@ class MEI2Parser():
         # This list will represent one manuscript
         output = []
         for ffile in meifiles:
-            output.append(
-                self.processMeiFile(ffile, shortest_gram, longest_gram))
+            output.append(self.processMeiFile(ffile))
         return output

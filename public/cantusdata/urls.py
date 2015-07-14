@@ -16,9 +16,7 @@ urlpatterns = []
 
 urlpatterns += format_suffix_patterns(
     patterns('cantusdata.views.main',
-             url(r'^$', 'home'),
              url(r'^browse/$', 'api_root'),
-             #url(r'^/$', ManuscriptList.as_view(), name="manuscript-list"),
              # Manuscripts
              url(r'^manuscripts/$', ManuscriptList.as_view(), name="manuscript-list"),
              url(r'^manuscript/(?P<pk>[0-9]+)/$', ManuscriptDetail.as_view(),

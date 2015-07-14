@@ -80,10 +80,9 @@ class SolrSearch(object):
                 if k == 'q':
                     if v[0] != u"":
                         arr.insert(0, u"{0}".format(v[0]))
-                elif k == 'start':
-                    # Start should only ever have one value, so we'll just
-                    # grab it from index 0.
-                    self.solr_params['start'] = int(v[0])
+                elif k in ('start', 'rows'):
+                    # Start and row parameters are single integers
+                    self.solr_params[k] = int(v[0])
                 elif k == 'sort':
                     # Treat sort as a string, not a one-element tuple
                     self.solr_params['sort'] = str(v[0])

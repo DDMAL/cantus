@@ -1,0 +1,25 @@
+<tr>
+    <td>
+        <a href="<%= result.url %>" class="search-result"><%= result.name %></a>
+    </td>
+
+    <% if (showManuscriptName) { %>
+    <td><%= result.manuscript %></td>
+    <% } %>
+
+    <td><%= result.mode %></td>
+
+    <td><%= result.folio %></td>
+
+    <td><%= result.genre %></td>
+
+    <% if (showManuscriptName) { %>
+    <td><%= result.office %></td>
+    <% } %>
+
+</tr>
+<% if (searchType === "volpiano" && result.volpiano !== undefined) { %>
+<tr>
+    <td colspan="5"><p class="volpiano"><%= result.volpiano %></p></td>
+</tr>
+<% } %>

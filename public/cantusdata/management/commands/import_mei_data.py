@@ -1,12 +1,16 @@
-import solr
+import os
+import subprocess
 import csv
+
+import solr
 from django.core.management.base import BaseCommand
+
 from cantusdata import settings
 from cantusdata.helpers.parsers.csv_parser import CSVParser
 
 
 class Command(BaseCommand):
-    args = ""
+    args = "mode manuscript"
 
     def handle(self, *args, **kwargs):
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
@@ -50,6 +54,7 @@ class Command(BaseCommand):
             data = parser.parse()
             self.data_to_csv(data, csv_location)
             self.stdout.write("MEI dumped to CSV.")
+
         elif mode == "mei_to_solr":
             self.stdout.write("Committing MEI to Solr.")
             if manuscript == "st_gallen_390" or manuscript == "st_gallen_391":
@@ -61,19 +66,15 @@ class Command(BaseCommand):
             data = parser.parse()
             self.data_to_solr(data, solrconn)
             self.stdout.write("MEI committed to Solr.")
+
         elif mode == "csv_to_solr":
-            self.stdout.write("Loading CSV file...")
-            data = csv.DictReader(open(csv_location))
-            self.stdout.write("Adding CSV to Solr...")
-            for row in data:
-                solrconn.add(**row)
-            self.stdout.write("Committing Solr additions.")
-            solrconn.commit()
-            self.stdout.write("CSV committed to Solr.")
+            self.csv_to_solr(csv_location)
+
         elif mode == "gall_hack":
             data = CSVParser("data_dumps/hacky_csv_mei/csg_390_ordered_2.csv",
                              "ch-sgs-390").parse()
             self.data_to_solr(data, solrconn)
+
         else:
             raise Exception("Please provide mode!")
 
@@ -85,12 +86,22 @@ class Command(BaseCommand):
         :param path:
         :return:
         """
+        heading_order = {
+            h: i for (i, h) in enumerate((
+                'folio', 'pnames', 'neumes', 'siglum_slug', 'intervals', 'id',
+                'semitones', 'contour', 'project', 'location', 'type'
+            ))
+        }
+
+        # Maintain a stable heading order for Salzinnes-style CSV so that it's possible to run word-by-word
+        # diffs on the output
+        headings = list(sorted(data[0][0].keys(), key=lambda h: heading_order.get(h, -1)))
+
         csv_file = open(path, 'wb')
-        w = csv.DictWriter(csv_file, data[0][0].keys())
+        w = csv.DictWriter(csv_file, headings)
         w.writeheader()
         for page in data:
             for row in page:
-                w = csv.DictWriter(csv_file, row.keys())
                 w.writerow(row)
         csv_file.close()
 
@@ -102,7 +113,29 @@ class Command(BaseCommand):
         :param solrconn:
         :return:
         """
+        rows = []
+
         for page in data:
-            for row in page:
-                solrconn.add(**row)
+            rows.extend(page)
+
+        solrconn.add_many(rows)
         solrconn.commit()
+
+    def csv_to_solr(self, filename):
+        """Commit a CSV file to Solr using a stream"""
+
+        # Build the Solr upload URL
+        url = ('"{server}/update?stream.file={path}&stream.contentType=text/csv;charset=utf-8&commit=true"'
+                .format(server=settings.SOLR_SERVER, path=os.path.abspath(filename)))
+
+        command = 'curl -s -o /dev/null -w "%{http_code}" ' + url
+
+        print 'Sending CSV to Solr.'
+
+        status = subprocess.check_output(command, shell=True)
+
+        if not status or status[0] != '2':
+            print 'Upload failed (status {}). See the Solr logs for details.'.format(status)
+        else:
+            print 'CSV upload successful.'
+

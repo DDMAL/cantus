@@ -1147,8 +1147,8 @@
             "click #site-logo": function()
             {
                 // Prevent page from reloading
-                event.preventDefault();
-                app.navigate("/", {trigger: true});
+                // event.preventDefault();
+                // app.navigate("/", {trigger: true});
             }
         },
 
@@ -1164,18 +1164,20 @@
             this.topMenuView = new TopMenuView(
                 {
                     menuItems: [
-                        {
-                            name: "Manuscripts",
-                            url: "/",
-                            active: false
-                        },
-                        {
-                            name: "Search",
-                            tags: 'data-toggle="modal" data-target="#myModal"',
-                            url: "#",
-                            active: false
-                        }
                     ]
+                    // menuItems: [
+                    //     {
+                    //         name: "Manuscripts",
+                    //         url: "/",
+                    //         active: false
+                    //     },
+                    //     {
+                    //         name: "Search",
+                    //         tags: 'data-toggle="modal" data-target="#myModal"',
+                    //         url: "#",
+                    //         active: false
+                    //     }
+                    // ]
                 }
             );
         },

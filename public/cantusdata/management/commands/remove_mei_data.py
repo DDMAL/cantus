@@ -20,6 +20,6 @@ class Command(BaseCommand):
 
         self.stdout.write("Removing {0} music notation data from Solr...".format(manuscript))
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
-        solrconn.delete_query("type:cantusdata_music_notation AND siglum:{0}".format(siglum))
+        solrconn.delete_query("type:cantusdata_music_notation AND siglum_slug:{0}".format(siglum))
         solrconn.commit()
         self.stdout.write("Success.")

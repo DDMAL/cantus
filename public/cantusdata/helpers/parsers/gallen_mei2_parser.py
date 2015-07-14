@@ -1,6 +1,6 @@
 import uuid
 import string
-from pymei import XmlImport
+import pymei
 from cantusdata.helpers.parsers.mei2_parser import MEI2Parser
 
 
@@ -107,7 +107,7 @@ class GallenMEI2Parser(MEI2Parser):
     Some customizations to MEI2Parser() so that it works with the St. Gallen
     spec.
     """
-    def processMeiFile(self, ffile, shortest_gram, longest_gram):
+    def processMeiFile(self, ffile):
         """
         Process the MEI file.
 
@@ -117,11 +117,8 @@ class GallenMEI2Parser(MEI2Parser):
         :return: list of dictionaries
         """
         print '\nProcessing ' + str(ffile) + '...'
-        try:
-            meifile = XmlImport.documentFromFile(str(ffile))
-        except Exception, e:
-            print "E: ", e
-            print "Whoops!"
+
+        meifile = pymei.documentFromFile(str(ffile)).getMeiDocument()
 
         print "ffile:"
         print ffile
@@ -136,11 +133,11 @@ class GallenMEI2Parser(MEI2Parser):
         zones = meifile.getElementsByName('zone')
         n_neumes = len(neumes)  # number of notes in file
         print("n_neumes: {0}, shortest_gram: {1}, longest_gram: {2}".format(
-            n_neumes, shortest_gram, longest_gram))
+            n_neumes, self.min_gram, self.max_gram))
 
         mydocs = []
 
-        for i in range(shortest_gram, longest_gram + 1):
+        for i in range(self.min_gram, self.max_gram + 1):
             # comment out this line if you want to process files that aren't
             # already in the couch
             lrows = 0
