@@ -1,8 +1,7 @@
 define(["marionette",
         "views/SearchView",
-        "views/ModalView",
-        "singletons/GlobalEventHandler"],
-    function(Marionette, SearchView, ModalView, GlobalEventHandler)
+        "views/ModalView"],
+    function(Marionette, SearchView, ModalView)
     {
         "use strict";
 
@@ -39,7 +38,6 @@ define(["marionette",
                 this.ui.searchModalLink.attr({'data-toggle': 'modal', href: '#myModal'});
 
                 this.searchModalRegion.show(this.searchModalView, {preventDestroy: true});
-                GlobalEventHandler.trigger("renderView");
             }
         });
     });

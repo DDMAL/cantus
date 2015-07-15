@@ -341,7 +341,6 @@ return Marionette.ItemView.extend
     onShow: function()
     {
         this.initializeDiva();
-        GlobalEventHandler.trigger("renderView");
     },
 
     setGlobalFullScreen: function(isFullScreen)

@@ -237,7 +237,6 @@ return Marionette.LayoutView.extend
 
         this.searchViewRegion.show(this.searchView);
         this.searchNotationViewRegion.show(this.searchNotationView);
-        GlobalEventHandler.trigger("renderView");
     },
 
     onWindowResized: function ()

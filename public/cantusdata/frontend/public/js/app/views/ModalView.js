@@ -1,6 +1,5 @@
-define(["marionette",
-        "singletons/GlobalEventHandler"],
-    function(Marionette, GlobalEventHandler)
+define(["marionette"],
+    function(Marionette)
     {
 
         "use strict";
@@ -34,8 +33,6 @@ define(["marionette",
                 {
                     this.body.show(this.visitorView, {preventDestroy: true});
                 }
-
-                GlobalEventHandler.trigger("renderView");
             },
 
             serializeData: function()

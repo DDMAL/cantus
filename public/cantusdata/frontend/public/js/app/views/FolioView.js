@@ -148,8 +148,6 @@ return Marionette.LayoutView.extend
         this.folioItemRegion.show(this.folioItemView, {preventDestroy: true});
         this.chantListRegion.show(this.chantCompositeView, {preventDestroy: true});
         this.divaFolioAdvancerRegion.show(new DivaFolioAdvancerView());
-
-        GlobalEventHandler.trigger("renderView");
     }
 });
 });

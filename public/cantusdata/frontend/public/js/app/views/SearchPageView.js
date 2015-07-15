@@ -1,9 +1,7 @@
 define(["marionette",
-        "views/SearchView",
-        "singletons/GlobalEventHandler"],
+        "views/SearchView"],
     function(Marionette,
-             SearchView,
-             GlobalEventHandler)
+             SearchView)
     {
 
         "use strict";
@@ -35,7 +33,6 @@ define(["marionette",
             onRender: function()
             {
                 this.searchRegion.show(this.searchView, {preventDestroy: true});
-                GlobalEventHandler.trigger("renderView");
             }
         });
     });
