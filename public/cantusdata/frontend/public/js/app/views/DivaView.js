@@ -56,12 +56,27 @@ return Marionette.ItemView.extend
     modeSwitchEvent: null,
     docLoadEvent: null,
 
+    behaviors: {
+        resize: {
+            target: '.diva-outer',
+            action: 'publishDivaPanelResizedEvent'
+        }
+    },
+
     initialize: function(options)
     {
-        _.bindAll(this, 'storeFolioIndex', 'storeInitialFolio', 'setFolio',
+        _.bindAll(this, 'storeFolioIndex', 'onViewerLoad', 'setFolio',
             'setGlobalFullScreen', 'zoomToLocation', 'getPageAlias',
             'initializePageAliasing', 'gotoInputPage', 'getPageWhichMatchesAlias',
             'onDocLoad');
+
+        // Create a debounced function to alert Diva that its panel size
+        // has changed
+        this.publishDivaPanelResizedEvent = _.debounce(function ()
+        {
+            diva.Events.publish("PanelSizeDidChange");
+        }, 500);
+
         //this.el = options.el;
         this.setManuscript(options.siglum, options.folio);
     },
@@ -152,7 +167,7 @@ return Marionette.ItemView.extend
         // Initialize Diva
         this.ui.divaWrapper.diva(options);
 
-        this.viewerLoadEvent = diva.Events.subscribe("ViewerDidLoad", this.storeInitialFolio);
+        this.viewerLoadEvent = diva.Events.subscribe("ViewerDidLoad", this.onViewerLoad);
         this.pageAliasingInitEvent = diva.Events.subscribe("ViewerDidLoad", this.initializePageAliasing);
         this.pageChangeEvent = diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
         this.modeSwitchEvent = diva.Events.subscribe("ModeDidSwitch", this.setGlobalFullScreen);
@@ -331,13 +346,14 @@ return Marionette.ItemView.extend
 
     setGlobalFullScreen: function(isFullScreen)
     {
-        if (isFullScreen === true)
+        if (isFullScreen)
         {
             GlobalEventHandler.trigger("divaFullScreen");
         }
-        else if (isFullScreen === false)
+        else
         {
             GlobalEventHandler.trigger("divaNotFullScreen");
+            this.triggerMethod('recalculate:size');
         }
     },
 
@@ -357,11 +373,13 @@ return Marionette.ItemView.extend
     },
 
     /**
-     * Store the index and filename of the first loaded page.
+     * Calculate the page size and store the index and filename of the first
+     * loaded page.
      */
-    storeInitialFolio: function()
+    onViewerLoad: function()
     {
-        //console.log("storeInitialFolio() begin.");
+        this.triggerMethod('recalculate:size');
+
         // If there exists a client-defined initial folio
         if (this.initialFolio !== undefined)
         {
@@ -376,7 +394,6 @@ return Marionette.ItemView.extend
         this.storeFolioIndex(number, name);
         // Store the image prefix for later
         this.setImagePrefixAndSuffix(name);
-        //console.log("storeInitialFolio() end.");
     },
 
     initializePageAliasing: function()

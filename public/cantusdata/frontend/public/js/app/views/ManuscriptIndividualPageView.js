@@ -38,6 +38,8 @@ return Marionette.LayoutView.extend
     searchNotationView: null,
     popoverContent: null,
 
+    initialViewPortSize: null,
+
     // Subviews
     divaView: null,
     folioView: null,
@@ -58,6 +60,13 @@ return Marionette.LayoutView.extend
         folioViewRegion: "#folio",
         searchViewRegion: "#manuscript-search",
         searchNotationViewRegion: "#search-notation"
+    },
+
+    behaviors: {
+        resize: {
+            target: '#manuscript-data-container',
+            action: 'onWindowResized'
+        }
     },
 
     initialize: function (options)
@@ -113,6 +122,8 @@ return Marionette.LayoutView.extend
         this.searchNotationView.destroy();
         this.folioView.destroy();
         this.destroyPopoverView();
+
+        this.restoreInitialViewPortSize();
     },
 
     instantiatePopoverView: function ()
@@ -209,6 +220,9 @@ return Marionette.LayoutView.extend
 
     onShow: function()
     {
+        this.storeInitialViewPortSize();
+        this.setViewPortSize();
+
         this.ui.manuscriptTitlePopoverLink.popover({
             content: this.getPopoverContent,
             html: true
@@ -224,6 +238,37 @@ return Marionette.LayoutView.extend
         this.searchViewRegion.show(this.searchView);
         this.searchNotationViewRegion.show(this.searchNotationView);
         GlobalEventHandler.trigger("renderView");
+    },
+
+    onWindowResized: function ()
+    {
+        this.setViewPortSize();
+    },
+
+    setViewPortSize: function()
+    {
+        // FIXME(wabain): Figure out if we really need to do this at all
+        if ($(window).width() <= 880)
+        {
+            // Small screens
+            $('meta[name=viewport]').attr('content', 'width=880, user-scalable=no');
+        }
+        else
+        {
+            // Big screens
+            $('meta[name=viewport]').attr('content', 'width=device-width');
+        }
+    },
+
+    storeInitialViewPortSize: function ()
+    {
+        this.initialViewPortSize = $('meta[name=viewport]').attr('content');
+    },
+
+    restoreInitialViewPortSize: function ()
+    {
+        if (this.initialViewPortSize)
+            $('meta[name=viewport]').attr('content', this.initialViewPortSize);
     }
 });
 });

@@ -1,5 +1,5 @@
-define(['marionette', 'jquery', 'underscore'],
-    function(Marionette, $, _)
+define(['marionette'],
+    function(Marionette)
     {
 
         "use strict";
@@ -18,22 +18,23 @@ define(['marionette', 'jquery', 'underscore'],
                 manuscriptData: '.manuscript-data'
             },
 
+            behaviors: {
+                resize: {
+                    target: false,
+                    action: 'setHeight',
+
+                    // Run later than the Diva and manuscript detail views
+                    priority: 500
+                }
+            },
+
             initialize: function ()
             {
-                // FIXME(wabain): this needs to be more than 500 so that it runs after
-                // BrowserResizer, but there should really be a better way of deciding
-                // precedence (or, a better way of doing sizing than setting things with
-                // JS...)
-                this.resizeCb = _.debounce(_.bind(this.setHeight, this), 600);
-
-                // Cache jQuery selector
-                this.$window = $(window);
-                this.$window.on('resize', this.resizeCb);
-
-                // This is attached to a popover instead of rendered, so we need to manually
-                // call the bind function
+                // This is attached directly to a popover rather than being rendered, so we need to manually
+                // call the bind function and trigger appropriate lifecycle events
                 this.bindUIElements();
-                this.setHeight();
+                this.triggerMethod('render');
+                this.triggerMethod('show');
             },
 
             /** Set the height of the popover so that it will not extend out of the visible view */
@@ -46,11 +47,6 @@ define(['marionette', 'jquery', 'underscore'],
                     document.body.clientHeight - this.ui.popoverContent.offset().top - 20,
                     this.ui.manuscriptData.height()));
 
-            },
-
-            onDestroy: function()
-            {
-                this.$window.off('resize', this.resizeCb);
             }
         });
     });

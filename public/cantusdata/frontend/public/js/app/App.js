@@ -4,6 +4,8 @@ define(['underscore', 'backbone', 'marionette', 'routers/WorkSpace', 'routers/Ro
         "use strict";
 
         var App = new Marionette.Application({
+            behaviors: {},
+
             onBeforeStart: function ()
             {
                 this.routeController = new RouteController();

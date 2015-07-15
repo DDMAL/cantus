@@ -1,5 +1,5 @@
-require(["underscore", "App", "templates", "marionette", "jquery", "backbone", "bootstrap"],
-    function (_, App, templates, Marionette)
+require(["underscore", "App", "templates", "marionette", "behaviors/ResizeBehavior", "jquery", "backbone", "bootstrap"],
+    function (_, App, templates, Marionette, ResizeBehavior)
     {
         "use strict";
 
@@ -28,6 +28,12 @@ require(["underscore", "App", "templates", "marionette", "jquery", "backbone", "
 
         /** Return the pre-compiled template untouched. */
         Marionette.TemplateCache.prototype.compileTemplate = _.identity;
+
+        Marionette.Behaviors.behaviorsLookup = _.constant(App.behaviors);
+
+        _.extend(App.behaviors, {
+            resize: ResizeBehavior
+        });
 
         App.start();
     });

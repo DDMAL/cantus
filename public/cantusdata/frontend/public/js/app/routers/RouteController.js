@@ -5,7 +5,6 @@ define(["underscore",
         "views/RootView",
         "views/HeaderView",
         "views/ManuscriptsPageView",
-        "views/BrowserResizer",
         "views/ManuscriptIndividualPageView",
         "views/SearchPageView",
         "singletons/GlobalEventHandler"],
@@ -16,7 +15,6 @@ define(["underscore",
              RootView,
              HeaderView,
              ManuscriptsPageView,
-             BrowserResizer,
              ManuscriptIndividualPageView,
              SearchPageView,
              GlobalEventHandler)
@@ -32,9 +30,6 @@ define(["underscore",
             /** Initialize the layout for the application */
             onBeforeStart: function()
             {
-                // Get the resizer going
-                this.resizer = new BrowserResizer();
-
                 // Instantiate the root view
                 this.rootView = new RootView();
 
