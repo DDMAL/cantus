@@ -96,15 +96,11 @@ define(["jquery", "underscore", "backbone", "diva", "singletons/GlobalEventHandl
 
             setViewPortSize: function()
             {
+                // FIXME(wabain): Figure out if we really need to do this at all
                 if ($(window).width() <= 880)
                 {
                     // Small screens
-                    var windowWidth = $(window).width();
-                    var windowHeight = $(window).height();
-                    var computedHeight = 880 * (windowHeight / windowWidth);
-                    var zoomFactor = 880 / windowWidth;
-                    $('meta[name=viewport]').attr('content',
-                        'width=880, height=' + computedHeight + 'initial-scale=' + zoomFactor + ', user-scalable=no');
+                    $('meta[name=viewport]').attr('content', 'width=880, user-scalable=no');
                 }
                 else
                 {
