@@ -1,11 +1,8 @@
-define(["models/Chant", "collections/CantusAbstractCollection"],
-    function(Chant, CantusAbstractCollection)
-    {
+define(["backbone", "models/Chant"], function(Backbone, Chant)
+{
+    'use strict';
 
-        'use strict';
-
-        return CantusAbstractCollection.extend
-        ({
-            model: Chant
-        });
+    return Backbone.Collection.extend({
+        model: Chant
     });
+});

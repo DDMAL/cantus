@@ -1,7 +1,9 @@
 define(["marionette",
+        "collections/ManuscriptCollection",
         "views/ManuscriptCollectionView",
         "config/GlobalVars"],
     function(Marionette,
+             ManuscriptCollection,
              ManuscriptCollectionView,
              GlobalVars)
     {
@@ -20,8 +22,11 @@ define(["marionette",
 
             onRender: function ()
             {
+                var collection = new ManuscriptCollection();
+                collection.fetch({url: GlobalVars.siteUrl + "manuscripts/"});
+
                 this.manuscriptList.show(new ManuscriptCollectionView({
-                    url: GlobalVars.siteUrl + "manuscripts/"
+                    collection: collection
                 }));
             }
         });

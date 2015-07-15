@@ -1,11 +1,8 @@
-define(["models/Manuscript", "collections/CantusAbstractCollection"],
-    function(Manuscript, CantusAbstractCollection)
-    {
+define(["backbone", "models/Manuscript"], function(Backbone, Manuscript)
+{
+    'use strict';
 
-        'use strict';
-
-        return CantusAbstractCollection.extend
-        ({
-            model: Manuscript
-        });
+    return Backbone.Collection.extend({
+        model: Manuscript
     });
+});

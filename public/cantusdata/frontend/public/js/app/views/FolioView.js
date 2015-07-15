@@ -1,5 +1,6 @@
 define(['underscore', 'backbone', 'marionette',
         "models/Folio",
+        "collections/ChantCollection",
         "views/collection_views/ChantCompositeView",
         "views/DivaFolioAdvancerView",
         "views/item_views/FolioItemView",
@@ -7,6 +8,7 @@ define(['underscore', 'backbone', 'marionette',
         "config/GlobalVars"],
 function(_, Backbone, Marionette,
          Folio,
+         ChantCollection,
          ChantCompositeView,
          DivaFolioAdvancerView,
          FolioItemView,
@@ -51,7 +53,7 @@ return Marionette.LayoutView.extend
         // doesn't have a url but subsequent ones do.
 
         this.model = new Folio();
-        this.chantCollection = new Backbone.Collection();
+        this.chantCollection = new ChantCollection();
 
         this.listenTo(this.model, 'sync', this.afterFetch);
 
