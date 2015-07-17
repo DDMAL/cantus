@@ -62,6 +62,26 @@ return Marionette.LayoutView.extend
         resize: {
             target: '#manuscript-data-container',
             action: 'onWindowResized'
+        },
+
+        headConfig: {
+            elements: {
+                html: {
+                    styles: {
+                        'min-width': 880
+                    }
+                },
+
+                // FIXME(wabain): Figure out if we really need to do this at all
+                'meta[name=viewport]': {
+                    attributes: {
+                        content: function ()
+                        {
+                            return $(window).width() <= 880 ? 'width=880, user-scalable=no' : 'width=device-width';
+                        }
+                    }
+                }
+            }
         }
     },
 
@@ -97,8 +117,6 @@ return Marionette.LayoutView.extend
         this.searchNotationView.destroy();
         this.folioView.destroy();
         this.destroyPopoverView();
-
-        this.restoreInitialViewPortSize();
     },
 
     instantiatePopoverView: function ()
@@ -144,9 +162,6 @@ return Marionette.LayoutView.extend
 
     onShow: function()
     {
-        this.storeInitialViewPortSize();
-        this.setViewPortSize();
-
         this.ui.manuscriptTitlePopoverLink.popover({
             content: this.getPopoverContent,
             html: true
@@ -165,33 +180,7 @@ return Marionette.LayoutView.extend
 
     onWindowResized: function ()
     {
-        this.setViewPortSize();
-    },
-
-    setViewPortSize: function()
-    {
-        // FIXME(wabain): Figure out if we really need to do this at all
-        if ($(window).width() <= 880)
-        {
-            // Small screens
-            $('meta[name=viewport]').attr('content', 'width=880, user-scalable=no');
-        }
-        else
-        {
-            // Big screens
-            $('meta[name=viewport]').attr('content', 'width=device-width');
-        }
-    },
-
-    storeInitialViewPortSize: function ()
-    {
-        this.initialViewPortSize = $('meta[name=viewport]').attr('content');
-    },
-
-    restoreInitialViewPortSize: function ()
-    {
-        if (this.initialViewPortSize)
-            $('meta[name=viewport]').attr('content', this.initialViewPortSize);
+        this.triggerMethod('configure:head', 'meta[name=viewport]');
     }
 });
 });
