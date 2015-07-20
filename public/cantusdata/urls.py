@@ -64,5 +64,8 @@ urlpatterns += format_suffix_patterns(
              # Notation search
              url(r'^notation-search/$', SearchNotationView.as_view(),
                  name="search-notation-view"),
+
+             # Flatpages
+             url(r'^', include('django.contrib.flatpages.urls'))
              )
 )
