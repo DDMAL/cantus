@@ -5,7 +5,13 @@ var runSequence = require('run-sequence');
 var jshint = require('gulp-jshint');
 var jscs = require('gulp-jscs');
 var newer = require('gulp-newer');
+var concat = require('gulp-concat');
+var sass = require('gulp-sass');
+var sourcemaps = require('gulp-sourcemaps');
+var gulpif = require('gulp-if');
 
+var _ = require('underscore');
+var lazypipe = require('lazypipe');
 var yargs = require('yargs').argv;
 var webpack = require('webpack');
 var del = require('del');
@@ -14,11 +20,12 @@ var path = require('path');
 var bundleTemplates = require('./bundle-templates').bundle;
 
 // Set path variables
-var scripts = {
+var sources = {
     appJS: ['public/js/app/**/*.js'],
     clientJS: ['public/js/app/**/*.js', 'public/js/libs/**/*.js'],
     buildJS: ['./*.js'],
-    templates: ['public/templates/**/*.html']
+    templates: ['public/templates/**/*.html'],
+    css: ['public/css/**/*{.css,.scss}']
 };
 
 var getWebpackCompiler = (function ()
@@ -43,7 +50,7 @@ gulp.task('default', function (cb)
     runSequence(['lint-nofail:js', 'build'], 'watch', cb);
 });
 
-gulp.task('build', ['build:js']);
+gulp.task('build', ['build:js', 'build:css']);
 
 /*
  * JavaScript linting
@@ -51,24 +58,14 @@ gulp.task('build', ['build:js']);
 
 gulp.task('lint:js', function ()
 {
-    return lintJS(scripts.appJS.concat(scripts.buildJS))
+    return lintJS(sources.appJS.concat(sources.buildJS))
         .pipe(jshint.reporter('fail'));
 });
 
 gulp.task('lint-nofail:js', function ()
 {
-    return lintJS(scripts.appJS.concat(scripts.buildJS));
+    return lintJS(sources.appJS.concat(sources.buildJS));
 });
-
-function lintJS(sources)
-{
-    // FIXME: this errors on jscs failure, even when we'd only
-    // want it to print a warning
-    return gulp.src(sources)
-        .pipe(jshint({lookup: true}))
-        .pipe(jshint.reporter('jshint-stylish'))
-        .pipe(jscs());
-}
 
 /*
  * JavaScript build tasks
@@ -88,14 +85,7 @@ gulp.task('rebuild:js', ['copySources:js', 'bundle:js']);
 /** Copy needed files into the Django static directory */
 gulp.task('copySources:js', function ()
 {
-    var dest = '../static/js/';
-
-    // Make this a no-op when doing a release build
-    var files = yargs.release ? [] : scripts.clientJS;
-
-    return gulp.src(files, {base: './public/js'})
-        .pipe(newer(dest))
-        .pipe(gulp.dest(dest));
+    return copySources(sources.clientJS, './public/js', '../static/js');
 });
 
 gulp.task('bundle:js', ['bundle:templates'], function (cb)
@@ -139,15 +129,78 @@ gulp.task('bundle:templates', function ()
     });
 });
 
+/*
+ * CSS build tasks
+ */
+
+gulp.task('build:css', function (done)
+{
+    runSequence(
+        'clean:css',
+        ['copySources:css', 'bundle:css'],
+        done
+    );
+});
+
+gulp.task('rebuild:css', ['copySources:css', 'bundle:css']);
+
+gulp.task('bundle:css', function ()
+{
+    var sources = [
+        './public/css/bootstrap-theme.min.css',
+        './public/css/diva.min.css',
+        './public/css/styles.scss'
+    ];
+
+    var isScssFile = _.constant((/\.scss$/));
+
+    var compileScss = lazypipe()
+        .pipe(function ()
+        {
+            return sass({outputStyle: 'compressed'}).on('error', sass.logError);
+        });
+
+    return gulp.src(sources, {base: './public/css/'})
+        .pipe(sourcemaps.init())
+        .pipe(gulpif(isScssFile, compileScss()))
+        .pipe(concat('cantus.min.css'))
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest('../static/css'));
+});
+
+gulp.task('copySources:css', function ()
+{
+    return copySources(sources.css, './public/css', '../static/css');
+});
+
+gulp.task('clean:css', function (done)
+{
+    del('../static/css/', {force: true}, function (err)
+    {
+        if (err)
+            done(err);
+        else
+            done();
+    });
+});
+
+/*
+ * Watching
+ */
+
 gulp.task('watch', function (done)
 {
     // jshint unused:false
     // Never call the callback: this runs forever
 
-    var jsWatcher = gulp.watch(scripts.clientJS.concat(scripts.templates), ['lint-nofail:js', 'rebuild:js']);
+    var jsWatcher = gulp.watch(sources.clientJS.concat(sources.templates), ['lint-nofail:js', 'rebuild:js']);
+    var cssWatcher = gulp.watch(sources.css, ['rebuild:css']);
 
     jsWatcher.on('change', logWatchedChange);
     jsWatcher.on('change', getWatchDeletionCb('public/js', '../static/js'));
+
+    cssWatcher.on('change', logWatchedChange);
+    jsWatcher.on('change', getWatchDeletionCb('public/css', '../static/css'));
 });
 
 /**
@@ -180,4 +233,26 @@ function getWatchDeletionCb(srcRoot, destRoot)
             del.sync(destPath, {force: true});
         }
     };
+}
+
+function lintJS(sources)
+{
+    // FIXME: this errors on jscs failure, even when we'd only
+    // want it to print a warning
+    return gulp.src(sources)
+        .pipe(jshint({lookup: true}))
+        .pipe(jshint.reporter('jshint-stylish'))
+        .pipe(jscs());
+}
+
+function copySources(files, baseDir, dest)
+{
+    // Make this a no-op when doing a release build
+    if (yargs.release)
+        files = [];
+
+    return gulp.src(files, {base: baseDir})
+        .pipe(newer(dest))
+        .pipe(gulp.dest(dest));
+
 }
