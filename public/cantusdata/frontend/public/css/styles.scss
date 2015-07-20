@@ -15,7 +15,6 @@
 
 
 html {
-    /*width: 960px;*/
     min-width: 880px;
 }
 
@@ -143,27 +142,8 @@ table.result-list th a {
     width: 100%;
 }
 
-.scrollable {
-    /*height: 800px;*/
-    /*height: 100%;*/
-    overflow-y: scroll;
-}
-
-#header-container {
-
-}
-
-#header-container h3 {
-    /*font-size: 14px;*/
-}
-
 #content-container {
     overflow: hidden;
-}
-
-#page-content {
-    /*height: 400px;*/
-    /*overflow: hidden;*/
 }
 
 #manuscript-data-container {
@@ -192,99 +172,33 @@ table.result-list th a {
     border-right: 1px solid #CCCCCC;
 }
 
-.diva-inner {
-    width: 100%;
-}
-
-.diva-tools-left {
-    float: left;
-    /*width: 40%;*/
-}
-
-#manuscript-search {
+// TODO(wabain): figure out where this should really be done and with what value
+#manuscript-search, #search-notation {
     margin-top: 2em;
-}
-
-#search-notation {
-    margin-top: 2em;
-}
-
-.diva-input {
-    width: 60px;
-    height: 33px;
 }
 
 #diva-toolbar input {
     width: 60px;
     height: 33px;
-    padding: 0px;
+    padding: 0;
 }
 
 #diva-toolbar input[type="submit"] {
     width: 33px;
 }
 
+// Navbar styling
+// Select ancestors of .navbar-default to match the specificity of the Bootstrap styling
+// TODO(wabain): See if this can be done using Bootstrap variables. nav-link-padding?
 
+.navbar-default .navbar-brand {
+    height: 50px;
+    padding: 15px 15px;
+    font-size: 20px;
+    line-height: 20px;
+}
 
-/** Styles for the staticwebsite. **/
-
-@media (min-width: 768px) {
-  .lead {
-    font-size: 22.5px;
-  }
-  .navbar-brand {
-  float: left;
-  height: 50px;
-  padding: 15px 15px;
-  font-size: 20px;
-  line-height: 20px;
-  }
-
-  .navbar-nav > li > a {
+.navbar-default .navbar-nav > li > a {
     padding-top: 15px;
     padding-bottom: 15px;
-  }
 }
-
-@media (max-width: 768px) {
-  .lead {
-    font-size: 22.5px;
-  }
-  .navbar-brand {
-  float: left;
-  height: 50px;
-  padding: 15px 15px;
-  font-size: 20px;
-  line-height: 20px;
-  }
-
-  .navbar-nav > li > a {
-    padding-top: 15px;
-    padding-bottom: 15px;
-  }
-}
-
-.navbar-text {
-  margin-top: 17px;
-  margin-bottom: 17px;
-  text-decoration: none !important;
-}
-
-.navbar-text > li > a:hover {
-    color: #000; }
-
-
-.innertext{
-    display:inline-block; 
-    width:100%}
-
-
-
-
-
-
-
-
-
-
-
