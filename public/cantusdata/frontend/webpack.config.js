@@ -1,12 +1,11 @@
 "use strict";
 
 var path = require('path'),
-    _ = require('underscore'),
     webpack = require('webpack'),
     yargs = require('yargs').argv;
 
 var APP_DIR = path.resolve(__dirname, 'public/js/app'),
-    LIB_DIR = path.resolve(__dirname, 'public/js/libs'),
+    LIB_DIR = path.resolve(__dirname, 'public/node_modules'),
     TMP_DIR = path.resolve(__dirname, '.tmp');
 
 /**
@@ -54,18 +53,17 @@ module.exports = configureBuildMode({
     resolve: {
         root: [APP_DIR, LIB_DIR, TMP_DIR],
 
-        alias: _.mapObject({
-            marionette: 'backbone.marionette.js',
-            bootstrap: 'bootstrap/bootstrap.js',
+        alias: {
+            marionette: 'backbone.marionette',
 
             // All the Diva things
-            "diva": "diva/diva",
-            "diva-annotate": "diva/plugins/annotate",
-            "diva-canvas": "diva/plugins/canvas",
-            "diva-download": "diva/plugins/download",
-            "diva-highlight": "diva/plugins/highlight",
-            "diva-pagealias": "diva/plugins/pagealias"
-        }, libPath)
+            "diva": "diva.js/source/js",
+            "diva-annotate": "diva.js/source/js/plugins/annotate",
+            "diva-canvas": "diva.js/source/js/plugins/canvas",
+            "diva-download": "diva.js/source/js/plugins/download",
+            "diva-highlight": "diva.js/source/js/plugins/highlight",
+            "diva-pagealias": "diva.js/source/js/plugins/pagealias"
+        }
     },
 
     module: {
@@ -73,13 +71,13 @@ module.exports = configureBuildMode({
             // Export the Diva global, which for mysterious
             // reasons is defined in the utils file
             {
-                include: [libPath('diva/utils.js')],
+                include: [libPath('diva.js/source/js/utils.js')],
                 loader: 'exports?diva'
             },
 
             // Import and re-export the Diva global from the diva.js file
             {
-                include: [libPath('diva/diva.js')],
+                include: [libPath('diva.js/source/js/diva.js')],
                 loaders: ['imports?diva=./utils', 'exports?diva']
             }
         ]
@@ -95,6 +93,15 @@ module.exports = configureBuildMode({
             'window.jQuery': 'jquery',
             $: 'jquery'
         }),
+
+        // Resolve main files which differ from the package.json entries
+        new webpack.ResolverPlugin([
+            // Bootstrap only has a main entry for jspm
+            new webpack.ResolverPlugin.FileAppendPlugin(['/dist/js/bootstrap.js']),
+
+            // We've aliased Diva's path so there's no main to look for
+            new webpack.ResolverPlugin.FileAppendPlugin(['/diva.js'])
+        ]),
 
         // For now we only want a single file. Since we're using AMD
         // modules, this requires explicit configuration.
