@@ -6,7 +6,6 @@ define(["backbone", "marionette"],
 
     return Marionette.AppRouter.extend({
         appRoutes: {
-            "": "manuscripts",
             "manuscript/:query/?folio=(:folio)&chant=(:chant)": "manuscriptSingle",
             "manuscript/:query/?folio=(:folio)": "manuscriptSingle",
             "manuscript/:query/": "manuscriptSingle",
