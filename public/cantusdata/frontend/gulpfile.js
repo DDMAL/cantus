@@ -4,7 +4,6 @@ var gulp = require('gulp');
 var runSequence = require('run-sequence');
 var jshint = require('gulp-jshint');
 var jscs = require('gulp-jscs');
-var newer = require('gulp-newer');
 var concat = require('gulp-concat');
 var sass = require('gulp-sass');
 var sourcemaps = require('gulp-sourcemaps');
@@ -22,11 +21,12 @@ var bundleTemplates = require('./bundle-templates').bundle;
 // Set path variables
 var sources = {
     appJS: ['public/js/app/**/*.js'],
-    clientJS: ['public/js/app/**/*.js', 'public/js/libs/**/*.js'],
     buildJS: ['./*.js'],
     templates: ['public/templates/**/*.html'],
     css: ['public/css/**/*{.css,.scss}']
 };
+
+sources.clientJS = ['public/node_modules'].concat(sources.appJS).concat(sources.templates);
 
 var getWebpackCompiler = (function ()
 {
@@ -75,18 +75,12 @@ gulp.task('build:js', function (cb)
 {
     runSequence(
         'clean:js',
-        ['copySources:js', 'bundle:js'],
+        'bundle:js',
         cb
     );
 });
 
-gulp.task('rebuild:js', ['copySources:js', 'bundle:js']);
-
-/** Copy needed files into the Django static directory */
-gulp.task('copySources:js', function ()
-{
-    return copySources(sources.clientJS, './public/js', '../static/js');
-});
+gulp.task('rebuild:js', ['bundle:js']);
 
 gulp.task('bundle:js', ['bundle:templates'], function (cb)
 {
@@ -137,12 +131,12 @@ gulp.task('build:css', function (done)
 {
     runSequence(
         'clean:css',
-        ['copySources:css', 'bundle:css'],
+        'bundle:css',
         done
     );
 });
 
-gulp.task('rebuild:css', ['copySources:css', 'bundle:css']);
+gulp.task('rebuild:css', ['bundle:css']);
 
 gulp.task('bundle:css', function ()
 {
@@ -168,11 +162,6 @@ gulp.task('bundle:css', function ()
         .pipe(gulp.dest('../static/css'));
 });
 
-gulp.task('copySources:css', function ()
-{
-    return copySources(sources.css, './public/css', '../static/css');
-});
-
 gulp.task('clean:css', function (done)
 {
     del('../static/css/', {force: true}, function (err)
@@ -193,14 +182,11 @@ gulp.task('watch', function (done)
     // jshint unused:false
     // Never call the callback: this runs forever
 
-    var jsWatcher = gulp.watch(sources.clientJS.concat(sources.templates), ['lint-nofail:js', 'rebuild:js']);
+    var jsWatcher = gulp.watch(sources.clientJS, ['lint-nofail:js', 'rebuild:js']);
     var cssWatcher = gulp.watch(sources.css, ['rebuild:css']);
 
     jsWatcher.on('change', logWatchedChange);
-    jsWatcher.on('change', getWatchDeletionCb('public/js', '../static/js'));
-
     cssWatcher.on('change', logWatchedChange);
-    jsWatcher.on('change', getWatchDeletionCb('public/css', '../static/css'));
 });
 
 /**
@@ -213,28 +199,6 @@ function logWatchedChange(ev)
     console.log("File '" + path.relative('.', ev.path) + "' was " + ev.type);
 }
 
-/**
- * Return a gulp.watch callback function which deletes a file in the
- * destination directory when they are deleted in the source directory.
- *
- * @param srcRoot
- * @param destRoot
- * @returns {Function}
- */
-function getWatchDeletionCb(srcRoot, destRoot)
-{
-    return function (ev)
-    {
-        if (ev.type === 'deleted')
-        {
-            var destPath = path.resolve(destRoot, path.relative(srcRoot, ev.path));
-
-            console.log("Deleting file '" + destPath + "'");
-            del.sync(destPath, {force: true});
-        }
-    };
-}
-
 function lintJS(sources)
 {
     // FIXME: this errors on jscs failure, even when we'd only
@@ -243,16 +207,4 @@ function lintJS(sources)
         .pipe(jshint({lookup: true}))
         .pipe(jshint.reporter('jshint-stylish'))
         .pipe(jscs());
-}
-
-function copySources(files, baseDir, dest)
-{
-    // Make this a no-op when doing a release build
-    if (yargs.release)
-        files = [];
-
-    return gulp.src(files, {base: baseDir})
-        .pipe(newer(dest))
-        .pipe(gulp.dest(dest));
-
 }
