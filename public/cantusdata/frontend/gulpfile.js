@@ -147,6 +147,7 @@ gulp.task('bundle:css', function ()
     ];
 
     var isScssFile = _.constant((/\.scss$/));
+    var isDevBuild = yargs.release ? false : true;
 
     var compileScss = lazypipe()
         .pipe(function ()
@@ -155,10 +156,10 @@ gulp.task('bundle:css', function ()
         });
 
     return gulp.src(sources, {base: './public/css/'})
-        .pipe(sourcemaps.init())
+        .pipe(gulpif(isDevBuild, sourcemaps.init()))
         .pipe(gulpif(isScssFile, compileScss()))
         .pipe(concat('cantus.min.css'))
-        .pipe(sourcemaps.write('.'))
+        .pipe(gulpif(isDevBuild, sourcemaps.write('.')))
         .pipe(gulp.dest('../static/css'));
 });
 
