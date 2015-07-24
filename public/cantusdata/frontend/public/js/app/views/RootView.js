@@ -1,4 +1,7 @@
-define(["marionette"], function (Marionette)
+define([
+    "marionette",
+    "views/HeaderView"
+], function (Marionette, HeaderView)
 {
     "use strict";
 
@@ -6,9 +9,16 @@ define(["marionette"], function (Marionette)
     return Marionette.LayoutView.extend({
         el: 'body',
 
+        template: false,
+
         regions: {
             header: '.header',
             mainContent: '#view-goes-here'
+        },
+
+        onRender: function ()
+        {
+            this.header.show(new HeaderView());
         }
     });
 });

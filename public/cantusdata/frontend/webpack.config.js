@@ -41,11 +41,13 @@ module.exports = configureBuildMode({
     context: APP_DIR,
 
     entry: {
-        cantus: './init/Init.js'
+        cantus: './init/Init.js',
+        'cantus-static': './init/StaticFile.js'
     },
 
     output: {
         filename: '[name].min.js',
+        chunkFilename: 'cantus.chunk.[id].min.js',
         path: path.resolve(__dirname, '../static/js/app'),
         publicPath: '/static/js/app/'
     },
@@ -101,12 +103,6 @@ module.exports = configureBuildMode({
 
             // We've aliased Diva's path so there's no main to look for
             new webpack.ResolverPlugin.FileAppendPlugin(['/diva.js'])
-        ]),
-
-        // For now we only want a single file. Since we're using AMD
-        // modules, this requires explicit configuration.
-        new webpack.optimize.LimitChunkCountPlugin({
-            maxChunks: 1
-        })
+        ])
     ]
 });

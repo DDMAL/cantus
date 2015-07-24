@@ -1,5 +1,5 @@
-define(['underscore', 'backbone', 'marionette', 'routers/WorkSpace', 'routers/RouteController'],
-    function (_, Backbone, Marionette, WorkSpace, RouteController)
+define(['underscore', 'backbone', 'marionette', 'views/RootView'],
+    function (_, Backbone, Marionette, RootView)
     {
         "use strict";
 
@@ -8,19 +8,10 @@ define(['underscore', 'backbone', 'marionette', 'routers/WorkSpace', 'routers/Ro
 
             onBeforeStart: function ()
             {
-                this.routeController = new RouteController();
-
-                this.appRouter = new WorkSpace({
-                    controller: this.routeController
-                });
-
-                this.routeController.onBeforeStart();
+                // Instantiate the root view
+                this.rootView = new RootView();
+                this.rootView.render();
             }
-        });
-
-        App.addInitializer(function ()
-        {
-            Backbone.history.start({pushState: true});
         });
 
         return App;

@@ -1,6 +1,7 @@
 define(["underscore",
         "backbone",
         "marionette",
+        "config/GlobalVars",
         "models/GlobalStateModel",
         "views/RootView",
         "views/HeaderView",
@@ -11,6 +12,7 @@ define(["underscore",
     function(_,
              Backbone,
              Marionette,
+             GlobalVars,
              GlobalStateModel,
              RootView,
              HeaderView,
@@ -22,22 +24,18 @@ define(["underscore",
         "use strict";
 
         return Marionette.Object.extend({
-            initialize: function()
+            initialize: function(options)
             {
+                this.rootView = this.getOption('rootView', options);
+
                 this.globalState = new GlobalStateModel();
             },
 
             /** Initialize the layout for the application */
             onBeforeStart: function()
             {
-                // Instantiate the root view
-                this.rootView = new RootView();
-
                 // The manuscripts page has no state, so we might as well instantiate it
                 this.manuscriptsPageView = new ManuscriptsPageView();
-
-                // Render the header
-                this.rootView.header.show(new HeaderView());
             },
 
             /**
