@@ -1,3 +1,5 @@
+> **Beware ye who enter here.** Keeping this around because there's a small chance it will be useful at some point.
+
 Install IIPImage on the machine (not in a specific virtualenv)
 
 Brew install nginx
@@ -53,13 +55,3 @@ assume we have tiff images, to check if they work with the iipserver.
 http://localhost:8001/fcgi-bin/iipserver.fcgi?FIF=path/to/image
 in my case:
 http://localhost:8001/fcgi-bin/iipserver.fcgi?FIF=/Users/weigao/Documents/development/diva.js/build/demo/images/csg-0390_022.tiff&CVT=JPG
-
-
-However, when I modified single.html to display a local image, I get 
-GET http://localhost:8001/fcgi-bin/iipsrv.fcgi?FIF=/Users/weigao/Documents/development/diva.js/build/demo/images/csg-0390_022.tiff&JTL=2,7 404 not found
-
-It was caused by a typo in manuscript_detail.html
-iipServerURL: "http://localhost:8001/fcgi-bin/iipserver.fcgi" ==> not iipsrv.fcgi
-
-Diva + iipserver running on localhost:8001
-
