@@ -89,21 +89,15 @@ pre.preformatted-text {
     padding-bottom: 0;
 }
 
-/* FIXME(wabain): use autoprefixer */
-.field-volpiano::-moz-placeholder {
+.field-volpiano::placeholder {
     font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 15px;
 }
 
+// We only need to set the line height on webkit, since it renders differently
+// than other browsers
 .field-volpiano::-webkit-input-placeholder {
-    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 15px;
     line-height: 1.42857143;
-}
-
-.field-volpiano:-ms-input-placeholder {
-    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 15px;
 }
 
 .cantus-container {
