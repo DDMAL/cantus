@@ -9,7 +9,6 @@ var sass = require('gulp-sass');
 var sourcemaps = require('gulp-sourcemaps');
 var gulpif = require('gulp-if');
 
-var _ = require('underscore');
 var lazypipe = require('lazypipe');
 var yargs = require('yargs').argv;
 var webpack = require('webpack');
@@ -146,7 +145,7 @@ gulp.task('bundle:css', function ()
         './public/css/styles.scss'
     ];
 
-    var isScssFile = _.constant((/\.scss$/));
+    var isScssFile = /\.scss$/;
     var isDevBuild = yargs.release ? false : true;
 
     var compileScss = lazypipe()
