@@ -58,13 +58,8 @@ module.exports = configureBuildMode({
         alias: {
             marionette: 'backbone.marionette',
 
-            // All the Diva things
-            "diva": "diva.js/source/js",
-            "diva-annotate": "diva.js/source/js/plugins/annotate",
-            "diva-canvas": "diva.js/source/js/plugins/canvas",
-            "diva-download": "diva.js/source/js/plugins/download",
-            "diva-highlight": "diva.js/source/js/plugins/highlight",
-            "diva-pagealias": "diva.js/source/js/plugins/pagealias"
+            // Alias the Diva path to make it easier to access the plugins, etc.
+            diva: "diva.js/source/js"
         }
     },
 
