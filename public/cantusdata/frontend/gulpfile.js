@@ -8,6 +8,7 @@ var concat = require('gulp-concat');
 var sass = require('gulp-sass');
 var sourcemaps = require('gulp-sourcemaps');
 var gulpif = require('gulp-if');
+var autoprefixer = require('gulp-autoprefixer');
 
 var lazypipe = require('lazypipe');
 var yargs = require('yargs').argv;
@@ -152,7 +153,8 @@ gulp.task('bundle:css', function ()
         .pipe(function ()
         {
             return sass({outputStyle: 'compressed'}).on('error', sass.logError);
-        });
+        })
+        .pipe(autoprefixer, {browsers: ['> 1%', 'last 2 versions', 'Firefox ESR', 'Opera 12.1', 'ie >= 9']});
 
     return gulp.src(sources, {base: './public/css/'})
         .pipe(gulpif(isDevBuild, sourcemaps.init()))
