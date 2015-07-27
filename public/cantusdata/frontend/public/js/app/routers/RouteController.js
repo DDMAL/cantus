@@ -1,6 +1,7 @@
 define(["underscore",
         "backbone",
         "marionette",
+        "link-watcher",
         "config/GlobalVars",
         "models/GlobalStateModel",
         "views/RootView",
@@ -12,6 +13,7 @@ define(["underscore",
     function(_,
              Backbone,
              Marionette,
+             LinkWatcher,
              GlobalVars,
              GlobalStateModel,
              RootView,
@@ -29,6 +31,12 @@ define(["underscore",
                 this.rootView = this.getOption('rootView', options);
 
                 this.globalState = new GlobalStateModel();
+                this.initialRouteComplete = false;
+
+                this.listenToOnce(Backbone.history, 'route', function ()
+                {
+                    this.initialRouteComplete = true;
+                });
             },
 
             /** Initialize the layout for the application */
@@ -36,6 +44,16 @@ define(["underscore",
             {
                 // The manuscripts page has no state, so we might as well instantiate it
                 this.manuscriptsPageView = new ManuscriptsPageView();
+
+                // Navigate to clicked links
+                LinkWatcher.onLinkClicked(document.body, function (event, info)
+                {
+                    if (info.isLocalNavigation && !info.isFragmentNavigation)
+                    {
+                        event.preventDefault();
+                        Backbone.history.navigate(info.relativePath, {trigger: true});
+                    }
+                }, {rootHref: GlobalVars.siteUrl});
             },
 
             /**
@@ -89,11 +107,28 @@ define(["underscore",
                 this.showContentView(new SearchPageView({query: query}));
             },
 
-            // TODO: Handle 404 somehow
             notFound: function()
             {
-                // jshint devel:true
-                console.error('Not found: ' + window.location.href);
+                if (!this.initialRouteComplete)
+                {
+                    // If this is the initial route then we've probably done something wrong.
+                    // We can't trigger a browser reload since that would probably kick off an
+                    // infinite loop.
+
+                    // jshint devel:true
+                    console.error('Started at unrecognized page: %s (fragment %s)', window.location.href,
+                        Backbone.history.fragment);
+                }
+                else if (Backbone.history._hasPushState)
+                {
+                    // Trigger a browser reload
+                    Backbone.history.location.href = Backbone.history.location.href;
+                }
+                else
+                {
+                    // Send the browser to the page for the current fragment
+                    window.location = GlobalVars.siteUrl + Backbone.history.fragment;
+                }
             },
 
             /**
