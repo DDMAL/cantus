@@ -1,13 +1,10 @@
-//var CantusAbstractModel = require(["models/CantusAbstractModel"]);
-
-define(["models/CantusAbstractModel"],
-    function(CantusAbstractModel)
+define(["backbone", "config/GlobalVars"],
+    function(Backbone, GlobalVars)
     {
 
         "use strict";
 
-        return CantusAbstractModel.extend
-        ({
+        return Backbone.Model.extend({
             // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
             defaults:  {
@@ -22,6 +19,15 @@ define(["models/CantusAbstractModel"],
             },
 
             // jscs:enable
+
+            url: function ()
+            {
+                // jshint eqnull: true
+                if (this.id == null)
+                    return null;
+
+                return GlobalVars.siteUrl + "manuscript/" + this.id + "/";
+            },
 
             /**
              * Check if a particular plugin is activated for this manuscript.

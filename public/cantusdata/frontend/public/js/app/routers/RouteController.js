@@ -4,6 +4,7 @@ define(["underscore",
         "link-watcher",
         "config/GlobalVars",
         "models/GlobalStateModel",
+        "models/Manuscript",
         "views/RootView",
         "views/HeaderView",
         "views/ManuscriptsPageView",
@@ -16,6 +17,7 @@ define(["underscore",
              LinkWatcher,
              GlobalVars,
              GlobalStateModel,
+             Manuscript,
              RootView,
              HeaderView,
              ManuscriptsPageView,
@@ -76,8 +78,10 @@ define(["underscore",
              */
             manuscriptSingle: function(id, folio, chant)
             {
+                var manuscript = new Manuscript({id: id});
+
                 var manuscriptView = new ManuscriptIndividualPageView({
-                    id: id,
+                    model: manuscript,
                     folio: folio
                 });
 
@@ -85,7 +89,7 @@ define(["underscore",
                 // FIXME(wabain): we need to do this because the manuscriptView can't be re-rendered(?),
                 // but needs to be rendered after the data has been loaded. However, that certainly
                 // shouldn't be the case
-                manuscriptView.getData({
+                manuscript.fetch({
                     success: _.bind(function ()
                     {
                         this.showContentView(manuscriptView);

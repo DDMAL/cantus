@@ -32,8 +32,6 @@ return Marionette.LayoutView.extend
 ({
     template: '#manuscript-template',
 
-    id: null,
-    manuscript: null,
     searchView: null,
     searchNotationView: null,
     popoverContent: null,
@@ -73,12 +71,10 @@ return Marionette.LayoutView.extend
     {
         _.bindAll(this, 'getPopoverContent');
 
-        this.manuscript = new Manuscript(
-            String(GlobalVars.siteUrl + "manuscript/" + this.id.toString() + "/"));
         // Build the subviews
         this.divaView = new DivaView(
             {
-                siglum: this.manuscript.get("siglum_slug"),
+                siglum: this.model.get("siglum_slug"),
                 folio: options.folio
             }
         );
@@ -91,7 +87,7 @@ return Marionette.LayoutView.extend
         );
 
         // Render every time the model changes...
-        this.listenTo(this.manuscript, 'change', this.afterFetch);
+        this.listenTo(this.model, 'change', this.afterFetch);
         // Switch page when necessary
         this.listenTo(GlobalEventHandler, "ChangeFolio", this.updateFolio);
     },
@@ -102,7 +98,7 @@ return Marionette.LayoutView.extend
         this.stopListening();
         this.undelegateEvents();
         // Nullify the manuscript model
-        this.manuscript = null;
+        this.model = null;
         // Nullify the views
         this.divaView = null;
         this.searchView = null;
@@ -147,27 +143,12 @@ return Marionette.LayoutView.extend
      */
     updateFolio: function(folio)
     {
-        // FIXME(wabain): this is a patch to get an ID reliably
-        // but the underlying issue here is the unclear division of responsibility
-        // between models and views
-        var id = this.manuscript.get('id');
-        if (id === void 0)
-            id = this.id;
-
         // Query the folio set at that specific manuscript number
-        var newUrl =  GlobalVars.siteUrl + "folio-set/manuscript/" + id + "/" + folio + "/";
+        var newUrl =  GlobalVars.siteUrl + "folio-set/manuscript/" + this.model.id + "/" + folio + "/";
 
         // Rebuild the folio View
         this.folioView.setCustomNumber(folio);
         this.folioView.setUrl(newUrl);
-    },
-
-    /**
-     * Fetch the manuscript's data from the API.
-     */
-    getData: function(options)
-    {
-        this.manuscript.fetch(options);
     },
 
     /**
@@ -189,33 +170,23 @@ return Marionette.LayoutView.extend
         // Figure out what search fields to activate
         var notationSearchFields = {};
 
-        if (this.manuscript.isPluginActivated("pitch-search"))
+        if (this.model.isPluginActivated("pitch-search"))
         {
             notationSearchFields.pnames = "Pitch";
         }
-        if (this.manuscript.isPluginActivated("neume-search"))
+        if (this.model.isPluginActivated("neume-search"))
         {
             notationSearchFields.neumes = "Neume";
         }
 
         // Set the search view to only search this manuscript
-        this.searchView.setRestriction('manuscript', '"' + this.manuscript.get("siglum") + '"');
-        this.divaView.setManuscript(this.manuscript.get("siglum_slug"));
-        this.searchNotationView.setManuscript(this.manuscript.get("siglum_slug"));
+        this.searchView.setRestriction('manuscript', '"' + this.model.get("siglum") + '"');
+        this.divaView.setManuscript(this.model.get("siglum_slug"));
+        this.searchNotationView.setManuscript(this.model.get("siglum_slug"));
         this.searchNotationView.setSearchFields(notationSearchFields);
 
         // Set the document title to reflect the manuscript name
-        GlobalEventHandler.trigger("ChangeDocumentTitle", this.manuscript.get("name"));
-    },
-
-    /**
-     * Serialize the manuscript before rendering the template.
-     *
-     * @returns {*}
-     */
-    serializeData: function()
-    {
-        return this.manuscript.toJSON();
+        GlobalEventHandler.trigger("ChangeDocumentTitle", this.model.get("name"));
     },
 
     onShow: function()
