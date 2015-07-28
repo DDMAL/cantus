@@ -8,14 +8,13 @@ define(["backbone", "config/GlobalVars"],
             // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
             defaults:  {
-                url: "#",
-                name: "Test Name",
-                siglum: "Test Siglum",
-                siglum_slug: "#",
-                date: "Tomorrow",
-                provenance: "Test provenance",
-                description: "This is a nice manuscript...",
-                chant_count: 5
+                name: null,
+                siglum: null,
+                siglum_slug: null,
+                date: null,
+                provenance: null,
+                description: null,
+                chant_count: null
             },
 
             // jscs:enable
