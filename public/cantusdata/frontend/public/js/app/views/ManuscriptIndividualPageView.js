@@ -92,22 +92,6 @@ return Marionette.LayoutView.extend
         this.listenTo(GlobalEventHandler, "ChangeFolio", this.updateFolio);
     },
 
-    remove: function()
-    {
-        // Deal with the event listeners
-        this.stopListening();
-        this.undelegateEvents();
-        // Nullify the manuscript model
-        this.model = null;
-        // Nullify the views
-        this.divaView = null;
-        this.searchView = null;
-        this.searchNotationView = null;
-        this.folioView = null;
-        // Remove from the dom
-        this.$el.empty();
-    },
-
     /**
      * Marionette method called automatically before the destroy event happens.
      */
