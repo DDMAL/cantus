@@ -1,4 +1,6 @@
-define(['marionette', 'jquery',
+define(['marionette',
+        'backbone',
+        'jquery',
         "underscore",
         "diva",
         "diva/plugins/highlight",
@@ -7,7 +9,9 @@ define(['marionette', 'jquery',
         "diva/plugins/pagealias",
         "singletons/GlobalEventHandler",
         "config/GlobalVars"],
-function(Marionette, $,
+function(Marionette,
+         Backbone,
+         $,
          _,
          diva,
          DivaHighlight,
@@ -19,6 +23,8 @@ function(Marionette, $,
 {
 
 "use strict";
+
+var manuscriptChannel = Backbone.Radio.channel('manuscript');
 
 /**
  * Provide an alert message to the user.
@@ -78,7 +84,7 @@ return Marionette.ItemView.extend
         }, 500);
 
         //this.el = options.el;
-        this.setManuscript(options.siglum, options.folio);
+        this.setManuscript(options.siglum, manuscriptChannel.request('folio'));
     },
 
     onBeforeDestroy: function()
@@ -491,7 +497,7 @@ return Marionette.ItemView.extend
 
     triggerFolioChange: _.debounce(function (folio)
     {
-        GlobalEventHandler.trigger("ChangeFolio", folio, {replaceState: true});
+        manuscriptChannel.request('set:folio', folio, {replaceState: true});
     }, 250),
 
     /**

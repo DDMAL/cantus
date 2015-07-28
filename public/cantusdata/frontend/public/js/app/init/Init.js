@@ -1,4 +1,7 @@
 require([
+    // This needs to run first
+    "init/BackboneCustomization",
+
     "underscore",
     "backbone",
     "App",
@@ -7,11 +10,10 @@ require([
     "behaviors/ResizeBehavior",
 
     // Require these to ensure they are run
-    "init/BackboneCustomization",
     "jquery",
     "marionette",
     "bootstrap"
-], function (_, Backbone, App, WorkSpace, RouteController, ResizeBehavior)
+], function (BackboneCustomization, _, Backbone, App, WorkSpace, RouteController, ResizeBehavior)
 {
     "use strict";
 

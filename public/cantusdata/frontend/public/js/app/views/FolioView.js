@@ -4,7 +4,6 @@ define(['underscore', 'backbone', 'marionette',
         "views/collection_views/ChantCompositeView",
         "views/DivaFolioAdvancerView",
         "views/item_views/FolioItemView",
-        "singletons/GlobalEventHandler",
         "config/GlobalVars"],
 function(_, Backbone, Marionette,
          Folio,
@@ -12,11 +11,12 @@ function(_, Backbone, Marionette,
          ChantCompositeView,
          DivaFolioAdvancerView,
          FolioItemView,
-         GlobalEventHandler,
          GlobalVars)
 {
 
 "use strict";
+
+var manuscriptChannel = Backbone.Radio.channel('manuscript');
 
 /**
  * Provide an alert message to the user.
@@ -30,7 +30,6 @@ return Marionette.LayoutView.extend
 
     // Subviews
     chantCompositeView: null,
-    folioItemView: null,
 
     template: "#folio-template",
 
@@ -46,79 +45,44 @@ return Marionette.LayoutView.extend
      * @param {type} options
      * @returns null
      */
-    initialize: function(options)
+    initialize: function()
     {
-        _.bindAll(this, 'afterFetch', 'assignChants');
-        // This can handle situations where the first folio
-        // doesn't have a url but subsequent ones do.
+        if (!this.model)
+        {
+            this.model = new Folio();
+            this.updateFolio();
+        }
 
-        this.model = new Folio();
         this.chantCollection = new ChantCollection();
 
         this.listenTo(this.model, 'sync', this.afterFetch);
+        this.listenTo(manuscriptChannel, 'change:folio', this.updateFolio);
+    },
 
-        if (options && options.url)
+    updateFolio: function ()
+    {
+        //this.model.clear();
+
+        var manuscript = manuscriptChannel.request('manuscript');
+        var folioNumber = manuscriptChannel.request('folio');
+
+        // jshint eqnull:true
+        if (folioNumber == null || manuscript == null)
         {
-            this.setUrl(options.url);
+            return;
         }
 
-        this.folioItemView = new FolioItemView({
-            model: this.model
-        });
-
-        this.chantCompositeView = new ChantCompositeView({
-            collection: this.chantCollection,
-            unfoldedChant: this.getActiveChant()
+        this.model.fetch({
+            url: GlobalVars.siteUrl + "folio-set/manuscript/" + manuscript + "/" + folioNumber + "/"
         });
     },
 
-    /**
-     * Return the current active chant for the application
-     */
-    getActiveChant: function()
-    {
-        // FIXME(wabain): requiring the app in a closure resolves a circular import issue, but it's
-        // a little iffy in terms of bundler tooling and goes against the general CU code style. This
-        // should probably use a channel or something.
-        return require('App').routeController.globalState.get('chant');
-    },
-
-    onDestroy: function()
-    {
-        this.chantCompositeView.destroy();
-        this.folioItemView.destroy();
-    },
-
-    /**
-     * Set the model URL.
-     *
-     * @param url
-     */
-    setUrl: function(url)
-    {
-        this.model.url = String(url);
-        this.model.fetch();
-    },
-
-    /**
-     * Set the parameter that overrides the number that's rendered to the
-     * screen.
-     *
-     * @param number
-     */
-    setCustomNumber: function(number)
-    {
-        this.customNumber = number;
-        this.model.set({number: number, 'item_id': undefined});
-    },
-
-    /**
-     * If the model is empty, un-render the view.  Otherwise, assign
-     * the chants and render the view.
-     */
-    afterFetch: function()
+    afterFetch: function ()
     {
         this.assignChants();
+
+        if (this.folioItemRegion.currentView)
+            this.folioItemRegion.currentView.render();
     },
 
     /**
@@ -147,8 +111,13 @@ return Marionette.LayoutView.extend
 
     onShow: function()
     {
-        this.folioItemRegion.show(this.folioItemView, {preventDestroy: true});
-        this.chantListRegion.show(this.chantCompositeView, {preventDestroy: true});
+        this.folioItemRegion.show(new FolioItemView({model: this.model}));
+
+        this.chantListRegion.show(new ChantCompositeView({
+            collection: this.chantCollection,
+            unfoldedChant: manuscriptChannel.request('chant')
+        }));
+
         this.divaFolioAdvancerRegion.show(new DivaFolioAdvancerView());
     }
 });

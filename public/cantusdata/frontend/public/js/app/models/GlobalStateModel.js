@@ -4,6 +4,8 @@ define(["underscore", "backbone", "singletons/GlobalEventHandler", "objects/Open
 
         "use strict";
 
+        var manuscriptStateChannel = Backbone.Radio.channel('manuscript');
+
         /**
          * Handles the global state.  Updates URLs and page title
          */
@@ -17,26 +19,61 @@ define(["underscore", "backbone", "singletons/GlobalEventHandler", "objects/Open
 
             initialize: function()
             {
-                _.bindAll(this, "setManuscript", "setFolio", "setChant", "restoreOpenChant", "saveOpenChant");
-
                 this.chantStateManager = new OpenChantState();
 
-                this.on('change', this.updateUrl);
-                this.on('change:folio', this.restoreOpenChant);
-                this.on('change:chant', this.saveOpenChant);
+                this.on('change:manuscript', this.manuscriptChanged);
+                this.on('change:folio', this.folioChanged);
+                this.on('change:chant', this.chantChanged);
 
-                this.listenTo(GlobalEventHandler, 'ChangeManuscript', this.setManuscript);
-                this.listenTo(GlobalEventHandler, 'ChangeFolio', this.setFolio);
-                this.listenTo(GlobalEventHandler, 'ChangeChant', this.setChant);
+                this.on('change', this.updateUrl);
+
+                // Proxy model change events to the channel
+                _.forEach(_.keys(this.attributes), function (attr)
+                {
+                    manuscriptStateChannel.reply(attr, _.bind(this.get, this, attr), this);
+                    manuscriptStateChannel.reply('set:' + attr, function (value, params)
+                    {
+                        this.set(attr, value, {stateChangeParams: params});
+                    }, this);
+
+                    this.on('change:' + attr, function (model, value)
+                    {
+                        manuscriptStateChannel.trigger('change:' + attr, value);
+                    });
+                }, this);
+
                 this.listenTo(GlobalEventHandler, 'ChangeDocumentTitle', this.setDocumentTitle);
+            },
+
+            onDestroy: function ()
+            {
+                // Remove all callbacks from this object
+                manuscriptStateChannel.stopReplying(null, null, this);
+            },
+
+            /**
+             * On manuscript change, reset the folio if it hasn't been explicitly set
+             */
+            manuscriptChanged: function ()
+            {
+                if (!this.hasChanged('folio'))
+                {
+                    this.set('folio', null);
+                }
             },
 
             /**
              * On folio change, get the stored chant state for the new folio and set it
              */
-            restoreOpenChant: function ()
+            folioChanged: function ()
             {
                 /* jshint eqnull:true */
+
+                // If the chant was explicitly set in this round of updates then don't
+                // change it here (the chantChanged callback will handle the relevant
+                // state)
+                if (this.hasChanged('chant'))
+                    return;
 
                 var manuscript = this.get('manuscript');
                 var folio = this.get('folio');
@@ -53,13 +90,13 @@ define(["underscore", "backbone", "singletons/GlobalEventHandler", "objects/Open
                 var newChant = this.chantStateManager.get(manuscript, folio);
 
                 if (newChant !== currentChant)
-                    GlobalEventHandler.trigger('ChangeChant', newChant, {replaceState: true});
+                    this.set('chant', newChant, {replaceState: true});
             },
 
             /**
              * On chant change, save the new chant state
              */
-            saveOpenChant: function ()
+            chantChanged: function ()
             {
                 /* jshint eqnull:true */
 
@@ -71,21 +108,6 @@ define(["underscore", "backbone", "singletons/GlobalEventHandler", "objects/Open
                     return;
 
                 this.chantStateManager.set(manuscript, folio, this.get('chant'));
-            },
-
-            setManuscript: function(manuscript, params)
-            {
-                this.set('manuscript', manuscript, {stateChangeParams: params});
-            },
-
-            setFolio: function(folio, params)
-            {
-                this.set('folio', folio, {stateChangeParams: params});
-            },
-
-            setChant: function(chant, params)
-            {
-                this.set('chant', chant, {stateChangeParams: params});
             },
 
             /**

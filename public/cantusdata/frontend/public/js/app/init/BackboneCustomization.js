@@ -5,9 +5,10 @@ define([
     'underscore',
     'App',
     'backbone',
+    'backbone.radio',
     'marionette',
     'templates'
-], function (_, App, Backbone, Marionette, templates)
+], function (_, App, Backbone, Radio, Marionette, templates)
 {
     "use strict";
 

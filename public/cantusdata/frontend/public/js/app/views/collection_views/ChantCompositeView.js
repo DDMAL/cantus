@@ -1,12 +1,14 @@
-define(['marionette',
-        "views/item_views/ChantItemView",
-        "singletons/GlobalEventHandler"],
-function(Marionette,
-         ChantItemView,
-         GlobalEventHandler)
+define(['backbone',
+        'marionette',
+        "views/item_views/ChantItemView"],
+function(Backbone,
+         Marionette,
+         ChantItemView)
 {
 
     "use strict";
+
+    var manuscriptChannel = Backbone.Radio.channel('manuscript');
 
     /**
      * A composite view.
@@ -46,8 +48,8 @@ function(Marionette,
             else
                 this.unfoldedChant |= 0;
 
-            // Unfold a chant when the global ChangeChant event is triggered
-            this.listenTo(GlobalEventHandler, "ChangeChant", this.setUnfoldedChant);
+            // Unfold a chant when the global chant is changed
+            this.listenTo(manuscriptChannel, 'change:chant', this.setUnfoldedChant);
         },
 
         /**
@@ -80,7 +82,7 @@ function(Marionette,
             if (this.unfoldedChant === chant)
             {
                 this.unfoldedChant = null;
-                GlobalEventHandler.trigger("ChangeChant", null);
+                manuscriptChannel.request('set:chant', null);
             }
         },
 
@@ -98,7 +100,7 @@ function(Marionette,
             if (this.unfoldedChant !== chant)
             {
                 this.unfoldedChant = chant;
-                GlobalEventHandler.trigger("ChangeChant", chant);
+                manuscriptChannel.request('set:chant', chant);
             }
         },
 

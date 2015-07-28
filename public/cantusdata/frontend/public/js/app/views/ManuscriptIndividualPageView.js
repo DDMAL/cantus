@@ -6,8 +6,7 @@ define(['underscore',
         "views/InternalSearchView",
         "views/SearchNotationView",
         "views/ManuscriptDataPopoverView",
-        "singletons/GlobalEventHandler",
-        "config/GlobalVars"],
+        "singletons/GlobalEventHandler"],
 function(_,
          Marionette,
          Manuscript,
@@ -16,8 +15,7 @@ function(_,
          InternalSearchView,
          SearchNotationView,
          ManuscriptDataPopoverView,
-         GlobalEventHandler,
-         GlobalVars)
+         GlobalEventHandler)
 {
 
 "use strict";
@@ -67,17 +65,14 @@ return Marionette.LayoutView.extend
         }
     },
 
-    initialize: function (options)
+    initialize: function ()
     {
         _.bindAll(this, 'getPopoverContent');
 
         // Build the subviews
-        this.divaView = new DivaView(
-            {
-                siglum: this.model.get("siglum_slug"),
-                folio: options.folio
-            }
-        );
+        this.divaView = new DivaView({
+            siglum: this.model.get("siglum_slug")
+        });
         this.folioView = new FolioView();
         this.searchView = new InternalSearchView();
         this.searchNotationView = new SearchNotationView(
@@ -86,10 +81,7 @@ return Marionette.LayoutView.extend
             }
         );
 
-        // Render every time the model changes...
         this.listenTo(this.model, 'change', this.afterFetch);
-        // Switch page when necessary
-        this.listenTo(GlobalEventHandler, "ChangeFolio", this.updateFolio);
     },
 
     /**
@@ -120,19 +112,6 @@ return Marionette.LayoutView.extend
             this.popoverView.destroy();
             this.popoverView = null;
         }
-    },
-
-    /**
-     * Update the view for a changed folio
-     */
-    updateFolio: function(folio)
-    {
-        // Query the folio set at that specific manuscript number
-        var newUrl =  GlobalVars.siteUrl + "folio-set/manuscript/" + this.model.id + "/" + folio + "/";
-
-        // Rebuild the folio View
-        this.folioView.setCustomNumber(folio);
-        this.folioView.setUrl(newUrl);
     },
 
     /**

@@ -1,20 +1,11 @@
-//var CantusAbstractModel = require(["./models/CantusAbstractModel"]);
+define(["backbone"], function(Backbone)
+{
 
-define(["models/CantusAbstractModel"],
-    function(CantusAbstractModel)
-    {
+    "use strict";
 
-        "use strict";
-
-        return CantusAbstractModel.extend
-        ({
-            defaults: function()
-            {
-                return {
-                    number: "000"
-                };
-            }
-        });
-    }
-
-);
+    return Backbone.Model.extend({
+        defaults: {
+            number: null
+        }
+    });
+});

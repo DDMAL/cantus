@@ -78,11 +78,16 @@ define(["underscore",
              */
             manuscriptSingle: function(id, folio, chant)
             {
+                this.globalState.set({
+                    manuscript: id,
+                    folio: folio,
+                    chant: chant
+                });
+
                 var manuscript = new Manuscript({id: id});
 
                 var manuscriptView = new ManuscriptIndividualPageView({
-                    model: manuscript,
-                    folio: folio
+                    model: manuscript
                 });
 
                 // Get the data for the view and then show it.
@@ -95,10 +100,6 @@ define(["underscore",
                         this.showContentView(manuscriptView);
                     }, this)
                 });
-
-                GlobalEventHandler.trigger("ChangeManuscript", id);
-                GlobalEventHandler.trigger("ChangeFolio", folio);
-                GlobalEventHandler.trigger("ChangeChant", chant);
             },
 
             /**
