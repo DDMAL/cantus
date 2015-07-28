@@ -1,7 +1,6 @@
 define(['marionette'],
     function(Marionette)
     {
-
         "use strict";
 
         /**
@@ -9,12 +8,6 @@ define(['marionette'],
          * Right now it's just a title.
          */
         return Marionette.ItemView.extend({
-            template: "#folio-item-template",
-            tagName: 'h3',
-
-            modelEvents:
-            {
-                "change": "render"
-            }
+            template: "#folio-item-template"
         });
     });
