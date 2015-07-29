@@ -101,11 +101,17 @@ define(["underscore",
                     this.routeState.fragment = Backbone.history.fragment;
                 }
 
+                var prevId = this.routeState.model.get('manuscript');
+
                 this.routeState.model.set({
                     manuscript: id,
                     folio: folio,
                     chant: chant
                 });
+
+                // Don't reload the view if the manuscript has not changed
+                if (prevId === id)
+                    return;
 
                 var manuscript = new Manuscript({id: id});
 

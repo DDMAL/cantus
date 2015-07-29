@@ -85,6 +85,13 @@ return Marionette.ItemView.extend
 
         //this.el = options.el;
         this.setManuscript(options.siglum, manuscriptChannel.request('folio'));
+
+        // Update the folio on change
+        // FIXME(wabain): Support manuscript change?
+        this.listenTo(manuscriptChannel, 'change:folio', function (number)
+        {
+            this.setFolio(number);
+        });
     },
 
     onBeforeDestroy: function()
