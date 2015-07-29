@@ -1,5 +1,5 @@
-define(["underscore", "backbone", "singletons/GlobalEventHandler", "objects/OpenChantState"],
-    function(_, Backbone, GlobalEventHandler, OpenChantState)
+define(["underscore", "backbone", "objects/OpenChantState"],
+    function(_, Backbone, OpenChantState)
     {
 
         "use strict";
@@ -7,10 +7,11 @@ define(["underscore", "backbone", "singletons/GlobalEventHandler", "objects/Open
         var manuscriptStateChannel = Backbone.Radio.channel('manuscript');
 
         /**
-         * Handles the global state.  Updates URLs and page title
+         * Handles the manuscript state (i.e. the selected manuscript, folio, and
+         * chant and the transition invariants between them), exposing the changes
+         * using the 'manuscript' channel.
          */
-        return Backbone.Model.extend
-        ({
+        return Backbone.Model.extend({
             defaults: {
                 manuscript: undefined,
                 folio: undefined,
@@ -42,12 +43,12 @@ define(["underscore", "backbone", "singletons/GlobalEventHandler", "objects/Open
                     });
                 }, this);
 
-                this.listenTo(GlobalEventHandler, 'ChangeDocumentTitle', this.setDocumentTitle);
+                this.on('destroy', this.onDestroy);
             },
 
             onDestroy: function ()
             {
-                // Remove all callbacks from this object
+                // Stop replying to state requests
                 manuscriptStateChannel.stopReplying(null, null, this);
             },
 
@@ -108,17 +109,6 @@ define(["underscore", "backbone", "singletons/GlobalEventHandler", "objects/Open
                     return;
 
                 this.chantStateManager.set(manuscript, folio, this.get('chant'));
-            },
-
-            /**
-             * Set the title of the HTML document.
-             *
-             * @param title
-             */
-            setDocumentTitle: function(title)
-            {
-                this.documentTitle = "Cantus Ultimus — " + String(title);
-                document.title = this.documentTitle;
             },
 
             getUrl: function()

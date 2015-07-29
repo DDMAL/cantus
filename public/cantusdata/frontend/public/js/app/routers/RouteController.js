@@ -3,7 +3,7 @@ define(["underscore",
         "marionette",
         "link-watcher",
         "config/GlobalVars",
-        "models/GlobalStateModel",
+        "models/ManuscriptStateModel",
         "models/Manuscript",
         "views/RootView",
         "views/HeaderView",
@@ -16,7 +16,7 @@ define(["underscore",
              Marionette,
              LinkWatcher,
              GlobalVars,
-             GlobalStateModel,
+             ManuscriptStateModel,
              Manuscript,
              RootView,
              HeaderView,
@@ -32,13 +32,25 @@ define(["underscore",
             {
                 this.rootView = this.getOption('rootView', options);
 
-                this.globalState = new GlobalStateModel();
-                this.initialRouteComplete = false;
+                // Support maintaining arbitrary state for the active route (by default just
+                // a fragment)
+                this.routeState = null;
+                this.listenTo(Backbone.history, 'route', function ()
+                {
+                    if (!this.routeState || this.routeState.fragment !== Backbone.history.fragment)
+                    {
+                        this.resetRouteState();
+                    }
+                });
 
+                this.initialRouteComplete = false;
                 this.listenToOnce(Backbone.history, 'route', function ()
                 {
                     this.initialRouteComplete = true;
                 });
+
+                // Change the document title when
+                this.listenTo(GlobalEventHandler, 'ChangeDocumentTitle', this.setDocumentTitle);
             },
 
             /** Initialize the layout for the application */
@@ -78,7 +90,18 @@ define(["underscore",
              */
             manuscriptSingle: function(id, folio, chant)
             {
-                this.globalState.set({
+                // Update the route state
+                if (!(this.routeState && this.routeState.model instanceof ManuscriptStateModel))
+                {
+                    this.resetRouteState();
+                    this.routeState.model = new ManuscriptStateModel();
+                }
+                else
+                {
+                    this.routeState.fragment = Backbone.history.fragment;
+                }
+
+                this.routeState.model.set({
                     manuscript: id,
                     folio: folio,
                     chant: chant
@@ -136,6 +159,18 @@ define(["underscore",
                 }
             },
 
+            resetRouteState: function ()
+            {
+                if (this.routeState && this.routeState.model)
+                {
+                    this.routeState.model.destroy();
+                }
+
+                this.routeState = {
+                    fragment: Backbone.history.fragment
+                };
+            },
+
             /**
              * Show the view in the mainContent region.
              *
@@ -155,6 +190,19 @@ define(["underscore",
             shouldDestroyMainContentView: function()
             {
                 return this.rootView.mainContent.currentView === this.manuscriptsPageView;
+            },
+
+            /**
+             * Set the title of the HTML document.
+             *
+             * @param title
+             */
+            setDocumentTitle: function(title)
+            {
+                if (title)
+                    document.title = "Cantus Ultimus — " + title;
+                else
+                    document.title = "Cantus Ultimus";
             }
         });
     });
