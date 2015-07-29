@@ -55,13 +55,6 @@ return Marionette.ItemView.extend
         divaWrapper: "#diva-wrapper"
     },
 
-    // Diva Event handlers
-    viewerLoadEvent: null,
-    pageAliasingInitEvent: null,
-    pageChangeEvent: null,
-    modeSwitchEvent: null,
-    docLoadEvent: null,
-
     behaviors: {
         resize: {
             target: '.diva-outer',
@@ -75,6 +68,8 @@ return Marionette.ItemView.extend
             'setGlobalFullScreen', 'zoomToLocation', 'getPageAlias',
             'initializePageAliasing', 'gotoInputPage', 'getPageWhichMatchesAlias',
             'onDocLoad');
+
+        this.divaEventHandles = [];
 
         // Create a debounced function to alert Diva that its panel size
         // has changed
@@ -104,9 +99,6 @@ return Marionette.ItemView.extend
         this.currentFolioIndex = null;
         this.imagePrefix = null;
         this.imageSuffix = null;
-        this.viewerLoadEvent = null;
-        this.pageAliasingInitEvent = null;
-        this.modeSwitchEvent = null;
     },
 
     /**
@@ -120,26 +112,12 @@ return Marionette.ItemView.extend
         if (this.divaInitialized)
         {
             // Unsubscribe the event handlers
-            if (this.viewerLoadEvent !== null)
+            _.forEach(this.divaEventHandles, function (handle)
             {
-                diva.Events.unsubscribe(this.viewerLoadEvent);
-            }
-            if (this.pageAliasingInitEvent !== null)
-            {
-                diva.Events.unsubscribe(this.pageAliasingInitEvent);
-            }
-            if (this.pageChangeEvent !== null)
-            {
-                diva.Events.unsubscribe(this.pageChangeEvent);
-            }
-            if (this.modeSwitchEvent !== null)
-            {
-                diva.Events.unsubscribe(this.modeSwitchEvent);
-            }
-            if (this.docLoadEvent !== null)
-            {
-                diva.Events.unsubscribe(this.docLoadEvent);
-            }
+                diva.Events.unsubscribe(handle);
+            });
+
+            this.divaEventHandles.splice(this.divaEventHandles.length);
         }
     },
 
@@ -180,15 +158,24 @@ return Marionette.ItemView.extend
         // Initialize Diva
         this.ui.divaWrapper.diva(options);
 
-        this.viewerLoadEvent = diva.Events.subscribe("ViewerDidLoad", this.onViewerLoad);
-        this.pageAliasingInitEvent = diva.Events.subscribe("ViewerDidLoad", this.initializePageAliasing);
-        this.pageChangeEvent = diva.Events.subscribe("VisiblePageDidChange", this.storeFolioIndex);
-        this.modeSwitchEvent = diva.Events.subscribe("ModeDidSwitch", this.setGlobalFullScreen);
-
-        this.docLoadEvent = diva.Events.subscribe("DocumentDidLoad", this.onDocLoad);
+        this.onDivaEvent("ViewerDidLoad", this.onViewerLoad);
+        this.onDivaEvent("ViewerDidLoad", this.initializePageAliasing);
+        this.onDivaEvent("VisiblePageDidChange", this.storeFolioIndex);
+        this.onDivaEvent("ModeDidSwitch", this.setGlobalFullScreen);
+        this.onDivaEvent("DocumentDidLoad", this.onDocLoad);
 
         // Remember that we've initialized diva
         this.divaInitialized = true;
+    },
+
+    /**
+     * Subscribe to a Diva event, registering it for automatic deregistration
+     * @param event
+     * @param callback
+     */
+    onDivaEvent: function (event, callback)
+    {
+        this.divaEventHandles.push(diva.Events.subscribe(event, callback));
     },
 
     /**
