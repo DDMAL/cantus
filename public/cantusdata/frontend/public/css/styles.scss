@@ -150,6 +150,15 @@ table.result-list th a {
     margin-top: 0;
     border-right: 1px solid #CCCCCC;
     border-bottom: 1px solid #CCCCCC;
+
+    // Stopgap to stop the "Zoom level" control from falling below the row
+    // FIXME(wabain): Find something more reliable for this after updating if necessary
+    .diva-tools-left .diva-buttons-label {
+        clear: initial;
+    }
+    &.diva-fullscreen-tools .diva-tools-left .diva-buttons-label {
+        clear: both;
+    }
 }
 
 .diva-tools.diva-fullscreen-tools {
