@@ -1,2 +1,4 @@
-<td><a href="#" class="result-index">Result</a></td>
-<td>Page <strong><%= p %></strong></td>
+<td><%= (boxes[0] || {}).p %></td>
+<td><a href="#" class="result-target"><%= neumes.join(", ") %></a></td>
+<td><%= _.map(pnames).join(' ') %></td>
+<td><%= contourGraph(semitones) %></td>

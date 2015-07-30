@@ -124,10 +124,10 @@ function(_,
 
         resultFetchCallback: function()
         {
-            this.divaView.paintBoxes(this.results.map(function (model)
+            this.divaView.paintBoxes(_.flatten(this.results.map(function (model)
             {
-                return _.clone(model.attributes);
-            }));
+                return _.map(model.get('boxes'), _.clone);
+            })));
 
             if (this.results.length > 0)
                 this.zoomToResult(this.results.at(0));
@@ -135,7 +135,7 @@ function(_,
 
         zoomToResult: function(model)
         {
-            this.divaView.zoomToLocation(_.clone(model.attributes));
+            this.divaView.zoomToLocation(_.clone(model.get('boxes')[0]));
         },
 
         serializeData: function()
