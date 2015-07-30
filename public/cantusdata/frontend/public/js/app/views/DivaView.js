@@ -107,7 +107,8 @@ return Marionette.ItemView.extend
     uninitializeDiva: function()
     {
         // Diva's default destructor
-        this.getDivaData().destroy();
+        this.divaInstance.destroy();
+        this.divaInstance = null;
 
         if (this.divaInitialized)
         {
@@ -157,6 +158,8 @@ return Marionette.ItemView.extend
         this.ui.divaWrapper.empty();
         // Initialize Diva
         this.ui.divaWrapper.diva(options);
+
+        this.divaInstance = this.ui.divaWrapper.data('diva');
 
         this.onDivaEvent("ViewerDidLoad", this.onViewerLoad);
         this.onDivaEvent("ViewerDidLoad", this.initializePageAliasing);
@@ -228,7 +231,7 @@ return Marionette.ItemView.extend
     {
         event.preventDefault();
 
-        var pageAlias = $(this.ui.divaToolbar.find(this.getDivaData().getInstanceSelector() + 'goto-page-input')).val();
+        var pageAlias = $(this.ui.divaToolbar.find(this.divaInstance.getInstanceSelector() + 'goto-page-input')).val();
 
         if (!pageAlias)
             return;
@@ -241,7 +244,7 @@ return Marionette.ItemView.extend
         }
         else
         {
-            this.getDivaData().gotoPageByIndex(actualPage);
+            this.divaInstance.gotoPageByIndex(actualPage);
         }
     },
 
@@ -384,12 +387,10 @@ return Marionette.ItemView.extend
         {
             this.setFolio(this.initialFolio);
         }
-        // Grab data from diva
-        var divaData = this.getDivaData();
         // Store the initial folio
         //debugger;
-        var number = divaData.getCurrentPageIndex();
-        var name = divaData.getCurrentPageFilename();
+        var number = this.divaInstance.getCurrentPageIndex();
+        var name = this.divaInstance.getCurrentPageFilename();
         this.storeFolioIndex(number, name);
         // Store the image prefix for later
         this.setImagePrefixAndSuffix(name);
@@ -397,13 +398,11 @@ return Marionette.ItemView.extend
 
     initializePageAliasing: function()
     {
-        var divaData = this.getDivaData();
-
         // Store the list of filenames
-        this.divaFilenames = divaData.getFilenames();
+        this.divaFilenames = this.divaInstance.getFilenames();
 
         // Rebind the page input
-        var input = this.$(divaData.getInstanceSelector() + 'goto-page');
+        var input = this.$(this.divaInstance.getInstanceSelector() + 'goto-page');
 
         // Remove the original binding
         input.off('submit');
@@ -455,6 +454,7 @@ return Marionette.ItemView.extend
         {
             this.setImagePrefixAndSuffix(this.currentFolioName);
         }
+
         var newImageName = this.imagePrefix + "_" + String(folioCode) + "." + this.imageSuffix;
 
         // Don't jump to the folio if we're already somewhere on it (this would just make Diva
@@ -462,9 +462,9 @@ return Marionette.ItemView.extend
         if (newImageName === this.currentFolioName)
             return;
 
-        if (this.getDivaData() !== undefined)
+        if (this.divaInstance)
         {
-            this.getDivaData().gotoPageByName(newImageName);
+            this.divaInstance.gotoPageByName(newImageName);
         }
     },
 
@@ -501,16 +501,6 @@ return Marionette.ItemView.extend
     }, 250),
 
     /**
-     * Get the stored Diva data.
-     *
-     * @returns {*|jQuery}
-     */
-    getDivaData: function()
-    {
-        return this.ui.divaWrapper.data('diva');
-    },
-
-    /**
      * Draw boxes on the Diva viewer.  These usually correspond to
      * music notation on a manuscript page.
      * music notation on a manuscript page.
@@ -519,12 +509,10 @@ return Marionette.ItemView.extend
      */
     paintBoxes: function(boxSet)
     {
-        var divaData = this.getDivaData();
-
-        divaData.resetHighlights();
+        this.divaInstance.resetHighlights();
 
         // Grab the array of page filenames straight from Diva.
-        var pageFilenameArray = divaData.getFilenames();
+        var pageFilenameArray = this.divaInstance.getFilenames();
 
         // We might have to manually reset the page prefix
         if (this.imagePrefix === null)
@@ -561,7 +549,7 @@ return Marionette.ItemView.extend
         // Now we need to add all of the pages to the Diva viewer
         for (var j = 0; j < pageList.length; j++)
         {
-            divaData.highlightOnPage
+            this.divaInstance.highlightOnPage
             (
                 pageList[j], // The page number
                 highlightsByPageHash[pageList[j]] // List of boxes
@@ -583,7 +571,7 @@ return Marionette.ItemView.extend
         }
 
         // Grab the diva internals to work with
-        var divaData = this.getDivaData();
+        var divaData = this.divaInstance;
 
         // Now figure out the page that box is on
         var divaOuter = divaData.getSettings().outerObject;
