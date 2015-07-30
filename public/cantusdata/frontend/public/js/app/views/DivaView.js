@@ -456,6 +456,12 @@ return Marionette.ItemView.extend
             this.setImagePrefixAndSuffix(this.currentFolioName);
         }
         var newImageName = this.imagePrefix + "_" + String(folioCode) + "." + this.imageSuffix;
+
+        // Don't jump to the folio if we're already somewhere on it (this would just make Diva
+        // jump to the top of the page)
+        if (newImageName === this.currentFolioName)
+            return;
+
         if (this.getDivaData() !== undefined)
         {
             this.getDivaData().gotoPageByName(newImageName);
