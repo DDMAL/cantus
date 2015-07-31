@@ -1,4 +1,6 @@
 <tr>
+    <td><%= result.folio %></td>
+
     <td>
         <a href="<%= result.url %>" class="search-result"><%= result.name %></a>
     </td>
@@ -9,14 +11,11 @@
 
     <td><%= result.mode %></td>
 
-    <td><%= result.folio %></td>
-
     <td><%= result.genre %></td>
 
     <% if (showManuscriptName) { %>
     <td><%= result.office %></td>
     <% } %>
-
 </tr>
 <% if (searchType === "volpiano" && result.volpiano !== undefined) { %>
 <tr>
