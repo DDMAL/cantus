@@ -2,7 +2,7 @@
     <div class="form-group">
         <select class="form-control search-field">
             <% _.forEach(searchFields, function(field) { %>
-            <option value="<%= field.codeName %>"><%= field.name %>:</option>
+            <option value="<%= field.type %>"><%= field.name %>:</option>
             <% }); %>
         </select>
     </div>

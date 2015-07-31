@@ -23,10 +23,26 @@ function(_,
 
         template: "#search-notation-template",
 
-        searchFields: {
-            pnames: "Pitch",
-            neumes: "Neume"
-        },
+        searchPlugins: [
+            {
+                name: 'pitch-search',
+                fields: [
+                    {
+                        name: 'Pitch',
+                        type: 'pnames'
+                    }
+                ]
+            },
+            {
+                name: 'neume-search',
+                fields: [
+                    {
+                        name: 'Neume',
+                        type: 'neumes'
+                    }
+                ]
+            }
+        ],
 
         ui: {
             typeSelector: ".search-field",
@@ -38,15 +54,19 @@ function(_,
         },
 
         regions: {
-            glyphTypesRegion: ".glyph-types",
-            searchResults: ".note-search-results"
+            searchResults: ".note-search-results",
+            glyphTypesRegion: ".glyph-types"
         },
 
         initialize: function(options)
         {
             _.bindAll(this, 'newSearch', 'resultFetchCallback', 'zoomToResult');
+
             // The diva view which we will act upon!
             this.divaView = options.divaView;
+
+            this.searchFields = [];
+
             this.results = new SearchNotationResultCollection();
             this.listenTo(this.results, "sync", this.resultFetchCallback);
         },
@@ -75,19 +95,19 @@ function(_,
             return encodeURIComponent(this.ui.searchBox.val());
         },
 
-        setManuscript: function(manuscript)
+        setManuscript: function(model)
         {
-            this.manuscript = manuscript;
-        },
+            this.manuscript = model.get('siglum_slug');
 
-        /**
-         * Set the search fields to display.
-         *
-         * @param fields
-         */
-        setSearchFields: function(fields)
-        {
-            this.searchFields = fields;
+            this.searchFields.splice(this.searchFields.length);
+
+            _.forEach(this.searchPlugins, function (plugin)
+            {
+                if (model.isPluginActivated(plugin.name))
+                {
+                    this.searchFields.push.apply(this.searchFields, plugin.fields);
+                }
+            }, this);
         },
 
         newSearch: function(event)
@@ -108,11 +128,17 @@ function(_,
             else
             {
                 // Grab the field name
-                this.field = this.getSearchType();
+                // FIXME(wabain): does this need to be an attribute?
+                var field = this.field = this.getSearchType();
+
+                var fieldName = _.find(this.searchFields, function (fieldDescription)
+                {
+                    return fieldDescription.type === field;
+                }).name;
 
                 this.results.updateParameters({
                     field: this.field,
-                    fieldName: this.searchFields[this.field],
+                    fieldName: fieldName,
                     query: this.query,
                     manuscript: this.manuscript
                 });
@@ -140,17 +166,8 @@ function(_,
 
         serializeData: function()
         {
-            // Create an array with the field types
-            var searchFieldArray = _.map(this.searchFields, function (name, code)
-            {
-                return {
-                    codeName: code,
-                    name: name
-                };
-            });
-
             return {
-                searchFields: searchFieldArray
+                searchFields: this.searchFields
             };
         },
 

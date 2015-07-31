@@ -130,23 +130,10 @@ return Marionette.LayoutView.extend
 
     afterFetch: function()
     {
-        // Figure out what search fields to activate
-        var notationSearchFields = {};
-
-        if (this.model.isPluginActivated("pitch-search"))
-        {
-            notationSearchFields.pnames = "Pitch";
-        }
-        if (this.model.isPluginActivated("neume-search"))
-        {
-            notationSearchFields.neumes = "Neume";
-        }
-
         // Set the search view to only search this manuscript
         this.searchView.setRestriction('manuscript', '"' + this.model.get("siglum") + '"');
         this.divaView.setManuscript(this.model.get("siglum_slug"));
-        this.searchNotationView.setManuscript(this.model.get("siglum_slug"));
-        this.searchNotationView.setSearchFields(notationSearchFields);
+        this.searchNotationView.setManuscript(this.model);
 
         // Set the document title to reflect the manuscript name
         GlobalEventHandler.trigger("ChangeDocumentTitle", this.model.get("name"));
