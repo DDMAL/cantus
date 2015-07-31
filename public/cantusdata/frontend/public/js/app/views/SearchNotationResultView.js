@@ -48,7 +48,7 @@ define(["underscore", "marionette"], function (_, Marionette)
                     {
                         return {
                             x: (index / stretch) * width,
-                            y: (range === 0 ? 0.5 : (pitch - lowest) / range) * height
+                            y: height - (range === 0 ? 0.5 : (pitch - lowest) / range) * height
                         };
                     }, []);
 
