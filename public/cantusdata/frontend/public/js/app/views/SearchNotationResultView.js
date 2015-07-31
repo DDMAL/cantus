@@ -25,13 +25,9 @@ define(["underscore", "marionette"], function (_, Marionette)
 
                     var relPitches = _.reduce(semitones, function (relPitches, semitone)
                     {
-                        if (relPitches.length === 0)
-                            relPitches.push(0, semitone);
-                        else
-                            relPitches.push(relPitches[relPitches.length - 1] + semitone);
-
+                        relPitches.push(_.last(relPitches) + semitone);
                         return relPitches;
-                    }, []);
+                    }, [0]);
 
                     _.forEach(relPitches, function (pitch)
                     {
