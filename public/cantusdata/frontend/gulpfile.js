@@ -20,7 +20,7 @@ var bundleTemplates = require('./bundle-templates').bundle;
 
 // Set path variables
 var sources = {
-    appJS: ['public/js/app/**/*.js'],
+    appJS: ['public/js/app/**/*.js', '!public/js/app/**/*.spec.js'],
     buildJS: ['./*.js'],
     templates: ['public/templates/**/*.html'],
     css: ['public/css/**/*{.css,.scss}']
@@ -58,13 +58,12 @@ gulp.task('build', ['build:js', 'build:css']);
 
 gulp.task('lint:js', function ()
 {
-    return lintJS(sources.appJS.concat(sources.buildJS))
-        .pipe(jshint.reporter('fail'));
+    return lintJS().pipe(jshint.reporter('fail'));
 });
 
 gulp.task('lint-nofail:js', function ()
 {
-    return lintJS(sources.appJS.concat(sources.buildJS));
+    return lintJS();
 });
 
 /*
@@ -201,12 +200,17 @@ function logWatchedChange(ev)
     console.log("File '" + path.relative('.', ev.path) + "' was " + ev.type);
 }
 
-function lintJS(sources)
+function lintJS()
 {
+    // For test files, use a specialized jshintrc with jasmine enabled
+    var testConfig = JSON.parse(require('fs').readFileSync('./public/js/app/.jshintrc').toString());
+    testConfig.lookup = false;
+    testConfig.jasmine = true;
+
     // FIXME: this errors on jscs failure, even when we'd only
     // want it to print a warning
-    return gulp.src(sources)
-        .pipe(jshint({lookup: true}))
+    return gulp.src(sources.buildJS.concat('public/js/app/**/*.js'))
+        .pipe(gulpif((/.spec.js$/), jshint(testConfig), jshint({lookup: true})))
         .pipe(jshint.reporter('jshint-stylish'))
         .pipe(jscs());
 }
