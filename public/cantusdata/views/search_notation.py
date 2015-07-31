@@ -54,7 +54,7 @@ class SearchNotationView(APIView):
             if not search_utils.valid_pitch_sequence(query):
                 raise NotationException("The query you provided is not a valid pitch sequence")
             real_query = query if qtype == 'pnames' else ' OR '.join(search_utils.get_transpositions(query))
-            query_stmt = 'pnames:{0}'.format(real_query)
+            query_stmt = 'pnames:({0})'.format(real_query)
         elif qtype == "contour":
             query_stmt = 'contour:{0}'.format(query)
         elif qtype == "text":

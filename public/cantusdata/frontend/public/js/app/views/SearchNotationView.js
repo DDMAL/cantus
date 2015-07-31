@@ -25,20 +25,32 @@ function(_,
 
         searchPlugins: [
             {
-                name: 'pitch-search',
-                fields: [
-                    {
-                        name: 'Pitch',
-                        type: 'pnames'
-                    }
-                ]
-            },
-            {
                 name: 'neume-search',
                 fields: [
                     {
                         name: 'Neume',
                         type: 'neumes'
+                    }
+                ]
+            },
+            {
+                name: 'pitch-search',
+                fields: [
+                    {
+                        name: 'Pitch',
+                        type: 'pnames'
+                    },
+                    {
+                        name: 'Pitch (invariant)',
+                        type: 'pnames-invariant'
+                    },
+                    {
+                        name: 'Contour',
+                        type: 'contour'
+                    },
+                    {
+                        name: 'Interval',
+                        type: 'intervals'
                     }
                 ]
             }
