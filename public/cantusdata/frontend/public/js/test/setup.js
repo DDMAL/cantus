@@ -32,5 +32,6 @@ module.exports.showView = function (view)
 
 module.exports.clearView = function ()
 {
-    testView.testRegion.empty();
+    if (testView)
+        testView.testRegion.empty();
 };
