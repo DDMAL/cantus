@@ -149,7 +149,7 @@ return Marionette.ItemView.extend
             enableSpaceScroll: false,
             enableCanvas: true,
 
-            iipServerURL: GlobalVars.iipImageServerUrl + "fcgi-bin/iipsrv.fcgi",
+            iipServerURL: GlobalVars.iipImageServerUrl,
             objectData: "/static/" + siglum + ".json",
             imageDir: GlobalVars.divaImageDirectory + siglum
         };
