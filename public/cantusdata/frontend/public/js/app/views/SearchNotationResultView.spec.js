@@ -69,18 +69,18 @@ describe('SearchNotationResultView', function ()
         expect(this.view.ui.table).not.toBeVisible();
     });
 
-    it('should show a spinner until the results load, then the result table', function ()
+    it('should hide the table during a request until the results load', function ()
     {
         this.collection.updateParameters(testParameters);
         this.collection.fetch();
 
-        expect(this.view.$('img[src="/static/img/loading.gif"]')).toBeInDOM();
         expect(this.view.ui.table).not.toBeVisible();
 
         jasmine.Ajax.requests.mostRecent().respondWith(testResponse);
 
-        expect(this.view.$('img[src="/static/img/loading.gif"]')).toHaveLength(0);
         expect(this.view.ui.table).toBeVisible();
+
+        // Sanity check
         expect(this.view.$('tbody > tr')).toHaveLength(2);
     });
 

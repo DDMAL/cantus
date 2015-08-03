@@ -1,11 +1,13 @@
 define(["underscore",
         "marionette",
         "collections/SearchNotationResultCollection",
-        "views/SearchNotationResultView"],
+        "views/SearchNotationResultView",
+        "views/SearchResultHeadingView"],
 function(_,
          Marionette,
          SearchNotationResultCollection,
-         SearchNotationResultView)
+         SearchNotationResultView,
+         SearchResultHeadingView)
 {
     "use strict";
 
@@ -66,13 +68,14 @@ function(_,
         },
 
         regions: {
+            resultHeading: ".result-heading",
             searchResults: ".note-search-results",
             glyphTypesRegion: ".glyph-types"
         },
 
         initialize: function(options)
         {
-            _.bindAll(this, 'newSearch', 'resultFetchCallback', 'zoomToResult');
+            _.bindAll(this, 'newSearch', 'resultFetchCallback', 'zoomToResult', 'getSearchMetadata');
 
             // The diva view which we will act upon!
             this.divaView = options.divaView;
@@ -193,8 +196,22 @@ function(_,
         //    //}));
         //},
 
+        getSearchMetadata: function ()
+        {
+            return {
+                fieldName: this.results.parameters.fieldName,
+                query: decodeURIComponent(this.results.parameters.query)
+            };
+        },
+
         onRender: function()
         {
+            this.resultHeading.show(new SearchResultHeadingView({
+                collection: this.results,
+                showLoading: true,
+                getSearchMetadata: this.getSearchMetadata
+            }));
+
             var resultView = new SearchNotationResultView({
                 collection: this.results
             });

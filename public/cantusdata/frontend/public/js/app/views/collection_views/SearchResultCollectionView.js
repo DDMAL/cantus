@@ -178,12 +178,9 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
                 this.searchParameters.once('change:sortBy change:reverseSort', updateOnNextChange);
             },
 
-            serializeData: function()
+            templateHelpers: function()
             {
                 return {
-                    query: this.searchParameters.get('query'),
-                    searchType: this.searchParameters.get('field'),
-                    numFound: this.collection.metadata ? this.collection.metadata.numFound : 0,
                     showManuscriptName: this.showManuscriptName
                 };
             }

@@ -4,6 +4,7 @@ define(["underscore",
         "models/SearchInput",
         "collections/SearchResultCollection",
         "views/collection_views/SearchResultCollectionView",
+        "views/SearchResultHeadingView",
         "views/SearchInputView"],
     function(_,
              Marionette,
@@ -11,6 +12,7 @@ define(["underscore",
              SearchInput,
              SearchResultCollection,
              SearchResultCollectionView,
+             SearchResultHeadingView,
              SearchInputView)
     {
 
@@ -41,6 +43,7 @@ define(["underscore",
 
             regions: {
                 searchResultRegion: ".search-results",
+                searchHeadingRegion: ".search-heading",
                 searchInputRegion: ".search-input-container"
             },
 
@@ -206,6 +209,18 @@ define(["underscore",
             onRender: function ()
             {
                 this.searchInputRegion.show(new SearchInputView({model: this.searchParameters}));
+
+                this.searchHeadingRegion.show(new SearchResultHeadingView({
+                    collection: this.collection,
+                    getSearchMetadata: _.bind(function ()
+                    {
+                        // Don't present a field name
+                        return {
+                            query: this.searchParameters.get('query'),
+                            numFound: this.collection.metadata.numFound
+                        };
+                    }, this)
+                }));
 
                 this.searchResultRegion.show(new SearchResultCollectionView({
                     collection: this.collection,

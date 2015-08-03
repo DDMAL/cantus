@@ -78,8 +78,7 @@ define(["underscore", "marionette"], function (_, Marionette)
         },
 
         ui: {
-            table: 'table',
-            resultHeading: '.result-heading'
+            table: 'table'
         },
 
         childEvents: function ()
@@ -89,37 +88,18 @@ define(["underscore", "marionette"], function (_, Marionette)
             };
         },
 
-        showNoRequest: function (collection, options)
+        showNoRequest: function ()
         {
-            var message = _.result(options, 'message');
-
-            if (message)
-                this.ui.resultHeading.html('<h4>' + message + '</h4>');
-            else
-                this.ui.resultHeading.empty();
-
             this.updateTable();
         },
 
         showPendingRequest: function ()
         {
-            this.ui.resultHeading.html(
-                '<h3>' + this.collection.parameters.fieldName + ' search</h3>' +
-                '<h4>Searching...</h4>' +
-                '<img class="center-block" src="/static/img/loading.gif">'
-            );
-
             this.ui.table.hide();
         },
 
         showReceivedRequest: function ()
         {
-            this.ui.resultHeading.html(
-                "<h3>" + this.collection.parameters.fieldName + " search</h3>" +
-                "<h4>" + this.collection.length + ' results found for query "' +
-                decodeURIComponent(this.collection.parameters.query) + '"</h4>'
-            );
-
             this.updateTable();
         },
 
