@@ -1,4 +1,4 @@
-<td><%= (boxes[0] || {}).p %></td>
+<td><%= _.result(boxes[0], 'p') %></td>
 <td>
     <a href="#" class="result-target neume-images">
         <% _.forEach(thumbnails(boxes), function (url) { %>
