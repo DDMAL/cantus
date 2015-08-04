@@ -2,6 +2,7 @@ define(["underscore",
         "backbone",
         "marionette",
         "link-watcher",
+        "qs",
         "config/GlobalVars",
         "models/ManuscriptStateModel",
         "models/Manuscript",
@@ -15,6 +16,7 @@ define(["underscore",
              Backbone,
              Marionette,
              LinkWatcher,
+             Qs,
              GlobalVars,
              ManuscriptStateModel,
              Manuscript,
@@ -85,11 +87,15 @@ define(["underscore",
              * Display the detail view for a specific manuscript
              *
              * @param id The manuscript ID
-             * @param folio (Optional) The folio to load
-             * @param chant (Optional) The chant to load
+             * @param query The query string
              */
-            manuscriptSingle: function(id, folio, chant)
+            manuscriptSingle: function(id, query)
             {
+                var params = Qs.parse(query);
+
+                var folio = _.has(params, 'folio') ? params.folio : null;
+                var chant = _.has(params, 'chant') ? params.chant : null;
+
                 // Update the route state
                 if (!(this.routeState && this.routeState.model instanceof ManuscriptStateModel))
                 {
@@ -141,10 +147,11 @@ define(["underscore",
             /**
              * Display the standalone search view
              *
-             * @param query (Optional) The initial query to search
+             * @param queryString The query string
              */
-            search: function(query)
+            search: function(queryString)
             {
+                var query = Qs.parse(queryString).q;
                 this.showContentView(new SearchPageView({query: query}));
             },
 
