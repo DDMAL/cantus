@@ -1,5 +1,5 @@
-define(["underscore", "jquery", "backbone", "objects/OpenChantState", "models/Manuscript"],
-    function(_, $, Backbone, OpenChantState, Manuscript)
+define(["underscore", "jquery", "qs", "backbone", "objects/OpenChantState", "models/Manuscript"],
+    function(_, $, Qs, Backbone, OpenChantState, Manuscript)
     {
 
         "use strict";
@@ -192,20 +192,15 @@ define(["underscore", "jquery", "backbone", "objects/OpenChantState", "models/Ma
 
             getUrl: function()
             {
-                /* jshint eqnull:true */
-
                 var composedUrl = "manuscript/" + this.get('manuscript') + "/";
 
-                // Check that value is not null or undefined
-                if (this.get('folio') != null)
-                {
-                    composedUrl = composedUrl + "?folio=" + this.get('folio');
-                }
+                // Get truthy attributes which are not manuscript
+                var parameters = _.chain(this.attributes).omit('manuscript').pick(_.identity).value();
+                var paramString = Qs.stringify(parameters);
 
-                if (this.get('chant') != null)
-                {
-                    composedUrl = composedUrl + "&chant=" + this.get('chant');
-                }
+                if (paramString)
+                    composedUrl += '?' + paramString;
+
                 return composedUrl;
             },
 
