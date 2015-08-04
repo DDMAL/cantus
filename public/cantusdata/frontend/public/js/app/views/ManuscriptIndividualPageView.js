@@ -82,6 +82,9 @@ return Marionette.LayoutView.extend
         );
 
         this.listenTo(this.model, 'change', this.afterFetch);
+
+        // Propagate the initial, passed-in model state
+        this.afterFetch();
     },
 
     /**

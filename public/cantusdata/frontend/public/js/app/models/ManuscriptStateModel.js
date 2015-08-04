@@ -1,5 +1,5 @@
-define(["underscore", "backbone", "objects/OpenChantState"],
-    function(_, Backbone, OpenChantState)
+define(["underscore", "jquery", "backbone", "objects/OpenChantState", "models/Manuscript"],
+    function(_, $, Backbone, OpenChantState, Manuscript)
     {
 
         "use strict";
@@ -21,26 +21,26 @@ define(["underscore", "backbone", "objects/OpenChantState"],
             initialize: function()
             {
                 this.chantStateManager = new OpenChantState();
+                this.manuscriptModel = null;
 
                 this.on('change:manuscript', this.manuscriptChanged);
                 this.on('change:folio', this.folioChanged);
                 this.on('change:chant', this.chantChanged);
 
+                this.on('change', this.publishChanges);
                 this.on('change', this.updateUrl);
 
-                // Proxy model change events to the channel
+                manuscriptStateChannel.reply('model:manuscript', this.getManuscriptModel, this);
+
+                // Proxy model getters and setters to the channel
                 _.forEach(_.keys(this.attributes), function (attr)
                 {
                     manuscriptStateChannel.reply(attr, _.bind(this.get, this, attr), this);
+
                     manuscriptStateChannel.reply('set:' + attr, function (value, params)
                     {
                         this.set(attr, value, {stateChangeParams: params});
                     }, this);
-
-                    this.on('change:' + attr, function (model, value)
-                    {
-                        manuscriptStateChannel.trigger('change:' + attr, value);
-                    });
                 }, this);
 
                 this.on('destroy', this.onDestroy);
@@ -57,6 +57,8 @@ define(["underscore", "backbone", "objects/OpenChantState"],
              */
             manuscriptChanged: function ()
             {
+                this.manuscriptModel = null;
+
                 if (!this.hasChanged('folio'))
                 {
                     this.set('folio', null);
@@ -109,6 +111,83 @@ define(["underscore", "backbone", "objects/OpenChantState"],
                     return;
 
                 this.chantStateManager.set(manuscript, folio, this.get('chant'));
+            },
+
+            /**
+             * Publish changes to the manuscript channel. If the manuscript
+             * has changed, wait for the manuscript model to load first.
+             */
+            publishChanges: function ()
+            {
+                if (this.hasChanged('manuscript'))
+                {
+                    var changed = this.changedAttributes();
+                    var self = this;
+
+                    // FIXME: handle load failures somehow?
+                    this.loadManuscriptModel().always(function ()
+                    {
+                        self.triggerChangeEvents(changed);
+                    });
+                }
+                else
+                {
+                    this.triggerChangeEvents(this.changed);
+                }
+            },
+
+            /**
+             * Trigger change events on the channel for each of the attributes
+             * in the changed hash
+             * @param changed
+             */
+            triggerChangeEvents: function (changed)
+            {
+                _.forEach(changed, function (value, attr)
+                {
+                    manuscriptStateChannel.trigger('change:' + attr, value);
+                }, this);
+            },
+
+            getManuscriptModel: function ()
+            {
+                return this.manuscriptModel;
+            },
+
+            /**
+             * Load the model for the current manuscript from the server.
+             * @returns {jQuery.Promise} a promise which resolves once the manuscript model is synced
+             */
+            loadManuscriptModel: function ()
+            {
+                // jshint eqnull:true
+
+                // If there is no manuscript, return a promise
+                // which resolves to null
+                if (this.get('manuscript') == null)
+                    return $.when(null);
+
+                var deferred = $.Deferred();
+                var model = new Manuscript({id: this.get('manuscript')});
+                var self = this;
+
+                model.fetch({
+                    success: function ()
+                    {
+                        self.manuscriptModel = model;
+                        deferred.resolve(model);
+                        self.trigger('load:manuscript', model);
+                    },
+                    error: function (model, resp)
+                    {
+                        deferred.reject(resp);
+
+                        // FIXME: what's a better thing to do here?
+                        self.trigger('load:manuscript', null);
+                    }
+                });
+
+                return deferred.promise();
             },
 
             getUrl: function()

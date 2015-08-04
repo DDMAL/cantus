@@ -103,31 +103,38 @@ define(["underscore",
 
                 var prevId = this.routeState.model.get('manuscript');
 
+                // Don't reload the whole view if the manuscript has not changed
+                if (prevId === id)
+                {
+                    this.routeState.model.set({
+                        folio: folio,
+                        chant: chant
+                    });
+
+                    return;
+                }
+
+                /* Render the view once the manuscript model has been loaded from the server.
+                 *
+                 * FIXME: We do things this way (instantiating the page view with a loaded model after
+                 * each manuscript change) for two reasons:
+                 *
+                 * 1. The views aren't set up to be instantiated and rendered without a loaded model
+                 * 2. Some of the views can't handle changes to the manuscript
+                 *
+                 * Fixing (1) probably isn't worth it, but fixing (2) might be
+                 */
+                this.listenToOnce(this.routeState.model, 'load:manuscript', function (model)
+                {
+                    this.showContentView(new ManuscriptIndividualPageView({
+                        model: model
+                    }));
+                });
+
                 this.routeState.model.set({
                     manuscript: id,
                     folio: folio,
                     chant: chant
-                });
-
-                // Don't reload the view if the manuscript has not changed
-                if (prevId === id)
-                    return;
-
-                var manuscript = new Manuscript({id: id});
-
-                var manuscriptView = new ManuscriptIndividualPageView({
-                    model: manuscript
-                });
-
-                // Get the data for the view and then show it.
-                // FIXME(wabain): we need to do this because the manuscriptView can't be re-rendered(?),
-                // but needs to be rendered after the data has been loaded. However, that certainly
-                // shouldn't be the case
-                manuscript.fetch({
-                    success: _.bind(function ()
-                    {
-                        this.showContentView(manuscriptView);
-                    }, this)
                 });
             },
 
