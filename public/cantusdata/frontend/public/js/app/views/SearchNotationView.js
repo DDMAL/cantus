@@ -86,20 +86,6 @@ function(_,
             this.listenTo(this.results, "sync", this.resultFetchCallback);
         },
 
-        remove: function()
-        {
-            this.query = null;
-            this.results = null;
-
-            // We don't actually need to call remove() on this again
-            this.divaView = null;
-            this.manuscript = null;
-
-            // Deal with the event listeners
-            this.stopListening();
-            this.undelegateEvents();
-        },
-
         getSearchType: function()
         {
             return encodeURIComponent(this.ui.typeSelector.val());
