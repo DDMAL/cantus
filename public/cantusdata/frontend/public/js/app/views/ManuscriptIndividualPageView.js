@@ -64,7 +64,7 @@ return Marionette.LayoutView.extend
             action: 'onWindowResized'
         },
 
-        headConfig: {
+        pageConfig: {
             elements: {
                 html: {
                     styles: {
@@ -180,7 +180,7 @@ return Marionette.LayoutView.extend
 
     onWindowResized: function ()
     {
-        this.triggerMethod('configure:head', 'meta[name=viewport]');
+        this.triggerMethod('configure:page', 'meta[name=viewport]');
     }
 });
 });

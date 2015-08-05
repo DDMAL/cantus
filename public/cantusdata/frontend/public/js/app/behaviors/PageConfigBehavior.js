@@ -3,8 +3,8 @@ define(["underscore", "jquery", "marionette"], function (_, $, Marionette)
     "use strict";
 
     /**
-     * Implements a declarative interface for changing the values of metadata content
-     * and global styling in the DOM for the lifetime of a view. Values are set when the
+     * Implements a declarative interface for changing the value of metadata content
+     * and global styling on the page for the lifetime of a view. Values are set when the
      * view is shown and persist until the view is destroyed. The behavior tries to prevent
      * more than one view from modifying an element concurrently, although currently it
      * checks the selector instead of the element itself.
@@ -15,7 +15,7 @@ define(["underscore", "jquery", "marionette"], function (_, $, Marionette)
      * time.
      *
      *     behaviors: {
-     *         headConfig: {
+     *         pageConfig: {
      *             title: {
      *                 text: 'Hello world'
      *             }
@@ -36,29 +36,29 @@ define(["underscore", "jquery", "marionette"], function (_, $, Marionette)
 
         onShow: function ()
         {
-            this.configureHead();
+            this.configurePage();
         },
 
         /**
-         * Expose a receiver for triggerMethod('configure:head'). Can optionally
+         * Expose a receiver for triggerMethod('configure:page'). Can optionally
          * be called with a selector to only do the configuration for that element.
          *
          * @param selector
          */
-        onConfigureHead: function (selector)
+        onConfigurePage: function (selector)
         {
             if (!selector)
             {
-                this.configureHead();
+                this.configurePage();
                 return;
             }
 
             if (!_.has(this.options.elements, selector))
             {
-                throw new Error('Unspecified head configuration selector: "' + selector + '"');
+                throw new Error('Unspecified page configuration selector: "' + selector + '"');
             }
 
-            this.configureHeadElement(this.options.elements[selector], selector);
+            this.configureElement(this.options.elements[selector], selector);
         },
 
         onDestroy: function ()
@@ -70,9 +70,9 @@ define(["underscore", "jquery", "marionette"], function (_, $, Marionette)
          * Apply the configuration for all elements
          * @private
          */
-        configureHead: function ()
+        configurePage: function ()
         {
-            _.each(this.options.elements, this.configureHeadElement, this);
+            _.each(this.options.elements, this.configureElement, this);
         },
 
         /**
@@ -81,7 +81,7 @@ define(["underscore", "jquery", "marionette"], function (_, $, Marionette)
          * @param settings
          * @param selector
          */
-        configureHeadElement: function (settings, selector)
+        configureElement: function (settings, selector)
         {
             // jshint eqnull:true
 
@@ -142,7 +142,7 @@ define(["underscore", "jquery", "marionette"], function (_, $, Marionette)
                 if (_.has(this._registry, selector))
                 {
                     if (this._registry[selector].owner !== instance)
-                        throw new Error('Conflicting head configuration for property "' + selector + '"');
+                        throw new Error('Conflicting page configuration for property "' + selector + '"');
 
                     return;
                 }
