@@ -2,8 +2,8 @@ define([
     "underscore",
     "backbone",
     "marionette",
-    "config/GlobalVars"
-], function (_, Backbone, Marionette, GlobalVars)
+    "utils/pageSnippetUrl"
+], function (_, Backbone, Marionette, pageSnippetUrl)
 {
     "use strict";
 
@@ -37,14 +37,7 @@ define([
 
             return _.map(boxes, function (box)
             {
-                var siglum = this.siglumSlug;
-                var filename = GlobalVars.divaImageDirectory + siglum + '/' + siglum + '_' + box.p + '.jp2';
-                var bounds = [box.x, box.y, box.w, box.h].join(',');
-                var height = 30;
-
-                var iiifQuery = filename + '/' + bounds + '/,' + height + '/0/native.jpg';
-
-                return GlobalVars.iipImageServerUrl + '?IIIF=' + iiifQuery;
+                return pageSnippetUrl(this.siglumSlug, box, {height: 30});
             }, this);
         },
 
