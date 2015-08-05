@@ -12,6 +12,12 @@ define([
 {
     "use strict";
 
+    // Marionette inspector
+    if (window.__agent)
+    {
+        window.__agent.start(Backbone, Marionette);
+    }
+
     /**
      * Load the pre-compiled template from the template store.
      *
