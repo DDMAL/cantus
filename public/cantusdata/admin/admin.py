@@ -4,6 +4,7 @@ from cantusdata.models.chant import Chant
 from cantusdata.models.concordance import Concordance
 from cantusdata.models.folio import Folio
 from cantusdata.models.plugin import Plugin
+from cantusdata.models.neume_exemplar import NeumeExemplar
 
 
 def reindex_in_solr(modeladmin, request, queryset):
@@ -36,8 +37,14 @@ class PluginAdmin(admin.ModelAdmin):
     readonly_fields = ('slug',)
 
 
+class NeumeExemplarAdmin(admin.ModelAdmin):
+    list_display = ('admin_image', '__str__')
+    readonly_fields = ('admin_image',)
+
+
 admin.site.register(Manuscript, ManuscriptAdmin)
 admin.site.register(Chant, ChantAdmin)
 admin.site.register(Concordance, ConcordanceAdmin)
 admin.site.register(Folio, FolioAdmin)
 admin.site.register(Plugin, PluginAdmin)
+admin.site.register(NeumeExemplar, NeumeExemplarAdmin)

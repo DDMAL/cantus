@@ -89,6 +89,8 @@ function(_,
             // The diva view which we will act upon!
             this.divaView = options.divaView;
 
+            this.neumeExemplars = new Backbone.Collection();
+
             this.searchFields = [];
 
             this.results = new SearchNotationResultCollection();
@@ -124,19 +126,10 @@ function(_,
          */
         onSearchTypeSelected: function ()
         {
-            if (this.getSearchType() === 'neumes')
+            if (this.getSearchType() === 'neumes' && this.neumeExemplars.length > 0)
             {
                 var gallery = new NeumeGalleryView({
-                    collection: new Backbone.Collection([
-                        {
-                            neume: 'punctum',
-                            'exemplar_url': 'http://placekitten.com/g/200/300'
-                        },
-                        {
-                            neume: 'torculus',
-                            'exemplar_url': 'http://placekitten.com/g/200/300'
-                        }
-                    ])
+                    collection: this.neumeExemplars
                 });
 
                 this.listenTo(gallery, 'use:neume', this.insertSearchString);
@@ -197,6 +190,8 @@ function(_,
         setManuscript: function(model)
         {
             this.manuscript = model.get('siglum_slug');
+
+            this.neumeExemplars.reset(model.get('neume_exemplars'));
 
             this.searchFields.splice(this.searchFields.length);
 

@@ -4,6 +4,7 @@ from django.utils.text import slugify
 
 from cantusdata.models.folio import Folio
 from cantusdata.models.chant import Chant
+from cantusdata.models.neume_exemplar import NeumeExemplar
 
 from cantusdata.helpers.signal_wrangler import retrievable_receiver
 
@@ -46,6 +47,10 @@ class Manuscript(models.Model):
     @property
     def siglum_slug(self):
         return slugify(self.siglum)
+
+    @property
+    def neume_exemplars(self):
+        return NeumeExemplar.objects.filter(folio__manuscript=self)
 
     def create_solr_record(self):
         """Return a dict representing a new Solr record for this object"""

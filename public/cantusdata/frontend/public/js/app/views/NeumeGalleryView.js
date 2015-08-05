@@ -1,4 +1,8 @@
-define(['underscore', 'marionette'], function (_, Marionette)
+define([
+    'underscore',
+    'marionette',
+    'utils/pageSnippetUrl'
+], function (_, Marionette, pageSnippetUrl)
 {
     "use strict";
 
@@ -7,7 +11,7 @@ define(['underscore', 'marionette'], function (_, Marionette)
 
         onChildviewExemplarClicked: function (view)
         {
-            this.trigger('use:neume', view.model.get('neume'));
+            this.trigger('use:neume', view.model.get('name'));
         },
 
         childViewContainer: '.child-container',
@@ -17,6 +21,15 @@ define(['underscore', 'marionette'], function (_, Marionette)
 
             triggers: {
                 'click .thumbnail': 'exemplar:clicked'
+            },
+
+            templateHelpers: {
+                exemplarUrl: function ()
+                {
+                    // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
+                    return pageSnippetUrl(this.siglum_slug, _.pick(this, ['p', 'x', 'y', 'w', 'h']), {height: 75});
+                    // jscs enable
+                }
             }
         })
     });
