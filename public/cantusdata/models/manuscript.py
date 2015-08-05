@@ -9,10 +9,10 @@ from cantusdata.helpers.signal_wrangler import retrievable_receiver
 
 
 class Manuscript(models.Model):
-    """
-        A Manuscript is the top-level model, 
-        Pages, Chants, Feasts and Concordances belong to a Manuscript
-        (some may be shared among different manuscripts?)
+    """The top-level model, representing a particular manuscript
+
+    Folios, chants, feasts, concordances and plugins all belong to a manuscript
+    (with some shared among different manuscripts).
     """
     class Meta:
         app_label = "cantusdata"
