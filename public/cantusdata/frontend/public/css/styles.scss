@@ -166,6 +166,12 @@ table.result-list th a {
     margin-top: 2em;
 }
 
+// Force proper input sizing on Chrome/Webkit browsers (overrides `width: 1%`)
+// TODO(wabain): Verify that this remains correct after updating Bootstrap
+#search-notation-form .input-group-btn {
+    width: initial;
+}
+
 #diva-toolbar input {
     width: 60px;
     height: 33px;
