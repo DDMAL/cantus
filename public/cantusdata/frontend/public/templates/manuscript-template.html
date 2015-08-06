@@ -3,10 +3,12 @@
     <div class="col-xs-6">
         <div id="manuscript-title-container" class="row">
             <div class="col-md-12">
-                <button id="manuscript-title-popover-link" type="button" data-toggle="popover" data-placement="bottom"
+                <% /* Style this as a link pretending to be a button pretending to be a link so that
+                    * we get button-style padding as well as appropriate hover settings */ %>
+                <a id="manuscript-title-popover-link" data-toggle="popover" data-placement="bottom"
                         class="btn btn-link" title="<%= name %>">
                     <h1 class="h3"><%= provenance %>, <%= siglum %></h1>
-                </button>
+                </a>
             </div>
         </div>
         <div id="manuscript-nav-container" class="row">
