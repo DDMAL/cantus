@@ -1,13 +1,17 @@
 define(["underscore",
+        "backbone",
         "marionette",
         "collections/SearchNotationResultCollection",
         "views/SearchNotationResultView",
-        "views/SearchResultHeadingView"],
+        "views/SearchResultHeadingView",
+        "views/NeumeGalleryView"],
 function(_,
+         Backbone,
          Marionette,
          SearchNotationResultCollection,
          SearchNotationResultView,
-         SearchResultHeadingView)
+         SearchResultHeadingView,
+         NeumeGalleryView)
 {
     "use strict";
 
@@ -67,7 +71,12 @@ function(_,
             submit: 'newSearch'
         },
 
+        triggers: {
+            'change @ui.typeSelector': 'search:type:selected'
+        },
+
         regions: {
+            neumeGallery: '.neume-gallery',
             resultHeading: ".result-heading",
             searchResults: ".note-search-results",
             glyphTypesRegion: ".glyph-types"
@@ -79,6 +88,8 @@ function(_,
 
             // The diva view which we will act upon!
             this.divaView = options.divaView;
+
+            this.neumeExemplars = new Backbone.Collection();
 
             this.searchFields = [];
 
@@ -96,9 +107,77 @@ function(_,
             return encodeURIComponent(this.ui.searchBox.val());
         },
 
+        /**
+         * Configure the view for the current search type
+         */
+        onSearchTypeSelected: function ()
+        {
+            if (this.getSearchType() === 'neumes' && this.neumeExemplars.length > 0)
+            {
+                var gallery = new NeumeGalleryView({
+                    collection: this.neumeExemplars
+                });
+
+                this.listenTo(gallery, 'use:neume', this.insertSearchString);
+                this.neumeGallery.show(gallery);
+            }
+            else if (this.neumeGallery.currentView)
+            {
+                this.neumeGallery.empty();
+            }
+        },
+
+        insertSearchString: function (newQuery)
+        {
+            var input = this.ui.searchBox[0];
+            var text = this.ui.searchBox.val();
+
+            // If the HTML5 input selection functions aren't available, just dump
+            // the query onto the end of the text
+            if (!input.setRangeText)
+            {
+                // Place a space before the new term if the existing input
+                // ends with a non-space character
+                if (text.length > 0 && !/\s/.test(text.charAt(text.length - 1)))
+                    text += ' ' + newQuery;
+                else
+                    text += newQuery;
+
+                this.ui.searchBox.val(text);
+                return;
+            }
+
+            var selStart = input.selectionStart;
+            var selEnd = input.selectionEnd;
+
+            // If a range of text is selected, just replace it
+            if (selStart !== selEnd)
+            {
+                input.setRangeText(newQuery, selStart, selEnd, 'select');
+                return;
+            }
+
+            // Place a space before the new term if the existing input
+            // ends with a non-space character
+            var prevChar = text.charAt(selStart - 1);
+            if (prevChar && !/\s/.test(prevChar))
+                newQuery = ' ' + newQuery;
+
+            var nextChar = text.charAt(selStart + 1);
+            if (nextChar && !/\s/.test(nextChar))
+                newQuery += ' ';
+
+            input.setRangeText(newQuery, selStart, selStart);
+
+            // Set the selection in the input box to the end of what we just inserted
+            input.setSelectionRange(selStart + newQuery.length, selStart + newQuery.length);
+        },
+
         setManuscript: function(model)
         {
             this.manuscript = model.get('siglum_slug');
+
+            this.neumeExemplars.reset(model.get('neume_exemplars'));
 
             this.searchFields.splice(this.searchFields.length);
 
@@ -192,6 +271,9 @@ function(_,
 
         onRender: function()
         {
+            // Configure the helpers for the current search type
+            this.onSearchTypeSelected();
+
             this.resultHeading.show(new SearchResultHeadingView({
                 collection: this.results,
                 showLoading: true,
