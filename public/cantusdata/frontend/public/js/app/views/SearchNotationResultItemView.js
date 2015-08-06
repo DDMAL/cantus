@@ -10,7 +10,7 @@ define([
     var manuscriptChannel = Backbone.Radio.channel('manuscript');
 
     return Marionette.ItemView.extend({
-        template: '#search-notation-result-item-view',
+        template: '#search-notation-result-item-template',
         tagName: 'tr',
 
         events: {

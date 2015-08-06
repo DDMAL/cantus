@@ -8,7 +8,7 @@ function (_, Marionette, SearchNotationResultItemView)
     "use strict";
 
     return Marionette.CompositeView.extend({
-        template: '#search-notation-result-list-view',
+        template: '#search-notation-result-list-template',
 
         childView: SearchNotationResultItemView,
 
