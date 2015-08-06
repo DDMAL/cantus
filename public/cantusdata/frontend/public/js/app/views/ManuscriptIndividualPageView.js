@@ -3,7 +3,7 @@ define(['underscore',
         "models/Manuscript",
         "views/FolioView",
         "views/DivaView",
-        "views/InternalSearchView",
+        "views/SearchView",
         "views/SearchNotationView",
         "views/ManuscriptDataPopoverView",
         "singletons/GlobalEventHandler"],
@@ -12,7 +12,7 @@ function(_,
          Manuscript,
          FolioView,
          DivaView,
-         InternalSearchView,
+         SearchView,
          SearchNotationView,
          ManuscriptDataPopoverView,
          GlobalEventHandler)
@@ -94,7 +94,7 @@ return Marionette.LayoutView.extend
             siglum: this.model.get("siglum_slug")
         });
         this.folioView = new FolioView();
-        this.searchView = new InternalSearchView();
+        this.searchView = new SearchView({showManuscriptName: false});
         this.searchNotationView = new SearchNotationView(
             {
                 divaView: this.divaView
