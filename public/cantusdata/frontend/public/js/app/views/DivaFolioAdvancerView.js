@@ -14,8 +14,8 @@ return Marionette.ItemView.extend
 
     ui:
     {
-        nextButton: "[name='next']",
-        previousButton: "[name='previous']"
+        nextButton: ".next-folio",
+        previousButton: ".previous-folio"
     },
 
     events:
