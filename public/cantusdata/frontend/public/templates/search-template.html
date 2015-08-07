@@ -1,5 +1,33 @@
-<div class="form-inline">
-    <div class="search-input-container"></div>
+<div class="row">
+    <div class="col-xs-5 col-md-4">
+        <!-- Search type selector -->
+        <div class="btn-group btn-group-justified">
+            <div class="btn-group search-field-selector">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    <span class="field-label"><%- activeField.name %></span> <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <% _.forEach(searchProviders, function (provider, providerIndex) { %>
+                        <li role="presentation" class="dropdown-header">
+                            <%- provider.description %>
+                        </li>
+                        <% _.forEach(provider.fields, function (field, fieldIndex) { %>
+                        <li>
+                            <a href="#" data-provider-index="<%= providerIndex %>" data-field-index="<%= fieldIndex %>">
+                                <%- field.name %>
+                            </a>
+                        </li>
+                        <% }); %>
+                    <% }); %>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="search-input-col" class="col-xs-7 col-md-8">
+        <div class="search-input"></div>
+    </div>
 </div>
+<div class="search-helper"></div>
 <div class="search-heading"></div>
 <div class="search-results"></div>

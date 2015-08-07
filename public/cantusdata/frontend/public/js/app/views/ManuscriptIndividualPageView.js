@@ -4,8 +4,9 @@ define(['underscore',
         "views/FolioView",
         "views/DivaView",
         "views/SearchView",
-        "views/SearchNotationView",
         "views/ManuscriptDataPopoverView",
+        "views/ChantSearchProvider",
+        "views/NotationSearchProvider",
         "singletons/GlobalEventHandler"],
 function(_,
          Marionette,
@@ -13,8 +14,9 @@ function(_,
          FolioView,
          DivaView,
          SearchView,
-         SearchNotationView,
          ManuscriptDataPopoverView,
+         ChantSearchProvider,
+         NotationSearchProvider,
          GlobalEventHandler)
 {
 
@@ -31,7 +33,6 @@ return Marionette.LayoutView.extend
     template: '#manuscript-template',
 
     searchView: null,
-    searchNotationView: null,
     popoverContent: null,
 
     initialViewPortSize: null,
@@ -54,8 +55,7 @@ return Marionette.LayoutView.extend
     regions: {
         divaViewRegion: "#diva-column",
         folioViewRegion: "#folio",
-        searchViewRegion: "#manuscript-search",
-        searchNotationViewRegion: "#search-notation"
+        searchViewRegion: "#manuscript-search"
     },
 
     behaviors: {
@@ -94,17 +94,18 @@ return Marionette.LayoutView.extend
             siglum: this.model.get("siglum_slug")
         });
         this.folioView = new FolioView();
-        this.searchView = new SearchView({showManuscriptName: false});
-        this.searchNotationView = new SearchNotationView(
-            {
-                divaView: this.divaView
-            }
-        );
 
-        this.listenTo(this.model, 'change', this.afterFetch);
+        this.chantSearchProvider = new ChantSearchProvider({showManuscriptName: false});
+        this.notationSearchProvider = new NotationSearchProvider({divaView: this.divaView});
 
         // Propagate the initial, passed-in model state
         this.afterFetch();
+
+        this.searchView = new SearchView({
+            providers: [this.chantSearchProvider, this.notationSearchProvider]
+        });
+
+        this.listenTo(this.model, 'change', this.afterFetch);
     },
 
     /**
@@ -114,7 +115,6 @@ return Marionette.LayoutView.extend
     {
         this.divaView.destroy();
         this.searchView.destroy();
-        this.searchNotationView.destroy();
         this.folioView.destroy();
         this.destroyPopoverView();
     },
@@ -149,12 +149,14 @@ return Marionette.LayoutView.extend
         return this.popoverContent;
     },
 
+    // FIXME(wabain): At the moment this can only feasibly be called during view initialization
     afterFetch: function()
     {
         // Set the search view to only search this manuscript
-        this.searchView.setRestriction('manuscript', '"' + this.model.get("siglum") + '"');
+        this.chantSearchProvider.setRestriction('manuscript', '"' + this.model.get("siglum") + '"');
+        this.notationSearchProvider.setManuscript(this.model);
+
         this.divaView.setManuscript(this.model.get("siglum_slug"));
-        this.searchNotationView.setManuscript(this.model);
 
         // Set the document title to reflect the manuscript name
         GlobalEventHandler.trigger("ChangeDocumentTitle", this.model.get("name"));
@@ -175,7 +177,6 @@ return Marionette.LayoutView.extend
         }
 
         this.searchViewRegion.show(this.searchView);
-        this.searchNotationViewRegion.show(this.searchNotationView);
     },
 
     onWindowResized: function ()

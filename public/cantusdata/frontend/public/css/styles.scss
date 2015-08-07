@@ -161,15 +161,10 @@ table.result-list th a {
     border-right: 1px solid #CCCCCC;
 }
 
-// TODO(wabain): figure out where this should really be done and with what value
-#manuscript-search, #search-notation {
-    margin-top: 2em;
-}
-
-// Force proper input sizing on Chrome/Webkit browsers (overrides `width: 1%`)
-// TODO(wabain): Verify that this remains correct after updating Bootstrap
-#search-notation-form .input-group-btn {
-    width: initial;
+// Narrow the margin between the search input column and the field selection dropdown
+// by taking out some of the padding
+#search-input-col {
+    padding-left: 0;
 }
 
 #diva-toolbar input {

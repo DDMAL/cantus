@@ -1,7 +1,8 @@
 define(["marionette",
         "views/SearchView",
+        "views/ChantSearchProvider",
         "views/ModalView"],
-    function(Marionette, SearchView, ModalView)
+    function(Marionette, SearchView, ChantSearchProvider, ModalView)
     {
         "use strict";
 
@@ -26,7 +27,9 @@ define(["marionette",
             initialize: function()
             {
                 // The search view that we will shove into the modal box
-                this.searchView = new SearchView({showManuscriptName: true});
+                this.searchView = new SearchView({
+                    providers: [new ChantSearchProvider({showManuscriptName: true})]
+                });
 
                 // The modal box for the search pop-up
                 this.searchModalView = new ModalView({title: "Search", view: this.searchView});
