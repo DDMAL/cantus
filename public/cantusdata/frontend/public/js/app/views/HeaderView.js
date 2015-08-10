@@ -41,6 +41,11 @@ define(["marionette",
                 this.ui.searchModalLink.attr({'data-toggle': 'modal', href: '#myModal'});
 
                 this.searchModalRegion.show(this.searchModalView, {preventDestroy: true});
+            },
+
+            onDestroy: function ()
+            {
+                this.searchModalView.destroy();
             }
         });
     });
