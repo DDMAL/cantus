@@ -102,8 +102,7 @@ define([
         {
             this.query = query;
 
-            // If we pass an empty array, then all boxes are erased.
-            this.divaView.paintBoxes([]);
+            this.clearDivaBoxes();
 
             // Handle the empty case
             if (!this.query)
@@ -133,6 +132,13 @@ define([
 
             if (this.results.length > 0)
                 this.zoomToResult(this.results.at(0));
+        },
+
+        /** Stop displaying Diva boxes */
+        clearDivaBoxes: function ()
+        {
+            // If we pass an empty array, then all boxes are erased.
+            this.divaView.paintBoxes([]);
         },
 
         zoomToResult: function(model)
@@ -195,6 +201,9 @@ define([
             });
 
             this.listenTo(resultView, 'zoomToResult', this.zoomToResult);
+
+            // Clear results from Diva when the results are no longer displayed
+            this.listenTo(resultView, 'destroy', this.clearDivaBoxes);
 
             regions.searchResults.show(resultView);
         },
