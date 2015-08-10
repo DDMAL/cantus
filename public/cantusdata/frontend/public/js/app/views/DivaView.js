@@ -509,6 +509,9 @@ return Marionette.ItemView.extend
      */
     paintBoxes: function(boxSet)
     {
+        if (!this.divaInstance)
+            return;
+
         this.divaInstance.resetHighlights();
 
         // Grab the array of page filenames straight from Diva.
@@ -564,14 +567,12 @@ return Marionette.ItemView.extend
      */
     zoomToLocation: function(box)
     {
-        if (box === undefined)
-        {
-            // Do nothing if no box!
-            return;
-        }
-
         // Grab the diva internals to work with
         var divaData = this.divaInstance;
+
+        // Do nothing if there's no box or if Diva is not initialized
+        if (!box || !divaData)
+            return;
 
         // Now figure out the page that box is on
         var divaOuter = divaData.getSettings().outerObject;
