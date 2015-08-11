@@ -1,7 +1,9 @@
 define(["marionette",
-        "views/SearchView"],
+        "views/SearchView",
+        "views/ChantSearchProvider"],
     function(Marionette,
-             SearchView)
+             SearchView,
+             ChantSearchProvider)
     {
 
         "use strict";
@@ -25,6 +27,7 @@ define(["marionette",
             {
                 // Initialize the subview
                 this.searchView = new SearchView({
+                    providers: [new ChantSearchProvider({showManuscriptName: true})],
                     query: options.query,
                     showManuscriptName: true
                 });
