@@ -1,0 +1,59 @@
+@mixin sidenav-width($width) {
+    width: $width;
+
+    // Hold the sidebar just out of view until it's triggered
+    transform: translate(-$width, 0);
+}
+
+.sidenav {
+    // Default width
+    @include sidenav-width(250px);
+
+    transition: transform 300ms ease-in-out;
+
+    display: none;
+
+    // Copied from the Bootstrap modal settings
+    box-shadow: 0 3px 9px rgba(0,0,0,.5);
+    z-index: 1050;
+
+    // FIXME: use variable?
+    background: #fff;
+
+    &.in, &.sliding {
+        display: block;
+    }
+
+    &.in {
+        transform: translate(0, 0);
+    }
+
+    // A side nav which overlays the existing content
+    // TODO: implement side navs that don't do this...
+    &.sidenav-overlay {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+    }
+}
+
+// Exactly the same as .modal-backdrop from Bootstrap
+//
+// TODO: use an @extend to achieve this?
+.sidenav-backdrop {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1040;
+    background-color: #000;
+}
+.sidenav-backdrop.fade {
+    filter: alpha(opacity=0);
+    opacity: 0;
+}
+.sidenav-backdrop.in {
+    filter: alpha(opacity=50);
+    opacity: .5;
+}

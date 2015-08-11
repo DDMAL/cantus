@@ -1,5 +1,7 @@
 /* Fonts */
 
+@import "sidenav";
+
 @font-face {
   font-family: 'Volpiano';
   src: url('/static/fonts/volpiano.eot'); /* IE9 Compat Modes */
@@ -177,11 +179,33 @@ table.result-list th a {
     width: 33px;
 }
 
+#menu-sidenav {
+    .sidenav a {
+        padding-left: 40px;
+    }
+
+    .nav li > a {
+        color: #333;
+    }
+}
+
+.sidenav-brand {
+    display: block;
+    margin-bottom: 22px;
+    color: #333;
+
+    &:hover, &:active, &.active {
+        text-decoration: none;
+        color: #333;
+        background-color: #eee;
+    }
+}
+
 // Navbar styling
 // Select ancestors of .navbar-default to match the specificity of the Bootstrap styling
 // TODO(wabain): See if this can be done using Bootstrap variables. nav-link-padding?
 
-.navbar-default .navbar-brand {
+.navbar-default .navbar-brand, .sidenav-brand {
     height: 50px;
     padding: 15px 15px;
     font-size: 20px;
@@ -191,4 +215,25 @@ table.result-list th a {
 .navbar-default .navbar-nav > li > a {
     padding-top: 15px;
     padding-bottom: 15px;
+}
+
+// Alter the toggle so that it is permanently pinned to the left of the brand
+// TODO(wabain): use Bootstrap variables here
+.navbar-toggle {
+    display: block;
+    float: left;
+
+    // Margin equal to $navbar-padding-horizontal
+    margin-right: 0;
+    margin-left: 15px;//FIXME: use variable
+
+    padding-top: 11px;
+    padding-bottom: 11px;
+
+    // = $grid-float-breakpoint
+    @media (min-width: 768px) {
+        margin-right: 15px;
+        margin-left: 0;
+    }
+
 }

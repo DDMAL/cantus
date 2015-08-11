@@ -1,7 +1,8 @@
 define([
     "marionette",
-    "views/HeaderView"
-], function (Marionette, HeaderView)
+    "views/HeaderView",
+    "views/MenuSidenavView"
+], function (Marionette, HeaderView, MenuSidenavView)
 {
     "use strict";
 
@@ -12,12 +13,14 @@ define([
         template: false,
 
         regions: {
+            menuSidenav: '#menu-sidenav',
             header: '.header',
             mainContent: '#view-goes-here'
         },
 
         onRender: function ()
         {
+            this.menuSidenav.show(new MenuSidenavView());
             this.header.show(new HeaderView());
         }
     });
