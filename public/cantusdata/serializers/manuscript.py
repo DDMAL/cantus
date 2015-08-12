@@ -22,8 +22,6 @@ class ManuscriptSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class ManuscriptListSerializer(serializers.HyperlinkedModelSerializer):
-    #chant_count = serializers.Field(source="chant_count")
-
     class Meta:
         model = Manuscript
-        #fields = ('name', 'siglum', 'date', 'provenance', 'chant_count')
+        fields = ('name', 'url', 'id', 'siglum', 'siglum_slug', 'date', 'provenance', 'chant_count')

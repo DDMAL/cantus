@@ -1,5 +1,5 @@
 from cantusdata.models.manuscript import Manuscript
-from cantusdata.serializers.manuscript import ManuscriptSerializer
+from cantusdata.serializers.manuscript import ManuscriptSerializer, ManuscriptListSerializer
 from cantusdata.renderers.custom_html_renderer import CustomHTMLRenderer
 from rest_framework import generics
 from rest_framework.renderers import JSONRenderer, JSONPRenderer
@@ -25,7 +25,7 @@ class ManuscriptHasChantsMixin(object):
 class ManuscriptList(ManuscriptHasChantsMixin, generics.ListCreateAPIView):
     model = Manuscript
     queryset = Manuscript.objects.all()
-    serializer_class = ManuscriptSerializer
+    serializer_class = ManuscriptListSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer,
                         ManuscriptListHTMLRenderer)
 
