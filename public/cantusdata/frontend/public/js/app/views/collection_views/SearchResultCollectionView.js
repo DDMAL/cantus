@@ -18,8 +18,6 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
             childView: SearchResultItemView,
             childViewContainer: '.child-container',
 
-            showManuscriptName: true,
-
             collectionEvents: {
                 "sync reset": "render",
                 "add remove": "hideIfEmpty"
@@ -40,7 +38,6 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
 
                 // FIXME(wabain): update this to use mergeOptions after updating Marionette
                 this.searchParameters = this.getOption('searchParameters');
-                this.showManuscriptName = this.getOption('showManuscriptName');
             },
 
             childViewOptions: function ()
@@ -48,7 +45,7 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
                 return {
                     searchType: this.searchParameters.get('field'),
                     query: this.searchParameters.get('query'),
-                    showManuscriptName: this.showManuscriptName
+                    infoFields: this.getOption('infoFields')
                 };
             },
 
@@ -181,7 +178,7 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
             templateHelpers: function()
             {
                 return {
-                    showManuscriptName: this.showManuscriptName
+                    infoFields: _.toArray(this.getOption('infoFields'))
                 };
             }
         });

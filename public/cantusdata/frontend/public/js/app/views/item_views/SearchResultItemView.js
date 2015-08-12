@@ -1,5 +1,5 @@
-define(['backbone', 'marionette'],
-    function(Backbone, Marionette)
+define(['underscore', 'backbone', 'marionette'],
+    function(_, Backbone, Marionette)
     {
 
         "use strict";
@@ -15,7 +15,6 @@ define(['backbone', 'marionette'],
             // <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/table>
             tagName: 'tbody',
 
-            showManuscriptName: true,
             searchType: null,
 
             events: {
@@ -25,7 +24,6 @@ define(['backbone', 'marionette'],
             initialize: function ()
             {
                 // FIXME(wabain): use mergeOptions after upgrading marionette
-                this.showManuscriptName = this.getOption('showManuscriptName');
                 this.searchType = this.getOption('searchType');
                 this.query = this.getOption('query');
             },
@@ -45,7 +43,7 @@ define(['backbone', 'marionette'],
             serializeData: function()
             {
                 return {
-                    showManuscriptName: this.showManuscriptName,
+                    infoFields: _.toArray(this.getOption('infoFields')),
                     searchType: this.searchType,
                     result: this.model.getFormattedData(this.searchType, this.query)
                 };

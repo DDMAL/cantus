@@ -5,20 +5,12 @@
         <a href="<%= result.url %>" class="search-result"><%= result.name %></a>
     </td>
 
-    <% if (showManuscriptName) { %>
-    <td><%= result.manuscript %></td>
-    <% } %>
-
-    <td><%= result.mode %></td>
-
-    <td><%= result.genre %></td>
-
-    <% if (showManuscriptName) { %>
-    <td><%= result.office %></td>
-    <% } %>
+    <% _.forEach(infoFields, function (field) { %>
+    <td><%= result[field.type] %></td>
+    <% }); %>
 </tr>
 <% if (searchType === "volpiano" && result.volpiano !== undefined) { %>
 <tr>
-    <td colspan="5"><p class="volpiano"><%= result.volpiano %></p></td>
+    <td colspan="<%= infoFields.length + 2 %>"><p class="volpiano"><%= result.volpiano %></p></td>
 </tr>
 <% } %>

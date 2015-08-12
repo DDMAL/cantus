@@ -16,8 +16,6 @@ define(["underscore", "jquery", "marionette"], function(_, $, Marionette)
     return Marionette.LayoutView.extend({
         template: "#search-template",
 
-        showManuscriptName: true,
-
         regions: {
             searchInput: ".search-input",
             searchHelper: ".search-helper",

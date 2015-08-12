@@ -19,6 +19,16 @@ define([
 {
     "use strict";
 
+    var KNOWN_FIELDS = [
+        {type: "all", "name": "All Text Fields"},
+        {type: "manuscript", "name": "Manuscript"},
+        {type: "volpiano", "name": "Volpiano"},
+        {type: "mode", "name": "Mode"},
+        {type: "feast", "name": "Feast"},
+        {type: "genre", "name": "Genre"},
+        {type: "office", "name": "Office"}
+    ];
+
     /**
      * Provide support for searching Cantus chant information via the search interface.
      * See SearchView for a description of the contract this class fulfills.
@@ -26,17 +36,11 @@ define([
     return Marionette.Object.extend({
         description: 'Chant search',
 
-        showManuscriptName: true,
-
         /** Search fields this class provides */
-        fields: [
-            {type: "all", "name": "All Text Fields"},
-            {type: "volpiano", "name": "Volpiano"},
-            {type: "mode", "name": "Mode"},
-            {type: "feast", "name": "Feast"},
-            {type: "genre", "name": "Genre"},
-            {type: "office", "name": "Office"}
-        ],
+        fields: KNOWN_FIELDS.filter(function (field)
+        {
+            return field.type !== 'manuscript';
+        }),
 
         // Fields which are indexed in Solr as strings.
         // We need to get text_general variants of these
@@ -56,9 +60,9 @@ define([
         /**
          * Initialization options:
          *
-         * - `showManuscriptName`: Whether to include the manuscript name as
-         *   a field in the search (FIXME: at the moment, this also controls
-         *   whether some other fields are displayed in the search results table)
+         * - `additionalResultFields`: Types of the fields to display in the
+         *   search results in addition to the folio, chant name, and (if the
+         *   search type is Volpiano) the chant's Volpiano
          * - `restriction`: object with field: value mappings of restrictions
          *   to apply to all queries made by the controller
          */
@@ -71,7 +75,6 @@ define([
 
             // Set options
             this.restrictions = this.getOption('restrictions') || {};
-            this.showManuscriptName = this.getOption('showManuscriptName');
 
             // Initialize search input model
             this.searchParameters = new SearchInput();
@@ -244,9 +247,16 @@ define([
                 getSearchMetadata: this.getSearchMetadata
             }));
 
+            // Get the additional result fields to display
+            var specifiedAddFields = this.getOption('additionalResultFields');
+            var infoFields = _.filter(KNOWN_FIELDS, function (field)
+            {
+                return _.contains(specifiedAddFields, field.type);
+            });
+
             regions.searchResults.show(new SearchResultCollectionView({
                 collection: this.collection,
-                showManuscriptName: this.showManuscriptName,
+                infoFields: infoFields,
                 searchParameters: this.searchParameters
             }));
         }

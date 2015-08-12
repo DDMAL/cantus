@@ -38,7 +38,9 @@ define(["marionette",
             {
                 // The search view that we will shove into the modal box
                 this.searchView = new SearchView({
-                    providers: [new ChantSearchProvider({showManuscriptName: true})]
+                    providers: [new ChantSearchProvider({
+                        additionalResultFields: ['manuscript', 'mode', 'genre', 'office']
+                    })]
                 });
 
                 // The modal box for the search pop-up

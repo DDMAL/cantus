@@ -101,7 +101,10 @@ return Marionette.LayoutView.extend
         });
         this.folioView = new FolioView();
 
-        this.chantSearchProvider = new ChantSearchProvider({showManuscriptName: false});
+        this.chantSearchProvider = new ChantSearchProvider({
+            additionalResultFields: ['mode', 'genre']
+        });
+
         this.notationSearchProvider = new NotationSearchProvider({divaView: this.divaView});
 
         // Propagate the initial, passed-in model state

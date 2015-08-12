@@ -27,9 +27,10 @@ define(["marionette",
             {
                 // Initialize the subview
                 this.searchView = new SearchView({
-                    providers: [new ChantSearchProvider({showManuscriptName: true})],
-                    query: options.query,
-                    showManuscriptName: true
+                    providers: [new ChantSearchProvider({
+                        additionalResultFields: ['manuscript', 'mode', 'genre', 'office']
+                    })],
+                    query: options.query
                 });
             },
 
