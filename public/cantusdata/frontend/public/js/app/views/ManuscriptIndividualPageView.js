@@ -80,6 +80,12 @@ return Marionette.LayoutView.extend
                             return $(window).width() <= 880 ? 'width=880, user-scalable=no' : 'width=device-width';
                         }
                     }
+                },
+
+                '.navbar': {
+                    styles: {
+                        'margin-bottom': 0
+                    }
                 }
             }
         }
