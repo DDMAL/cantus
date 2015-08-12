@@ -8,6 +8,7 @@ define(["underscore", "marionette"],
             template: '#search-input-template',
 
             events: {
+                "submit": "preventSubmit",
                 "change .search-input": "setQuery",
                 "input .search-input": "setQueryDebounced",
                 "keydown .search-input": "updateQueryInput"
@@ -22,6 +23,12 @@ define(["underscore", "marionette"],
                 _.bindAll(this, 'setQuery');
 
                 this.setQueryDebounced = _.debounce(this.setQuery, 250);
+            },
+
+            /** We don't need to do anything real on a submit because the query is set on each change. */
+            preventSubmit: function (event)
+            {
+                event.preventDefault();
             },
 
             setQuery: function ()
