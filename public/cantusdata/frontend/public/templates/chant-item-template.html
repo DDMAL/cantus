@@ -7,6 +7,9 @@
 </div>
 <div id="collapse-<%= sequence %>" class="panel-collapse collapse <%= isOpen() ? 'in' : '' %>">
     <div class="panel-body">
+        <% if (cantus_id) { %>
+        <p><b>Cantus ID:</b> <%= cantus_id %></p>
+        <% } %>
         <% if (marginalia) { %>
         <p><b>Marginalia:</b> <%= marginalia %></p>
         <% } %>
