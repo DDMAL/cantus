@@ -1,2 +1,13 @@
-<a href="<%= url %>"><%= provenance %>, <%= siglum %></a><br>
-<%= name %>, <%= date %>
+<p>
+    <a href="<%= url %>"><%= provenance %>, <%= siglum %></a><br>
+    <% if (_.has(cantusUrls, siglum_slug)) { %>
+    <small class="text-muted">
+        <span class="glyphicon glyphicon-share-alt"></span>
+        <a href="<%= cantusUrls[siglum_slug] %>" target="_new">
+            <abbr class="initialism">CANTUS</abbr>
+        </a>
+    </small>
+    <br>
+    <% } %>
+    <%= name %>, <%= date %>
+</p>
