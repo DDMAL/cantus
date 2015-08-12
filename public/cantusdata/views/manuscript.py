@@ -13,21 +13,15 @@ class ManuscriptDetailHTMLRenderer(CustomHTMLRenderer):
     template_name = "require.html"
 
 
-class ManuscriptHasChantsMixin(object):
-    """
-    This Mixin filters out manuscripts that have no chants.
-    """
-    def get_queryset(self):
-        queryset = Manuscript.objects.all()
-        return queryset.filter(chant_count__gt=0)
-
-
-class ManuscriptList(ManuscriptHasChantsMixin, generics.ListCreateAPIView):
+class ManuscriptList(generics.ListCreateAPIView):
     model = Manuscript
     queryset = Manuscript.objects.all()
     serializer_class = ManuscriptListSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer,
                         ManuscriptListHTMLRenderer)
+
+    def get_queryset(self):
+        return Manuscript.objects.filter(public=True)
 
 
 class ManuscriptDetail(generics.RetrieveUpdateDestroyAPIView):
