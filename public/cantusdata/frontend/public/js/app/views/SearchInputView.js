@@ -42,7 +42,7 @@ define(["underscore", "marionette"],
              */
             updateQueryInput: function ()
             {
-                if (this.model.get('query'))
+                if (this.ui.searchInput.val())
                 {
                     this.ui.searchInput.addClass('search-text-entered');
                 }
