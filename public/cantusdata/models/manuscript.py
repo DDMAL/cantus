@@ -38,7 +38,7 @@ class Manuscript(models.Model):
 
     @property
     def folio_count(self):
-        return len(self.folio_set.all())
+        return self.folio_set.count()
 
     @property
     def chant_set(self):
