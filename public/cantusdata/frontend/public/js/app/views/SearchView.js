@@ -13,6 +13,13 @@ define(["underscore", "jquery", "marionette"], function(_, $, Marionette)
      *    changes,
      *  - to trigger the `onSearch` method whenever the input view triggers a search event
      *  - and to trigger the providers' onDestroy method when the view is destroyed.
+     *
+     * Providers are expected to implement those methods, to provide an array `fields` with field
+     * types and names, and to provide a string `description` which describes the search type provided.
+     *
+     *  TODO: Make this API less confusing. As a historical note, it works this way because it merges
+     *  two search views which had different implementations. Refactoring those to make the abstraction
+     *  better would be nice.
      */
     return Marionette.LayoutView.extend({
         template: "#search-template",
