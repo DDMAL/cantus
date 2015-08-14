@@ -151,8 +151,14 @@ define(["underscore",
              */
             search: function(queryString)
             {
-                var query = Qs.parse(queryString).q;
-                this.showContentView(new SearchPageView({query: query}));
+                var queryParams = Qs.parse(queryString);
+
+                var query = queryParams.q;
+
+                // FIXME: for now we just use the default search type
+                this.showContentView(new SearchPageView({
+                    searchTerm: {query: query}
+                }));
             },
 
             notFound: function()

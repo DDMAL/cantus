@@ -70,9 +70,6 @@ define([
         {
             _.bindAll(this, 'search', 'setRestriction', 'getSearchMetadata');
 
-            // Mapping if queries per field
-            this.cachedQueries = {};
-
             // Set options
             this.restrictions = this.getOption('restrictions') || {};
 
@@ -118,6 +115,13 @@ define([
                 this.search();
         },
 
+        onSearch: function (query)
+        {
+            // Just set the query on the model; the actual search is triggered
+            // by the change event
+            this.searchParameters.set('query', query);
+        },
+
         /**
          * Take the value of the search input box and perform a search query
          * with it. This function hits the API (possibly multiple times) every
@@ -127,8 +131,6 @@ define([
         {
             var query = this.searchParameters.get('query');
             var field = this.searchParameters.get('field');
-
-            this.cachedQueries[field] = query;
 
             if (!query)
             {
@@ -230,14 +232,17 @@ define([
         },
 
         /** Display component views for the selected search field */
-        display: function (field, regions)
+        display: function (field, query, regions)
         {
             // Restore the last query which was searched for by this field if one exists
             this.searchParameters.set({
                 field: field.type,
-                query: this.cachedQueries[field.type] || ''
+                query: query
             });
 
+            // FIXME(wabain): This triggers changes on the model, as well as going through
+            // the SearchView event feedback path. I don't think this is a real problem,
+            // but it is deeply confusing.
             regions.searchInput.show(new SearchInputView({model: this.searchParameters}));
 
             regions.searchHelper.empty();

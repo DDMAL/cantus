@@ -98,7 +98,7 @@ define([
             }, this);
         },
 
-        executeSearch: function (query)
+        onSearch: function (query)
         {
             this.query = query;
 
@@ -161,16 +161,14 @@ define([
             };
         },
 
-        display: function(field, regions)
+        display: function(field, query, regions)
         {
             this.field = field;
+            this.query = query;
             this.results.reset();
 
             // Input
-            var inputView = new SearchNotationInputView();
-
-            this.listenTo(inputView, 'search', this.executeSearch);
-
+            var inputView = new SearchNotationInputView({initialQuery: this.query});
             regions.searchInput.show(inputView);
 
             // Neume gallery
@@ -206,6 +204,10 @@ define([
             this.listenTo(resultView, 'destroy', this.clearDivaBoxes);
 
             regions.searchResults.show(resultView);
+
+            // Trigger initial search
+            if (this.query)
+                this.triggerMethod('search', query);
         },
 
         onDestroy: function ()

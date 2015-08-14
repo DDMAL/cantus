@@ -30,7 +30,7 @@ define(["marionette",
                     providers: [new ChantSearchProvider({
                         additionalResultFields: ['manuscript', 'mode', 'genre', 'office']
                     })],
-                    query: options.query
+                    searchTerm: options.searchTerm
                 });
             },
 

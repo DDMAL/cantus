@@ -20,6 +20,13 @@ function (Marionette)
             'submit @ui.form': 'triggerSearch'
         },
 
+        serializeData: function ()
+        {
+            return {
+                initialQuery: this.getOption('initialQuery')
+            };
+        },
+
         /** Trigger a search event when the search form is submitted */
         triggerSearch: function (event)
         {

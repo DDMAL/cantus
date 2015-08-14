@@ -3,7 +3,8 @@ define(["underscore", "marionette"],
     {
         "use strict";
 
-        /** Control an input for a search field. Takes a SearchInput model. */
+        /** Control an input for a search field, firing a `search` event when the query changes.
+         * Takes a SearchInput model. */
         return Marionette.ItemView.extend({
             template: '#search-input-template',
 
@@ -33,7 +34,11 @@ define(["underscore", "marionette"],
 
             setQuery: function ()
             {
-                this.model.set('query', this.ui.searchInput.val());
+                // FIXME(wabain): While this class needs to take a SearchInput model so it can initially
+                // be rendered, we're not actually updating that model here - we're just triggering
+                // an event which will cause the appropriate changes to propagate. That's kind of
+                // confusing.
+                this.trigger('search', this.ui.searchInput.val());
                 this.updateQueryInput();
             },
 
