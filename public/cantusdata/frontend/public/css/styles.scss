@@ -1,25 +1,24 @@
 // Hardcode some Bootstrap style variables here since our Bootstrap stuff
 // isn't pre-processed
 $screen-sm-min: 768px;
-/* Fonts */
 
 @import "sidenav";
 
+// Volpiano font
 @font-face {
   font-family: 'Volpiano';
-  src: url('/static/fonts/volpiano.eot'); /* IE9 Compat Modes */
-  src: url('/static/fonts/volpiano.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
-       url('/static/fonts/volpiano.woff') format('woff'), /* Modern Browsers */
-       url('/static/fonts/volpiano.ttf')  format('truetype'), /* Safari, Android, iOS */
-       url('/static/fonts/volpiano.svg#a7a4d8715938a922c6a8c6587abbdcd3') format('svg'); /* Legacy iOS */
+  src: url('/static/fonts/volpiano.eot'); // IE9 Compat Modes
+  src: url('/static/fonts/volpiano.eot?#iefix') format('embedded-opentype'), // IE6-IE8
+       url('/static/fonts/volpiano.woff') format('woff'), // Modern Browsers
+       url('/static/fonts/volpiano.ttf')  format('truetype'), // Safari, Android, iOS
+       url('/static/fonts/volpiano.svg#a7a4d8715938a922c6a8c6587abbdcd3') format('svg'); // Legacy iOS
 
   font-style:   normal;
   font-weight:  400;
 }
 
 
-/* This is textual information, so we want to make it resemble normal text as much as possible
- * FIXME(wabain): things like this are a good reason to use a pre-processor language */
+// This is textual information, so we want to make it resemble normal text as much as possible
 pre.preformatted-text {
     border: inherit;
     background: none;
@@ -29,7 +28,7 @@ pre.preformatted-text {
     white-space: pre-wrap;
     word-break: normal;
 
-    /* Inherit font properties to match wherever we drop it */
+    // Inherit font properties to match wherever we drop it
     font-family: inherit;
     font-size: inherit;
     line-height: inherit;
@@ -50,14 +49,11 @@ pre.preformatted-text {
     color: inherit;
 }
 
+// FIXME: increase the font size here to 15px?
+// The title could be 19px
 #manuscript-title-container .popover {
     max-width: 500px;
-    /*font-size: 15px;*/
 }
-
-/*#manuscript-title-container .popover .popover-title {
-    font-size: 19px;
-}*/
 
 #manuscript-title-container .popover-content {
     max-height: 500px;
@@ -106,12 +102,12 @@ table.result-list th {
     overflow: hidden;
 }
 
-/* Make table headers black in the search result list, even though they're links */
+// Make table headers black in the search result list, even though they're links
 table.result-list th a {
     color: inherit;
 }
 
-/* Support reversible (i.e. upwards-pointing) carets without setting classes on ancestors */
+// Support reversible (i.e. upwards-pointing) carets without setting classes on ancestors
 .caret.caret-reversed {
     content: "";
     border-top: 0;
