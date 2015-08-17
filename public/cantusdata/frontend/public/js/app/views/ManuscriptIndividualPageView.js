@@ -174,12 +174,8 @@ return Marionette.LayoutView.extend
         });
 
         // Render subviews
-        if (this.divaView !== undefined)
-        {
-            this.divaViewRegion.show(this.divaView, {preventDestroy: true});
-            this.folioViewRegion.show(this.folioView, {preventDestroy: true});
-        }
-
+        this.divaViewRegion.show(this.divaView, {preventDestroy: true});
+        this.folioViewRegion.show(this.folioView, {preventDestroy: true});
         this.searchViewRegion.show(this.searchView);
     },
 
