@@ -21,6 +21,7 @@ define(["marionette",
             searchModalView: null,
 
             regions: {
+                pageTitle: '#page-title',
                 searchModalRegion: '#search-modal'
             },
 
@@ -34,8 +35,14 @@ define(["marionette",
                 'click @ui.navButton': 'toggleNavigationDrawer'
             },
 
+            modelEvents: {
+                'change:navbarTitle': 'updateNavbarTitle'
+            },
+
             initialize: function()
             {
+                this.model = NavigationManager.titling;
+
                 // The search view that we will shove into the modal box
                 this.searchView = new SearchView({
                     providers: [new ChantSearchProvider({
@@ -55,6 +62,31 @@ define(["marionette",
             {
                 event.preventDefault();
                 sidenavChannel.request('toggle');
+            },
+
+            /**
+             * When the global navbarTitle changes, update the pageTitle region
+             * to display it
+             *
+             * @param model
+             * @param title
+             */
+            updateNavbarTitle: function (model, title)
+            {
+                if (title)
+                {
+                    this.pageTitle.show(new Marionette.ItemView({
+                        tagName: 'span',
+                        template: '#navbar-subhead-template',
+                        templateHelpers: {
+                            subhead: title
+                        }
+                    }));
+                }
+                else
+                {
+                    this.pageTitle.empty();
+                }
             },
 
             onRender: function ()

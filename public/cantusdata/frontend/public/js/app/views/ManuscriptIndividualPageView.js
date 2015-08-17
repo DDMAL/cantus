@@ -6,8 +6,7 @@ define(['underscore',
         "views/SearchView",
         "views/ManuscriptDataPopoverView",
         "views/ChantSearchProvider",
-        "views/NotationSearchProvider",
-        "singletons/GlobalEventHandler"],
+        "views/NotationSearchProvider"],
 function(_,
          Marionette,
          Manuscript,
@@ -16,8 +15,7 @@ function(_,
          SearchView,
          ManuscriptDataPopoverView,
          ChantSearchProvider,
-         NotationSearchProvider,
-         GlobalEventHandler)
+         NotationSearchProvider)
 {
 
 "use strict";
@@ -166,9 +164,6 @@ return Marionette.LayoutView.extend
         this.notationSearchProvider.setManuscript(this.model);
 
         this.divaView.setManuscript(this.model.get("siglum_slug"));
-
-        // Set the document title to reflect the manuscript name
-        GlobalEventHandler.trigger("ChangeDocumentTitle", this.model.get("name"));
     },
 
     onShow: function()

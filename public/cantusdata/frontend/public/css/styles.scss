@@ -1,3 +1,6 @@
+// Hardcode some Bootstrap style variables here since our Bootstrap stuff
+// isn't pre-processed
+$screen-sm-min: 768px;
 /* Fonts */
 
 @import "sidenav";
@@ -205,6 +208,34 @@ table.result-list th a {
     padding: 15px 15px;
     font-size: 20px;
     line-height: 20px;
+}
+
+// A subhead is an extension of a navbar brand that works like a breadcrumb to title a specific page
+.navbar-brand.navbar-subhead::before {
+    content: "›";
+    padding-right: 15px;
+}
+
+@media (max-width: $screen-sm-min - 1) {
+    // Only show the subhead
+    .navbar-brand {
+        display: none;
+
+        &.navbar-subhead {
+            display: block;
+
+            // Some quick and dirty overflow protection
+            max-width: 70%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
+            // Hide the breadcrumb-style continuation
+            &::before {
+                display: none;
+            }
+        }
+    }
 }
 
 .navbar-default .navbar-nav > li > a {

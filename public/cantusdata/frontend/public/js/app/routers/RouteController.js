@@ -11,7 +11,7 @@ define(["underscore",
         "views/ManuscriptsPageView",
         "views/ManuscriptIndividualPageView",
         "views/SearchPageView",
-        "singletons/GlobalEventHandler"],
+        "singletons/NavigationManager"],
     function(_,
              Backbone,
              Marionette,
@@ -25,7 +25,7 @@ define(["underscore",
              ManuscriptsPageView,
              ManuscriptIndividualPageView,
              SearchPageView,
-             GlobalEventHandler)
+             NavigationManager)
     {
         "use strict";
 
@@ -52,7 +52,10 @@ define(["underscore",
                 });
 
                 // Change the document title when
-                this.listenTo(GlobalEventHandler, 'ChangeDocumentTitle', this.setDocumentTitle);
+                this.listenTo(NavigationManager.titling, 'change:title', _.bind(function (model, title)
+                {
+                    this.setDocumentTitle(title);
+                }, this));
             },
 
             /** Initialize the layout for the application */
@@ -77,10 +80,7 @@ define(["underscore",
              */
             manuscripts: function()
             {
-                this.showContentView(this.manuscriptsPageView);
-
-                // Set the document title to reflect the manuscripts route
-                GlobalEventHandler.trigger("ChangeDocumentTitle", "Manuscripts");
+                this.showContentView(this.manuscriptsPageView, {title: 'Manuscripts'});
             },
 
             /**
@@ -132,9 +132,10 @@ define(["underscore",
                  */
                 this.listenToOnce(this.routeState.model, 'load:manuscript', function (model)
                 {
-                    this.showContentView(new ManuscriptIndividualPageView({
-                        model: model
-                    }));
+                    this.showContentView(new ManuscriptIndividualPageView({model: model}), {
+                        title: model.get("name"),
+                        navbarTitle: model.get("provenance") + ", " + model.get("siglum")
+                    });
                 });
 
                 this.routeState.model.set({
@@ -158,7 +159,7 @@ define(["underscore",
                 // FIXME: for now we just use the default search type
                 this.showContentView(new SearchPageView({
                     searchTerm: {query: query}
-                }));
+                }), {title: 'Search'});
             },
 
             notFound: function()
@@ -198,13 +199,15 @@ define(["underscore",
             },
 
             /**
-             * Show the view in the mainContent region.
+             * Show the view in the mainContent region, setting the page title according to titleSettings
              *
              * @param newView
+             * @param titleSettings
              */
-            showContentView: function(newView)
+            showContentView: function(newView, titleSettings)
             {
                 this.rootView.mainContent.show(newView, {preventDestroy: this.shouldDestroyMainContentView()});
+                NavigationManager.registerPage(titleSettings);
             },
 
             /**
