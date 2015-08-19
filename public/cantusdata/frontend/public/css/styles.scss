@@ -2,6 +2,9 @@
 // isn't pre-processed
 $screen-sm-min: 768px;
 
+// Color used for a lot of borders in the Bootstrap things
+$border-color: #ddd;
+
 @import "sidenav";
 
 // Volpiano font
@@ -62,6 +65,12 @@ pre.preformatted-text {
 
 #manuscript-title-container dl.manuscript-data {
     margin-bottom: 0;
+}
+
+#manuscript-nav-container {
+    // Add 1px to margins so that their borders are flush with the container's
+    margin-top: -1px;
+    margin-left: -16px;
 }
 
 .volpiano, .field-volpiano {
@@ -130,8 +139,8 @@ table.result-list th a {
     height: 75px;
     padding: 20px;
     margin-top: 0;
-    border-right: 1px solid #CCCCCC;
-    border-bottom: 1px solid #CCCCCC;
+    border-right: 1px solid $border-color;
+    border-bottom: 1px solid $border-color;
 
     .button {
         border-color: #DADADA;
@@ -185,7 +194,7 @@ table.result-list th a {
     margin-left: 0;
     margin-right: 0;
     border: none;
-    border-right: 1px solid #CCCCCC;
+    border-right: 1px solid $border-color;
 }
 
 // Narrow the margin between the search input column and the field selection dropdown
