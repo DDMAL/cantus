@@ -47,24 +47,22 @@ pre.preformatted-text {
     max-width: 60%;
 }
 
-#manuscript-title-popover-link {
-    outline: none;
-    text-decoration: none;
-    color: inherit;
+#manuscript-info-popover {
+    float: right;
+
+    // FIXME: This should actually be the padding for all .btn-sm elements; the Bootstrap button padding was
+    // inconsistently tweaked
+    .btn-sm {
+        padding: 5px 10px;
+    }
 }
 
-// FIXME: increase the font size here to 15px?
-// The title could be 19px
-#manuscript-title-container .popover {
-    max-width: 500px;
-}
-
-#manuscript-title-container .popover-content {
+#manuscript-info-popover .popover-content {
     max-height: 500px;
     overflow-y: auto;
 }
 
-#manuscript-title-container dl.manuscript-data {
+#manuscript-info-popover dl.manuscript-data {
     margin-bottom: 0;
 }
 
@@ -141,9 +139,9 @@ table.result-list th a {
 }
 
 .diva-tools {
-    height: 75px;
-    padding: 20px;
     margin-top: 0;
+    padding: 20px 15px;
+    min-height: 70px;
     border-right: 1px solid $border-color;
     border-bottom: 1px solid $border-color;
 
@@ -158,8 +156,9 @@ table.result-list th a {
         }
     }
 
-    .diva-buttons-label {
+    .diva-buttons-label, .diva-page-label {
         padding: 5px 10px !important;
+        line-height: 1.5 !important;
     }
 
     // Stopgap to stop the "Zoom level" control from falling below the row
@@ -176,9 +175,19 @@ table.result-list th a {
     width: 260px;
     height: 120px;
     padding: 10px;
+
+    .diva-buttons-label, .diva-page-label, .diva-page-nav {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    // Hide the extra popover that was stuck into the Diva toolbar
+    #manuscript-info-popover {
+        display: none;
+    }
 }
 
-#diva-toolbar .diva-goto-form {
+#toolbar-row .diva-page-nav {
     // Restore Bootstrap styling
     // FIXME: edit the Diva CSS so this isn't necessary
     line-height: 1.5;

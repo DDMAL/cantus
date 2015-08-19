@@ -51,7 +51,6 @@ return Marionette.ItemView.extend
     imageSuffix: "",
 
     ui: {
-        divaToolbar: "#diva-toolbar",
         divaWrapper: "#diva-wrapper"
     },
 
@@ -130,7 +129,7 @@ return Marionette.ItemView.extend
         var siglum = this.siglum;
 
         var options = {
-            toolbarParentObject: this.ui.divaToolbar,
+            toolbarParentObject: this.toolbarParentObject,
             viewerWidthPadding: 0,
 
             enableAutoTitle: false,
@@ -231,7 +230,8 @@ return Marionette.ItemView.extend
     {
         event.preventDefault();
 
-        var pageAlias = $(this.ui.divaToolbar.find(this.divaInstance.getInstanceSelector() + 'goto-page-input')).val();
+        var pageInput = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'goto-page-input');
+        var pageAlias = pageInput.val();
 
         if (!pageAlias)
             return;
@@ -381,6 +381,7 @@ return Marionette.ItemView.extend
     onViewerLoad: function()
     {
         this.triggerMethod('recalculate:size');
+        this.trigger('loaded:viewer');
 
         // If there exists a client-defined initial folio
         if (this.initialFolio !== undefined)
@@ -411,7 +412,7 @@ return Marionette.ItemView.extend
         input.on('submit', this.gotoInputPage);
 
         // Rename the page label
-        var pageLabel = this.ui.divaToolbar.find('.diva-page-label')[0];
+        var pageLabel = this.toolbarParentObject.find('.diva-page-label')[0];
 
         // Replace "Page " with "Folio "
         pageLabel.firstChild.textContent = 'Folio ';
@@ -423,11 +424,11 @@ return Marionette.ItemView.extend
         var inputGroup = $('<div class="input-group input-group-sm">');
         var inputGroupBtnContainer = $('<div class="input-group-btn">');
 
-        this.ui.divaToolbar.find('.diva-goto-form input[type=submit]')
+        this.toolbarParentObject.find('.diva-goto-form input[type=submit]')
             .addClass('btn btn-default')
             .appendTo(inputGroupBtnContainer);
 
-        this.ui.divaToolbar.find('.diva-goto-form .diva-input')
+        this.toolbarParentObject.find('.diva-goto-form .diva-input')
             .addClass('form-control')
             .replaceWith(inputGroup)
             .appendTo(inputGroup);

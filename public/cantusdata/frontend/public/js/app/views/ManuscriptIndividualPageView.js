@@ -38,14 +38,15 @@ return Marionette.LayoutView.extend
     folioView: null,
 
     ui: {
-        manuscriptTitleContainer: '#manuscript-title-container',
-        manuscriptTitlePopoverLink: '#manuscript-title-popover-link'
+        toolbarRow: '#toolbar-row',
+        manuscriptInfo: '#manuscript-info-popover',
+        manuscriptInfoButton: '#manuscript-info-popover button'
     },
 
     // FIXME(wabain): use inserted.bs.popover after updating bootstrap
     events: {
-        'shown.bs.popover @ui.manuscriptTitlePopoverLink': 'instantiatePopoverView',
-        'hidden.bs.popover @ui.manuscriptTitlePopoverLink': 'destroyPopoverView'
+        'shown.bs.popover @ui.manuscriptInfoButton': 'instantiatePopoverView',
+        'hidden.bs.popover @ui.manuscriptInfoButton': 'destroyPopoverView'
     },
 
     regions: {
@@ -127,7 +128,7 @@ return Marionette.LayoutView.extend
     instantiatePopoverView: function ()
     {
         this.popoverView = new ManuscriptDataPopoverView({
-            el: this.ui.manuscriptTitleContainer.find('.popover')
+            el: this.ui.manuscriptInfo.find('.popover')
         });
     },
 
@@ -166,9 +167,21 @@ return Marionette.LayoutView.extend
 
     onShow: function()
     {
-        this.ui.manuscriptTitlePopoverLink.popover({
+        this.ui.manuscriptInfoButton.popover({
             content: this.getPopoverContent,
             html: true
+        });
+
+        // FIXME: Is there a nicer way to set this?
+        this.divaView.toolbarParentObject = this.ui.toolbarRow;
+
+        // Move the manuscript info button into the Diva toolbar
+        // FIXME: this is not a very good way to do this
+        this.listenToOnce(this.divaView, 'loaded:viewer', function ()
+        {
+            this.ui.manuscriptInfo.prependTo(this.ui.toolbarRow.find('.diva-tools-right'));
+            this.triggerMethod('recalculate:size');
+            this.divaView.triggerMethod('recalculate:size');
         });
 
         // Render subviews

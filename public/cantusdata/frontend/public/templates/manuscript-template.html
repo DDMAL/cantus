@@ -1,17 +1,14 @@
+<div class="row" id="toolbar-row">
+    <div class="toolbar-things"></div>
+    <div id="manuscript-info-popover">
+        <button class="btn btn-link btn-sm" data-toggle="popover" data-placement="bottom" title="<%= name %>">
+            Manuscript info
+        </button>
+    </div>
+</div>
 <div class="row">
     <div id="diva-column" class="col-xs-6"></div>
     <div class="col-xs-6">
-        <div id="manuscript-title-container" class="row">
-            <div class="col-md-12">
-                <% /* FIXME: remove this once there's an alternative place for the manuscript info */ %>
-                <% /* Style this as a link pretending to be a button pretending to be a link so that
-                    * we get button-style padding as well as appropriate hover settings */ %>
-                <a id="manuscript-title-popover-link" data-toggle="popover" data-placement="bottom"
-                        class="btn btn-link" title="<%= name %>">
-                    <h1 class="h3"><%= provenance %>, <%= siglum %></h1>
-                </a>
-            </div>
-        </div>
         <div id="manuscript-nav-container" class="row">
             <!-- Nav tabs -->
             <ul class="nav nav-tabs nav-justified">
