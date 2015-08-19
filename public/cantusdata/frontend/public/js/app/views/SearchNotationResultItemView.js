@@ -13,6 +13,8 @@ define([
         template: '#search-notation-result-item-template',
         tagName: 'tr',
 
+        neumeImageHeight: 30,
+
         events: {
             'click .result-target': function (event)
             {
@@ -28,17 +30,14 @@ define([
             this.siglumSlug = manuscript ? manuscript.get('siglum_slug') : null;
         },
 
-        getThumbnails: function (boxes)
+        getThumbnail: function (box)
         {
             if (!this.siglumSlug)
             {
-                return [];
+                return null;
             }
 
-            return _.map(boxes, function (box)
-            {
-                return pageSnippetUrl(this.siglumSlug, box, {height: 30});
-            }, this);
+            return pageSnippetUrl(this.siglumSlug, box, {height: this.neumeImageHeight});
         },
 
         templateHelpers: function ()
@@ -92,7 +91,8 @@ define([
                         circles +
                         '</svg>';
                 },
-                thumbnails: _.bind(this.getThumbnails, this)
+                thumbnailUrl: _.bind(this.getThumbnail, this),
+                neumeImageHeight: this.neumeImageHeight
             };
         }
     });

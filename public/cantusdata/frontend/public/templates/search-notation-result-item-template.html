@@ -1,8 +1,9 @@
 <td><%= _.result(boxes[0], 'p') %></td>
 <td>
     <a href="#" class="result-target neume-images">
-        <% _.forEach(thumbnails(boxes), function (url) { %>
-            <img src="<%= url %>">
+        <% _.forEach(boxes, function (box) { %>
+            <img src="<%= thumbnailUrl(box) %>"
+                 style="width: <%- box.w / box.h * neumeImageHeight %>px; height: <%- neumeImageHeight %>px">
         <% }); %>
     </a>
 </td>
