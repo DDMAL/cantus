@@ -33,8 +33,6 @@ return Marionette.LayoutView.extend
     searchView: null,
     popoverContent: null,
 
-    initialViewPortSize: null,
-
     // Subviews
     divaView: null,
     folioView: null,
