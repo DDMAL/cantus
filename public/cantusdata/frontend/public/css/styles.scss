@@ -1,6 +1,7 @@
 // Hardcode some Bootstrap style variables here since our Bootstrap stuff
 // isn't pre-processed
 $screen-sm-min: 768px;
+$screen-lg-min: 1200px;
 
 // Color used for a lot of borders in the Bootstrap things
 $border-color: #ddd;
@@ -291,7 +292,26 @@ table.result-list th a {
         margin-right: 15px;
         margin-left: 0;
     }
+}
 
+// Don't display the nav links on smaller screens
+.navbar-nav {
+    display: none;
+}
+
+@media (min-width: $screen-lg-min) {
+    .navbar-nav {
+        display: block;
+    }
+
+    .navbar-toggle {
+        display: none;
+    }
+
+    // It would be redundant to show this if a nav link for it is there
+    .has-navbar-link {
+        display: none;
+    }
 }
 
 .neume-images img {

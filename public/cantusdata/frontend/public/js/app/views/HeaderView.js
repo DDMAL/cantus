@@ -1,10 +1,11 @@
-define(["marionette",
+define(["underscore",
+        "marionette",
         "backbone.radio",
         "singletons/NavigationManager",
         "views/SearchView",
         "views/ChantSearchProvider",
         "views/ModalView"],
-    function(Marionette, Radio, NavigationManager, SearchView, ChantSearchProvider, ModalView)
+    function(_, Marionette, Radio, NavigationManager, SearchView, ChantSearchProvider, ModalView)
     {
         "use strict";
 
@@ -75,11 +76,23 @@ define(["marionette",
             {
                 if (title)
                 {
+                    // See if this page is referred to by a navbar link
+                    var linkedFromNavbar = _.any(this.ui.navLinks, function (link)
+                    {
+                        // Links with fragment identifiers don't count
+                        if (link.hash)
+                            return false;
+
+                        // NOTE: we can do this because we aren't using hash path fallbacks
+                        return link.pathname === window.location.pathname;
+                    });
+
                     this.pageTitle.show(new Marionette.ItemView({
                         tagName: 'span',
                         template: '#navbar-subhead-template',
                         templateHelpers: {
-                            subhead: title
+                            subhead: title,
+                            linkedFromNavbar: linkedFromNavbar
                         }
                     }));
                 }
@@ -91,32 +104,29 @@ define(["marionette",
 
             onRender: function ()
             {
+                var searchModalAttrs = {
+                    'data-toggle': 'modal',
+                    href: '#myModal'
+                };
+
+                // Dynamically make the search link a modal
+                this.ui.searchModalLink.attr(searchModalAttrs);
+
                 // Extract nav links from the DOM and move them into the navigation manager.
                 // The advantage of doing things this way is that it makes it possible to
                 // provide a simple, mobile-friendly, JavaScript-free default.
-                if (this.ui.navLinks.length > 0)
+                var searchModalLinkElem = this.ui.searchModalLink[0];
+
+                this.ui.navLinks.each(function ()
                 {
-                    var searchModalLinkElem = this.ui.searchModalLink[0];
+                    var profile = {content: this.textContent, attr: {href: this.href}};
 
-                    this.ui.navLinks.remove();
-                    this.ui.navLinks.each(function ()
-                    {
-                        var profile = {content: this.textContent, attr: {href: this.href}};
+                    // Special case: The search link will become a modal target
+                    if (this === searchModalLinkElem)
+                        profile.attr = searchModalAttrs;
 
-                        // Special case: The search link will become a modal target
-                        if (this === searchModalLinkElem)
-                        {
-                            profile.attr['data-toggle'] = 'modal';
-                            profile.attr.href = '#myModal';
-                        }
-
-                        NavigationManager.navItems.add(profile);
-                    });
-
-                    // Update the relevant cached jQuery objects
-                    this.ui.navLinks = this.$(this.ui.navLinks.selector);
-                    this.ui.searchModalLink = this.$(this.ui.searchModalLink.selector);
-                }
+                    NavigationManager.navItems.add(profile);
+                });
 
                 this.searchModalRegion.show(this.searchModalView, {preventDestroy: true});
             },
