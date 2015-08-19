@@ -133,6 +133,21 @@ table.result-list th a {
     border-right: 1px solid #CCCCCC;
     border-bottom: 1px solid #CCCCCC;
 
+    .button {
+        border-color: #DADADA;
+        background-color: #E7E7E7;
+        height: 30px;
+
+        &:hover {
+            border-color: #BBB;
+            background-color: #D3D3D3;
+        }
+    }
+
+    .diva-buttons-label {
+        padding: 5px 10px !important;
+    }
+
     // Stopgap to stop the "Zoom level" control from falling below the row
     // FIXME(wabain): Find something more reliable for this after updating if necessary
     .diva-tools-left .diva-buttons-label {
@@ -149,6 +164,22 @@ table.result-list th a {
     padding: 10px;
 }
 
+#diva-toolbar .diva-goto-form {
+    // Restore Bootstrap styling
+    // FIXME: edit the Diva CSS so this isn't necessary
+    line-height: 1.5;
+
+    .diva-input {
+        width: 100%;
+        padding-top: 5px;
+        line-height: 1.5;
+    }
+
+    .input-group {
+        width: 90px;
+    }
+}
+
 .diva-outer {
     width: 100%;
     margin-left: 0;
@@ -161,16 +192,6 @@ table.result-list th a {
 // by taking out some of the padding
 #search-input-col {
     padding-left: 0;
-}
-
-#diva-toolbar input {
-    width: 60px;
-    height: 33px;
-    padding: 0;
-}
-
-#diva-toolbar input[type="submit"] {
-    width: 33px;
 }
 
 #menu-sidenav {

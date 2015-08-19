@@ -418,6 +418,21 @@ return Marionette.ItemView.extend
 
         // Add a closing parenthesis (the opening is within the page alias)
         pageLabel.appendChild(document.createTextNode(')'));
+
+        // Hack: Make the go to page input a Bootstrap input group
+        var inputGroup = $('<div class="input-group input-group-sm">');
+        var inputGroupBtnContainer = $('<div class="input-group-btn">');
+
+        this.ui.divaToolbar.find('.diva-goto-form input[type=submit]')
+            .addClass('btn btn-default')
+            .appendTo(inputGroupBtnContainer);
+
+        this.ui.divaToolbar.find('.diva-goto-form .diva-input')
+            .addClass('form-control')
+            .replaceWith(inputGroup)
+            .appendTo(inputGroup);
+
+        inputGroup.append(inputGroupBtnContainer);
     },
 
     /**
