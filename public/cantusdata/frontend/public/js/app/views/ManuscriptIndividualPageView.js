@@ -1,5 +1,7 @@
-define(['underscore',
+define(['jquery',
+        'underscore',
         'marionette',
+        'diva',
         "models/Manuscript",
         "views/FolioView",
         "views/DivaView",
@@ -7,8 +9,10 @@ define(['underscore',
         "views/ManuscriptDataPopoverView",
         "views/ChantSearchProvider",
         "views/NotationSearchProvider"],
-function(_,
+function($,
+         _,
          Marionette,
+         diva,
          Manuscript,
          FolioView,
          DivaView,
@@ -40,11 +44,15 @@ return Marionette.LayoutView.extend
     ui: {
         toolbarRow: '#toolbar-row',
         manuscriptInfo: '#manuscript-info-popover',
-        manuscriptInfoButton: '#manuscript-info-popover button'
+        manuscriptInfoButton: '#manuscript-info-popover button',
+        resizer: '#manuscript-data-container .resizer',
+        divaColumn: "#diva-column",
+        manuscriptDataColumn: '#manuscript-data-column'
     },
 
     // FIXME(wabain): use inserted.bs.popover after updating bootstrap
     events: {
+        'mousedown @ui.resizer': 'startResizing',
         'shown.bs.popover @ui.manuscriptInfoButton': 'instantiatePopoverView',
         'hidden.bs.popover @ui.manuscriptInfoButton': 'destroyPopoverView'
     },
@@ -123,6 +131,45 @@ return Marionette.LayoutView.extend
         this.searchView.destroy();
         this.folioView.destroy();
         this.destroyPopoverView();
+    },
+
+    startResizing: function (event)
+    {
+        event.preventDefault();
+
+        // Set up
+        var divaColumn = this.ui.divaColumn,
+            panes = this.ui.manuscriptDataColumn,
+            initialX = event.clientX,
+            initialWidth = panes.width();
+
+        var updateDivaSize = _.throttle(function ()
+        {
+            diva.Events.publish("PanelSizeDidChange");
+        }, 250);
+
+        // Support for the various event capture APIs is too spotty, so just throw an overlay
+        // over everything and capture events based on that
+        var overlay = $('<div class="dragging-overlay col-resize-cursor">');
+        overlay.appendTo(document.body);
+
+        overlay.on('mousemove', function (event)
+        {
+            var difference = initialX - event.clientX;
+            var newWidthPercentage = (initialWidth + difference) / (divaColumn.width() + panes.width()) * 100;
+
+            // FIXME(wabain): Handle min-width issues
+            divaColumn.css('width', (100 - newWidthPercentage) + '%');
+            panes.css('width', newWidthPercentage + '%');
+
+            updateDivaSize();
+        });
+
+        overlay.one('mouseup', function ()
+        {
+            // Remove the overlay element from the DOM and unbind its events
+            overlay.remove();
+        });
     },
 
     instantiatePopoverView: function ()

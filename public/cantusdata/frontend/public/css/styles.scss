@@ -6,6 +6,14 @@ $screen-lg-min: 1200px;
 // Color used for a lot of borders in the Bootstrap things
 $border-color: #ddd;
 
+$zindex-navbar:            1000;
+$zindex-dropdown:          1000;
+$zindex-popover:           1010;
+$zindex-tooltip:           1030;
+$zindex-navbar-fixed:      1030;
+$zindex-modal-background:  1040;
+$zindex-modal:             1050;
+
 @import "sidenav";
 
 // Volpiano font
@@ -131,7 +139,56 @@ table.result-list th a {
 }
 
 #manuscript-data-container {
-    overflow-y: auto;
+    // Relative-position the container so that percentage-based dimensions are calculated relative to it
+    position: relative;
+
+    .resizer {
+        position: absolute;
+        cursor: col-resize;
+        height: 100%;
+        width: 10px;
+        background-color: transparent;
+
+        // Kind of arbitrarily slot this into the Bootstrap hierarchy
+        z-index: $zindex-dropdown;
+
+        .prong {
+            position: relative;
+            top: 45%;
+            float: left;
+            margin-left: 3px;
+
+            height: 25px;
+            width: 2px;
+
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            background-color: #bbb;
+
+            + .prong {
+                margin-left: 1px;
+            }
+        }
+    }
+
+    .scrollable-area {
+        overflow-y: auto;
+        height: 100%;
+    }
+}
+
+.dragging-overlay {
+    position: fixed;
+
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    z-index: $zindex-modal-background;
+
+    &.col-resize-cursor {
+        cursor: col-resize;
+    }
 }
 
 .diva-page-nav {
