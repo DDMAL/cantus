@@ -380,6 +380,10 @@ return Marionette.ItemView.extend
      */
     onViewerLoad: function()
     {
+        // TODO(wabain): Take this out after upgrading to Diva 4.0
+        // Remove the extra viewport element Diva inserts on mobile devices
+        $(document.head).find('meta[name=viewport]').slice(1).remove();
+
         this.triggerMethod('recalculate:size');
         this.trigger('loaded:viewer');
 
