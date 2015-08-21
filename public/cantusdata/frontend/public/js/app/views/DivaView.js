@@ -27,11 +27,9 @@ function(Marionette,
 var manuscriptChannel = Backbone.Radio.channel('manuscript');
 
 /**
- * Provide an alert message to the user.
+ * Manages the lifecycle and customization of the Diva viewer
  */
-return Marionette.ItemView.extend
-({
-    //el: "#diva-wrapper",
+return Marionette.ItemView.extend({
     template: "#diva-template",
 
     divaInitialized: false,
@@ -72,7 +70,6 @@ return Marionette.ItemView.extend
             diva.Events.publish("PanelSizeDidChange");
         }, 500);
 
-        //this.el = options.el;
         this.toolbarParentObject = this.options.toolbarParentObject;
 
         this._setManuscript(options.siglum, manuscriptChannel.request('folio'));
@@ -392,10 +389,10 @@ return Marionette.ItemView.extend
             this.setFolio(this.initialFolio);
         }
         // Store the initial folio
-        //debugger;
         var number = this.divaInstance.getCurrentPageIndex();
         var name = this.divaInstance.getCurrentPageFilename();
         this.storeFolioIndex(number, name);
+
         // Store the image prefix for later
         this.setImagePrefixAndSuffix(name);
     },
