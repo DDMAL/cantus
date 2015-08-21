@@ -150,7 +150,9 @@ return Marionette.ItemView.extend
 
             iipServerURL: GlobalVars.iipImageServerUrl,
             objectData: "/static/" + siglum + ".json",
-            imageDir: GlobalVars.divaImageDirectory + siglum
+            imageDir: GlobalVars.divaImageDirectory + siglum,
+
+            blockMobileMove: false
         };
 
         // Destroy the diva div just in case
