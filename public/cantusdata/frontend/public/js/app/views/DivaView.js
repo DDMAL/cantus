@@ -452,11 +452,6 @@ return Marionette.ItemView.extend({
         }
     },
 
-    getFolio: function()
-    {
-        return this.imageNameToFolio(this.currentFolioName);
-    },
-
     /**
      * Store a folio index and image filename.
      *
