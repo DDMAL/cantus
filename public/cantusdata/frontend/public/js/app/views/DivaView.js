@@ -50,8 +50,7 @@ return Marionette.ItemView.extend({
     {
         _.bindAll(this, 'propagateFolioChange', 'onViewerLoad', 'setFolio',
             'setGlobalFullScreen', 'zoomToLocation', 'getPageAlias',
-            'initializePageAliasing', 'gotoInputPage', 'getPageWhichMatchesAlias',
-            'onDocLoad');
+            'gotoInputPage', 'getPageWhichMatchesAlias', 'onDocLoad');
 
         this._imagePrefix = null;
         this._imageSuffix = null;
@@ -154,7 +153,6 @@ return Marionette.ItemView.extend({
         this.divaInstance = this.ui.divaWrapper.data('diva');
 
         this.onDivaEvent("ViewerDidLoad", this.onViewerLoad);
-        this.onDivaEvent("ViewerDidLoad", this.initializePageAliasing);
         this.onDivaEvent("VisiblePageDidChange", this.propagateFolioChange);
         this.onDivaEvent("ModeDidSwitch", this.setGlobalFullScreen);
         this.onDivaEvent("DocumentDidLoad", this.onDocLoad);
@@ -362,26 +360,25 @@ return Marionette.ItemView.extend({
         var initialFolio = manuscriptChannel.request('folio');
         if (initialFolio !== null)
             this.setFolio(initialFolio);
-    },
 
-    initializePageAliasing: function()
-    {
         // Store the list of filenames
         this.divaFilenames = this.divaInstance.getFilenames();
 
-        // Rebind the page input
+        // Customize the toolbar
+        this._customizeToolbar();
+    },
+
+    /** Do some awkward manual manipulation of the toolbar */
+    _customizeToolbar: function()
+    {
+        // Rebind the go to page input
         var input = this.$(this.divaInstance.getInstanceSelector() + 'goto-page');
 
-        // Remove the original binding
         input.off('submit');
-
-        // Add the replacement binding
         input.on('submit', this.gotoInputPage);
 
-        // Rename the page label
+        // Rename the current page label from Page to Folio
         var pageLabel = this.toolbarParentObject.find('.diva-page-label')[0];
-
-        // Replace "Page " with "Folio "
         pageLabel.firstChild.textContent = 'Folio ';
 
         // Add a closing parenthesis (the opening is within the page alias)
