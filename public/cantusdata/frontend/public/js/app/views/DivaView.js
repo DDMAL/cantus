@@ -24,6 +24,9 @@ function(Marionette,
 
 "use strict";
 
+/** Define the format we expect the Diva filenames to adhere to */
+var DIVA_FILENAME_REGEX = (/^(.+)_(.*?)\.([^.]+)$/);
+
 var manuscriptChannel = Backbone.Radio.channel('manuscript');
 
 /**
@@ -37,9 +40,6 @@ return Marionette.ItemView.extend({
 
     currentFolioIndex: -1,
     currentFolioName: 0,
-
-    imagePrefix: null,
-    imageSuffix: "",
 
     ui: {
         divaWrapper: "#diva-wrapper"
@@ -58,6 +58,9 @@ return Marionette.ItemView.extend({
             'setGlobalFullScreen', 'zoomToLocation', 'getPageAlias',
             'initializePageAliasing', 'gotoInputPage', 'getPageWhichMatchesAlias',
             'onDocLoad');
+
+        this._imagePrefix = null;
+        this._imageSuffix = null;
 
         this.divaEventHandles = [];
 
@@ -88,8 +91,9 @@ return Marionette.ItemView.extend({
         this.initialFolio = null;
         this.currentFolioName = null;
         this.currentFolioIndex = null;
-        this.imagePrefix = null;
-        this.imageSuffix = null;
+
+        this._imagePrefix = null;
+        this._imageSuffix = null;
     },
 
     /**
@@ -387,9 +391,6 @@ return Marionette.ItemView.extend({
         var number = this.divaInstance.getCurrentPageIndex();
         var name = this.divaInstance.getCurrentPageFilename();
         this.storeFolioIndex(number, name);
-
-        // Store the image prefix for later
-        this.setImagePrefixAndSuffix(name);
     },
 
     initializePageAliasing: function()
@@ -432,41 +433,13 @@ return Marionette.ItemView.extend({
     },
 
     /**
-     * Sets this.imagePrefix from any image name.
-     *
-     * @param imageName
-     */
-    setImagePrefixAndSuffix: function(imageName)
-    {
-        // Suffix is usually just ".jpeg" or whatever...
-        this.imageSuffix = String(imageName).split('.')[1];
-        // Prefix is trickier
-        var splitFolioName = String(imageName).split('.')[0].split('_');
-
-        // Assemble the parts into an image prefix
-        var prefix = "";
-        for (var i = 0; i < (splitFolioName.length - 1); i++)
-        {
-            prefix += splitFolioName[i];
-        }
-
-        this.imagePrefix = prefix;
-    },
-
-    /**
      * Set the diva viewer to load a specific folio...
      *
      * @param folioCode
      */
     setFolio: function(folioCode)
     {
-        // We might need to set the prefix and suffix
-        if (this.imagePrefix === null || this.imageSuffix === "")
-        {
-            this.setImagePrefixAndSuffix(this.currentFolioName);
-        }
-
-        var newImageName = this.imagePrefix + "_" + String(folioCode) + "." + this.imageSuffix;
+        var newImageName = this.folioToImageName(folioCode);
 
         // Don't jump to the folio if we're already somewhere on it (this would just make Diva
         // jump to the top of the page)
@@ -528,12 +501,6 @@ return Marionette.ItemView.extend({
         // Grab the array of page filenames straight from Diva.
         var pageFilenameArray = this.divaInstance.getFilenames();
 
-        // We might have to manually reset the page prefix
-        if (this.imagePrefix === null)
-        {
-            this.setImagePrefixAndSuffix(pageFilenameArray[0]);
-        }
-
         // Use the Diva highlight plugin to draw the boxes
         var highlightsByPageHash = {};
         var pageList = [];
@@ -542,7 +509,7 @@ return Marionette.ItemView.extend({
         {
             // Translate folio to Diva page
             var folioCode = boxSet[i].p;
-            var pageFilename = this.imagePrefix + "_" + folioCode + ".jp2";
+            var pageFilename = this.folioToImageName(folioCode);
             var pageIndex = pageFilenameArray.indexOf(pageFilename);
 
             if (highlightsByPageHash[pageIndex] === undefined)
@@ -594,7 +561,7 @@ return Marionette.ItemView.extend({
         // Grab the array of page filenames straight from Diva.
         var pageFilenameArray = divaData.getFilenames();
         var folioCode = box.p;
-        var pageFilename = this.imagePrefix + "_" + folioCode + ".jp2";
+        var pageFilename = this.folioToImageName(folioCode);
         var desiredPage = pageFilenameArray.indexOf(pageFilename) + 1;
 
         // Now jump to that page
@@ -616,7 +583,11 @@ return Marionette.ItemView.extend({
     },
 
     /*
-     DivaView helpers
+     * Helpers for filename/folio translation
+     *
+     * FIXME: We shouldn't need to translate between filenames and folios at all
+     *
+     * Maybe IIIF metadata can help with that?
      */
 
     /**
@@ -627,8 +598,48 @@ return Marionette.ItemView.extend({
      */
     imageNameToFolio: function(imageName)
     {
-        var splitFolioName = String(imageName).split('.')[0].split('_');
-        return splitFolioName[splitFolioName.length - 1];
+        return this._parseDivaFilename(imageName)[2];
+    },
+
+    /**
+     * Return the image filename corresponding to a given folio number
+     *
+     * This function relies on the assumption that all images in a document
+     * have the filename format, consisting of [siglum slug]_[folio number].[extension]
+     *
+     * @param {string} folioCode
+     * @returns {string}
+     */
+    folioToImageName: function(folioCode)
+    {
+        // If we haven't yet stored the filename prefix and extension, do it now
+        if (this._imagePrefix === null)
+        {
+            var filename = this.divaInstance.getFilenames()[0];
+            var components = this._parseDivaFilename(filename);
+
+            this._imagePrefix = components[1];
+            this._imageSuffix = components[3];
+        }
+
+        return this._imagePrefix + '_' + folioCode + '.' + this._imageSuffix;
+    },
+
+    /**
+     * Parse a given Diva image filename into its constituent parts, throwing
+     * an error on failure
+     * @param filename
+     * @returns {Array}
+     * @private
+     */
+    _parseDivaFilename: function(filename)
+    {
+        var components = DIVA_FILENAME_REGEX.exec(filename);
+
+        if (!components)
+            throw new Error('failed to parse Diva image filename "' + filename + '"');
+
+        return components;
     }
 });
 });
