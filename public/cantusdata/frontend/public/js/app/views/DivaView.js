@@ -38,9 +38,6 @@ return Marionette.ItemView.extend({
     // Only used if initial folio
     initialFolio: undefined,
 
-    currentFolioIndex: -1,
-    currentFolioName: 0,
-
     ui: {
         divaWrapper: "#diva-wrapper"
     },
@@ -54,7 +51,7 @@ return Marionette.ItemView.extend({
 
     initialize: function(options)
     {
-        _.bindAll(this, 'storeFolioIndex', 'onViewerLoad', 'setFolio',
+        _.bindAll(this, 'propagateFolioChange', 'onViewerLoad', 'setFolio',
             'setGlobalFullScreen', 'zoomToLocation', 'getPageAlias',
             'initializePageAliasing', 'gotoInputPage', 'getPageWhichMatchesAlias',
             'onDocLoad');
@@ -89,8 +86,6 @@ return Marionette.ItemView.extend({
         this.uninitializeDiva();
         // Clear the fields
         this.initialFolio = null;
-        this.currentFolioName = null;
-        this.currentFolioIndex = null;
 
         this._imagePrefix = null;
         this._imageSuffix = null;
@@ -164,7 +159,7 @@ return Marionette.ItemView.extend({
 
         this.onDivaEvent("ViewerDidLoad", this.onViewerLoad);
         this.onDivaEvent("ViewerDidLoad", this.initializePageAliasing);
-        this.onDivaEvent("VisiblePageDidChange", this.storeFolioIndex);
+        this.onDivaEvent("VisiblePageDidChange", this.propagateFolioChange);
         this.onDivaEvent("ModeDidSwitch", this.setGlobalFullScreen);
         this.onDivaEvent("DocumentDidLoad", this.onDocLoad);
     },
@@ -387,10 +382,6 @@ return Marionette.ItemView.extend({
         {
             this.setFolio(this.initialFolio);
         }
-        // Store the initial folio
-        var number = this.divaInstance.getCurrentPageIndex();
-        var name = this.divaInstance.getCurrentPageFilename();
-        this.storeFolioIndex(number, name);
     },
 
     initializePageAliasing: function()
@@ -439,39 +430,28 @@ return Marionette.ItemView.extend({
      */
     setFolio: function(folioCode)
     {
+        if (!this.divaInstance)
+            return;
+
         var newImageName = this.folioToImageName(folioCode);
 
         // Don't jump to the folio if we're already somewhere on it (this would just make Diva
         // jump to the top of the page)
-        if (newImageName === this.currentFolioName)
+        if (newImageName === this.divaInstance.getCurrentPageFilename())
             return;
 
-        if (this.divaInstance)
-        {
-            this.divaInstance.gotoPageByName(newImageName);
-        }
+        this.divaInstance.gotoPageByName(newImageName);
     },
 
     /**
-     * Store a folio index and image filename.
+     * Change the page-wide folio value
      *
-     * @param index int
-     * @param fileName string
+     * @param {Number} index
+     * @param {String} fileName
      */
-    storeFolioIndex: function(index, fileName)
+    propagateFolioChange: function(index, fileName)
     {
-        // The first time it's ever called
-        if (this.initialFolio === undefined)
-        {
-            this.initialFolio = 0;
-        }
-        // Not the first time
-        else if (index !== this.currentFolioIndex)
-        {
-            this.currentFolioIndex = index;
-            this.currentFolioName = fileName;
-            this.triggerFolioChange(this.imageNameToFolio(fileName));
-        }
+        this.triggerFolioChange(this.imageNameToFolio(fileName));
     },
 
     triggerFolioChange: _.debounce(function (folio)
