@@ -1,4 +1,4 @@
-define(['underscore', 'backbone', 'config/GlobalVars'], function (_, Backbone, GlobalVars)
+define(['underscore', 'backbone', 'qs', 'config/GlobalVars'], function (_, Backbone, Qs, GlobalVars)
 {
     "use strict";
 
@@ -25,15 +25,17 @@ define(['underscore', 'backbone', 'config/GlobalVars'], function (_, Backbone, G
 
         url: function ()
         {
-            var url = GlobalVars.siteUrl +
-                "notation-search/?q=" + _.result(this.parameters, 'query') +
-                "&type=" + _.result(this.parameters, 'field');
+            var queryParams = {
+                q: _.result(this.parameters, 'query'),
+                type: _.result(this.parameters, 'field')
+            };
 
             var manuscript = _.result(this.parameters, 'manuscript');
-            if (manuscript)
-                url += "&manuscript=" + manuscript;
 
-            return url;
+            if (manuscript)
+                queryParams.manuscript = manuscript;
+
+            return GlobalVars.siteUrl + "notation-search/?" + Qs.stringify(queryParams);
         },
 
         /**
