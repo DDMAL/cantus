@@ -143,17 +143,15 @@ return Marionette.LayoutView.extend
             initialX = event.clientX,
             initialWidth = panes.width();
 
-        var updateDivaSize = _.throttle(function ()
-        {
-            diva.Events.publish("PanelSizeDidChange");
-        }, 250);
-
         // Support for the various event capture APIs is too spotty, so just throw an overlay
-        // over everything and capture events based on that
+        // over everything and capture events based on that; since the overlay should be above
+        // everything else, we should be able to ensure that events bubble up to the window.
+        var $window = $(window);
         var overlay = $('<div class="dragging-overlay col-resize-cursor">');
+
         overlay.appendTo(document.body);
 
-        overlay.on('mousemove', function (event)
+        var executeResize = function (event)
         {
             var difference = initialX - event.clientX;
             var newWidthPercentage = (initialWidth + difference) / (divaColumn.width() + panes.width()) * 100;
@@ -163,13 +161,21 @@ return Marionette.LayoutView.extend
             panes.css('width', newWidthPercentage + '%');
 
             updateDivaSize();
-        });
+        };
 
-        overlay.one('mouseup', function ()
+        var updateDivaSize = _.throttle(function ()
         {
-            // Remove the overlay element from the DOM and unbind its events
+            diva.Events.publish("PanelSizeDidChange");
+        }, 250);
+
+        var stopResizing = function ()
+        {
             overlay.remove();
-        });
+            $window.off('mousemove', executeResize);
+        };
+
+        $window.on('mousemove', executeResize);
+        $window.one('mouseup', stopResizing);
     },
 
     instantiatePopoverView: function ()
