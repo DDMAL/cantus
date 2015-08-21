@@ -64,6 +64,13 @@ return Marionette.ItemView.extend({
             diva.Events.publish("PanelSizeDidChange");
         }, 500);
 
+        // Create a debounced function to alert the site that Diva has
+        // changed the folio
+        this.triggerFolioChange = _.debounce(function (folio)
+        {
+            manuscriptChannel.request('set:folio', folio, {replaceState: true});
+        }, 250);
+
         this.toolbarParentObject = this.options.toolbarParentObject;
 
         // TODO(wabain): get this from the manuscript channel for consistency
@@ -422,11 +429,6 @@ return Marionette.ItemView.extend({
     {
         this.triggerFolioChange(this.imageNameToFolio(fileName));
     },
-
-    triggerFolioChange: _.debounce(function (folio)
-    {
-        manuscriptChannel.request('set:folio', folio, {replaceState: true});
-    }, 250),
 
     /**
      * Draw boxes on the Diva viewer.  These usually correspond to
