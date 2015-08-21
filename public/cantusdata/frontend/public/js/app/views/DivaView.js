@@ -32,11 +32,6 @@ var manuscriptChannel = Backbone.Radio.channel('manuscript');
 return Marionette.ItemView.extend
 ({
     //el: "#diva-wrapper",
-
-    /**
-     * The tag wrapping the diva stuff
-     */
-    tagName: 'div class="row"',
     template: "#diva-template",
 
     divaInitialized: false,
