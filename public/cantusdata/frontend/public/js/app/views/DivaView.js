@@ -32,8 +32,6 @@ var manuscriptChannel = Backbone.Radio.channel('manuscript');
 return Marionette.ItemView.extend({
     template: "#diva-template",
 
-    divaInitialized: false,
-
     // Only used if initial folio
     initialFolio: undefined,
 
@@ -99,12 +97,12 @@ return Marionette.ItemView.extend({
      */
     uninitializeDiva: function()
     {
-        // Diva's default destructor
-        this.divaInstance.destroy();
-        this.divaInstance = null;
-
-        if (this.divaInitialized)
+        if (this.divaInstance)
         {
+            // Call Diva's destructor
+            this.divaInstance.destroy();
+            this.divaInstance = null;
+
             // Unsubscribe the event handlers
             _.forEach(this.divaEventHandles, function (handle)
             {
@@ -165,9 +163,6 @@ return Marionette.ItemView.extend({
         this.onDivaEvent("VisiblePageDidChange", this.storeFolioIndex);
         this.onDivaEvent("ModeDidSwitch", this.setGlobalFullScreen);
         this.onDivaEvent("DocumentDidLoad", this.onDocLoad);
-
-        // Remember that we've initialized diva
-        this.divaInitialized = true;
     },
 
     /**
