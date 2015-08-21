@@ -585,8 +585,10 @@ return Marionette.ItemView.extend({
         if (!box || !divaData)
             return;
 
+        var divaSettings = divaData.getSettings();
+
         // Now figure out the page that box is on
-        var divaOuter = divaData.getSettings().outerObject;
+        var divaOuter = divaSettings.outerObject;
         var zoomLevel = divaData.getZoomLevel();
 
         // Grab the array of page filenames straight from Diva.
@@ -601,10 +603,8 @@ return Marionette.ItemView.extend({
         var boxTop = divaData.translateFromMaxZoomLevel(box.y);
         var currentScrollTop = parseInt(divaOuter.scrollTop(), 10);
 
-        var topMarginConsiderations = divaData.getSettings().averageHeights[zoomLevel] *
-            divaData.getSettings().adaptivePadding;
-        var leftMarginConsiderations = divaData.getSettings().averageWidths[zoomLevel] *
-            divaData.getSettings().adaptivePadding;
+        var topMarginConsiderations = divaSettings.averageHeights[zoomLevel] * divaSettings.adaptivePadding;
+        var leftMarginConsiderations = divaSettings.averageWidths[zoomLevel] * divaSettings.adaptivePadding;
 
         divaOuter.scrollTop(boxTop + currentScrollTop - (divaOuter.height() / 2) + (box.h / 2) +
             topMarginConsiderations);
