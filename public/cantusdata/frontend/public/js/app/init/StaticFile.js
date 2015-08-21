@@ -21,6 +21,8 @@ require([
         // titling besides "Cantus Ultimus"
         if (titleElem && window.location.pathname !== '/')
             NavigationManager.registerPage({navbarTitle: titleElem.textContent});
+        else
+            NavigationManager.registerPage({});
     });
 
     App.start();

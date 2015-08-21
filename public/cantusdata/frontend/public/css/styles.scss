@@ -314,9 +314,13 @@ table.result-list th a {
 }
 
 @media (max-width: $screen-sm-min - 1) {
-    // Only show the subhead
+    // If there's a subhead then only show it
     .navbar-brand {
         display: none;
+
+        &.no-subhead {
+            display: block;
+        }
 
         &.navbar-subhead {
             display: block;
@@ -371,11 +375,6 @@ table.result-list th a {
     }
 
     .navbar-toggle {
-        display: none;
-    }
-
-    // It would be redundant to show this if a nav link for it is there
-    .has-navbar-link {
         display: none;
     }
 }

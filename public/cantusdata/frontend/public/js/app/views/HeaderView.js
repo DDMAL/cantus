@@ -27,6 +27,7 @@ define(["underscore",
             },
 
             ui: {
+                siteBrand: '#site-logo',
                 navButton: '.navbar-toggle',
                 searchModalLink: '.search-modal-link',
                 navLinks: '#top-menu li > a'
@@ -76,29 +77,20 @@ define(["underscore",
             {
                 if (title)
                 {
-                    // See if this page is referred to by a navbar link
-                    var linkedFromNavbar = _.any(this.ui.navLinks, function (link)
-                    {
-                        // Links with fragment identifiers don't count
-                        if (link.hash)
-                            return false;
-
-                        // NOTE: we can do this because we aren't using hash path fallbacks
-                        return link.pathname === window.location.pathname;
-                    });
-
                     this.pageTitle.show(new Marionette.ItemView({
                         tagName: 'span',
                         template: '#navbar-subhead-template',
                         templateHelpers: {
-                            subhead: title,
-                            linkedFromNavbar: linkedFromNavbar
+                            subhead: title
                         }
                     }));
+
+                    this.ui.siteBrand.removeClass('no-subhead');
                 }
                 else
                 {
                     this.pageTitle.empty();
+                    this.ui.siteBrand.addClass('no-subhead');
                 }
             },
 
