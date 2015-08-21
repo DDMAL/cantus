@@ -34,13 +34,6 @@ return Marionette.LayoutView.extend
 ({
     template: '#manuscript-template',
 
-    searchView: null,
-    popoverContent: null,
-
-    // Subviews
-    divaView: null,
-    folioView: null,
-
     ui: {
         toolbarRow: '#toolbar-row',
         manuscriptInfo: '#manuscript-info-popover',
@@ -100,26 +93,7 @@ return Marionette.LayoutView.extend
     {
         _.bindAll(this, 'getPopoverContent');
 
-        // Build the subviews
-        this.divaView = new DivaView({
-            siglum: this.model.get("siglum_slug")
-        });
-        this.folioView = new FolioView();
-
-        this.chantSearchProvider = new ChantSearchProvider({
-            additionalResultFields: ['mode', 'genre']
-        });
-
-        this.chantSearchProvider.setRestriction('manuscript', '"' + this.model.get("siglum") + '"');
-
-        this.notationSearchProvider = new NotationSearchProvider({
-            divaView: this.divaView,
-            manuscript: this.model
-        });
-
-        this.searchView = new SearchView({
-            providers: [this.chantSearchProvider, this.notationSearchProvider]
-        });
+        this.popoverContent = null;
     },
 
     /**
@@ -127,9 +101,6 @@ return Marionette.LayoutView.extend
      */
     onBeforeDestroy: function()
     {
-        this.divaView.destroy();
-        this.searchView.destroy();
-        this.folioView.destroy();
         this.destroyPopoverView();
     },
 
@@ -208,29 +179,59 @@ return Marionette.LayoutView.extend
         return this.popoverContent;
     },
 
-    onShow: function()
+    onRender: function()
     {
+        // Initialize the Diva view
+        var divaView = new DivaView({
+            siglum: this.model.get("siglum_slug"),
+            toolbarParentObject: this.ui.toolbarRow
+        });
+
+        // Move the manuscript info button into the Diva toolbar
+        // FIXME: this is not a very good way to do this
+        this.listenToOnce(divaView, 'loaded:viewer', function ()
+        {
+            this.ui.manuscriptInfo.prependTo(this.ui.toolbarRow.find('.diva-tools-right'));
+            this.triggerMethod('recalculate:size');
+            divaView.triggerMethod('recalculate:size');
+        });
+
+        // Initialize the search view
+        var chantSearchProvider = new ChantSearchProvider({
+            additionalResultFields: ['mode', 'genre']
+        });
+
+        chantSearchProvider.setRestriction('manuscript', '"' + this.model.get("siglum") + '"');
+
+        var notationSearchProvider = new NotationSearchProvider({
+            divaView: divaView,
+            manuscript: this.model
+        });
+
+        var searchView = new SearchView({
+            providers: [chantSearchProvider, notationSearchProvider]
+        });
+
+        // Initialize the manuscript info button
         this.ui.manuscriptInfoButton.popover({
             content: this.getPopoverContent,
             html: true
         });
 
-        // FIXME: Is there a nicer way to set this?
-        this.divaView.toolbarParentObject = this.ui.toolbarRow;
+        // Render the subviews
+        this.folioViewRegion.show(new FolioView());
+        this.searchViewRegion.show(searchView);
 
-        // Move the manuscript info button into the Diva toolbar
-        // FIXME: this is not a very good way to do this
-        this.listenToOnce(this.divaView, 'loaded:viewer', function ()
+        // We can't show the Diva view until this view has been attached to the DOM
+        // See https://github.com/DDMAL/diva.js/issues/273
+        //
+        // FIXME: For reasons that aren't clear to me, onDomRefresh doesn't fire consistently
+        // on initialization in the DivaView, so we wait for DOM Refresh before showing the
+        // view here. Maybe check if that is resolved after updating Marionette?
+        this.once('dom:refresh', function ()
         {
-            this.ui.manuscriptInfo.prependTo(this.ui.toolbarRow.find('.diva-tools-right'));
-            this.triggerMethod('recalculate:size');
-            this.divaView.triggerMethod('recalculate:size');
+            this.divaViewRegion.show(divaView);
         });
-
-        // Render subviews
-        this.divaViewRegion.show(this.divaView, {preventDestroy: true});
-        this.folioViewRegion.show(this.folioView, {preventDestroy: true});
-        this.searchViewRegion.show(this.searchView);
     },
 
     onWindowResized: function ()
