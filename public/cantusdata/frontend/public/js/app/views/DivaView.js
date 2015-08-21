@@ -35,9 +35,6 @@ var manuscriptChannel = Backbone.Radio.channel('manuscript');
 return Marionette.ItemView.extend({
     template: "#diva-template",
 
-    // Only used if initial folio
-    initialFolio: undefined,
-
     ui: {
         divaWrapper: "#diva-wrapper"
     },
@@ -70,7 +67,8 @@ return Marionette.ItemView.extend({
 
         this.toolbarParentObject = this.options.toolbarParentObject;
 
-        this._setManuscript(options.siglum, manuscriptChannel.request('folio'));
+        // TODO(wabain): get this from the manuscript channel for consistency
+        this.siglum = options.siglum;
 
         // Update the folio on change
         // FIXME(wabain): Support manuscript change?
@@ -84,8 +82,6 @@ return Marionette.ItemView.extend({
     {
         // Uninitialize Diva
         this.uninitializeDiva();
-        // Clear the fields
-        this.initialFolio = null;
 
         this._imagePrefix = null;
         this._imageSuffix = null;
@@ -354,21 +350,6 @@ return Marionette.ItemView.extend({
     },
 
     /**
-     * Set the manuscript.
-     *
-     * @param siglum
-     * @param initialFolio
-     */
-    _setManuscript: function(siglum, initialFolio)
-    {
-        this.siglum = String(siglum);
-        if (initialFolio !== undefined)
-        {
-            this.initialFolio = String(initialFolio);
-        }
-    },
-
-    /**
      * Calculate the page size and store the index and filename of the first
      * loaded page.
      */
@@ -377,11 +358,10 @@ return Marionette.ItemView.extend({
         this.triggerMethod('recalculate:size');
         this.trigger('loaded:viewer');
 
-        // If there exists a client-defined initial folio
-        if (this.initialFolio !== undefined)
-        {
-            this.setFolio(this.initialFolio);
-        }
+        // Go to the predetermined initial folio if one is set
+        var initialFolio = manuscriptChannel.request('folio');
+        if (initialFolio !== null)
+            this.setFolio(initialFolio);
     },
 
     initializePageAliasing: function()
