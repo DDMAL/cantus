@@ -110,16 +110,16 @@ return Marionette.LayoutView.extend
             additionalResultFields: ['mode', 'genre']
         });
 
-        this.notationSearchProvider = new NotationSearchProvider({divaView: this.divaView});
+        this.chantSearchProvider.setRestriction('manuscript', '"' + this.model.get("siglum") + '"');
 
-        // Propagate the initial, passed-in model state
-        this.afterFetch();
+        this.notationSearchProvider = new NotationSearchProvider({
+            divaView: this.divaView,
+            manuscript: this.model
+        });
 
         this.searchView = new SearchView({
             providers: [this.chantSearchProvider, this.notationSearchProvider]
         });
-
-        this.listenTo(this.model, 'change', this.afterFetch);
     },
 
     /**
@@ -206,16 +206,6 @@ return Marionette.LayoutView.extend
             this.popoverContent = Marionette.TemplateCache.get('#manuscript-data-template')(this.serializeData());
 
         return this.popoverContent;
-    },
-
-    // FIXME(wabain): At the moment this can only feasibly be called during view initialization
-    afterFetch: function()
-    {
-        // Set the search view to only search this manuscript
-        this.chantSearchProvider.setRestriction('manuscript', '"' + this.model.get("siglum") + '"');
-        this.notationSearchProvider.setManuscript(this.model);
-
-        this.divaView.setManuscript(this.model.get("siglum_slug"));
     },
 
     onShow: function()

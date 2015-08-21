@@ -20,8 +20,12 @@ define([
     "use strict";
 
     /**
-     * Provide support for searching OMR data via the search interface. See SearchView
-     * for a description of the contract this class fulfills.
+     * Provide support for searching OMR data via the search interface. Required
+     * initialization parameters:
+     *
+     *  - `manuscript`: the manuscript model to initialize with
+     *
+     * See SearchView for a further description of the contract this class fulfills.
      */
     return Marionette.Object.extend({
         description: 'Music search',
@@ -70,32 +74,24 @@ define([
         {
             _.bindAll(this, 'resultFetchCallback', 'zoomToResult', 'getSearchMetadata');
 
-            // The diva view which we will act upon!
-            this.divaView = options.divaView;
+            var manuscriptModel = options.manuscript;
 
-            this.neumeExemplars = new Backbone.Collection();
+            this.manuscript = manuscriptModel.get('siglum_slug');
+            this.neumeExemplars = new Backbone.Collection(manuscriptModel.get('neume_exemplars'));
 
             this.fields = [];
 
-            this.results = new SearchNotationResultCollection();
-            this.listenTo(this.results, "sync", this.resultFetchCallback);
-        },
-
-        setManuscript: function(model)
-        {
-            this.manuscript = model.get('siglum_slug');
-
-            this.neumeExemplars.reset(model.get('neume_exemplars'));
-
-            this.fields.splice(this.fields.length);
-
             _.forEach(this.searchPlugins, function (plugin)
             {
-                if (model.isPluginActivated(plugin.name))
-                {
+                if (manuscriptModel.isPluginActivated(plugin.name))
                     this.fields.push.apply(this.fields, plugin.fields);
-                }
             }, this);
+
+            // The diva view which we will act upon!
+            this.divaView = options.divaView;
+
+            this.results = new SearchNotationResultCollection();
+            this.listenTo(this.results, "sync", this.resultFetchCallback);
         },
 
         onSearch: function (query)

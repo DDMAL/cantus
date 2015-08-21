@@ -78,7 +78,7 @@ return Marionette.ItemView.extend
         }, 500);
 
         //this.el = options.el;
-        this.setManuscript(options.siglum, manuscriptChannel.request('folio'));
+        this._setManuscript(options.siglum, manuscriptChannel.request('folio'));
 
         // Update the folio on change
         // FIXME(wabain): Support manuscript change?
@@ -371,7 +371,7 @@ return Marionette.ItemView.extend
      * @param siglum
      * @param initialFolio
      */
-    setManuscript: function(siglum, initialFolio)
+    _setManuscript: function(siglum, initialFolio)
     {
         this.siglum = String(siglum);
         if (initialFolio !== undefined)
