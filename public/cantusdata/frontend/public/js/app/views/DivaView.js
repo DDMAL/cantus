@@ -79,18 +79,7 @@ return Marionette.ItemView.extend({
 
     onBeforeDestroy: function()
     {
-        // Uninitialize Diva
-        this.uninitializeDiva();
-
-        this._imagePrefix = null;
-        this._imageSuffix = null;
-    },
-
-    /**
-     * Destroy the Diva viewer, if it exists.
-     */
-    uninitializeDiva: function()
-    {
+        // Uninitialize the Diva viewer, if it exists
         if (this.divaInstance)
         {
             // Call Diva's destructor
@@ -105,6 +94,9 @@ return Marionette.ItemView.extend({
 
             this.divaEventHandles.splice(this.divaEventHandles.length);
         }
+
+        this._imagePrefix = null;
+        this._imageSuffix = null;
     },
 
     /**
