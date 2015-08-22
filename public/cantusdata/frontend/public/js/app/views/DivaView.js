@@ -371,7 +371,7 @@ return Marionette.ItemView.extend({
     _customizeToolbar: function()
     {
         // Rebind the go to page input
-        var input = this.$(this.divaInstance.getInstanceSelector() + 'goto-page');
+        var input = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'goto-page');
 
         input.off('submit');
         input.on('submit', this.gotoInputPage);
