@@ -8,6 +8,7 @@ define(['marionette',
         "diva/plugins/canvas",
         "diva/plugins/pagealias",
         "singletons/GlobalEventHandler",
+        "utils/folioNameHelper",
         "config/GlobalVars"],
 function(Marionette,
          Backbone,
@@ -19,6 +20,7 @@ function(Marionette,
          DivaCanvas,
          DivaPagealias,
          GlobalEventHandler,
+         folioNameHelper,
          GlobalVars)
 {
 
@@ -257,41 +259,7 @@ return Marionette.ItemView.extend({
         if (!alias)
             return null;
 
-        // Try to split the page alias into the following components:
-        //   - an optional non-numerical leading value
-        //   - an integer value (with leading zeros stripped)
-        //   - an optional non-numerical trailing value
-        var coreNumber = /^\s*([^0-9]*)0*([1-9][0-9]*|0)([^0-9]*)\s*$/.exec(alias);
-
-        var aliasRegex;
-
-        if (coreNumber)
-        {
-            var leading = coreNumber[1],
-                number = coreNumber[2],
-                trailing = coreNumber[3];
-
-            leading = this.escapeRegex(leading);
-
-            if (trailing)
-            {
-                trailing = this.escapeRegex(trailing);
-            }
-            else
-            {
-                // If there is no trailing value, then allow for a recto suffix by default
-                trailing = 'r?';
-            }
-
-            // Get a case-insensitive regex which allows any number of leading zeros
-            // and then the number
-            aliasRegex = new RegExp('^' + leading + '0*' + number + trailing + '$', 'i');
-        }
-        else
-        {
-            // If the core number detection failed, just strip whitespace and get a case-insensitive regex
-            aliasRegex = new RegExp('^' + this.escapeRegex(alias.replace(/(^\s+|\s+$)/g, '')) + '$', 'i');
-        }
+        var aliasRegex = folioNameHelper.getMatcher(alias);
 
         // Find a folio which matches this pattern
         // TODO(wabain): cache folio names
@@ -317,15 +285,6 @@ return Marionette.ItemView.extend({
 
         // If nothing worked, then just return null
         return null;
-    },
-
-    /**
-     * Escape a string so that it can be used searched for literally in a regex.
-     * Implementation adapted from Backbone.Router._routeToRegExp
-     */
-    escapeRegex: function (s)
-    {
-        return s.replace(/[\-{}\[\]+?.,\\\^$|#\s]/g, '\\$&');
     },
 
     onShow: function()
