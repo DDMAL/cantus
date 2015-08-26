@@ -7,8 +7,6 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
         // TODO(wabain): this is misnamed since it's actually a CompositeView
         // but it should really be merged into the SearchResultView
 
-        // FIXME(wabain): After updating Marionette, get this to use reorderOnSort: true
-
         /**
          * View representing a Search Result with count.
          */
@@ -18,9 +16,10 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
             childView: SearchResultItemView,
             childViewContainer: '.child-container',
 
+            reorderOnSort: true,
+
             collectionEvents: {
-                "sync reset": "render",
-                "add remove": "hideIfEmpty"
+                "update reset": "hideIfEmpty"
             },
 
             ui: {
@@ -34,10 +33,12 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
 
             initialize: function()
             {
-                _.bindAll(this, 'hideIfEmpty');
-
                 // FIXME(wabain): update this to use mergeOptions after updating Marionette
                 this.searchParameters = this.getOption('searchParameters');
+                this.listenTo(this.searchParameters, 'change:sortBy change:reverseSort', function ()
+                {
+                    this.triggerMethod('sorting:changed');
+                });
             },
 
             childViewOptions: function ()
@@ -52,20 +53,7 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
             onRenderTemplate: function ()
             {
                 this.hideIfEmpty();
-
-                // Set the caret on the result table heading which corresponds
-                // to the field which is being sorted by
-                var sortField = this.searchParameters.get('sortBy');
-                _.any(this.ui.resultHeading, _.bind(function (heading)
-                {
-                    heading = $(heading);
-
-                    if (this.getHeadingSearchField(heading) === sortField)
-                    {
-                        this.setHeadingCaret(heading);
-                        return true;
-                    }
-                }, this));
+                this.triggerMethod('sorting:changed');
             },
 
             /**
@@ -121,12 +109,6 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
                 {
                     this.searchParameters.set({sortBy: field, reverseSort: false});
                 }
-
-                // FIXME(wabain): we don't need to dynamically change the heading for now because
-                // the view is re-rendered on sort. But we'll need this once we upgrade Marionette
-                // and can stop the re-rendering.
-                //this.setHeadingCaret(heading);
-                //this.updateHeadingCaretOnNextChange(heading);
             },
 
             /**
@@ -140,39 +122,45 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
                 return heading.attr('data-sort-field') || heading.children('a').text().toLowerCase();
             },
 
+            onSortingChanged: function ()
+            {
+                // Set the caret on the result table heading which corresponds
+                // to the field which is being sorted by
+                var sortField = this.searchParameters.get('sortBy');
+
+                _.some(this.ui.resultHeading, function (heading)
+                {
+                    heading = $(heading);
+
+                    if (this.getHeadingSearchField(heading) === sortField)
+                    {
+                        this._setHeadingCaret(heading);
+                        return true;
+                    }
+                }, this);
+            },
+
             /**
              * Update the caret representing the sort ordering on the result table heading which
              * corresponds to the field which is being sorted by.
              *
              * @param heading The heading for the active row
+             * @private
              */
-            setHeadingCaret: function (heading)
+            _setHeadingCaret: function (heading)
             {
                 heading.children('.search-caret')
-                    .addClass(this.searchParameters.get('reverseSort') ? 'caret caret-reversed' : 'caret');
-            },
+                    .addClass('caret')
+                    .toggleClass('caret-reversed', this.searchParameters.get('reverseSort'));
 
-            /**
-             * Register callbacks to change the state of the heading for the sorted field the next time that
-             * the sort criteria change.
-             *
-             * NOTE: this isn't used at the moment because the whole view is re-rendered when the search
-             * sorting changes.
-             *
-             * @param heading
-             */
-            updateHeadingCaretOnNextChange: function (heading)
-            {
-                var updateOnNextChange = _.bind(function ()
+                // Register a callback to clear the state of the heading the next time that
+                // the sort criteria change. We need to defer this because otherwise it could be dispatched
+                // in this event loop.
+                _.defer(_.bind(this.once, this), 'sorting:changed', function ()
                 {
                     if (this.searchParameters.get('sortBy') !== this.getHeadingSearchField(heading))
                         heading.children('.search-caret').removeClass('caret caret-reversed');
-
-                    // Unbind the callback from whichever event hasn't just been triggered
-                    this.searchParameters.off('change:sortBy change:reverseSort', updateOnNextChange);
-                }, this);
-
-                this.searchParameters.once('change:sortBy change:reverseSort', updateOnNextChange);
+                });
             },
 
             templateHelpers: function()
