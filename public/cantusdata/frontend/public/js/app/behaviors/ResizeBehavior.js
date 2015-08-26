@@ -14,6 +14,9 @@ define(["jquery", "underscore", "marionette"], function ($, _, Marionette)
      *
      *    Defaults to the view's root element. Set the value to `false` to disable it.
      *
+     *  - `allowSmaller` {Boolean} Allow the target element to have a height smaller than the remaining
+     *    space on the screen. (Sets max-height instead of height.) Default: `false`
+     *
      *  - `action` {?string|Function} Callback method to invoke on each resize calculation.
      *
      *    Called with the `resize` event object if the callback is triggered as the result
@@ -30,7 +33,8 @@ define(["jquery", "underscore", "marionette"], function ($, _, Marionette)
             return {
                 action: null,
                 target: null,
-                priority: 1000
+                priority: 1000,
+                allowSmaller: false
             };
         },
 
@@ -85,7 +89,11 @@ define(["jquery", "underscore", "marionette"], function ($, _, Marionette)
 
             // Stretch the target to the bottom of the screen
             if (target && target.length > 0)
-                target.css('height', ResizeBehavior.$window.height() - target.offset().top);
+            {
+                var prop = this.options.allowSmaller ? 'max-height' : 'height';
+                var height = ResizeBehavior.$window.height() - target.offset().top;
+                target.css(prop, height);
+            }
         },
 
         /** Execute the resize action */
