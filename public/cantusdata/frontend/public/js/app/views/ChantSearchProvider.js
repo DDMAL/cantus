@@ -247,10 +247,11 @@ define([
 
             regions.searchHelper.empty();
 
-            regions.searchResultHeading.show(new SearchResultHeadingView({
+            var headingView = new SearchResultHeadingView({
                 collection: this.collection,
                 getSearchMetadata: this.getSearchMetadata
-            }));
+            });
+            regions.searchResultHeading.show(headingView);
 
             // Get the additional result fields to display
             var specifiedAddFields = this.getOption('additionalResultFields');
@@ -259,11 +260,19 @@ define([
                 return _.contains(specifiedAddFields, field.type);
             });
 
-            regions.searchResults.show(new SearchResultCollectionView({
+            var resultsView = new SearchResultCollectionView({
                 collection: this.collection,
                 infoFields: infoFields,
                 searchParameters: this.searchParameters
-            }));
+            });
+            regions.searchResults.show(resultsView);
+
+            // Trigger size recomputation in the results view when the
+            // heading view changes
+            this.listenTo(headingView, 'render', function ()
+            {
+                resultsView.triggerMethod('recalculate:size');
+            });
         }
     });
 });

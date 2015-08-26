@@ -1,5 +1,8 @@
+// General initialization
 require('init/BackboneCustomization');
+require('App').behaviors.resize = require('behaviors/ResizeBehavior');
 
+// General test scaffolding
 var Marionette = require('marionette');
 var $ = require('jquery');
 

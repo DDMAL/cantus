@@ -4,6 +4,19 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
 
         "use strict";
 
+        /**
+         * Determine whether an element has been hidden by having
+         * display: none set.
+         *
+         * @param jqElem
+         * @returns {boolean}
+         * @private
+         */
+        function isDisplayed(jqElem)
+        {
+            return jqElem.css('display') !== 'none';
+        }
+
         // TODO(wabain): this is misnamed since it's actually a CompositeView
         // but it should really be merged into the SearchResultView
 
@@ -22,8 +35,16 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
                 "update reset": "hideIfEmpty"
             },
 
+            behaviors: {
+                resize: {
+                    target: '.result-table-wrapper',
+                    allowSmaller: true
+                }
+            },
+
             ui: {
                 resultList: '.result-list',
+                resultListWrapper: '.result-table-wrapper',
                 resultHeading: '.result-list th'
             },
 
@@ -35,10 +56,9 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
             {
                 // FIXME(wabain): update this to use mergeOptions after updating Marionette
                 this.searchParameters = this.getOption('searchParameters');
-                this.listenTo(this.searchParameters, 'change:sortBy change:reverseSort', function ()
-                {
-                    this.triggerMethod('sorting:changed');
-                });
+
+                this.listenTo(this.searchParameters, 'change:sortBy change:reverseSort', this._triggerSortingChanged);
+                this.listenTo(this.searchParameters, 'change:query change:field', this._resetScrolling);
             },
 
             childViewOptions: function ()
@@ -54,6 +74,18 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
             {
                 this.hideIfEmpty();
                 this.triggerMethod('sorting:changed');
+                this.triggerMethod('recalculate:size');
+            },
+
+            _triggerSortingChanged: function ()
+            {
+                this.triggerMethod('sorting:changed');
+            },
+
+            _resetScrolling: function ()
+            {
+                if (this.isRendered)
+                    this.ui.resultListWrapper.scrollTop(0);
             },
 
             /**
@@ -62,23 +94,38 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
              */
             hideIfEmpty: function ()
             {
-                // Catch the condition where this is fired before the template has been rendered
-                if (!this.$el)
-                    return;
-
                 if (!this.searchParameters.get('query'))
                 {
                     this.$el.hide();
+                    return;
+                }
+
+                // We need to trigger a sizing recalculation if either
+                // the view's root element or the result list is shown
+                var requiresSizeCalculation;
+
+                if (isDisplayed(this.$el))
+                {
+                    requiresSizeCalculation = false;
                 }
                 else
                 {
+                    requiresSizeCalculation = true;
                     this.$el.show();
-
-                    if (this.collection.length === 0)
-                        this.ui.resultList.hide();
-                    else
-                        this.ui.resultList.show();
                 }
+
+                if (this.collection.length === 0)
+                {
+                    this.ui.resultList.hide();
+                }
+                else if (!isDisplayed(this.ui.resultList))
+                {
+                    requiresSizeCalculation = true;
+                    this.ui.resultList.show();
+                }
+
+                if (requiresSizeCalculation)
+                    this.triggerMethod('recalculate:size');
             },
 
             /**
@@ -154,8 +201,8 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
                     .toggleClass('caret-reversed', this.searchParameters.get('reverseSort'));
 
                 // Register a callback to clear the state of the heading the next time that
-                // the sort criteria change. We need to defer this because otherwise it could be dispatched
-                // in this event loop.
+                // the sort criteria change. We need to defer this because otherwise it could be triggered
+                // immediately if we're in the middle of dispatching sorting:changed callbacks
                 _.defer(_.bind(this.once, this), 'sorting:changed', function ()
                 {
                     if (this.searchParameters.get('sortBy') !== this.getHeadingSearchField(heading))

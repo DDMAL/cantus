@@ -2,6 +2,7 @@ require([
     "underscore",
     "backbone",
     "App",
+    "behaviors/ResizeBehavior",
     "singletons/NavigationManager",
 
     // Require these to ensure they are run
@@ -9,9 +10,14 @@ require([
     "jquery",
     "marionette",
     "bootstrap"
-], function (_, Backbone, App, NavigationManager)
+], function (_, Backbone, App, ResizeBehavior, NavigationManager)
 {
     "use strict";
+
+    // Needed for the search view
+    _.extend(App.behaviors, {
+        resize: ResizeBehavior
+    });
 
     App.on('start', function ()
     {

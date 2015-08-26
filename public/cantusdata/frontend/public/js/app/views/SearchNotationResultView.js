@@ -15,12 +15,18 @@ function (_, Marionette, SearchNotationResultItemView)
         childViewContainer: 'tbody',
 
         collectionEvents: {
-            reset: 'showNoRequest',
-            request: 'showPendingRequest',
-            sync: 'showReceivedRequest'
+            'reset request sync': 'updateTable'
+        },
+
+        behaviors: {
+            resize: {
+                target: '.result-table-wrapper',
+                allowSmaller: true
+            }
         },
 
         ui: {
+            tableWrapper: '.result-table-wrapper',
             table: 'table'
         },
 
@@ -31,27 +37,17 @@ function (_, Marionette, SearchNotationResultItemView)
             };
         },
 
-        showNoRequest: function ()
-        {
-            this.updateTable();
-        },
-
-        showPendingRequest: function ()
-        {
-            this.ui.table.hide();
-        },
-
-        showReceivedRequest: function ()
-        {
-            this.updateTable();
-        },
-
         updateTable: function ()
         {
             if (this.collection.length)
-                this.ui.table.show();
+            {
+                this.ui.tableWrapper.show();
+                this.triggerMethod('recalculate:size');
+            }
             else
-                this.ui.table.hide();
+            {
+                this.ui.tableWrapper.hide();
+            }
         },
 
         triggerZoomToResult: function (view)
@@ -61,10 +57,7 @@ function (_, Marionette, SearchNotationResultItemView)
 
         onRender: function ()
         {
-            if (this.collection.length)
-                this.showReceivedRequest();
-            else
-                this.showNoRequest(this.collection);
+            this.updateTable();
         }
     });
 });
