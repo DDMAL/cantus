@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.http import Http404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer, JSONPRenderer
@@ -28,7 +29,7 @@ class ManuscriptFolioSetView(APIView):
             if (result.results):
                 return Response(result.results[0])
             else:
-                return Response(result)
+                raise Http404("No data for a folio with that number")
         else:
             composed_request = u'type:"cantusdata_folio" AND manuscript_id:{0}'\
             .format(manuscript_id)

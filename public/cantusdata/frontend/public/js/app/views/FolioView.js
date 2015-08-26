@@ -39,6 +39,11 @@ return Marionette.LayoutView.extend
         divaFolioAdvancerRegion: '.diva-folio-advancer-region'
     },
 
+    modelEvents: {
+        sync: '_onFetch',
+        error: '_handleFetchError'
+    },
+
     /**
      *
      *
@@ -47,22 +52,19 @@ return Marionette.LayoutView.extend
      */
     initialize: function()
     {
+        this.chantCollection = new ChantCollection();
+
         if (!this.model)
         {
             this.model = new Folio();
             this.updateFolio();
         }
 
-        this.chantCollection = new ChantCollection();
-
-        this.listenTo(this.model, 'sync', this.afterFetch);
         this.listenTo(manuscriptChannel, 'change:folio', this.updateFolio);
     },
 
     updateFolio: function ()
     {
-        //this.model.clear();
-
         var manuscript = manuscriptChannel.request('manuscript');
         var folioNumber = manuscriptChannel.request('folio');
 
@@ -72,17 +74,55 @@ return Marionette.LayoutView.extend
             return;
         }
 
+        var loaded = false;
+
+        // Display a loading message if the chants don't load almost immediately
+        _.delay(_.bind(function ()
+        {
+            if (!loaded)
+            {
+                this.chantCollection.reset();
+                this._showMessage('Loading...');
+            }
+        }, this), 250);
+
         this.model.fetch({
             url: GlobalVars.siteUrl + "folio-set/manuscript/" + manuscript + "/" + folioNumber + "/"
+        }).always(function ()
+        {
+            loaded = true;
         });
     },
 
-    afterFetch: function ()
+    _onFetch: function ()
     {
         this.assignChants();
+    },
 
-        if (this.folioItemRegion.currentView)
-            this.folioItemRegion.currentView.render();
+    _handleFetchError: function (model, xhr)
+    {
+        this.chantCollection.reset();
+        this.model.clear();
+
+        // We can ignore 404s and take them to mean no data
+        if (xhr.status === 404)
+            this.assignChants();
+        else
+            this._showMessage('Failed to load chants.');
+    },
+
+    /** Display a message */
+    _showMessage: function (message)
+    {
+        // FIXME: This is a pretty fragile way to display a message.
+        // Really this should probably all be in templates.
+        if (this.chantListRegion.currentView)
+        {
+            if (message)
+                this.chantListRegion.currentView.ui.errorMessages.text(message);
+            else
+                this.chantListRegion.currentView.ui.errorMessages.empty();
+        }
     },
 
     /**
@@ -102,6 +142,9 @@ return Marionette.LayoutView.extend
 
             // Update the chant collection
             this.chantCollection.fetch({reset: true, url: composedUrl});
+
+            // Clear a loading message if one is displayed
+            this._showMessage(null);
         }
         else
         {
@@ -111,7 +154,7 @@ return Marionette.LayoutView.extend
 
     onShow: function()
     {
-        this.folioItemRegion.show(new FolioItemView({model: this.model}));
+        this.folioItemRegion.show(new FolioItemView());
 
         this.chantListRegion.show(new ChantCompositeView({
             collection: this.chantCollection,

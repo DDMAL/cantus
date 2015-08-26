@@ -16,12 +16,8 @@ function(Backbone,
     return Marionette.CompositeView.extend({
         childView: ChantItemView,
         childViewContainer: ".accordion",
-        template: "#chant-composite-template",
 
-        /**
-         * The chant that bootstrap has unfolded
-         */
-        unfoldedChant: null,
+        template: "#chant-composite-template",
 
         ui: {
             errorMessages: ".error-messages"
