@@ -4,7 +4,7 @@ describe('SearchNotationResultView', function ()
 {
     var testSetup = require('test/setup');
     var SearchNotationResultView = require('./SearchNotationResultView');
-    var SearchResultCollection = require('collections/SearchNotationResultCollection');
+    var SearchNotationResultCollection = require('collections/SearchNotationResultCollection');
 
     // Fixtures
     var testParameters = {
@@ -49,7 +49,7 @@ describe('SearchNotationResultView', function ()
     {
         jasmine.Ajax.install();
 
-        this.collection = new SearchResultCollection();
+        this.collection = new SearchNotationResultCollection();
 
         this.view = new SearchNotationResultView({
             collection: this.collection
