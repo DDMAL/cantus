@@ -30,6 +30,8 @@ define(["underscore", "jquery", "qs", "backbone", "objects/OpenChantState", "mod
                 this.on('change', this.publishChanges);
                 this.on('change', this.updateUrl);
 
+                this.on('exiting:route', this.unbindEvents);
+
                 manuscriptStateChannel.reply('model:manuscript', this.getManuscriptModel, this);
 
                 // Proxy model getters and setters to the channel
@@ -42,12 +44,12 @@ define(["underscore", "jquery", "qs", "backbone", "objects/OpenChantState", "mod
                         this.set(attr, value, {stateChangeParams: params});
                     }, this);
                 }, this);
-
-                this.on('destroy', this.onDestroy);
             },
 
-            onDestroy: function ()
+            unbindEvents: function ()
             {
+                this.stopListening();
+
                 // Stop replying to state requests
                 manuscriptStateChannel.stopReplying(null, null, this);
             },

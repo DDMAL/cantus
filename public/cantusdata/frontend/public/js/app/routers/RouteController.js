@@ -189,9 +189,7 @@ define(["underscore",
             resetRouteState: function ()
             {
                 if (this.routeState && this.routeState.model)
-                {
-                    this.routeState.model.destroy();
-                }
+                    this.routeState.model.trigger('exiting:route');
 
                 this.routeState = {
                     fragment: Backbone.history.fragment
