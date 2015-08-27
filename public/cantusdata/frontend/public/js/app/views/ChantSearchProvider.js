@@ -2,6 +2,7 @@ define([
     "underscore",
     "marionette",
     "utils/SolrQuery",
+    "utils/IncrementalSolrLoader",
     "models/SearchInput",
     "collections/SearchResultCollection",
     "views/SearchInputView",
@@ -11,6 +12,7 @@ define([
     _,
     Marionette,
     SolrQuery,
+    IncrementalSolrLoader,
     SearchInput,
     SearchResultCollection,
     SearchInputView,
@@ -28,6 +30,9 @@ define([
         {type: "genre", "name": "Genre"},
         {type: "office", "name": "Office"}
     ];
+
+    var INITIAL_LOAD_CUTOFF = 100;
+    var CLIENT_SIDE_SORT_LIMIT = 500;
 
     /**
      * Provide support for searching Cantus chant information via the search interface.
@@ -76,14 +81,17 @@ define([
             // Initialize search input model
             this.searchParameters = new SearchInput();
 
-            // Initialize search result collection which is sorted
-            // by the criteria specified by the search input
-            this.collection = new SearchResultCollection(null, {
-                comparisonParameters: this.searchParameters
+            // Initialize search result collection
+            this.collection = new SearchResultCollection();
+
+            this.resultLoadingHandler = new IncrementalSolrLoader(this.collection, {
+                baseUrl: this.collection.baseUrl()
             });
 
             // Trigger a search when the search query or field changes
             this.listenTo(this.searchParameters, 'change:query change:field', this.search);
+            this.listenTo(this.searchParameters, 'change:sortBy change:reverseSort', this._handleSort);
+            this.listenTo(this.collection, 'sync', this._handleSync);
         },
 
         onDestroy: function ()
@@ -134,7 +142,7 @@ define([
 
             if (!query)
             {
-                this.collection.invalidateFetch();
+                this.resultLoadingHandler.stopLoading();
                 this.collection.reset();
                 return;
             }
@@ -147,7 +155,12 @@ define([
                     query = query.split(',');
             }
 
-            var queryBuilder = new SolrQuery();
+            var params = {
+                sort: this.searchParameters.get('sortBy') + ' ' +
+                    (this.searchParameters.get('reverseSort') ? 'desc' : 'asc')
+            };
+
+            var queryBuilder = new SolrQuery({params: params});
 
             this.setSearchQueryOnBuilder(queryBuilder, field, query);
 
@@ -156,7 +169,7 @@ define([
                 queryBuilder.setField(this.getSearchField(field), value);
             }, this);
 
-            this.collection.fetch({baseSolrQuery: queryBuilder});
+            this.resultLoadingHandler.fetch(queryBuilder);
         },
 
         /**
@@ -267,12 +280,60 @@ define([
             });
             regions.searchResults.show(resultsView);
 
+            this.listenTo(resultsView, 'continue:loading', this._continueLoadingResults);
+
             // Trigger size recomputation in the results view when the
             // heading view changes
             this.listenTo(headingView, 'render', function ()
             {
                 resultsView.triggerMethod('recalculate:size');
             });
+        },
+
+        /**
+         * Load more search results if they are available
+         *
+         * @private
+         */
+        _continueLoadingResults: function ()
+        {
+            this.resultLoadingHandler.continueLoading();
+        },
+
+        /**
+         * Continue loading search results until the cutoff for initial loading is reached. After that,
+         * results will only be loaded when triggered.
+         *
+         * @private
+         */
+        _handleSync: function ()
+        {
+            if (this.resultLoadingHandler.hasMore() && this.resultLoadingHandler.loaded() < INITIAL_LOAD_CUTOFF)
+                this.resultLoadingHandler.continueLoading();
+        },
+
+        /**
+         * If a re-sort is triggered while results are loading or while there are a large number of results
+         * then just go back and start loading again with the new sort criteria. Otherwise, exectute a
+         * client-side sort.
+         *
+         * @private
+         */
+        _handleSort: function ()
+        {
+            if (this.resultLoadingHandler.hasMore() || this.resultLoadingHandler.numFound > CLIENT_SIDE_SORT_LIMIT)
+            {
+                this.search();
+            }
+            else
+            {
+                // We only specify the comparator for a one-time sort; otherwise we count on results to load in
+                // the correct order
+                this.collection.comparator = SearchResultCollection.getComparatorFunction(this.searchParameters);
+                this.collection.sort();
+                this.collection.comparator = null;
+            }
+
         }
     });
 });

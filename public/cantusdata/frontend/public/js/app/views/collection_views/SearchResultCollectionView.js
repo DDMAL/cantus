@@ -57,6 +57,8 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
                 // FIXME(wabain): update this to use mergeOptions after updating Marionette
                 this.searchParameters = this.getOption('searchParameters');
 
+                this._handleScroll = _.throttle(_.bind(this._loadResultsIfAtEnd, this), 250);
+
                 this.listenTo(this.searchParameters, 'change:sortBy change:reverseSort', this._triggerSortingChanged);
                 this.listenTo(this.searchParameters, 'change:query change:field', this._resetScrolling);
             },
@@ -75,6 +77,10 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
                 this.hideIfEmpty();
                 this.triggerMethod('sorting:changed');
                 this.triggerMethod('recalculate:size');
+
+                // We can't use the events hash for this because it relies on events
+                // bubbling, and the scroll event does not
+                this.ui.resultListWrapper.on('scroll', this._handleScroll);
             },
 
             _triggerSortingChanged: function ()
@@ -208,6 +214,35 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
                     if (this.searchParameters.get('sortBy') !== this.getHeadingSearchField(heading))
                         heading.children('.search-caret').removeClass('caret caret-reversed');
                 });
+            },
+
+            /**
+             * If the last item in the results list is scrolled into view, then request more items
+             * @private
+             */
+            _loadResultsIfAtEnd: function ()
+            {
+                var lastChild = this.children.last();
+
+                if (!lastChild)
+                    return;
+
+                var childDocumentOffset = lastChild.$el.offset().top;
+
+                // Sometimes this can be triggered while the last item is not in the layout.
+                // In that case, we just ignore the call.
+                if (childDocumentOffset === 0)
+                    return;
+
+                var elemTop = childDocumentOffset - this.ui.resultListWrapper.offset().top;
+                var visibleBottom = this.ui.resultListWrapper.height();
+
+                // If the top of the element is above the bottom of the screen, request more
+                // items. This is a pretty noisy trigger, but the incremental load handler
+                // ignores duplicate requests, and it's better to to be overly broad in
+                // defining the condition for loading rather than insufficiently so.
+                if (elemTop <= visibleBottom)
+                    this.trigger('continue:loading');
             },
 
             templateHelpers: function()
