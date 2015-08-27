@@ -4,6 +4,8 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
 
         "use strict";
 
+        // TODO(wabain): this is misnamed since it's actually a CompositeView
+
         /**
          * Determine whether an element has been hidden by having
          * display: none set.
@@ -16,9 +18,6 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
         {
             return jqElem.css('display') !== 'none';
         }
-
-        // TODO(wabain): this is misnamed since it's actually a CompositeView
-        // but it should really be merged into the SearchResultView
 
         /**
          * View representing a Search Result with count.
