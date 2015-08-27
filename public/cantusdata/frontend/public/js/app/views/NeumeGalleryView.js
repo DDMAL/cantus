@@ -20,7 +20,7 @@ define([
             template: '#neume-gallery-item-template',
 
             triggers: {
-                'click .thumbnail': 'exemplar:clicked'
+                'click .neume-gallery-entry': 'exemplar:clicked'
             },
 
             templateHelpers: {

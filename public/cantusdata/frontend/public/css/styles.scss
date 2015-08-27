@@ -1,7 +1,26 @@
 // Hardcode some Bootstrap style variables here since our Bootstrap stuff
 // isn't pre-processed
+
+// Responsive breakpoints
 $screen-sm-min: 768px;
 $screen-lg-min: 1200px;
+
+// Colors
+$gray-darker:            lighten(#000, 13.5%); // #222
+$gray-dark:              lighten(#000, 20%);   // #333
+$gray:                   #6f6f6f; // #555
+$gray-light:             lighten(#000, 60%);   // #999
+$gray-lighter:           lighten(#000, 93.5%); // #eee
+
+$brand-primary:         #c2342e;
+$brand-success:         #43ac6a;
+$brand-info:            #5bc0de;
+$brand-warning:         #E99002;
+$brand-danger:          #F04124;
+
+//** Global textual link color.
+$link-color:            $brand-primary;
+$link-hover-color:      darken($link-color, 15%);
 
 // Color used for a lot of borders in the Bootstrap things
 $border-color: #ddd;
@@ -386,4 +405,40 @@ table.result-list th a {
 
 .neume-images img {
     background: #ccc;
+}
+
+.neume-gallery-entry {
+    transition: border-color 0.2s;
+    float: left;
+    max-width: 100px;
+    min-width: 90px;
+    margin: 5px;
+    border: 1px solid $border-color;
+    padding: 5px;
+    color: $gray-darker;
+
+    &:hover, &:focus {
+        text-decoration: none;
+        border-color: $link-color;
+        color: $gray-darker;
+    }
+
+    .exemplar {
+        height: 75px;
+        margin: 4px;
+
+        img {
+            display: block;
+            margin: auto;
+            max-height: 75px;
+            max-width: 75px;
+        }
+    }
+
+    .caption {
+        text-align: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-wrap: break-word;
+    }
 }
