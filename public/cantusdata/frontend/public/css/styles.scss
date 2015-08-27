@@ -33,6 +33,9 @@ $zindex-navbar-fixed:      1030;
 $zindex-modal-background:  1040;
 $zindex-modal:             1050;
 
+$zindex-diva-fullscreen:   $zindex-modal;
+$zindex-diva-canvas:       $zindex-diva-fullscreen + 5;
+
 @import "sidenav";
 
 // Volpiano font
@@ -291,6 +294,33 @@ table.result-list th a {
     margin-right: 0;
     border: none;
     border-right: 1px solid $border-color;
+}
+
+// Integrate Diva z-index values with the Bootstrap z-index hierarchy
+.diva-outer.diva-fullscreen {
+    z-index: $zindex-diva-fullscreen;
+}
+.diva-popup, .diva-tools.diva-fullscreen-tools {
+    z-index: $zindex-diva-fullscreen + 1;
+}
+
+#diva-canvas-backdrop {
+    z-index: $zindex-diva-canvas;
+}
+#diva-canvas-wrapper {
+    z-index: $zindex-diva-canvas + 1;
+}
+#diva-canvas {
+    z-index: $zindex-diva-canvas + 2;
+}
+#diva-canvas-tools {
+    z-index: $zindex-diva-canvas + 3;
+}
+#diva-canvas-toolbar div {
+    z-index: $zindex-diva-canvas + 4;
+}
+.canvas-throbber {
+    z-index: $zindex-diva-canvas + 5;
 }
 
 // Narrow the margin between the search input column and the field selection dropdown
