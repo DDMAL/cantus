@@ -15,7 +15,8 @@ function (_, Marionette, SearchNotationResultItemView)
         childViewContainer: 'tbody',
 
         collectionEvents: {
-            'reset request sync': 'updateTable'
+            'reset sync': 'updateTable',
+            request: 'handleRequest'
         },
 
         behaviors: {
@@ -48,6 +49,11 @@ function (_, Marionette, SearchNotationResultItemView)
             {
                 this.ui.tableWrapper.hide();
             }
+        },
+
+        handleRequest: function ()
+        {
+            this.ui.tableWrapper.hide();
         },
 
         triggerZoomToResult: function (view)

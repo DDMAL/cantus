@@ -82,6 +82,10 @@ describe('SearchNotationResultView', function ()
 
         // Sanity check
         expect(this.view.$('tbody > tr')).toHaveLength(2);
+
+        this.collection.fetch();
+
+        expect(this.view.ui.table).not.toBeVisible();
     });
 
     it('should clear the results when the collection is reset', function ()
