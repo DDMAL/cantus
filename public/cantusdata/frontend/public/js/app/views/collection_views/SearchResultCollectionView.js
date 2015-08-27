@@ -1,5 +1,5 @@
-define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItemView'],
-    function(_, $, Marionette, SearchResultItemView)
+define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItemView', 'utils/lastChildVisible'],
+    function(_, $, Marionette, SearchResultItemView, lastChildVisible)
     {
 
         "use strict";
@@ -78,7 +78,7 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
                 this.triggerMethod('recalculate:size');
 
                 // We can't use the events hash for this because it relies on events
-                // bubbling, and the scroll event does not
+                // bubbling, and the scroll event does not bubble
                 this.ui.resultListWrapper.on('scroll', this._handleScroll);
             },
 
@@ -221,26 +221,11 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
              */
             _loadResultsIfAtEnd: function ()
             {
-                var lastChild = this.children.last();
-
-                if (!lastChild)
-                    return;
-
-                var childDocumentOffset = lastChild.$el.offset().top;
-
-                // Sometimes this can be triggered while the last item is not in the layout.
-                // In that case, we just ignore the call.
-                if (childDocumentOffset === 0)
-                    return;
-
-                var elemTop = childDocumentOffset - this.ui.resultListWrapper.offset().top;
-                var visibleBottom = this.ui.resultListWrapper.height();
-
-                // If the top of the element is above the bottom of the screen, request more
-                // items. This is a pretty noisy trigger, but the incremental load handler
-                // ignores duplicate requests, and it's better to to be overly broad in
+                // If the last child element is visible, request more items. This is a
+                // pretty noisy trigger, but the incremental load handler ignores
+                // duplicate requests, and it's better to to be overly broad in
                 // defining the condition for loading rather than insufficiently so.
-                if (elemTop <= visibleBottom)
+                if (lastChildVisible(this, this.ui.resultListWrapper))
                     this.trigger('continue:loading');
             },
 

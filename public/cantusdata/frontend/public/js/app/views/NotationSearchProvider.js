@@ -6,7 +6,8 @@ define([
     "views/NeumeGalleryView",
     "views/SearchNotationInputView",
     "views/SearchResultHeadingView",
-    "views/SearchNotationResultView"
+    "views/SearchNotationResultView",
+    "utils/IncrementalClientSideLoader"
 ], function (
     _,
     Backbone,
@@ -15,7 +16,8 @@ define([
     NeumeGalleryView,
     SearchNotationInputView,
     SearchResultHeadingView,
-    SearchNotationResultView)
+    SearchNotationResultView,
+    IncrementalClientSideLoader)
 {
     "use strict";
 
@@ -91,6 +93,9 @@ define([
             this.divaView = options.divaView;
 
             this.results = new SearchNotationResultCollection();
+            this.displayedResults = new SearchNotationResultCollection();
+            this.resultLoadingHandler = new IncrementalClientSideLoader(this.displayedResults, this.results);
+
             this.listenTo(this.results, "sync", this.resultFetchCallback);
         },
 
@@ -114,7 +119,7 @@ define([
                     manuscript: this.manuscript
                 });
 
-                this.results.fetch();
+                this.resultLoadingHandler.fetch();
             }
             return false;
         },
@@ -152,7 +157,7 @@ define([
         getSearchMetadata: function ()
         {
             return {
-                fieldName: this.results.parameters.fieldName,
+                fieldName: this.field.name,
                 query: this.query
             };
         },
@@ -191,9 +196,10 @@ define([
 
             // Results
             var resultView = new SearchNotationResultView({
-                collection: this.results
+                collection: this.displayedResults
             });
 
+            this.listenTo(resultView, 'continue:loading', this._continueLoadingResults);
             this.listenTo(resultView, 'zoomToResult', this.zoomToResult);
 
             // Clear results from Diva when the results are no longer displayed
@@ -204,6 +210,16 @@ define([
             // Trigger initial search
             if (this.query)
                 this.triggerMethod('search', query);
+        },
+
+        /**
+         * Display more search results if they are available
+         *
+         * @private
+         */
+        _continueLoadingResults: function ()
+        {
+            this.resultLoadingHandler.continueLoading();
         },
 
         onDestroy: function ()

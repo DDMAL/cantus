@@ -1,9 +1,10 @@
 define([
     "underscore",
     "marionette",
-    "views/SearchNotationResultItemView"
+    "views/SearchNotationResultItemView",
+    "utils/lastChildVisible"
 ],
-function (_, Marionette, SearchNotationResultItemView)
+function (_, Marionette, SearchNotationResultItemView, lastChildVisible)
 {
     "use strict";
 
@@ -38,6 +39,11 @@ function (_, Marionette, SearchNotationResultItemView)
             };
         },
 
+        initialize: function ()
+        {
+            this._handleScroll = _.throttle(_.bind(this._loadResultsIfAtEnd, this), 250);
+        },
+
         updateTable: function ()
         {
             if (this.collection.length)
@@ -64,6 +70,20 @@ function (_, Marionette, SearchNotationResultItemView)
         onRender: function ()
         {
             this.updateTable();
+
+            // We can't use the events hash for this because it relies on events
+            // bubbling, and the scroll event does not bubble
+            this.ui.tableWrapper.on('scroll', this._handleScroll);
+        },
+
+        /**
+         * If the last item in the results list is scrolled into view, then request more items
+         * @private
+         */
+        _loadResultsIfAtEnd: function ()
+        {
+            if (lastChildVisible(this, this.ui.tableWrapper))
+                this.trigger('continue:loading');
         }
     });
 });
