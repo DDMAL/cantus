@@ -122,7 +122,7 @@ define(['underscore', 'backbone', 'marionette'], function (_, Backbone, Marionet
             this._currentParams.fetching = true;
 
             options = _.defaults({parse: true}, options, this._currentParams.options);
-            var xhr = Backbone.sync('read', this, options);
+            var xhr = Backbone.sync('read', this.collection, options);
 
             var _this = this;
             var fetchId = this._currentParams.fetchId;
