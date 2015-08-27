@@ -51,11 +51,11 @@ define(["underscore",
                     this.initialRouteComplete = true;
                 });
 
-                // Change the document title when
-                this.listenTo(NavigationManager.titling, 'change:title', _.bind(function (model, title)
+                // Change the document title when the title global changes
+                this.listenTo(NavigationManager.titling, 'change:title', function (model, title)
                 {
                     this.setDocumentTitle(title);
-                }, this));
+                });
             },
 
             /** Initialize the layout for the application */
