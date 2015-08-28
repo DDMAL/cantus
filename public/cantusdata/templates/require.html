@@ -1,20 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
+{% extends "base.html" %}
 
-    <link rel="stylesheet" href="/static/css/cantus.min.css">
-
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta http-equiv="Content-Language" content="en_US" />
-
-    <title>Cantus Ultimus</title>
-    <link rel="icon" type="image/ico" href="/static/img/favicon.ico">
-
-    <meta name="viewport" content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0, width=device-width">
-</head>
-<body>
-
+{% block body %}
 <noscript class="no-js-message">
     <div class="container">
         <div class="row">
@@ -33,12 +19,6 @@
         </div>
     </div>
 </noscript>
-
-<div id="menu-sidenav"></div>
-
-<div id="header-container">
-    <div id="page-header" class="header"></div>
-</div>
 
 <div id="content-container" class="container-fluid">
     <div id="page-content" class="row content">
@@ -60,6 +40,4 @@
     ga('send', 'pageview');
 
 </script>
-
-</body>
-</html>
+{% endblock %}
