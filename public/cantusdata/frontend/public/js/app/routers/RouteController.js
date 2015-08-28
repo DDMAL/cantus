@@ -34,17 +34,6 @@ define(["underscore",
             {
                 this.rootView = this.getOption('rootView', options);
 
-                // Support maintaining arbitrary state for the active route (by default just
-                // a fragment)
-                this.routeState = null;
-                this.listenTo(Backbone.history, 'route', function ()
-                {
-                    if (!this.routeState || this.routeState.fragment !== Backbone.history.fragment)
-                    {
-                        this.resetRouteState();
-                    }
-                });
-
                 this.initialRouteComplete = false;
                 this.listenToOnce(Backbone.history, 'route', function ()
                 {
@@ -55,6 +44,18 @@ define(["underscore",
                 this.listenTo(NavigationManager.titling, 'change:title', function (model, title)
                 {
                     this.setDocumentTitle(title);
+                });
+
+                // Maintain a manuscript state object that persists as long as the
+                // route is the manuscript detail route
+                this.manuscriptState = null;
+                this.listenTo(Backbone.history, 'route', function (router, route)
+                {
+                    if (this.manuscriptState && route !== 'manuscriptSingle')
+                    {
+                        this.manuscriptState.trigger('exiting:route');
+                        this.manuscriptState = null;
+                    }
                 });
             },
 
@@ -92,31 +93,17 @@ define(["underscore",
             manuscriptSingle: function(id, query)
             {
                 var params = Qs.parse(query);
+                var state = _.extend({manuscript: id}, _.pick(params, ['folio', 'chant']));
 
-                var folio = _.has(params, 'folio') ? params.folio : null;
-                var chant = _.has(params, 'chant') ? params.chant : null;
-
-                // Update the route state
-                if (!(this.routeState && this.routeState.model instanceof ManuscriptStateModel))
+                // Update the manuscript state model if necessary; don't reload the whole
+                // view if the manuscript has not changed
+                if (!this.manuscriptState)
                 {
-                    this.resetRouteState();
-                    this.routeState.model = new ManuscriptStateModel();
+                    this.manuscriptState = new ManuscriptStateModel();
                 }
-                else
+                else if (this.manuscriptState.get('manuscript') === id)
                 {
-                    this.routeState.fragment = Backbone.history.fragment;
-                }
-
-                var prevId = this.routeState.model.get('manuscript');
-
-                // Don't reload the whole view if the manuscript has not changed
-                if (prevId === id)
-                {
-                    this.routeState.model.set({
-                        folio: folio,
-                        chant: chant
-                    });
-
+                    this.manuscriptState.set(state, {stateChangeParams: {replaceState: true}});
                     return;
                 }
 
@@ -130,7 +117,7 @@ define(["underscore",
                  *
                  * Fixing (1) probably isn't worth it, but fixing (2) might be
                  */
-                this.listenToOnce(this.routeState.model, 'load:manuscript', function (model)
+                this.listenToOnce(this.manuscriptState, 'load:manuscript', function (model)
                 {
                     this.showContentView(new ManuscriptIndividualPageView({model: model}), {
                         title: model.get("name"),
@@ -138,11 +125,7 @@ define(["underscore",
                     });
                 });
 
-                this.routeState.model.set({
-                    manuscript: id,
-                    folio: folio,
-                    chant: chant
-                });
+                this.manuscriptState.set(state, {stateChangeParams: {replaceState: true}});
             },
 
             /**
@@ -184,16 +167,6 @@ define(["underscore",
                     // Send the browser to the page for the current fragment
                     window.location = GlobalVars.siteUrl + Backbone.history.fragment;
                 }
-            },
-
-            resetRouteState: function ()
-            {
-                if (this.routeState && this.routeState.model)
-                    this.routeState.model.trigger('exiting:route');
-
-                this.routeState = {
-                    fragment: Backbone.history.fragment
-                };
             },
 
             /**
