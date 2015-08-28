@@ -317,7 +317,15 @@ return Marionette.ItemView.extend({
         // Go to the predetermined initial folio if one is set
         var initialFolio = manuscriptChannel.request('folio');
         if (initialFolio !== null)
+        {
             this.setFolio(initialFolio);
+        }
+        else
+        {
+            // If one is not set, then set the global folio to the Diva viewer's initial page
+            var folio = this.imageNameToFolio(this.divaInstance.getCurrentPageFilename());
+            manuscriptChannel.request('set:folio', folio, {replaceState: true});
+        }
 
         // Store the list of filenames
         this.divaFilenames = this.divaInstance.getFilenames();
