@@ -1,5 +1,6 @@
 define(['jquery',
         'underscore',
+        'backbone.radio',
         'marionette',
         'diva',
         "models/Manuscript",
@@ -11,6 +12,7 @@ define(['jquery',
         "views/NotationSearchProvider"],
 function($,
          _,
+         Radio,
          Marionette,
          diva,
          Manuscript,
@@ -23,6 +25,8 @@ function($,
 {
 
 "use strict";
+
+var manuscriptStateChannel = Radio.channel('manuscript');
 
 /**
  * This page shows an individual manuscript.  You get a nice diva viewer
@@ -208,8 +212,19 @@ return Marionette.LayoutView.extend
             manuscript: this.model
         });
 
+        var searchTerm = manuscriptStateChannel.request('search');
         var searchView = new SearchView({
+            searchTerm: searchTerm,
             providers: [chantSearchProvider, notationSearchProvider]
+        });
+
+        // Set the global search state when the search term changes
+        this.listenTo(searchView, 'search', function (search)
+        {
+            if (search.type === 'all' && search.query === '')
+                search = null;
+
+            manuscriptStateChannel.request('set:search', search, {replaceState: true});
         });
 
         // Initialize the manuscript info button

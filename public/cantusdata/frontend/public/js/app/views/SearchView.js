@@ -129,6 +129,7 @@ define(["underscore", "jquery", "marionette"], function(_, $, Marionette)
             {
                 this.query = this.cachedQueries[this.activeField.type] = query;
 
+                this.trigger('search', {type: this.activeField.type, query: query});
                 this.activeProvider.triggerMethod('search', query);
             });
         },
@@ -165,6 +166,7 @@ define(["underscore", "jquery", "marionette"], function(_, $, Marionette)
 
         renderActiveField: function ()
         {
+            this.trigger('search', {type: this.activeField.type, query: this.query});
             this.activeProvider.display(this.activeField, this.query, this.getRegions());
         },
 

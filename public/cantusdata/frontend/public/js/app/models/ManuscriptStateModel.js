@@ -15,7 +15,8 @@ define(["underscore", "jquery", "qs", "backbone", "objects/OpenChantState", "mod
             defaults: {
                 manuscript: undefined,
                 folio: undefined,
-                chant: undefined
+                chant: undefined,
+                search: undefined
             },
 
             initialize: function()

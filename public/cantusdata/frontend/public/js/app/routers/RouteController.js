@@ -93,7 +93,7 @@ define(["underscore",
             manuscriptSingle: function(id, query)
             {
                 var params = Qs.parse(query);
-                var state = _.extend({manuscript: id}, _.pick(params, ['folio', 'chant']));
+                var state = _.extend({manuscript: id}, _.pick(params, ['folio', 'chant', 'search']));
 
                 // Update the manuscript state model if necessary; don't reload the whole
                 // view if the manuscript has not changed
