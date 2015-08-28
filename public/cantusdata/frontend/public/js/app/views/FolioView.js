@@ -21,16 +21,7 @@ var manuscriptChannel = Backbone.Radio.channel('manuscript');
 /**
  * Provide an alert message to the user.
  */
-return Marionette.LayoutView.extend
-({
-    /**
-     * customNumber is the folio number that we actually render.
-     */
-    customNumber: 0,
-
-    // Subviews
-    chantCompositeView: null,
-
+return Marionette.LayoutView.extend({
     template: "#folio-template",
 
     regions: {
