@@ -8,20 +8,17 @@ require([
     "routers/WorkSpace",
     "routers/RouteController",
     "behaviors/ResizeBehavior",
-    "behaviors/PageConfigBehavior",
 
     // Require these to ensure they are run
     "jquery",
     "marionette",
     "bootstrap"
-], function (BackboneCustomization, _, Backbone, App, WorkSpace, RouteController, ResizeBehavior,
-             PageConfigBehavior)
+], function (BackboneCustomization, _, Backbone, App, WorkSpace, RouteController, ResizeBehavior)
 {
     "use strict";
 
     _.extend(App.behaviors, {
-        resize: ResizeBehavior,
-        pageConfig: PageConfigBehavior
+        resize: ResizeBehavior
     });
 
     App.on('before:start', function ()

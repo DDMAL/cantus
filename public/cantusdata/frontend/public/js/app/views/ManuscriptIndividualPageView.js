@@ -64,32 +64,6 @@ return Marionette.LayoutView.extend
         resize: {
             target: '#manuscript-data-container',
             action: 'onWindowResized'
-        },
-
-        pageConfig: {
-            elements: {
-                html: {
-                    styles: {
-                        'min-width': 880
-                    }
-                },
-
-                // FIXME(wabain): Figure out if we really need to do this at all
-                'meta[name=viewport]': {
-                    attributes: {
-                        content: function ()
-                        {
-                            return $(window).width() <= 880 ? 'width=880, user-scalable=no' : 'width=device-width';
-                        }
-                    }
-                },
-
-                '.navbar': {
-                    styles: {
-                        'margin-bottom': 0
-                    }
-                }
-            }
         }
     },
 
@@ -98,6 +72,7 @@ return Marionette.LayoutView.extend
         _.bindAll(this, 'getPopoverContent');
 
         this.popoverContent = null;
+        this._viewportContent = null;
     },
 
     /**
@@ -185,6 +160,8 @@ return Marionette.LayoutView.extend
 
     onRender: function()
     {
+        this._configurePageLayout();
+
         // Initialize the Diva view
         var divaView = new DivaView({
             siglum: this.model.get("siglum_slug"),
@@ -246,12 +223,77 @@ return Marionette.LayoutView.extend
         this.once('dom:refresh', function ()
         {
             this.divaViewRegion.show(divaView);
+
+            // Diva inserts its own viewport on initialization, so we need to reset it
+            // TODO: Take this out after upgrading to Diva 4.0
+            this._viewportContent = null;
+            this._updateViewport();
         });
+    },
+
+    _configurePageLayout: function ()
+    {
+        var html = $('html');
+        var navbar = $('.navbar');
+        var viewport = $('meta[name=viewport]');
+
+        // Retain original values
+        var initialHtmlMinWidth = html.css('min-width');
+        var initialNavbarMargin = navbar.css('margin-bottom');
+        var initialViewportContent = viewport.attr('content');
+
+        this._viewportContent = initialViewportContent;
+
+        // Set view-specific values
+        html.css('min-width', 880);
+        navbar.css('margin-bottom', 0);
+        this._updateViewport();
+
+        // Restore original values on view destruction
+        this.once('destroy', function ()
+        {
+            html.css('min-width', initialHtmlMinWidth);
+            navbar.css('margin-bottom', initialNavbarMargin);
+            this._setViewport(initialViewportContent);
+        });
+    },
+
+    /**
+     * Update the viewport dynamically. We do this by removing the existing viewport
+     * element and adding a new one to work around bugs on some mobile devices.
+     */
+    _updateViewport: function ()
+    {
+        var viewportContent = document.documentElement.clientWidth <= 880 ?
+            'width=880, user-scalable=no' : 'width=device-width';
+
+        this._setViewport(viewportContent);
+    },
+
+    /** Update the viewport to the new viewport content
+     *
+     * We do this by appending a new viewport element for cross-browser compatibility.
+     *
+     * See:
+     *
+     *   https://miketaylr.com/posts/2014/02/dynamically-updating-meta-viewport.html
+     *   https://miketaylr.com/posts/2015/08/dynamically-updating-meta-viewport-in-2015.html
+     */
+    _setViewport: function (viewportContent)
+    {
+        if (viewportContent !== this._viewportContent)
+        {
+            this._viewportContent = viewportContent;
+            var meta = document.createElement('meta');
+            meta.setAttribute('name', 'viewport');
+            meta.setAttribute('content', viewportContent);
+            document.head.appendChild(meta);
+        }
     },
 
     onWindowResized: function ()
     {
-        this.triggerMethod('configure:page', 'meta[name=viewport]');
+        this._updateViewport();
     }
 });
 });
