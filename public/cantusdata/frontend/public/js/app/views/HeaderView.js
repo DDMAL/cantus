@@ -27,7 +27,7 @@ define(["underscore",
             },
 
             ui: {
-                siteBrand: '#site-logo',
+                siteBrand: '.navbar-brand',
                 navButton: '.navbar-toggle',
                 searchModalLink: '.search-modal-link',
                 navLinks: '#top-menu li > a'
