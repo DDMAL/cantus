@@ -1,11 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-js">
 <head>
     <title>Cantus Ultimus</title>
     <meta charset="UTF-8">
 
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta http-equiv="Content-Language" content="en_US" />
+
+    {# Replace .no-js with .js before loading the CSS #}
+    <script>
+        (function (html)
+        {
+            html.className = html.className.replace(/\bno-js\b/g, 'js');
+        })(document.documentElement);
+    </script>
 
     <link rel="stylesheet" href="/static/css/cantus.min.css">
 
@@ -16,7 +24,33 @@
     <div id="menu-sidenav"></div>
 
     <div id="header-container">
-        <div id="page-header" class="header"></div>
+        <div id="page-header">
+            <nav class="navbar navbar-default" role="navigation">
+                <div class="container-fluid">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <div class="navbar-brand">
+                            <a class="primary-brand-component" href="/">Cantus Ultimus</a><span id="page-title"></span>
+                        </div>
+                    </div>
+                    <div class="collapse navbar-collapse" id="top-menu">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><a href="/about/">About</a></li>
+                            <li><a href="/activities/">Activities</a></li>
+                            <li><a href="/team/">Team</a></li>
+                            <li><a href="/manuscripts/">Manuscripts</a></li>
+                            <li><a href="/search/" class="search-modal-link">Search</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            <div id="search-modal"></div>
+        </div>
     </div>
 
     {% block body %}

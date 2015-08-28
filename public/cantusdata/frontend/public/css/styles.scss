@@ -4,6 +4,7 @@
 // Responsive breakpoints
 $screen-sm-min: 768px;
 $screen-lg-min: 1200px;
+$grid-float-breakpoint: $screen-sm-min;
 
 // Colors
 $gray-darker:            lighten(#000, 13.5%); // #222
@@ -375,12 +376,13 @@ table.result-list th a {
     padding-left: 15px;
 }
 
+// If there's a subhead then hide the primary component on smaller screens
 @media (max-width: $screen-sm-min - 1) {
-    // If there's a subhead then only show it
     .primary-brand-component {
         display: none;
 
-        .no-subhead & {
+        // .no-subhead will only be set if there's JS, so we also check for html.no-js
+        .no-subhead &, html.no-js & {
             display: block;
         }
     }
@@ -419,25 +421,39 @@ table.result-list th a {
     padding-top: 11px;
     padding-bottom: 11px;
 
-    // = $grid-float-breakpoint
-    @media (min-width: 768px) {
+    @media (min-width: $grid-float-breakpoint) {
         margin-right: 15px;
         margin-left: 0;
     }
+
+    // Hide the toggle if JS is disabled, since we won't be able to use it anyway
+    html.no-js & {
+        display: none;
+    }
 }
 
-// Don't display the nav links on smaller screens
-.navbar-nav {
-    display: none;
-}
-
-@media (min-width: $screen-lg-min) {
+// When JS is enabled, don't display the nav links on smaller screens
+html.js {
     .navbar-nav {
-        display: block;
+        display: none;
     }
 
-    .navbar-toggle {
-        display: none;
+    @media (min-width: $screen-lg-min) {
+        .navbar-nav {
+            display: block;
+        }
+
+        .navbar-toggle {
+            display: none;
+        }
+    }
+}
+
+// Always display the collapse on smaller screens with no JS, rather than having it
+// toggle. Inelegant, but it should work.
+@media (max-width: $grid-float-breakpoint - 1) {
+    html.no-js .navbar-collapse {
+        display: block;
     }
 }
 

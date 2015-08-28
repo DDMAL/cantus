@@ -14,7 +14,7 @@ define([
 
         regions: {
             menuSidenav: '#menu-sidenav',
-            header: '.header',
+            header: '#header-container',
             mainContent: '#view-goes-here'
         },
 

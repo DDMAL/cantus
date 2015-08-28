@@ -15,7 +15,8 @@ define(["underscore",
          * Provide an alert message to the user.
          */
         return Marionette.LayoutView.extend({
-            template: '#header-template',
+            el: '#page-header',
+            template: false,
 
             // Subviews
             searchView: null,
