@@ -28,14 +28,20 @@ class Command (BaseCommand):
             row['Cantus ID'] = row['Cantus ID'].strip(' _')
 
         with open(target, 'wb') as f:
-            writer = csv.DictWriter(f, fields, quoting=csv.QUOTE_ALL)
+            writer = csv.DictWriter(f, fields, lineterminator='\n', quoting=csv.QUOTE_ALL)
             writer.writeheader()
 
-            for row in rows: writer.writerow(row)
+            for row in rows:
+                writer.writerow(row)
 
 
 def rename_field(fields, rows, old, new):
-    fields[fields.index(old)] = new
+    try:
+        old_index = fields.index(old)
+    except ValueError:
+        return
+
+    fields[old_index] = new
 
     for row in rows:
         row[new] = row[old]
