@@ -7,7 +7,6 @@ define(['marionette',
         "diva/plugins/download",
         "diva/plugins/canvas",
         "diva/plugins/pagealias",
-        "singletons/GlobalEventHandler",
         "utils/folioNameHelper",
         "config/GlobalVars"],
 function(Marionette,
@@ -19,7 +18,6 @@ function(Marionette,
          DivaDownload,
          DivaCanvas,
          DivaPagealias,
-         GlobalEventHandler,
          folioNameHelper,
          GlobalVars)
 {
@@ -51,7 +49,7 @@ return Marionette.ItemView.extend({
     initialize: function(options)
     {
         _.bindAll(this, 'propagateFolioChange', 'onViewerLoad', 'setFolio',
-            'setGlobalFullScreen', 'zoomToLocation', 'getPageAlias',
+            'onFullScreenChanged', 'zoomToLocation', 'getPageAlias',
             'gotoInputPage', 'getPageWhichMatchesAlias', 'onDocLoad');
 
         this._imagePrefix = null;
@@ -151,7 +149,7 @@ return Marionette.ItemView.extend({
 
         this.onDivaEvent("ViewerDidLoad", this.onViewerLoad);
         this.onDivaEvent("VisiblePageDidChange", this.propagateFolioChange);
-        this.onDivaEvent("ModeDidSwitch", this.setGlobalFullScreen);
+        this.onDivaEvent("ModeDidSwitch", this.onFullScreenChanged);
         this.onDivaEvent("DocumentDidLoad", this.onDocLoad);
     },
 
@@ -288,17 +286,10 @@ return Marionette.ItemView.extend({
         this.initializeDiva();
     },
 
-    setGlobalFullScreen: function(isFullScreen)
+    onFullScreenChanged: function(isFullScreen)
     {
-        if (isFullScreen)
-        {
-            GlobalEventHandler.trigger("divaFullScreen");
-        }
-        else
-        {
-            GlobalEventHandler.trigger("divaNotFullScreen");
+        if (!isFullScreen)
             this.triggerMethod('recalculate:size');
-        }
     },
 
     /**
