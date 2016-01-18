@@ -1,0 +1,13 @@
+diff --git a/python/setup.py b/python/setup.py
+index f1a1064..d96aa60 100644
+--- a/python/setup.py
++++ b/python/setup.py
+@@ -24,7 +24,7 @@ else:
+             # Ubuntu names its boost libraries a bit differently.
+             # figure out what version of python
+             ver = platform.python_version_tuple()
+-            libraries = ["boost_python-mt-py{0}{1}".format(ver[0], ver[1]), "mei", "boost_python-py{0}{1}".format(ver[0], ver[1])]
++            libraries = ["mei", "boost_python-py{0}{1}".format(ver[0], ver[1])]
+             library_dirs = ["/usr/local/lib", "/usr/lib"]
+             runtime_library_dirs = ["/usr/local/lib", "/usr/lib"]
+             include_dirs = []
