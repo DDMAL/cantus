@@ -3,6 +3,7 @@
 
 // Responsive breakpoints
 $screen-sm-min: 768px;
+$screen-md-min: 992px;
 $screen-lg-min: 1200px;
 $grid-float-breakpoint: $screen-sm-min;
 
@@ -438,7 +439,7 @@ html.js {
         display: none;
     }
 
-    @media (min-width: $screen-lg-min) {
+    @media (min-width: $screen-md-min) {
         .navbar-nav {
             display: block;
         }
