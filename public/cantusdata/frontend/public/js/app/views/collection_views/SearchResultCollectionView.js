@@ -171,7 +171,7 @@ define(['underscore', 'jquery', 'marionette', 'views/item_views/SearchResultItem
              */
             getHeadingSearchField: function (heading)
             {
-                return heading.attr('data-sort-field') || heading.children('a').text().toLowerCase();
+                return heading.children('a').text().toLowerCase();
             },
 
             onSortingChanged: function ()
