@@ -38,7 +38,10 @@ echo "==================== INSTALLING DJANGO ===================="
     fi
 
     source app_env/bin/activate
-    pip install -r requirements.txt
+
+    # Install music21 without HTTP caching because it raises a memory error
+    pip install $( grep -v music21 requirements.txt )
+    pip --no-cache-dir install $( grep music21 requirements.txt )
 
     python manage.py makemigrations
     python manage.py migrate
