@@ -121,6 +121,8 @@ return Marionette.ItemView.extend({
             enableAutoWidth: false,
             enableAutoHeight: false,
             enableFilename: false,
+            enableImageTitles: false,
+
             enableHighlight: true,
             enableDownload: true,
 
