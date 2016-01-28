@@ -12,7 +12,8 @@ require([
     // Require these to ensure they are run
     "jquery",
     "marionette",
-    "bootstrap"
+    "bootstrap",
+    "modernizr"
 ], function (BackboneCustomization, _, Backbone, App, WorkSpace, RouteController, ResizeBehavior)
 {
     "use strict";

@@ -14,14 +14,17 @@ var livereload = require('gulp-livereload');
 var lazypipe = require('lazypipe');
 var yargs = require('yargs').argv;
 var webpack = require('webpack');
+var modernizr = require('modernizr');
 var del = require('del');
 var path = require('path');
+var fs = require('fs');
+var mkdirp = require('mkdirp');
 
 var bundleTemplates = require('./bundle-templates').bundle;
 
 // Set path variables
 var sources = {
-    appJS: ['public/js/app/**/*.js', '!public/js/app/**/*.spec.js'],
+    appJS: ['public/js/app/**/*.js', '!public/js/app/**/*.spec.js', 'public/modernizr-config.json'],
     buildJS: ['./*.js'],
     templates: ['public/templates/**/*.html'],
     css: ['public/css/**/*{.css,.scss}']
@@ -82,7 +85,7 @@ gulp.task('build:js', function (cb)
 
 gulp.task('rebuild:js', ['bundle:js']);
 
-gulp.task('bundle:js', ['bundle:templates'], function (cb)
+gulp.task('bundle:js', ['bundle:templates', 'build:modernizr'], function (cb)
 {
     var onBundleComplete = function (err, stats)
     {
@@ -130,14 +133,38 @@ gulp.task('clean:js', function (done)
     });
 });
 
-/*
- * Template build tasks
- */
-
 gulp.task('bundle:templates', function ()
 {
     return bundleTemplates('public/templates', '.tmp/templates.js', {
         preface: 'var _ = require("underscore");\n'
+    });
+});
+
+gulp.task('build:modernizr', function (cb)
+{
+    //if (!modifiedAfter('.tmp/modernizr.js', ))
+    fs.readFile('public/modernizr-config.json', function (err, config)
+    {
+        if (err)
+        {
+            cb(err);
+            return;
+        }
+
+        var json = JSON.parse(config);
+
+        modernizr.build(json, function (result)
+        {
+            mkdirp('.tmp');
+
+            fs.writeFile('.tmp/modernizr.js', result, function (err)
+            {
+                if (err)
+                    cb(err);
+                else
+                    cb();
+            });
+        });
     });
 });
 
@@ -227,7 +254,7 @@ function logWatchedChange(ev)
 function lintJS()
 {
     // For test files, use a specialized jshintrc with jasmine enabled
-    var testConfig = JSON.parse(require('fs').readFileSync('./public/js/app/.jshintrc').toString());
+    var testConfig = JSON.parse(fs.readFileSync('./public/js/app/.jshintrc').toString());
     testConfig.lookup = false;
     testConfig.jasmine = true;
 
