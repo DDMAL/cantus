@@ -43,6 +43,8 @@ echo "==================== INSTALLING DJANGO ===================="
     pip install $( grep -v music21 requirements.txt )
     pip --no-cache-dir install $( grep music21 requirements.txt )
 
+    pip install requirements-dev.txt
+
     python manage.py makemigrations
     python manage.py migrate
     deactivate

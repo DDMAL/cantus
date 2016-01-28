@@ -9,6 +9,7 @@ var sass = require('gulp-sass');
 var sourcemaps = require('gulp-sourcemaps');
 var gulpif = require('gulp-if');
 var autoprefixer = require('gulp-autoprefixer');
+var livereload = require('gulp-livereload');
 
 var lazypipe = require('lazypipe');
 var yargs = require('yargs').argv;
@@ -92,9 +93,27 @@ gulp.task('bundle:js', ['bundle:templates'], function (cb)
         }));
 
         if (err)
+        {
             cb(err);
+        }
         else
+        {
+            var fullStats = stats.toJson();
+
+            // Reload changed files
+            fullStats.assets.filter(function (asset)
+            {
+                return asset.emitted;
+            }).map(function (asset)
+            {
+                return fullStats.publicPath  + asset.name;
+            }).forEach(function (path)
+            {
+                livereload.changed(path);
+            });
+
             cb();
+        }
     };
 
     getWebpackCompiler().run(onBundleComplete);
@@ -146,7 +165,8 @@ gulp.task('bundle:css', function ()
     ];
 
     var isScssFile = /\.scss$/;
-    var isDevBuild = yargs.release ? false : true;
+    var isCssFile = /\.css$/;
+    var isDevBuild = !yargs.release;
 
     var compileScss = lazypipe()
         .pipe(function ()
@@ -160,7 +180,8 @@ gulp.task('bundle:css', function ()
         .pipe(gulpif(isScssFile, compileScss()))
         .pipe(concat('cantus.min.css'))
         .pipe(gulpif(isDevBuild, sourcemaps.write('.')))
-        .pipe(gulp.dest('../static/css'));
+        .pipe(gulp.dest('../static/css'))
+        .pipe(gulpif(isCssFile, livereload())); // Don't reload for sourcemaps
 });
 
 gulp.task('clean:css', function (done)
@@ -182,6 +203,9 @@ gulp.task('watch', function (done)
 {
     // jshint unused:false
     // Never call the callback: this runs forever
+
+    // Run the livereload server
+    livereload.listen();
 
     var jsWatcher = gulp.watch(sources.clientJS, ['lint-nofail:js', 'rebuild:js']);
     var cssWatcher = gulp.watch(sources.css, ['rebuild:css']);
