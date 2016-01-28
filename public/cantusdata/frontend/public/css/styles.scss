@@ -325,11 +325,33 @@ table.result-list th a {
     z-index: $zindex-diva-canvas + 5;
 }
 
-// Narrow the margin between the search input column and the field selection dropdown
-// by taking out some of the padding
-#search-input-col {
-    padding-left: 0;
+
+.search-input {
+    padding-left: 15px;
 }
+
+html.supports-flexbox {
+    .search-input-group {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .search-input {
+        flex-grow: 1;
+    }
+}
+
+html.supports-no-flexbox {
+    .search-input-group > * {
+        float: left;
+    }
+
+    .search-input {
+        min-width: 100px;
+        max-width: 300px;
+    }
+}
+
 
 #menu-sidenav {
     .sidenav a {
