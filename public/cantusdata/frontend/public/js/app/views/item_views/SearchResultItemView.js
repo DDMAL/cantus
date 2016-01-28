@@ -1,5 +1,5 @@
-define(['underscore', 'backbone', 'marionette'],
-    function(_, Backbone, Marionette)
+define(['underscore', 'marionette'],
+    function(_, Marionette)
     {
 
         "use strict";
@@ -17,27 +17,11 @@ define(['underscore', 'backbone', 'marionette'],
 
             searchType: null,
 
-            events: {
-                'click a.search-result': 'goToResult'
-            },
-
             initialize: function ()
             {
                 // FIXME(wabain): use mergeOptions after upgrading marionette
                 this.searchType = this.getOption('searchType');
                 this.query = this.getOption('query');
-            },
-
-            goToResult: function (event)
-            {
-                var href = $(event.currentTarget).attr('href');
-
-                // Navigate to the result
-                if (href && Backbone.history.started)
-                {
-                    event.preventDefault();
-                    Backbone.history.navigate(href, {trigger: true});
-                }
             },
 
             serializeData: function()
