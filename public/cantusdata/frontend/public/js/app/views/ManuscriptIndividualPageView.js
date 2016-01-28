@@ -179,7 +179,7 @@ return Marionette.LayoutView.extend
 
         // Initialize the search view
         var chantSearchProvider = new ChantSearchProvider({
-            additionalResultFields: ['mode', 'genre']
+            additionalResultFields: ['genre', 'mode', 'feast', 'office', 'position']
         });
 
         chantSearchProvider.setRestriction('manuscript', '"' + this.model.get("siglum") + '"');

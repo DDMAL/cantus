@@ -49,7 +49,7 @@ define(["underscore",
                 // The search view that we will shove into the modal box
                 this.searchView = new SearchView({
                     providers: [new ChantSearchProvider({
-                        additionalResultFields: ['manuscript', 'mode', 'genre', 'office']
+                        additionalResultFields: ['manuscript', 'genre', 'mode', 'feast', 'office', 'position']
                     })]
                 });
 

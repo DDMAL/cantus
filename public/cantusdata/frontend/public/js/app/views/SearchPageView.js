@@ -28,7 +28,7 @@ define(["marionette",
                 // Initialize the subview
                 this.searchView = new SearchView({
                     providers: [new ChantSearchProvider({
-                        additionalResultFields: ['manuscript', 'mode', 'genre', 'office']
+                        additionalResultFields: ['manuscript', 'genre', 'mode', 'feast', 'office', 'position']
                     })],
                     searchTerm: options.searchTerm
                 });
