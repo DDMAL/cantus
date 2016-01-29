@@ -75,9 +75,6 @@ return Marionette.LayoutView.extend
         this._viewportContent = null;
     },
 
-    /**
-     * Marionette method called automatically before the destroy event happens.
-     */
     onBeforeDestroy: function()
     {
         this.destroyPopoverView();

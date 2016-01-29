@@ -18,9 +18,6 @@ function(_, Backbone, Marionette,
 
 var manuscriptChannel = Backbone.Radio.channel('manuscript');
 
-/**
- * Provide an alert message to the user.
- */
 return Marionette.LayoutView.extend({
     template: "#folio-template",
 
@@ -35,12 +32,6 @@ return Marionette.LayoutView.extend({
         error: '_handleFetchError'
     },
 
-    /**
-     *
-     *
-     * @param {type} options
-     * @returns null
-     */
     initialize: function()
     {
         this.chantCollection = new ChantCollection();
