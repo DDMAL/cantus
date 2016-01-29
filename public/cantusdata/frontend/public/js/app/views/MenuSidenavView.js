@@ -3,10 +3,14 @@ define([
     "jquery",
     "marionette",
     "backbone.radio",
-    "singletons/NavigationManager"
-], function (_, $, Marionette, Radio, NavigationManager)
+    "singletons/NavigationManager",
+    "utils/afterTransition"
+], function (_, $, Marionette, Radio, NavigationManager, afterTransition)
 {
     "use strict";
+
+    var SIDENAV_TRANSITION_MS = 300;
+    var BACKDROP_TRANSITION_MS = 150;
 
     var sidenavChannel = Radio.channel('sidenav');
 
@@ -112,34 +116,17 @@ define([
             this.ui.sidenav.addClass('sliding');
 
             this.ui.sidenav.removeClass('in');
-            this.afterTransition(this.backdrop, 300, function ()
+            afterTransition(this.backdrop, SIDENAV_TRANSITION_MS, function ()
             {
                 this.ui.sidenav.removeClass('sliding');
-            });
+            }, this);
 
             this.backdrop.removeClass('in');
-            this.afterTransition(this.backdrop, 150, function ()
+            afterTransition(this.backdrop, BACKDROP_TRANSITION_MS, function ()
             {
                 this.backdrop.remove();
                 this.backdrop = null;
-            });
-        },
-
-        /**
-         * Call the callback function after the transitions for the element have completed,
-         * or after the given number of milliseconds have elapsed if it is not possible
-         * to detect the transition end.
-         *
-         * @param {jQuery} jqElem
-         * @param {number} fallbackMs
-         * @param {function} callback Called with the view as the context
-         */
-        afterTransition: function (jqElem, fallbackMs, callback)
-        {
-            // These jQuery properties are defined by Bootstrap
-            jqElem
-                .one($.support.transition.end, _.bind(callback, this))
-                .emulateTransitionEnd(fallbackMs);
+            }, this);
         }
     });
 });

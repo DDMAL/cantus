@@ -2,15 +2,48 @@
     <td><%= result.folio %></td>
 
     <td>
-        <a href="<%= result.url %>"><%= result.name %></a>
+        <a href="<%= result.url %>" class="chant-link"><%= result.name %></a>
+        <a href="" class="quick-view" data-toggle="tooltip" title="Quick view">
+            <span class="glyphicon glyphicon-flash"></span>
+        </a>
     </td>
 
     <% _.forEach(infoFields, function (field) { %>
     <td><%= result[field.type] %></td>
     <% }); %>
 </tr>
-<% if (searchType === "volpiano" && result.volpiano !== undefined) { %>
+
+<% if (isVolpianoSearch) { %>
 <tr>
-    <td colspan="<%= infoFields.length + 2 %>"><p class="volpiano"><%= result.volpiano %></p></td>
+    <td colspan="<%- columnCount %>">
+        <div class="volpiano"><%= result.volpiano %></div>
+    </td>
 </tr>
 <% } %>
+
+<tr class="full-result-record hidden">
+    <td colspan="<%- columnCount %>">
+        <div class="full-result-record-content well">
+            <dl>
+                <dt>Cantus ID</dt>
+                <dd>
+                    <p><%- result.cantus_id %></p>
+                </dd>
+
+                <dt>Full Text</dt>
+                <dd>
+                    <p><%- result.full_text %></p>
+                </dd>
+
+                <% if (!isVolpianoSearch) { %>
+                <dt>Volpiano</dt>
+                <dd>
+                    <div class="volpiano">
+                        <%= result.volpiano %>
+                    </div>
+                </dd>
+                <% } %>
+            </dl>
+        </div>
+    </td>
+</tr>

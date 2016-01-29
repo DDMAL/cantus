@@ -137,14 +137,58 @@ pre.preformatted-text {
     overflow: hidden;
 }
 
-table.result-list th {
-    white-space: nowrap;
-    overflow: hidden;
+.result-list {
+    > thead > tr > th {
+        white-space: nowrap;
+        overflow: hidden;
+
+        // Make table headers black in the search result list, even though they're links
+        a {
+            color: inherit;
+        }
+    }
+
+    > tbody > tr > td {
+        // Hide the top border since the <tbody> acts as a delimiter
+        border-top: 0;
+    }
 }
 
-// Make table headers black in the search result list, even though they're links
-table.result-list th a {
-    color: inherit;
+
+.full-result-record {
+    .content-enter,
+    .content-exit {
+        overflow: hidden;
+        min-height: 0;
+    }
+
+    .content-enter {
+        transition: max-height 600ms cubic-bezier(0.77, 0, 0.175, 1), padding 200ms;
+    }
+
+    .content-exit {
+        transition: max-height 600ms cubic-bezier(0.77, 0, 0.175, 1), padding 200ms 400ms;
+    }
+
+    .content-enter,
+    .content-exit.content-exit-active {
+        max-height: 0;
+    }
+
+    .content-enter.content-enter-active,
+    .content-exit {
+        max-height: 900px;
+    }
+
+    .content-enter:not(.content-enter-active),
+    .content-exit.content-exit-active {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+}
+
+.full-result-record-content.well {
+    padding-bottom: 0;
 }
 
 .result-table-wrapper {

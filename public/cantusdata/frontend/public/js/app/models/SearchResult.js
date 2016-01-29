@@ -67,7 +67,9 @@ define(["underscore", "backbone"],
                             "mode",
                             "differentia",
                             "finalis",
-                            "folio"
+                            "folio",
+                            "cantus_id",
+                            "full_text"
                         ]));
 
                         if (searchType === 'volpiano')
