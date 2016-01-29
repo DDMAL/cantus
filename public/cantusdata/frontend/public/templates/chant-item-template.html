@@ -6,40 +6,5 @@
     </h4>
 </div>
 <div id="collapse-<%= sequence %>" class="panel-collapse collapse <%= isOpen() ? 'in' : '' %>">
-    <div class="panel-body">
-        <% if (cantus_id) { %>
-        <p><b>Cantus ID:</b> <%= cantus_id %></p>
-        <% } %>
-        <% if (marginalia) { %>
-        <p><b>Marginalia:</b> <%= marginalia %></p>
-        <% } %>
-        <% if (sequence) { %>
-        <p><b>Sequence: </b> <%= sequence %></p>
-        <% } %>
-        <% if (feast) { %>
-        <p><b>Feast: </b> <%= feast %></p>
-        <% } %>
-        <% if (office) { %>
-        <p><b>Office: </b> <%= office %></p>
-        <% } %>
-        <% if (genre) { %>
-        <p><b>Genre: </b> <%= genre %></p>
-        <% } %>
-        <% if (mode) { %>
-        <p><b>Mode: </b> <%= mode %></p>
-        <% } %>
-        <% if (differentia) { %>
-        <p><b>Differentia: </b> <%= differentia.replace('w', 'ω') %></p>
-        <% } %>
-        <% if (finalis) { %>
-        <p><b>Finalis: </b> <%= finalis %></p>
-        <% } %>
-        <hr/>
-        <h5>Full Text</h5>
-        <%= full_text %>
-        <% if (volpiano) { %>
-        <hr/>
-        <p class="volpiano"><%= volpiano %></p>
-        <% } %>
-    </div>
+    <div class="panel-body"></div>
 </div>

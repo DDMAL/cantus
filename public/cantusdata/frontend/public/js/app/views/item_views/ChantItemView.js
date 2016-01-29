@@ -1,15 +1,22 @@
-define(['marionette'],
-function(Marionette)
+define(['marionette', '../ChantRecordView'],
+function(Marionette, ChantRecordView)
 {
 
 "use strict";
 
 /**
- * A chant.
+ * A panel containing chant information
  */
-return Marionette.ItemView.extend({
+return Marionette.LayoutView.extend({
     template: "#chant-item-template",
+
+    // This needs to be set as the tag because Bootstrap
+    // assumes an immediate-child relationship
     tagName: 'div class="panel panel-default"',
+
+    regions: {
+        panelBody: '.panel-body'
+    },
 
     ui: {
         collapse: '.collapse'
@@ -18,6 +25,13 @@ return Marionette.ItemView.extend({
     events: {
         'hide.bs.collapse': 'triggerFoldChant',
         'show.bs.collapse': 'triggerUnfoldChant'
+    },
+
+    onRender: function ()
+    {
+        this.panelBody.show(new ChantRecordView({
+            model: this.model
+        }));
     },
 
     /**
