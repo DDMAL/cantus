@@ -35,14 +35,16 @@ function(Backbone,
         initialize: function()
         {
             // Set the initial open chant state
-            this.unfoldedChant = this.getOption('unfoldedChant');
+            var unfoldedChant = manuscriptChannel.request('chant');
 
             // Convert undefined to null and numerical strings to numbers
             /* jshint eqnull:true */
-            if (this.unfoldedChant == null)
-                this.unfoldedChant = null;
+            if (unfoldedChant == null)
+                unfoldedChant = null;
             else
-                this.unfoldedChant |= 0;
+                unfoldedChant |= 0;
+
+            this.unfoldedChant = unfoldedChant;
 
             // Unfold a chant when the global chant is changed
             this.listenTo(manuscriptChannel, 'change:chant', this.setUnfoldedChant);

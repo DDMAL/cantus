@@ -139,8 +139,7 @@ return Marionette.LayoutView.extend({
         this.folioItemRegion.show(new FolioItemView());
 
         this.chantListRegion.show(new ChantCompositeView({
-            collection: this.chantCollection,
-            unfoldedChant: manuscriptChannel.request('chant')
+            collection: this.chantCollection
         }));
 
         this.divaFolioAdvancerRegion.show(new DivaFolioAdvancerView());
