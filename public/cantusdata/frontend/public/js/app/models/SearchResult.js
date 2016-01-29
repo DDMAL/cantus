@@ -4,6 +4,10 @@ define(["underscore", "backbone"],
 
         "use strict";
 
+        /* TODO(wabain): This model class is supposed to be generic over search result types - it can handle
+         * manuscripts, chants, or whatever. In practice the only thing it's useful to search is chants.
+         * Usages of this should be replaced with the normal Chant model. */
+
         // Cache the Volpiano query which  was last turned into a regex
         var lastVolpianoQuery = null,
             lastVolpianoRegex = null,
@@ -54,10 +58,17 @@ define(["underscore", "backbone"],
                         // Build the url
                         // We have stored the manuscript name in Solr
                         newElement.manuscript = result.manuscript_name_hidden;
-                        newElement.folio = result.folio;
-                        newElement.mode = result.mode;
-                        newElement.office = result.office;
-                        newElement.genre = result.genre;
+
+                        _.extend(newElement, _.pick(result, [
+                            "feast",
+                            "office",
+                            "genre",
+                            "position",
+                            "mode",
+                            "differentia",
+                            "finalis",
+                            "folio"
+                        ]));
 
                         if (searchType === 'volpiano')
                         {
