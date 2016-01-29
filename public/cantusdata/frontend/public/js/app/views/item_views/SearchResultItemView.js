@@ -15,21 +15,15 @@ define(['underscore', 'marionette'],
             // <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/table>
             tagName: 'tbody',
 
-            searchType: null,
-
-            initialize: function ()
-            {
-                // FIXME(wabain): use mergeOptions after upgrading marionette
-                this.searchType = this.getOption('searchType');
-                this.query = this.getOption('query');
-            },
-
             serializeData: function()
             {
+                var searchType = this.getOption('searchType');
+                var query = this.getOption('query');
+
                 return {
                     infoFields: _.toArray(this.getOption('infoFields')),
-                    searchType: this.searchType,
-                    result: this.model.getFormattedData(this.searchType, this.query)
+                    searchType: searchType,
+                    result: this.model.getFormattedData(searchType, query)
                 };
             }
         });
