@@ -121,7 +121,7 @@ function(Backbone,
 
                     child = this.children.findByIndex(chant - 1);
                     if (child)
-                        child.ui.collapse.collapse('hide');
+                        child.collapseContent();
                 }
             }
             else
@@ -137,7 +137,7 @@ function(Backbone,
 
                     child = this.children.findByIndex(this.unfoldedChant - 1);
                     if (child)
-                        child.ui.collapse.collapse('show');
+                        child.expandContent();
                 }
             }
         },

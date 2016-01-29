@@ -23,8 +23,18 @@ return Marionette.LayoutView.extend({
     },
 
     events: {
-        'hide.bs.collapse': 'triggerFoldChant',
-        'show.bs.collapse': 'triggerUnfoldChant'
+        'hide.bs.collapse': '_triggerFoldChant',
+        'show.bs.collapse': '_triggerUnfoldChant'
+    },
+
+    collapseContent: function ()
+    {
+        this.ui.collapse.collapse('hide');
+    },
+
+    expandContent: function ()
+    {
+        this.ui.collapse.collapse('show');
     },
 
     onRender: function ()
@@ -54,7 +64,7 @@ return Marionette.LayoutView.extend({
     /**
      * Trigger a fold event when the chant is collapsed by Bootstrap
      */
-    triggerFoldChant: function ()
+    _triggerFoldChant: function ()
     {
         this.trigger('fold:chant');
     },
@@ -62,7 +72,7 @@ return Marionette.LayoutView.extend({
     /**
      * Trigger a unfold event when the chant is expanded by Bootstrap
      */
-    triggerUnfoldChant: function ()
+    _triggerUnfoldChant: function ()
     {
         this.trigger('unfold:chant');
     }
