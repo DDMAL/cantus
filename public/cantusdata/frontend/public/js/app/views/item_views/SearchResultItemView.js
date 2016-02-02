@@ -12,7 +12,8 @@ define(['underscore', 'jquery', 'marionette', 'utils/afterTransition'],
 
             jqElem.addClass(baseClass);
 
-            jqElem[0].offsetHeight;
+            // Force layout calculation
+            jqElem[0].offsetHeight; // jshint ignore:line
 
             jqElem.addClass(activeClass);
 
@@ -84,14 +85,6 @@ define(['underscore', 'jquery', 'marionette', 'utils/afterTransition'],
                 ).then(function ()
                 {
                     fullRecord.addClass('hidden');
-                });
-            },
-
-            _getRecordView: function ()
-            {
-                return new FullRecordView({
-                    colSpan: this._getFields().length + 2,
-                    model: this.model
                 });
             },
 
