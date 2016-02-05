@@ -4,9 +4,6 @@ from .abstract_mei_converter import AbstractMEIConverter
 
 
 class MEIConverter (AbstractMEIConverter):
-    def getLocation(self, seq, meifile, zones):
-        return AbstractMEIConverter.getLocation(self, seq, meifile, zones)
-
     def getNgramDocuments(self, mei_doc, page_number):
         zones = mei_doc.getElementsByName('zone')
 
@@ -38,13 +35,13 @@ class MEIConverter (AbstractMEIConverter):
             for j in range(0, nnotes - i):
                 seq = notes[j:j + i]
 
-                location = self.getLocation(seq, meifile, zones)
+                location = self.getLocation(seq, meifile, zones, get_neume=getNeumeElem)
 
                 # get neumes
                 neume_elems = []
 
                 for note in seq:
-                    neume_elem = note.parent.parent
+                    neume_elem = getNeumeElem(note)
 
                     if not neume_elems or neume_elem.id != neume_elems[-1].id:
                         neume_elems.append(neume_elem)
@@ -110,7 +107,7 @@ class MEIConverter (AbstractMEIConverter):
             notes = neume.getDescendantsByName('note')
 
             if len(notes) < self.min_gram:
-                location = self.getLocation(notes, meifile, zones)
+                location = self.getLocation(notes, meifile, zones, get_neume=getNeumeElem)
 
                 neume_docs.append({
                     'id': str(uuid.uuid4()),
@@ -122,3 +119,8 @@ class MEIConverter (AbstractMEIConverter):
                 })
 
         return neume_docs
+
+
+def getNeumeElem(note_elem):
+    # FIXME(wabain): This is quite fragile
+    return note_elem.parent.parent

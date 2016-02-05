@@ -89,8 +89,7 @@ class AbstractMEIConverter:
             self.idcache[mid] = meifile.getElementById(mid)
             return self.idcache[mid]
 
-    @abstractmethod
-    def getLocation(self, seq, meifile, zones):
+    def getLocation(self, seq, meifile, zones, get_neume=lambda note: note):
         """ Given a sequence of notes and the corresponding MEI Document, calculates
         and returns the json formatted list of  locations (box coordinates) to be
         stored for an instance of a pitch sequence in our CouchDB.  If the sequence
@@ -124,33 +123,31 @@ class AbstractMEIConverter:
                     endofsystem = i  # this will be the index of the first note on second system
 
                     ulx1 = int(self.findbyID(zones,
-                                             seq[0].parent.parent.getAttribute(
+                                             get_neume(seq[0]).getAttribute(
                                                      "facs").value,
                                              meifile).getAttribute("ulx").value)
-                    lrx1 = int(self.findbyID(zones, seq[
-                        i - 1].parent.parent.getAttribute("facs").value,
+                    lrx1 = int(self.findbyID(zones,
+                                             get_neume(seq[i - 1]).getAttribute("facs").value,
                                              meifile).getAttribute("lrx").value)
                     ulx2 = int(self.findbyID(zones,
-                                             seq[i].parent.parent.getAttribute(
+                                             get_neume(seq[i]).getAttribute(
                                                      "facs").value,
                                              meifile).getAttribute("ulx").value)
                     lrx2 = int(self.findbyID(zones,
-                                             seq[-1].parent.parent.getAttribute(
+                                             get_neume(seq[-1]).getAttribute(
                                                      "facs").value,
                                              meifile).getAttribute("lrx").value)
         else:  # the sequence is contained in one system and only one box needs to be highlighted
-            ulx = int(self.findbyID(zones, seq[0].parent.parent.getAttribute(
-                    "facs").value, meifile).getAttribute("ulx").value)
-            lrx = int(self.findbyID(zones, seq[-1].parent.parent.getAttribute(
-                    "facs").value, meifile).getAttribute("lrx").value)
+            ulx = int(self.findbyID(zones, get_neume(seq[0]).getAttribute("facs").value, meifile)
+                      .getAttribute("ulx").value)
+            lrx = int(self.findbyID(zones, get_neume(seq[-1]).getAttribute("facs").value, meifile)
+                      .getAttribute("lrx").value)
 
         for note in seq:
-            ulys.append(int(self.findbyID(zones,
-                                          note.parent.parent.getAttribute(
+            ulys.append(int(self.findbyID(zones, get_neume(note).getAttribute(
                                                   "facs").value,
                                           meifile).getAttribute("uly").value))
-            lrys.append(int(self.findbyID(zones,
-                                          note.parent.parent.getAttribute(
+            lrys.append(int(self.findbyID(zones, get_neume(note).getAttribute(
                                                   "facs").value,
                                           meifile).getAttribute("lry").value))
 
