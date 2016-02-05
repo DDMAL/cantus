@@ -1,7 +1,7 @@
 import uuid
 import string
 
-from .abstract_mei_converter import AbstractMEIConverter
+from .abstract_mei_converter import AbstractMEIConverter, getNeumeNames
 
 
 class StGallenMEIConverter (AbstractMEIConverter):
@@ -27,7 +27,7 @@ class StGallenMEIConverter (AbstractMEIConverter):
 
                 # get neumes without punctuation
                 # FIXME(wabain): Why do we want that?
-                n_gram_neumes = self.getNeumeNames(seq)\
+                n_gram_neumes = getNeumeNames(seq)\
                     .lower()\
                     .replace('_', ' ')\
                     .translate(string.maketrans("", ""), string.punctuation)\

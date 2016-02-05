@@ -1,6 +1,7 @@
 import uuid
 
-from .abstract_mei_converter import AbstractMEIConverter
+from .abstract_mei_converter import AbstractMEIConverter, getNeumeNames
+from .pitch_utils import getPitchNames, getContour, getIntervals
 
 
 class MEIConverter (AbstractMEIConverter):
@@ -46,10 +47,10 @@ class MEIConverter (AbstractMEIConverter):
                     if not neume_elems or neume_elem.id != neume_elems[-1].id:
                         neume_elems.append(neume_elem)
 
-                neume_names = self.getNeumeNames(neume_elems)
+                neume_names = getNeumeNames(neume_elems)
 
                 # get pitch names
-                [pnames, midipitch] = self.getPitchNames(seq)
+                [pnames, midipitch] = getPitchNames(seq)
 
                 # get semitones
                 # calculate difference between each adjacent entry in midipitch list
@@ -70,10 +71,10 @@ class MEIConverter (AbstractMEIConverter):
                 # thus the tritone is never encoded as such and will always
                 # be represented as either a fifth or a fourth, depending
                 # on inversion
-                intervals = self.getIntervals(semitones, pnames)
+                intervals = getIntervals(semitones, pnames)
 
                 # get contour - encode with Parsons code for musical contour
-                contour = self.getContour(semitones)
+                contour = getContour(semitones)
 
                 # save new document
                 mydocs.append(
