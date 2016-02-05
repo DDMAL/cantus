@@ -120,8 +120,7 @@ class StGallenMEIConverter (AbstractMEIConverter):
         print ffile
 
         page = meifile.getElementsByName('page')
-        pagen = \
-            str(ffile).split('_')[len(str(ffile).split('_')) - 1].split('.')[0]
+        pagen = self.getPageNumber(ffile)
 
         neumes = meifile.getElementsByName('neume')
 

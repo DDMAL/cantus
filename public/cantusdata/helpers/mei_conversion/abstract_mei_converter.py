@@ -261,9 +261,7 @@ class AbstractMEIConverter:
 
         meifile = pymei.documentFromFile(str(ffile), False).getMeiDocument()
 
-        # Taken directly from file name!!!
-        pagen = \
-            str(ffile).split('_')[len(str(ffile).split('_')) - 1].split('.')[0]
+        pagen = self.getPageNumber(ffile)
 
         zones = meifile.getElementsByName('zone')
 
@@ -276,6 +274,15 @@ class AbstractMEIConverter:
         self.idcache.clear()
 
         return docs
+
+    def getPageNumber(self, ffile):
+        """
+        Extract the page number from the file name
+
+        :param ffile:
+        :return: page number as a string
+        """
+        return str(ffile).split('_')[-1].split('.')[0]
 
     def getPitchSequences(self, pagen, meifile, zones):
         """Extract ngrams for note sequences from the MEI file"""
