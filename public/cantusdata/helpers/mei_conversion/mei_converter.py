@@ -41,15 +41,15 @@ class MEIConverter (AbstractMEIConverter):
                 location = self.getLocation(seq, meifile, zones)
 
                 # get neumes
-                neumes = []
+                neume_elems = []
 
                 for note in seq:
-                    neume = note.parent.parent
+                    neume_elem = note.parent.parent
 
-                    if not neumes or neume.id != neumes[-1].id:
-                        neumes.append(neume)
+                    if not neume_elems or neume_elem.id != neume_elems[-1].id:
+                        neume_elems.append(neume_elem)
 
-                neume_names = self.getNeumeNames(neumes)
+                neume_names = self.getNeumeNames(neume_elems)
 
                 # get pitch names
                 [pnames, midipitch] = self.getPitchNames(seq)
