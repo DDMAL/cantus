@@ -170,17 +170,12 @@ class AbstractMEIConverter:
             return [{"ulx": int(ulx), "uly": int(uly), "height": abs(uly - lry),
                      "width": abs(ulx - lrx)}]
 
-    @abstractmethod
-    def getNeumes(self, seq, counter):
-        """ Given a list of MEI note elements, return a string of the names of
-        the neumes seperated by underscores.
+    def getNeumeNames(self, neumes):
+        """Get the neume names in a string separated by underscores
+
+        :param neumes: A list of MEI neume elements
         """
-        neumes = str(seq[0].parent.parent.getAttribute('name').value)
-        for k in range(1, counter):
-            if seq[k].parent.parent.id != seq[k - 1].parent.parent.id:
-                neumes = neumes + '_' + str(
-                        seq[k].parent.parent.getAttribute('name').value)
-        return neumes
+        return '_'.join(str(neume.getAttribute('name').value) for neume in neumes)
 
     def getPitchNames(self, seq):
         """ Given a list of MEI note elements, return the tuple [pnames, midipitch] where pnames is a string of the

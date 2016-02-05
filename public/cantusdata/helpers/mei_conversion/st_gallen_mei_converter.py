@@ -9,16 +9,6 @@ class StGallenMEIConverter (AbstractMEIConverter):
     An MEI convereter which works with the St Gallen MEI format
     """
 
-    def getNeumes(self, seq, counter):
-        """ Given a list of MEI note elements, return a string of the names of
-        the neumes seperated by underscores.
-        """
-        neumes = str(seq[0].getAttribute('name').value)
-        for k in range(1, counter):
-            if seq[k].id != seq[k - 1].id:
-                neumes = neumes + '_' + str(seq[k].getAttribute('name').value)
-        return neumes
-
     def getLocation(self, seq, meifile, zones):
         """ Given a sequence of notes and the corresponding MEI Document, calculates
         and returns the json formatted list of  locations (box coordinates) to be
@@ -120,19 +110,20 @@ class StGallenMEIConverter (AbstractMEIConverter):
                 seq = neumes[j:j + i]
                 location = self.getLocation(seq, mei_doc, zones)
 
-                # get neumes
-                n_gram_neumes = self.getNeumes(seq, i).lower()
-                n_gram_neumes_no_punctuation = n_gram_neumes.replace(
-                        '_', ' ').translate(string.maketrans("", ""),
-                                            string.punctuation).replace(' ',
-                                                                        '_')
+                # get neumes without punctuation
+                # FIXME(wabain): Why do we want that?
+                n_gram_neumes = self.getNeumeNames(seq)\
+                    .lower()\
+                    .replace('_', ' ')\
+                    .translate(string.maketrans("", ""), string.punctuation)\
+                    .replace(' ', '_')
 
                 new_doc = {
                     'id': str(uuid.uuid4()),
                     'type': self.TYPE,
                     'siglum_slug': self.siglum_slug,
                     'folio': page_number,
-                    'neumes': n_gram_neumes_no_punctuation,
+                    'neumes': n_gram_neumes,
                     'location': str(location)
                 }
 

@@ -4,9 +4,6 @@ from .abstract_mei_converter import AbstractMEIConverter
 
 
 class MEIConverter (AbstractMEIConverter):
-    def getNeumes(self, seq, counter):
-        return AbstractMEIConverter.getNeumes(self, seq, counter)
-
     def getLocation(self, seq, meifile, zones):
         return AbstractMEIConverter.getLocation(self, seq, meifile, zones)
 
@@ -44,7 +41,15 @@ class MEIConverter (AbstractMEIConverter):
                 location = self.getLocation(seq, meifile, zones)
 
                 # get neumes
-                neumes = self.getNeumes(seq, i)
+                neumes = []
+
+                for note in seq:
+                    neume = note.parent.parent
+
+                    if not neumes or neume.id != neumes[-1].id:
+                        neumes.append(neume)
+
+                neume_names = self.getNeumeNames(neumes)
 
                 # get pitch names
                 [pnames, midipitch] = self.getPitchNames(seq)
@@ -81,7 +86,7 @@ class MEIConverter (AbstractMEIConverter):
                             'siglum_slug': self.siglum_slug,
                             'folio': pagen,
                             'pnames': pnames,
-                            'neumes': neumes,
+                            'neumes': neume_names,
                             'contour': contour,
                             'semitones': str_semitones,
                             'intervals': intervals,
