@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
 
-import uuid
 import os
 import pymei
 
