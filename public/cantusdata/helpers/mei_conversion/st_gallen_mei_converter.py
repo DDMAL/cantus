@@ -1,6 +1,5 @@
 import uuid
 import string
-import pymei
 
 from .abstract_mei_converter import AbstractMEIConverter
 
@@ -105,26 +104,10 @@ class StGallenMEIConverter (AbstractMEIConverter):
                 "width": abs(ulx - lrx)
             }]
 
-    def processMeiFile(self, ffile):
-        """
-        Process the MEI file.
+    def getNgramDocuments(self, mei_doc, page_number):
+        neumes = mei_doc.getElementsByName('neume')
 
-        :param ffile:
-        :return: list of dictionaries
-        """
-        print '\nProcessing ' + str(ffile) + '...'
-
-        meifile = pymei.documentFromFile(str(ffile), False).getMeiDocument()
-
-        print "ffile:"
-        print ffile
-
-        page = meifile.getElementsByName('page')
-        pagen = self.getPageNumber(ffile)
-
-        neumes = meifile.getElementsByName('neume')
-
-        zones = meifile.getElementsByName('zone')
+        zones = mei_doc.getElementsByName('zone')
         n_neumes = len(neumes)  # number of notes in file
         print("n_neumes: {0}, shortest_gram: {1}, longest_gram: {2}".format(
                 n_neumes, self.min_gram, self.max_gram))
@@ -135,7 +118,7 @@ class StGallenMEIConverter (AbstractMEIConverter):
             print "Processing pitch sequences..."
             for j in range(0, n_neumes - i):
                 seq = neumes[j:j + i]
-                location = self.getLocation(seq, meifile, zones)
+                location = self.getLocation(seq, mei_doc, zones)
 
                 # get neumes
                 n_gram_neumes = self.getNeumes(seq, i).lower()
@@ -148,14 +131,11 @@ class StGallenMEIConverter (AbstractMEIConverter):
                     'id': str(uuid.uuid4()),
                     'type': self.TYPE,
                     'siglum_slug': self.siglum_slug,
-                    'folio': pagen,
+                    'folio': page_number,
                     'neumes': n_gram_neumes_no_punctuation,
                     'location': str(location)
                 }
 
                 mydocs.append(new_doc)
-
-        self.systemcache.clear()
-        self.idcache.clear()
 
         return mydocs
