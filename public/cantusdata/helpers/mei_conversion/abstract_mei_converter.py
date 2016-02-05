@@ -1,3 +1,5 @@
+from abc import ABCMeta, abstractmethod
+
 import uuid
 from music21.pitch import STEPREF
 import os
@@ -5,32 +7,17 @@ from music21.interval import convertSemitoneToSpecifierGeneric
 import pymei
 
 
-class MEI2Parser():
+class AbstractMEIConverter:
     """
-    MEI2couchdb.py
+    This class extracts a record for each location (bounding box) on the page that we might want to
+    highlight in our web application. We consider all pitch sequences 2--10 notes long. If a pitch
+    sequence spans two systems, two separate bounding boxes are stored in the same record.
 
-    Usage: python MEI2couchdb directory shortest_gram longest_gram dotext
-    where directory is the path to the directory containing MEI files to munge in to the couch
-          shortest_gram and longest_gram are integers in the range 2--10 defining which dbs to add to
-          dotext is 0 if you don't want to process text
-
-    Given a directory containing MEI files, this script iterates through all the MEI files
-    and saves a new CouchDB document for each location (bounding box) on the page that we might want to
-    highlight in our web application. We consider all pitch sequences 2--10 notes long. Pitch
-    sequences of different lengths are stored in separate CouchDB databases. Originally we were
-    storing one document per n-gram and then adding to a growing array of locations (box coordinates)
-    as instances of the same pitch sequence were found. To allow for page range filtering (and improved data access), we
-    modified our organization to store a separate doocument for each location. This means that
-    several documents can have the same pitch sequence, but with different locations. If a pitch sequence
-    spans two systems, two seperate bounding boxes are stored in the same document.
-
-    Throughout this script, ulx and uly stand for upper left x and y coordinates respectively and lrx and lry stand for lower right coordinates.
-    These values define the pixels on the original page image that should be highlighted for a given item (sequence of neumes, line of text, etc.)
-
-    Author: Jessica Thompson
-
-    Made object-oriented by Andrew Fogarty.
+    Throughout this script, ulx and uly stand for upper left x and y coordinates respectively and lrx and
+    lry stand for lower right coordinates.
     """
+
+    __metaclass__ = ABCMeta
 
     folder_name = None
     siglum_slug = None
@@ -49,7 +36,7 @@ class MEI2Parser():
         'G': 7,
         'A': 9,  #9
         'B': 11,
-        }
+    }
     # I also don't know if this is right!!!
     project_id = 1
 
@@ -95,7 +82,6 @@ class MEI2Parser():
         ps = float(((oct + 1) * 12) + STEPREF[step])
         return ps
 
-
     def findbyID(self, llist, mid, meifile):
         """ Returns the object in llist that has the given id. Used for finding
         zone. pymei function get_by_facs can be used instead, but this one is
@@ -108,6 +94,7 @@ class MEI2Parser():
             self.idcache[mid] = meifile.getElementById(mid)
             return self.idcache[mid]
 
+    @abstractmethod
     def getLocation(self, seq, meifile, zones):
         """ Given a sequence of notes and the corresponding MEI Document, calculates
         and returns the json formatted list of  locations (box coordinates) to be
@@ -124,7 +111,7 @@ class MEI2Parser():
             # systemcache[seq[0]] = meifile.get_system(seq[0])
         if seq[endofsystem].getId() not in self.systemcache:
             self.systemcache[seq[endofsystem].getId()] = meifile.lookBack(
-                seq[endofsystem], "sb")
+                    seq[endofsystem], "sb")
             # systemcache[seq[endofsystem]] = meifile.get_system(seq[endofsystem])
 
         if self.systemcache[seq[0].getId()] != self.systemcache[seq[
@@ -133,7 +120,7 @@ class MEI2Parser():
             for i in range(1, len(seq)):
                 if seq[i - 1].getId() not in self.systemcache:
                     self.systemcache[seq[i - 1].getId()] = meifile.lookBack(
-                        seq[i - 1], "sb")
+                            seq[i - 1], "sb")
                 if seq[i] not in self.systemcache:
                     self.systemcache[seq[i].getId()] = meifile.lookBack(seq[i],
                                                                         "sb")
@@ -148,35 +135,35 @@ class MEI2Parser():
                     # lrx2 = int(meifile.get_by_facs(seq[-1].parent.parent.facs)[0].lrx)
                     ulx1 = int(self.findbyID(zones,
                                              seq[0].parent.parent.getAttribute(
-                                                 "facs").value,
+                                                     "facs").value,
                                              meifile).getAttribute("ulx").value)
                     lrx1 = int(self.findbyID(zones, seq[
                         i - 1].parent.parent.getAttribute("facs").value,
                                              meifile).getAttribute("lrx").value)
                     ulx2 = int(self.findbyID(zones,
                                              seq[i].parent.parent.getAttribute(
-                                                 "facs").value,
+                                                     "facs").value,
                                              meifile).getAttribute("ulx").value)
                     lrx2 = int(self.findbyID(zones,
                                              seq[-1].parent.parent.getAttribute(
-                                                 "facs").value,
+                                                     "facs").value,
                                              meifile).getAttribute("lrx").value)
         else:  # the sequence is contained in one system and only one box needs to be highlighted
             ulx = int(self.findbyID(zones, seq[0].parent.parent.getAttribute(
-                "facs").value, meifile).getAttribute("ulx").value)
+                    "facs").value, meifile).getAttribute("ulx").value)
             lrx = int(self.findbyID(zones, seq[-1].parent.parent.getAttribute(
-                "facs").value, meifile).getAttribute("lrx").value)
+                    "facs").value, meifile).getAttribute("lrx").value)
             # ulx = int(meifile.get_by_facs(seq[0].parent.parent.facs)[0].ulx)
             # lrx = int(meifile.get_by_facs(seq[-1].parent.parent.facs)[0].lrx)
 
         for note in seq:
             ulys.append(int(self.findbyID(zones,
                                           note.parent.parent.getAttribute(
-                                              "facs").value,
+                                                  "facs").value,
                                           meifile).getAttribute("uly").value))
             lrys.append(int(self.findbyID(zones,
                                           note.parent.parent.getAttribute(
-                                              "facs").value,
+                                                  "facs").value,
                                           meifile).getAttribute("lry").value))
 
         if twosystems:
@@ -195,6 +182,7 @@ class MEI2Parser():
             return [{"ulx": int(ulx), "uly": int(uly), "height": abs(uly - lry),
                      "width": abs(ulx - lrx)}]
 
+    @abstractmethod
     def getNeumes(self, seq, counter):
         """ Given a list of MEI note elements, return a string of the names of
         the neumes seperated by underscores.
@@ -203,7 +191,7 @@ class MEI2Parser():
         for k in range(1, counter):
             if seq[k].parent.parent.id != seq[k - 1].parent.parent.id:
                 neumes = neumes + '_' + str(
-                    seq[k].parent.parent.getAttribute('name').value)
+                        seq[k].parent.parent.getAttribute('name').value)
         return neumes
 
     def getPitchNames(self, seq):
@@ -215,10 +203,10 @@ class MEI2Parser():
         midipitch = []
         for note in seq:
             pnames.append(note.getAttribute("pname").value[
-                0])  # a string of pitch names e.g. 'gbd'
+                              0])  # a string of pitch names e.g. 'gbd'
             midipitch.append(int(
-                self.convertStepToPs(str(note.getAttribute("pname").value[0]),
-                                     int(note.getAttribute("oct").value))))
+                    self.convertStepToPs(str(note.getAttribute("pname").value[0]),
+                                         int(note.getAttribute("oct").value))))
         return [str("".join(pnames)), midipitch]
 
     def getIntervals(self, semitones, pnames):
@@ -252,7 +240,7 @@ class MEI2Parser():
                         size = 5
                 else:
                     size = abs(
-                        int(convertSemitoneToSpecifierGeneric(interval)[1]))
+                            int(convertSemitoneToSpecifierGeneric(interval)[1]))
 
                 intervals.append("{0}{1}".format(direction, str(size)))
 
@@ -273,34 +261,7 @@ class MEI2Parser():
                 contour = contour + 'd'  # down
         return contour
 
-    # def storeText(self, lines, zones, textdb):
-    #     """ For each line of text in the list "lines", this function gets the
-    #     corresponding box coordinates and saves the  line as a doc in the "text"
-    #     database.
-    #     """
-    #     for line in lines:
-    #         text = line.value
-    #         facs = str(line.getAttribute('facs').value)
-    #         zone = self.findbyID(zones, facs)
-    #         ulx = int(zone.ulx)
-    #         uly = int(zone.uly)
-    #         lrx = int(zone.lrx)
-    #         lry = int(zone.lry)
-    #         textdb.save(
-    #             {
-    #                 'pagen': pagen,
-    #                 'text': text,
-    #                 'location': {
-    #                     "ulx": ulx,
-    #                     "uly": uly,
-    #                     "height": abs(uly - lry),
-    #                     "width": abs(ulx - lrx)
-    #                 }
-    #             }
-    #         )
-    #     return 1
-
-
+    @abstractmethod
     def processMeiFile(self, ffile):
         """
         Process the MEI file.
@@ -312,7 +273,7 @@ class MEI2Parser():
         """
         print '\nProcessing ' + str(ffile) + '...'
 
-        meifile = pymei.documentFromFile(str(ffile)).getMeiDocument()
+        meifile = pymei.documentFromFile(str(ffile), False).getMeiDocument()
 
         # Taken directly from file name!!!
         pagen = \
@@ -389,19 +350,19 @@ class MEI2Parser():
 
                 # save new document
                 mydocs.append(
-                    {
-                        'id': str(uuid.uuid4()),
-                        'type': "cantusdata_music_notation",
-                        'siglum_slug': self.siglum_slug,
-                        'folio': pagen,
-                        # 'project': int(project_id),
-                        'pnames': pnames,
-                        'neumes': neumes,
-                        'contour': contour,
-                        'semitones': str_semitones,
-                        'intervals': intervals,
-                        'location': str(location)
-                    }
+                        {
+                            'id': str(uuid.uuid4()),
+                            'type': "cantusdata_music_notation",
+                            'siglum_slug': self.siglum_slug,
+                            'folio': pagen,
+                            # 'project': int(project_id),
+                            'pnames': pnames,
+                            'neumes': neumes,
+                            'contour': contour,
+                            'semitones': str_semitones,
+                            'intervals': intervals,
+                            'location': str(location)
+                        }
                 )
 
         return mydocs

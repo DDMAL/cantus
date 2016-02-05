@@ -3,10 +3,19 @@ import subprocess
 import csv
 
 import solr
-from django.core.management.base import BaseCommand
 
-from cantusdata import settings
+from django.core.management.base import BaseCommand
+from django.conf import settings
+
+from cantusdata.helpers.mei_conversion import MEIConverter, StGallenMEIConverter
 from cantusdata.helpers.parsers.csv_parser import CSVParser
+
+
+def convert_mei(mei_location, siglum):
+    if siglum == "ch-sgs-390" or siglum == "ch-sgs-391":
+        return StGallenMEIConverter(mei_location, siglum).parse()
+
+    return MEIConverter(mei_location, siglum).parse()
 
 
 class Command(BaseCommand):
@@ -45,25 +54,17 @@ class Command(BaseCommand):
 
         if mode == "mei_to_csv":
             self.stdout.write("Dumping MEI to CSV.")
-            if manuscript == "st_gallen_390" or manuscript == "st_gallen_391":
-                from cantusdata.helpers.parsers.gallen_mei2_parser import GallenMEI2Parser
-                parser = GallenMEI2Parser(mei_location, siglum)
-            else:
-                from cantusdata.helpers.parsers.mei2_parser import MEI2Parser
-                parser = MEI2Parser(mei_location, siglum)
-            data = parser.parse()
+
+            data = convert_mei(mei_location, siglum)
+
             self.data_to_csv(data, csv_location)
             self.stdout.write("MEI dumped to CSV.")
 
         elif mode == "mei_to_solr":
             self.stdout.write("Committing MEI to Solr.")
-            if manuscript == "st_gallen_390" or manuscript == "st_gallen_391":
-                from cantusdata.helpers.parsers.gallen_mei2_parser import GallenMEI2Parser
-                parser = GallenMEI2Parser(mei_location, siglum)
-            else:
-                from cantusdata.helpers.parsers.mei2_parser import MEI2Parser
-                parser = MEI2Parser(mei_location, siglum)
-            data = parser.parse()
+
+            data = convert_mei(mei_location, siglum)
+
             self.data_to_solr(data, solrconn)
             self.stdout.write("MEI committed to Solr.")
 

@@ -1,10 +1,14 @@
 import uuid
 import string
 import pymei
-from cantusdata.helpers.parsers.mei2_parser import MEI2Parser
+
+from .abstract_mei_converter import AbstractMEIConverter
 
 
-class GallenMEI2Parser(MEI2Parser):
+class StGallenMEIConverter (AbstractMEIConverter):
+    """
+    An MEI convereter which works with the St Gallen MEI format
+    """
 
     def getNeumes(self, seq, counter):
         """ Given a list of MEI note elements, return a string of the names of
@@ -32,7 +36,7 @@ class GallenMEI2Parser(MEI2Parser):
             # systemcache[seq[0]] = meifile.get_system(seq[0])
         if seq[endofsystem].getId() not in self.systemcache:
             self.systemcache[seq[endofsystem].getId()] = meifile.lookBack(
-                seq[endofsystem], "sb")
+                    seq[endofsystem], "sb")
             # systemcache[seq[endofsystem]] = meifile.get_system(seq[endofsystem])
 
         if self.systemcache[seq[0].getId()] != self.systemcache[
@@ -42,7 +46,7 @@ class GallenMEI2Parser(MEI2Parser):
             for i in range(1, len(seq)):
                 if seq[i - 1].getId() not in self.systemcache:
                     self.systemcache[seq[i - 1].getId()] = meifile.lookBack(
-                        seq[i - 1], "sb")
+                            seq[i - 1], "sb")
                 if seq[i] not in self.systemcache:
                     self.systemcache[seq[i].getId()] = meifile.lookBack(seq[i],
                                                                         "sb")
@@ -52,16 +56,16 @@ class GallenMEI2Parser(MEI2Parser):
                     seq[i].getId()]:
                     endofsystem = i  # this will be the index of the first note on second system
                     ulx1 = int(
-                        self.findbyID(zones, seq[0].getAttribute("facs").value,
-                                      meifile).getAttribute("ulx").value)
+                            self.findbyID(zones, seq[0].getAttribute("facs").value,
+                                          meifile).getAttribute("ulx").value)
                     lrx1 = int(self.findbyID(zones, seq[i - 1].getAttribute(
-                        "facs").value, meifile).getAttribute("lrx").value)
+                            "facs").value, meifile).getAttribute("lrx").value)
                     ulx2 = int(
-                        self.findbyID(zones, seq[i].getAttribute("facs").value,
-                                      meifile).getAttribute("ulx").value)
+                            self.findbyID(zones, seq[i].getAttribute("facs").value,
+                                          meifile).getAttribute("ulx").value)
                     lrx2 = int(
-                        self.findbyID(zones, seq[-1].getAttribute("facs").value,
-                                      meifile).getAttribute("lrx").value)
+                            self.findbyID(zones, seq[-1].getAttribute("facs").value,
+                                          meifile).getAttribute("lrx").value)
         else:  # the sequence is contained in one system and only one box needs to be highlighted
             ulx = int(self.findbyID(zones, seq[0].getAttribute("facs").value,
                                     meifile).getAttribute("ulx").value)
@@ -70,11 +74,11 @@ class GallenMEI2Parser(MEI2Parser):
 
         for note in seq:
             ulys.append(int(
-                self.findbyID(zones, note.getAttribute("facs").value,
-                              meifile).getAttribute("uly").value))
+                    self.findbyID(zones, note.getAttribute("facs").value,
+                                  meifile).getAttribute("uly").value))
             lrys.append(int(
-                self.findbyID(zones, note.getAttribute("facs").value,
-                              meifile).getAttribute("lry").value))
+                    self.findbyID(zones, note.getAttribute("facs").value,
+                                  meifile).getAttribute("lry").value))
 
         if twosystems:
             uly1 = min(ulys[:endofsystem])
@@ -82,31 +86,27 @@ class GallenMEI2Parser(MEI2Parser):
             lry1 = max(lrys[:endofsystem])
             lry2 = max(lrys[endofsystem:])
             return [{
-                        "ulx": int(ulx1),
-                        "uly": int(uly1),
-                        "height": abs(uly1 - lry1),
-                        "width": abs(ulx1 - lrx1)
-                    },
-                    {
-                        "ulx": int(ulx2),
-                        "uly": int(uly2),
-                        "height": abs(uly2 - lry2),
-                        "width": abs(ulx2 - lrx2)
-                    }]
+                "ulx": int(ulx1),
+                "uly": int(uly1),
+                "height": abs(uly1 - lry1),
+                "width": abs(ulx1 - lrx1)
+            },
+                {
+                    "ulx": int(ulx2),
+                    "uly": int(uly2),
+                    "height": abs(uly2 - lry2),
+                    "width": abs(ulx2 - lrx2)
+                }]
         else:
             uly = min(ulys)
             lry = max(lrys)
             return [{
-                        "ulx": int(ulx),
-                        "uly": int(uly),
-                        "height": abs(uly - lry),
-                        "width": abs(ulx - lrx)
-                    }]
+                "ulx": int(ulx),
+                "uly": int(uly),
+                "height": abs(uly - lry),
+                "width": abs(ulx - lrx)
+            }]
 
-    """
-    Some customizations to MEI2Parser() so that it works with the St. Gallen
-    spec.
-    """
     def processMeiFile(self, ffile):
         """
         Process the MEI file.
@@ -118,7 +118,7 @@ class GallenMEI2Parser(MEI2Parser):
         """
         print '\nProcessing ' + str(ffile) + '...'
 
-        meifile = pymei.documentFromFile(str(ffile)).getMeiDocument()
+        meifile = pymei.documentFromFile(str(ffile), False).getMeiDocument()
 
         print "ffile:"
         print ffile
@@ -133,7 +133,7 @@ class GallenMEI2Parser(MEI2Parser):
         zones = meifile.getElementsByName('zone')
         n_neumes = len(neumes)  # number of notes in file
         print("n_neumes: {0}, shortest_gram: {1}, longest_gram: {2}".format(
-            n_neumes, self.min_gram, self.max_gram))
+                n_neumes, self.min_gram, self.max_gram))
 
         mydocs = []
 
@@ -149,9 +149,9 @@ class GallenMEI2Parser(MEI2Parser):
                     # get neumes
                     n_gram_neumes = self.getNeumes(seq, i).lower()
                     n_gram_neumes_no_punctuation = n_gram_neumes.replace(
-                        '_', ' ').translate(string.maketrans("", ""),
-                                            string.punctuation).replace(' ',
-                                                                        '_')
+                            '_', ' ').translate(string.maketrans("", ""),
+                                                string.punctuation).replace(' ',
+                                                                            '_')
 
                     new_doc = {
                         'id': str(uuid.uuid4()),
@@ -161,8 +161,6 @@ class GallenMEI2Parser(MEI2Parser):
                         'neumes': n_gram_neumes_no_punctuation,
                         'location': str(location)
                     }
-
-                    print new_doc
 
                     # save new document
                     mydocs.append(new_doc)

@@ -2,6 +2,11 @@ import uuid
 import csv
 
 
+# FIXME: This is used by the gall_hack mode of the import_mei command.
+# What it's supposed to do is a mystery though, so it should probably be removed
+# after verifying it isn't needed
+
+
 class CSVParser():
     '''
     WORKAROUND CSV PARSER
