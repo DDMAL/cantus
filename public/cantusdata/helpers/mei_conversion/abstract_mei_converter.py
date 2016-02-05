@@ -37,13 +37,8 @@ class AbstractMEIConverter:
         'A': 9,  #9
         'B': 11,
     }
-    # I also don't know if this is right!!!
-    project_id = 1
 
     TYPE = "cantusdata_music_notation"
-
-    #Going to log the results
-    text_file = open("output_log.txt", "w")
 
 
     ##### Constructor #####
@@ -108,11 +103,9 @@ class AbstractMEIConverter:
         endofsystem = len(seq) - 1
         if seq[0].getId() not in self.systemcache:
             self.systemcache[seq[0].getId()] = meifile.lookBack(seq[0], "sb")
-            # systemcache[seq[0]] = meifile.get_system(seq[0])
         if seq[endofsystem].getId() not in self.systemcache:
             self.systemcache[seq[endofsystem].getId()] = meifile.lookBack(
                     seq[endofsystem], "sb")
-            # systemcache[seq[endofsystem]] = meifile.get_system(seq[endofsystem])
 
         if self.systemcache[seq[0].getId()] != self.systemcache[seq[
             endofsystem].getId()]:  #then the sequence spans two systems and we must store two seperate locations to highlight
@@ -129,10 +122,7 @@ class AbstractMEIConverter:
                 if self.systemcache[seq[i - 1].getId()] != self.systemcache[
                     seq[i].getId()]:
                     endofsystem = i  # this will be the index of the first note on second system
-                    # ulx1 = int(meifile.get_by_facs(seq[0].parent.parent.facs)[0].ulx)
-                    # lrx1 = int(meifile.get_by_facs(seq[i-1].parent.parent.facs)[0].lrx)
-                    # ulx2 = int(meifile.get_by_facs(seq[i].parent.parent.facs)[0].ulx)
-                    # lrx2 = int(meifile.get_by_facs(seq[-1].parent.parent.facs)[0].lrx)
+
                     ulx1 = int(self.findbyID(zones,
                                              seq[0].parent.parent.getAttribute(
                                                      "facs").value,
@@ -153,8 +143,6 @@ class AbstractMEIConverter:
                     "facs").value, meifile).getAttribute("ulx").value)
             lrx = int(self.findbyID(zones, seq[-1].parent.parent.getAttribute(
                     "facs").value, meifile).getAttribute("lrx").value)
-            # ulx = int(meifile.get_by_facs(seq[0].parent.parent.facs)[0].ulx)
-            # lrx = int(meifile.get_by_facs(seq[-1].parent.parent.facs)[0].lrx)
 
         for note in seq:
             ulys.append(int(self.findbyID(zones,
@@ -267,8 +255,6 @@ class AbstractMEIConverter:
         Process the MEI file.
 
         :param ffile:
-        :param shortest_gram: int representing shortest gram length
-        :param longest_gram: int representing longest gram length
         :return: list of dictionaries
         """
         print '\nProcessing ' + str(ffile) + '...'
@@ -352,10 +338,9 @@ class AbstractMEIConverter:
                 mydocs.append(
                         {
                             'id': str(uuid.uuid4()),
-                            'type': "cantusdata_music_notation",
+                            'type': self.TYPE,
                             'siglum_slug': self.siglum_slug,
                             'folio': pagen,
-                            # 'project': int(project_id),
                             'pnames': pnames,
                             'neumes': neumes,
                             'contour': contour,

@@ -33,11 +33,9 @@ class StGallenMEIConverter (AbstractMEIConverter):
         endofsystem = len(seq) - 1
         if seq[0].getId() not in self.systemcache:
             self.systemcache[seq[0].getId()] = meifile.lookBack(seq[0], "sb")
-            # systemcache[seq[0]] = meifile.get_system(seq[0])
         if seq[endofsystem].getId() not in self.systemcache:
             self.systemcache[seq[endofsystem].getId()] = meifile.lookBack(
                     seq[endofsystem], "sb")
-            # systemcache[seq[endofsystem]] = meifile.get_system(seq[endofsystem])
 
         if self.systemcache[seq[0].getId()] != self.systemcache[
             seq[endofsystem].getId()]:
@@ -112,8 +110,6 @@ class StGallenMEIConverter (AbstractMEIConverter):
         Process the MEI file.
 
         :param ffile:
-        :param shortest_gram: int representing shortest gram length
-        :param longest_gram: int representing longest gram length
         :return: list of dictionaries
         """
         print '\nProcessing ' + str(ffile) + '...'
@@ -127,7 +123,6 @@ class StGallenMEIConverter (AbstractMEIConverter):
         pagen = \
             str(ffile).split('_')[len(str(ffile).split('_')) - 1].split('.')[0]
 
-        # We are going
         neumes = meifile.getElementsByName('neume')
 
         zones = meifile.getElementsByName('zone')
@@ -138,34 +133,28 @@ class StGallenMEIConverter (AbstractMEIConverter):
         mydocs = []
 
         for i in range(self.min_gram, self.max_gram + 1):
-            # comment out this line if you want to process files that aren't
-            # already in the couch
-            lrows = 0
-            if lrows == 0:
-                print "Processing pitch sequences..."
-                for j in range(0, n_neumes - i):
-                    seq = neumes[j:j + i]
-                    location = self.getLocation(seq, meifile, zones)
-                    # get neumes
-                    n_gram_neumes = self.getNeumes(seq, i).lower()
-                    n_gram_neumes_no_punctuation = n_gram_neumes.replace(
-                            '_', ' ').translate(string.maketrans("", ""),
-                                                string.punctuation).replace(' ',
-                                                                            '_')
+            print "Processing pitch sequences..."
+            for j in range(0, n_neumes - i):
+                seq = neumes[j:j + i]
+                location = self.getLocation(seq, meifile, zones)
 
-                    new_doc = {
-                        'id': str(uuid.uuid4()),
-                        'type': "cantusdata_music_notation",
-                        'siglum_slug': self.siglum_slug,
-                        'folio': pagen,
-                        'neumes': n_gram_neumes_no_punctuation,
-                        'location': str(location)
-                    }
+                # get neumes
+                n_gram_neumes = self.getNeumes(seq, i).lower()
+                n_gram_neumes_no_punctuation = n_gram_neumes.replace(
+                        '_', ' ').translate(string.maketrans("", ""),
+                                            string.punctuation).replace(' ',
+                                                                        '_')
 
-                    # save new document
-                    mydocs.append(new_doc)
-            else:
-                print 'page ' + str(pagen) + ' already processed\n'
+                new_doc = {
+                    'id': str(uuid.uuid4()),
+                    'type': self.TYPE,
+                    'siglum_slug': self.siglum_slug,
+                    'folio': pagen,
+                    'neumes': n_gram_neumes_no_punctuation,
+                    'location': str(location)
+                }
+
+                mydocs.append(new_doc)
 
         self.systemcache.clear()
         self.idcache.clear()
