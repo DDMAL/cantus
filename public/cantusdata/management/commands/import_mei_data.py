@@ -8,7 +8,6 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 
 from cantusdata.helpers.mei_conversion import MEIConverter, StGallenMEIConverter
-from cantusdata.helpers.parsers.csv_parser import CSVParser
 
 
 def convert_mei(mei_location, siglum):
@@ -74,11 +73,6 @@ class Command(BaseCommand):
 
         elif mode == "csv_to_solr":
             self.csv_to_solr(csv_location)
-
-        elif mode == "gall_hack":
-            data = CSVParser("data_dumps/hacky_csv_mei/csg_390_ordered_2.csv",
-                             "ch-sgs-390").parse()
-            self.data_to_solr(data, solrconn)
 
         else:
             raise Exception("Please provide mode!")
