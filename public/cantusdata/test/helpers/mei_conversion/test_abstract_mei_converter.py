@@ -1,7 +1,7 @@
 import os
 import pymei
 from django.test import TestCase
-from cantusdata.helpers.mei_conversion.abstract_mei_converter import AbstractMEIConverter
+from cantusdata.helpers.mei_conversion.abstract_mei_converter import AbstractMEIConverter, LookupCache
 
 
 RESOURCE_PATH = os.path.normpath(os.path.join(os.path.dirname(__file__), '../../../../test_data'))
@@ -40,8 +40,7 @@ class GetLocationTestCase (TestCase):
         self.assertListEqual(loc, expected)
 
     def getLocation(self, doc, seq, get_neume=lambda note: note):
-        zones = doc.getElementsByName('zone')
-        return StubbedConverter('dummy', 'dummy').getLocation(seq, doc, zones, get_neume=get_neume)
+        return StubbedConverter('dummy', 'dummy').getLocation(seq, LookupCache(doc), get_neume=get_neume)
 
 
 def getDocument(resource):

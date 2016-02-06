@@ -19,9 +19,6 @@ class AbstractMEIConverter:
     folder_name = None
     siglum_slug = None
 
-    systemcache = {}
-    idcache = {}
-
     TYPE = "cantusdata_music_notation"
 
 
@@ -35,19 +32,7 @@ class AbstractMEIConverter:
         self.max_gram = max_gram
 
     #*****************************FUNCTIONS*******************************
-    def findbyID(self, llist, mid, meifile):
-        """ Returns the object in llist that has the given id. Used for finding
-        zone. pymei function get_by_facs can be used instead, but this one is
-        faster.
-        """
-        if mid in self.idcache:
-            return self.idcache[mid]
-        else:
-            # idcache[mid] = llist[(i for i, obj in enumerate(llist) if obj.id == mid).next()]
-            self.idcache[mid] = meifile.getElementById(mid)
-            return self.idcache[mid]
-
-    def getLocation(self, seq, meifile, zones, get_neume=lambda note: note):
+    def getLocation(self, seq, cache, get_neume=lambda note: note):
         """ Given a sequence of notes and the corresponding MEI Document, calculates
         and returns the json formatted list of  locations (box coordinates) to be
         stored for an instance of a pitch sequence in our CouchDB.  If the sequence
@@ -58,56 +43,29 @@ class AbstractMEIConverter:
         lrys = []
         twosystems = 0
         endofsystem = len(seq) - 1
-        if seq[0].getId() not in self.systemcache:
-            self.systemcache[seq[0].getId()] = meifile.lookBack(seq[0], "sb")
-        if seq[endofsystem].getId() not in self.systemcache:
-            self.systemcache[seq[endofsystem].getId()] = meifile.lookBack(
-                    seq[endofsystem], "sb")
 
-        if self.systemcache[seq[0].getId()] != self.systemcache[seq[
-            endofsystem].getId()]:  #then the sequence spans two systems and we must store two seperate locations to highlight
+        if cache.getSystemId(seq[0]) != cache.getSystemId(seq[endofsystem]):
+            # Then the sequence spans two systems and we must store two separate locations to highlight
             twosystems = 1
             for i in range(1, len(seq)):
-                if seq[i - 1].getId() not in self.systemcache:
-                    self.systemcache[seq[i - 1].getId()] = meifile.lookBack(
-                            seq[i - 1], "sb")
-                if seq[i] not in self.systemcache:
-                    self.systemcache[seq[i].getId()] = meifile.lookBack(seq[i],
-                                                                        "sb")
-
                 # find the last note on the first system and the first note on the second system
-                if self.systemcache[seq[i - 1].getId()] != self.systemcache[
-                    seq[i].getId()]:
+                if cache.getSystemId(seq[i - 1]) != cache.getSystemId(seq[i]):
                     endofsystem = i  # this will be the index of the first note on second system
 
-                    ulx1 = int(self.findbyID(zones,
-                                             get_neume(seq[0]).getAttribute(
-                                                     "facs").value,
-                                             meifile).getAttribute("ulx").value)
-                    lrx1 = int(self.findbyID(zones,
-                                             get_neume(seq[i - 1]).getAttribute("facs").value,
-                                             meifile).getAttribute("lrx").value)
-                    ulx2 = int(self.findbyID(zones,
-                                             get_neume(seq[i]).getAttribute(
-                                                     "facs").value,
-                                             meifile).getAttribute("ulx").value)
-                    lrx2 = int(self.findbyID(zones,
-                                             get_neume(seq[-1]).getAttribute(
-                                                     "facs").value,
-                                             meifile).getAttribute("lrx").value)
-        else:  # the sequence is contained in one system and only one box needs to be highlighted
-            ulx = int(self.findbyID(zones, get_neume(seq[0]).getAttribute("facs").value, meifile)
-                      .getAttribute("ulx").value)
-            lrx = int(self.findbyID(zones, get_neume(seq[-1]).getAttribute("facs").value, meifile)
-                      .getAttribute("lrx").value)
+                    ulx1 = int(cache.getNeumeZone(get_neume(seq[0])).getAttribute("ulx").value)
+                    lrx1 = int(cache.getNeumeZone(get_neume(seq[i - 1])).getAttribute("lrx").value)
+                    ulx2 = int(cache.getNeumeZone(get_neume(seq[i])).getAttribute("ulx").value)
+                    lrx2 = int(cache.getNeumeZone(get_neume(seq[-1])).getAttribute("lrx").value)
+        else:
+            # The sequence is contained in one system and only one box needs to be highlighted
+            ulx = int(cache.getNeumeZone(get_neume(seq[0])).getAttribute("ulx").value)
+            lrx = int(cache.getNeumeZone(get_neume(seq[-1])).getAttribute("lrx").value)
 
         for note in seq:
-            ulys.append(int(self.findbyID(zones, get_neume(note).getAttribute(
-                                                  "facs").value,
-                                          meifile).getAttribute("uly").value))
-            lrys.append(int(self.findbyID(zones, get_neume(note).getAttribute(
-                                                  "facs").value,
-                                          meifile).getAttribute("lry").value))
+            zone = cache.getNeumeZone(get_neume(note))
+
+            ulys.append(int(zone.getAttribute("uly").value))
+            lrys.append(int(zone.getAttribute("lry").value))
 
         if twosystems:
             uly1 = min(ulys[:endofsystem])
@@ -138,9 +96,6 @@ class AbstractMEIConverter:
         page_number = getPageNumber(ffile)
 
         docs = self.getNgramDocuments(mei_doc, page_number)
-
-        self.systemcache.clear()
-        self.idcache.clear()
 
         return docs
 
@@ -174,6 +129,30 @@ class AbstractMEIConverter:
         for ffile in meifiles:
             output.append(self.processMeiFile(ffile))
         return output
+
+
+class LookupCache:
+    """Utility for quick lookup of systems and zones"""
+    def __init__(self, doc):
+        self._doc = doc
+        self._zones = {zone.getId(): zone for zone in doc.getElementsByName('zone')}
+        self._system_cache = {}
+
+    def getNeumeZone(self, neume):
+        return self._zones[neume.getAttribute('facs').value]
+
+    def getSystemId(self, elem):
+        elem_id = elem.getId()
+
+        try:
+            return self._system_cache[elem_id]
+        except KeyError:
+            system = elem.lookBack('sb')
+            system_id = system.getId() if system else None
+
+            self._system_cache[elem_id] = system_id
+            return system_id
+
 
 
 def getPageNumber(ffile):

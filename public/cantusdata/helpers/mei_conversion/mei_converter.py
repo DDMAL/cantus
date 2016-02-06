@@ -1,21 +1,21 @@
 import uuid
 
-from .abstract_mei_converter import AbstractMEIConverter, getNeumeNames
+from .abstract_mei_converter import AbstractMEIConverter, LookupCache, getNeumeNames
 from .pitch_utils import getPitchNames, getContour, getIntervals
 
 
 class MEIConverter (AbstractMEIConverter):
     def getNgramDocuments(self, mei_doc, page_number):
-        zones = mei_doc.getElementsByName('zone')
+        cache = LookupCache(mei_doc)
 
-        docs = self.getPitchSequences(page_number, mei_doc, zones)
+        docs = self.getPitchSequences(page_number, mei_doc, cache)
 
         if self.min_gram > 1:
-            docs.extend(self.getShortNeumes(page_number, mei_doc, zones))
+            docs.extend(self.getShortNeumes(page_number, mei_doc, cache))
 
         return docs
 
-    def getPitchSequences(self, pagen, meifile, zones):
+    def getPitchSequences(self, pagen, meifile, cache):
         """Extract ngrams for note sequences from the MEI file"""
         notes = meifile.getElementsByName('note')
         nnotes = len(notes)  # number of notes in file
@@ -36,7 +36,7 @@ class MEIConverter (AbstractMEIConverter):
             for j in range(0, nnotes - i):
                 seq = notes[j:j + i]
 
-                location = self.getLocation(seq, meifile, zones, get_neume=getNeumeElem)
+                location = self.getLocation(seq, cache, get_neume=getNeumeElem)
 
                 # get neumes
                 neume_elems = []
@@ -94,7 +94,7 @@ class MEIConverter (AbstractMEIConverter):
 
         return mydocs
 
-    def getShortNeumes(self, pagen, meifile, zones):
+    def getShortNeumes(self, pagen, meifile, cache):
         """Extract single neumes whose note sequences are too short to be ngrams.
 
         Usually it is possible to do single neume search using the records
@@ -108,7 +108,7 @@ class MEIConverter (AbstractMEIConverter):
             notes = neume.getDescendantsByName('note')
 
             if len(notes) < self.min_gram:
-                location = self.getLocation(notes, meifile, zones, get_neume=getNeumeElem)
+                location = self.getLocation(notes, cache, get_neume=getNeumeElem)
 
                 neume_docs.append({
                     'id': str(uuid.uuid4()),

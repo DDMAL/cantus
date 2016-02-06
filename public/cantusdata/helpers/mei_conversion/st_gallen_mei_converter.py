@@ -1,7 +1,7 @@
 import uuid
 import string
 
-from .abstract_mei_converter import AbstractMEIConverter, getNeumeNames
+from .abstract_mei_converter import AbstractMEIConverter, LookupCache, getNeumeNames
 
 
 class StGallenMEIConverter (AbstractMEIConverter):
@@ -10,9 +10,10 @@ class StGallenMEIConverter (AbstractMEIConverter):
     """
 
     def getNgramDocuments(self, mei_doc, page_number):
+        cache = LookupCache(mei_doc)
+
         neumes = mei_doc.getElementsByName('neume')
 
-        zones = mei_doc.getElementsByName('zone')
         n_neumes = len(neumes)  # number of notes in file
         print("n_neumes: {0}, shortest_gram: {1}, longest_gram: {2}".format(
                 n_neumes, self.min_gram, self.max_gram))
@@ -23,7 +24,7 @@ class StGallenMEIConverter (AbstractMEIConverter):
             print "Processing pitch sequences..."
             for j in range(0, n_neumes - i):
                 seq = neumes[j:j + i]
-                location = self.getLocation(seq, mei_doc, zones)
+                location = self.getLocation(seq, cache)
 
                 # get neumes without punctuation
                 # FIXME(wabain): Why do we want that?
