@@ -1,6 +1,7 @@
 import uuid
 
-from .abstract_mei_converter import AbstractMEIConverter, LookupCache, getNeumeNames
+from .abstract_mei_converter import AbstractMEIConverter, getNeumeNames
+from .location_utils import getLocation, LookupCache
 from .pitch_utils import getPitchNames, getContour, getIntervals
 
 
@@ -36,7 +37,7 @@ class MEIConverter (AbstractMEIConverter):
             for j in range(0, nnotes - i):
                 seq = notes[j:j + i]
 
-                location = self.getLocation(seq, cache, get_neume=getNeumeElem)
+                location = getLocation(seq, cache, get_neume=getNeumeElem)
 
                 # get neumes
                 neume_elems = []
@@ -108,7 +109,7 @@ class MEIConverter (AbstractMEIConverter):
             notes = neume.getDescendantsByName('note')
 
             if len(notes) < self.min_gram:
-                location = self.getLocation(notes, cache, get_neume=getNeumeElem)
+                location = getLocation(notes, cache, get_neume=getNeumeElem)
 
                 neume_docs.append({
                     'id': str(uuid.uuid4()),

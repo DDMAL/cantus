@@ -1,7 +1,8 @@
 import uuid
 import string
 
-from .abstract_mei_converter import AbstractMEIConverter, LookupCache, getNeumeNames
+from .abstract_mei_converter import AbstractMEIConverter, getNeumeNames
+from .location_utils import getLocation, LookupCache
 
 
 class StGallenMEIConverter (AbstractMEIConverter):
@@ -24,7 +25,7 @@ class StGallenMEIConverter (AbstractMEIConverter):
             print "Processing pitch sequences..."
             for j in range(0, n_neumes - i):
                 seq = neumes[j:j + i]
-                location = self.getLocation(seq, cache)
+                location = getLocation(seq, cache)
 
                 # get neumes without punctuation
                 # FIXME(wabain): Why do we want that?

@@ -1,15 +1,11 @@
 import os
 import pymei
 from django.test import TestCase
-from cantusdata.helpers.mei_conversion.abstract_mei_converter import AbstractMEIConverter, LookupCache
+
+from cantusdata.helpers.mei_conversion.location_utils import getLocation, LookupCache
 
 
 RESOURCE_PATH = os.path.normpath(os.path.join(os.path.dirname(__file__), '../../../../test_data'))
-
-
-class StubbedConverter (AbstractMEIConverter):
-    def getNgramDocuments(self, mei_doc, page_number):
-        return []
 
 
 class GetLocationTestCase (TestCase):
@@ -40,7 +36,7 @@ class GetLocationTestCase (TestCase):
         self.assertListEqual(loc, expected)
 
     def getLocation(self, doc, seq, get_neume=lambda note: note):
-        return StubbedConverter('dummy', 'dummy').getLocation(seq, LookupCache(doc), get_neume=get_neume)
+        return getLocation(seq, LookupCache(doc), get_neume=get_neume)
 
 
 def getDocument(resource):
