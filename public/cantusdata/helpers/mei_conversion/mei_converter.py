@@ -1,24 +1,22 @@
 import uuid
 
 from .abstract_mei_converter import AbstractMEIConverter, getNeumeNames
-from .location_utils import getLocation, LookupCache
+from .location_utils import getLocation
 from .pitch_utils import getPitchNames, getContour, getIntervals
 
 
 class MEIConverter (AbstractMEIConverter):
-    def getNgramDocuments(self, mei_doc, page_number):
-        cache = LookupCache(mei_doc)
-
-        docs = self.getPitchSequences(page_number, mei_doc, cache)
+    def process(self):
+        docs = self.getPitchSequences()
 
         if self.min_gram > 1:
-            docs.extend(self.getShortNeumes(page_number, mei_doc, cache))
+            docs.extend(self.getShortNeumes())
 
         return docs
 
-    def getPitchSequences(self, pagen, meifile, cache):
+    def getPitchSequences(self):
         """Extract ngrams for note sequences from the MEI file"""
-        notes = meifile.getElementsByName('note')
+        notes = self.doc.getElementsByName('note')
         nnotes = len(notes)  # number of notes in file
 
         mydocs = []
@@ -37,7 +35,7 @@ class MEIConverter (AbstractMEIConverter):
             for j in range(0, nnotes - i):
                 seq = notes[j:j + i]
 
-                location = getLocation(seq, cache, get_neume=getNeumeElem)
+                location = getLocation(seq, self.cache, get_neume=getNeumeElem)
 
                 # get neumes
                 neume_elems = []
@@ -83,7 +81,7 @@ class MEIConverter (AbstractMEIConverter):
                             'id': str(uuid.uuid4()),
                             'type': self.TYPE,
                             'siglum_slug': self.siglum_slug,
-                            'folio': pagen,
+                            'folio': self.page_number,
                             'pnames': pnames,
                             'neumes': neume_names,
                             'contour': contour,
@@ -95,7 +93,7 @@ class MEIConverter (AbstractMEIConverter):
 
         return mydocs
 
-    def getShortNeumes(self, pagen, meifile, cache):
+    def getShortNeumes(self):
         """Extract single neumes whose note sequences are too short to be ngrams.
 
         Usually it is possible to do single neume search using the records
@@ -105,17 +103,17 @@ class MEIConverter (AbstractMEIConverter):
         """
         neume_docs = []
 
-        for neume in meifile.getElementsByName('neume'):
+        for neume in self.doc.getElementsByName('neume'):
             notes = neume.getDescendantsByName('note')
 
             if len(notes) < self.min_gram:
-                location = getLocation(notes, cache, get_neume=getNeumeElem)
+                location = getLocation(notes, self.cache, get_neume=getNeumeElem)
 
                 neume_docs.append({
                     'id': str(uuid.uuid4()),
                     'type': "cantusdata_music_notation",
                     'siglum_slug': self.siglum_slug,
-                    'folio': pagen,
+                    'folio': self.page_number,
                     'neumes': str(neume.getAttribute('name').value),
                     'location': str(location)
                 })

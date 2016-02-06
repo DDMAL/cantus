@@ -1,62 +1,37 @@
+import os
 from abc import ABCMeta, abstractmethod
 
-import os
 import pymei
+
+from .location_utils import LookupCache
+
+
+DEFAULT_MIN_GRAM = 2
+DEFAULT_MAX_GRAM = 10
 
 
 class AbstractMEIConverter:
-    """
-    This class extracts a record for each location (bounding box) on the page that we might want to
-    highlight in our web application. We consider all pitch sequences 2--10 notes long. If a pitch
-    sequence spans two systems, two separate bounding boxes are stored in the same record.
-
-    Throughout this script, ulx and uly stand for upper left x and y coordinates respectively and lrx and
-    lry stand for lower right coordinates.
-    """
-
     __metaclass__ = ABCMeta
-
-    folder_name = None
-    siglum_slug = None
 
     TYPE = "cantusdata_music_notation"
 
-
-    ##### Constructor #####
-
-    def __init__(self, folder_name, siglum_slug, min_gram=2, max_gram=10):
-        self.folder_name = folder_name
+    def __init__(self, file_name, siglum_slug, min_gram=DEFAULT_MIN_GRAM, max_gram=DEFAULT_MAX_GRAM):
+        self.file_name = file_name
         self.siglum_slug = siglum_slug
 
         self.min_gram = min_gram
         self.max_gram = max_gram
 
-    def processMeiFile(self, ffile):
-        """
-        Process the MEI file.
+        self.doc = pymei.documentFromFile(str(file_name), False).getMeiDocument()
+        self.page_number = getPageNumber(file_name)
 
-        :param ffile:
-        :return: list of dictionaries
-        """
-        print '\nProcessing ' + str(ffile) + '...'
+        self.cache = LookupCache(self.doc)
 
-        mei_doc = pymei.documentFromFile(str(ffile), False).getMeiDocument()
-        page_number = getPageNumber(ffile)
-
-        docs = self.getNgramDocuments(mei_doc, page_number)
-
-        return docs
-
-    @abstractmethod
-    def getNgramDocuments(self, mei_doc, page_number):
-        raise NotImplementedError('getNgramDocuments()')
-
-    def parse(self):
-        path = self.folder_name
-
+    @classmethod
+    def convert(cls, directory, siglum_slug, min_gram=DEFAULT_MIN_GRAM, max_gram=DEFAULT_MAX_GRAM):
         # Generate list of files to process, preferring human-corrected MEI files
         meifiles = []
-        for bd, dn, fn in os.walk(path):
+        for bd, dn, fn in os.walk(directory):
             if ".git" in bd:
                 continue
             for f in fn:
@@ -71,9 +46,18 @@ class AbstractMEIConverter:
         # Iterate through each MEI file in directory
         # This list will represent one manuscript
         output = []
-        for ffile in meifiles:
-            output.append(self.processMeiFile(ffile))
+
+        for file_name in meifiles:
+            print '\nProcessing ' + str(file_name) + '...'
+
+            inst = cls(file_name, siglum_slug, min_gram, max_gram)
+            output.append(inst.process())
+
         return output
+
+    @abstractmethod
+    def process(self):
+        raise NotImplementedError('process()')
 
 
 def getPageNumber(ffile):

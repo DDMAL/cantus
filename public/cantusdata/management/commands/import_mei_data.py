@@ -12,10 +12,14 @@ from cantusdata.helpers.parsers.csv_parser import CSVParser
 
 
 def convert_mei(mei_location, siglum):
-    if siglum == "ch-sgs-390" or siglum == "ch-sgs-391":
-        return StGallenMEIConverter(mei_location, siglum).parse()
+    return get_converter(siglum).convert(mei_location, siglum)
 
-    return MEIConverter(mei_location, siglum).parse()
+
+def get_converter(siglum):
+    if siglum == "ch-sgs-390" or siglum == "ch-sgs-391":
+        return StGallenMEIConverter
+
+    return MEIConverter
 
 
 class Command(BaseCommand):
