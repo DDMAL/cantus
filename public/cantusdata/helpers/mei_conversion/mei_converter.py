@@ -2,7 +2,7 @@ import uuid
 
 from .abstract_mei_converter import AbstractMEIConverter, getNeumeNames
 from .location_utils import getLocation
-from .pitch_utils import getPitchNames, getContour, getIntervals
+from .pitch_utils import getPitches, getContour, getIntervals
 
 
 class MEIConverter (AbstractMEIConverter):
@@ -49,7 +49,7 @@ class MEIConverter (AbstractMEIConverter):
                 neume_names = getNeumeNames(neume_elems)
 
                 # get pitch names
-                [pnames, midipitch] = getPitchNames(seq)
+                [pnames, midipitch] = getPitches(seq)
 
                 # get semitones
                 # calculate difference between each adjacent entry in midipitch list
