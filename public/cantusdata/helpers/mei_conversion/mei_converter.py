@@ -7,93 +7,57 @@ from .pitch_utils import getPitches, getContour, getIntervals
 
 class MEIConverter (AbstractMEIConverter):
     def process(self):
-        docs = self.getPitchSequences()
+        docs = self._get_pitch_sequences()
 
         if self.min_gram > 1:
-            docs.extend(self.getShortNeumes())
+            docs.extend(self._get_short_neumes())
 
         return docs
 
-    def getPitchSequences(self):
-        """Extract ngrams for note sequences from the MEI file"""
+    def _get_pitch_sequences(self):
         notes = self.doc.getElementsByName('note')
-        nnotes = len(notes)  # number of notes in file
+        note_count = len(notes)
 
-        mydocs = []
+        docs = []
 
         for i in range(self.min_gram, self.max_gram + 1):
-
-            #*******************TEST************************
-            # for note in notes:
-            #             s = meifile.get_system(note)
-            #             neume = str(note.parent.parent.attribute_by_name('name').value)
-            #             print 'pitch: '+ str(note.pitch[0])+ ' neume: ' + neume + " system: " +str(s)
-            #***********************************************
-
             print "Processing pitch sequences... "
-            # for j,note in enumerate(notes):
-            for j in range(0, nnotes - i):
-                seq = notes[j:j + i]
 
-                location = getLocation(seq, self.cache, get_neume=getNeumeElem)
+            for j in range(0, note_count - i):
+                docs.append(self._process_sequence(notes[j:j + i]))
 
-                # get neumes
-                neume_elems = []
+        return docs
 
-                for note in seq:
-                    neume_elem = getNeumeElem(note)
+    def _process_sequence(self, seq):
+        neume_elems = _get_distinct_neume_elems(seq)
+        neume_names = getNeumeNames(neume_elems)
 
-                    if not neume_elems or neume_elem.id != neume_elems[-1].id:
-                        neume_elems.append(neume_elem)
+        pnames, midipitch = getPitches(seq)
 
-                neume_names = getNeumeNames(neume_elems)
+        semitones = [m - n for n, m in
+                     zip(midipitch[:-1], midipitch[1:])]
 
-                # get pitch names
-                [pnames, midipitch] = getPitches(seq)
+        str_semitones = '_'.join(str(s) for s in semitones[1:-1])
 
-                # get semitones
-                # calculate difference between each adjacent entry in midipitch list
-                semitones = [m - n for n, m in
-                             zip(midipitch[:-1], midipitch[1:])]
-                str_semitones = str(semitones)[
-                                1:-1]  # string will be stored instead of array for easy searching
-                str_semitones = str_semitones.replace(', ', '_')
+        intervals = getIntervals(semitones, pnames)
+        contour = getContour(semitones)
 
-                # get quality invariant interval name and direction
-                # for example, an ascending major second and an ascending
-                # minor second will both be encoded as 'u2'
+        location = getLocation(seq, self.cache, get_neume=_get_neume_elem)
 
-                # the only tritone to occur would be between b and f, in the
-                #  context of this application we will assume that the be
-                # will always be sung as b flat
+        return {
+            'id': str(uuid.uuid4()),
+            'type': self.TYPE,
+            'siglum_slug': self.siglum_slug,
+            'folio': self.page_number,
+            'pnames': pnames,
+            'neumes': neume_names,
+            'contour': contour,
+            'semitones': str_semitones,
+            'intervals': intervals,
+            'location': str(location)
+        }
 
-                # thus the tritone is never encoded as such and will always
-                # be represented as either a fifth or a fourth, depending
-                # on inversion
-                intervals = getIntervals(semitones, pnames)
-
-                # get contour - encode with Parsons code for musical contour
-                contour = getContour(semitones)
-
-                # save new document
-                mydocs.append(
-                        {
-                            'id': str(uuid.uuid4()),
-                            'type': self.TYPE,
-                            'siglum_slug': self.siglum_slug,
-                            'folio': self.page_number,
-                            'pnames': pnames,
-                            'neumes': neume_names,
-                            'contour': contour,
-                            'semitones': str_semitones,
-                            'intervals': intervals,
-                            'location': str(location)
-                        }
-                )
-
-        return mydocs
-
-    def getShortNeumes(self):
+    def _get_short_neumes(self):
         """Extract single neumes whose note sequences are too short to be ngrams.
 
         Usually it is possible to do single neume search using the records
@@ -107,7 +71,7 @@ class MEIConverter (AbstractMEIConverter):
             notes = neume.getDescendantsByName('note')
 
             if len(notes) < self.min_gram:
-                location = getLocation(notes, self.cache, get_neume=getNeumeElem)
+                location = getLocation(notes, self.cache, get_neume=_get_neume_elem)
 
                 neume_docs.append({
                     'id': str(uuid.uuid4()),
@@ -121,6 +85,18 @@ class MEIConverter (AbstractMEIConverter):
         return neume_docs
 
 
-def getNeumeElem(note_elem):
+def _get_distinct_neume_elems(notes):
+    neume_elems = []
+
+    for note in notes:
+        neume_elem = _get_neume_elem(note)
+
+        if not neume_elems or neume_elem.id != neume_elems[-1].id:
+            neume_elems.append(neume_elem)
+
+    return neume_elems
+
+
+def _get_neume_elem(note_elem):
     # FIXME(wabain): This is quite fragile
     return note_elem.parent.parent

@@ -6,22 +6,23 @@ import uuid
 import string
 
 from .abstract_mei_converter import AbstractMEIConverter, getNeumeNames
-from .location_utils import getLocation, LookupCache
+from .location_utils import getLocation
 
 
 class StGallenMEIConverter (AbstractMEIConverter):
     def process(self):
         neumes = self.doc.getElementsByName('neume')
 
-        n_neumes = len(neumes)  # number of notes in file
-        print("n_neumes: {0}, shortest_gram: {1}, longest_gram: {2}".format(
-                n_neumes, self.min_gram, self.max_gram))
+        neume_count = len(neumes)
 
-        mydocs = []
+        print("n_neumes: {0}, shortest_gram: {1}, longest_gram: {2}".format(
+                neume_count, self.min_gram, self.max_gram))
+
+        docs = []
 
         for i in range(self.min_gram, self.max_gram + 1):
             print "Processing pitch sequences..."
-            for j in range(0, n_neumes - i):
+            for j in range(0, neume_count - i):
                 seq = neumes[j:j + i]
                 location = getLocation(seq, self.cache)
 
@@ -33,15 +34,13 @@ class StGallenMEIConverter (AbstractMEIConverter):
                     .translate(string.maketrans("", ""), string.punctuation)\
                     .replace(' ', '_')
 
-                new_doc = {
+                docs.append({
                     'id': str(uuid.uuid4()),
                     'type': self.TYPE,
                     'siglum_slug': self.siglum_slug,
                     'folio': self.page_number,
                     'neumes': n_gram_neumes,
                     'location': str(location)
-                }
+                })
 
-                mydocs.append(new_doc)
-
-        return mydocs
+        return docs
