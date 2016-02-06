@@ -1,8 +1,10 @@
 import os
+from itertools import chain
+
 import pymei
 from django.test import TestCase
 
-from cantusdata.helpers.mei_conversion.location_utils import getLocation, LookupCache
+from cantusdata.helpers.mei_conversion.location_utils import getLocation, LookupCache, getCoordFromZones
 
 
 RESOURCE_PATH = os.path.normpath(os.path.join(os.path.dirname(__file__), '../../../../test_data'))
@@ -35,6 +37,26 @@ class GetLocationTestCase (TestCase):
 
         self.assertListEqual(loc, expected)
 
+    def testLocationWithMultipleSystemBreaks(self):
+        doc = getDocument('salz_001r.mei')
+
+        (sb1, sb2) = doc.getElementsByName('sb')[1:3]
+
+        peers = list(sb1.getPeers())
+        i = peers.index(sb1)
+        j = peers.index(sb2)
+
+        # FIXME: Make this less fragile
+        firstSeq = list(peers[i - 2].getDescendantsByName('note'))
+        secondSeq = list(chain.from_iterable(neume.getDescendantsByName('note') for neume in peers[i + 2:j - 1]))
+        thirdSeq = list(peers[j + 2].getDescendantsByName('note'))
+        seq = firstSeq + secondSeq + thirdSeq
+
+        loc = self.getLocation(doc, seq, get_neume=getNoteWithinNeume)
+        expected = [getCoords(part, getNoteWithinNeume) for part in (firstSeq, secondSeq, thirdSeq)]
+
+        self.assertListEqual(loc, expected)
+
     def getLocation(self, doc, seq, get_neume=lambda note: note):
         return getLocation(seq, LookupCache(doc), get_neume=get_neume)
 
@@ -55,10 +77,10 @@ def getNoteWithinNeume(note):
 def getCoords(notes, getNeume=getNoteAsNeume):
     zones = [getZoneFor(getNeume(neume)) for neume in notes]
 
-    ulx = min(getCoord(zones, 'ulx'))
-    uly = min(getCoord(zones, 'uly'))
-    lrx = max(getCoord(zones, 'lrx'))
-    lry = max(getCoord(zones, 'lry'))
+    ulx = min(getCoordFromZones(zones, 'ulx'))
+    uly = min(getCoordFromZones(zones, 'uly'))
+    lrx = max(getCoordFromZones(zones, 'lrx'))
+    lry = max(getCoordFromZones(zones, 'lry'))
 
     return {
         'ulx': ulx,
@@ -73,7 +95,3 @@ def getZoneFor(neume):
     fac = neume.getAttribute('facs').value
 
     return doc.getElementById(fac)
-
-
-def getCoord(zones, c):
-    return [int(zone.getAttribute(c).value) for zone in zones]
