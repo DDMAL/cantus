@@ -7,26 +7,22 @@ from .pitch_utils import getPitches, getContour, getIntervals
 
 class MEIConverter (AbstractMEIConverter):
     def process(self):
-        docs = self._get_pitch_sequences()
+        for doc in self._get_pitch_sequences():
+            yield doc
 
         if self.min_gram > 1:
-            docs.extend(self._get_short_neumes())
-
-        return docs
+            for doc in self._get_short_neumes():
+                yield doc
 
     def _get_pitch_sequences(self):
         notes = self.doc.getElementsByName('note')
         note_count = len(notes)
 
-        docs = []
-
         for i in range(self.min_gram, self.max_gram + 1):
             print "Processing pitch sequences... "
 
             for j in range(0, note_count - i):
-                docs.append(self._process_sequence(notes[j:j + i]))
-
-        return docs
+                yield self._process_sequence(notes[j:j + i])
 
     def _process_sequence(self, seq):
         neume_elems = _get_distinct_neume_elems(seq)
@@ -65,24 +61,20 @@ class MEIConverter (AbstractMEIConverter):
         short will only be indexed along with adjacent neumes. To be able to index
         them for single neume search we need to add them separately.
         """
-        neume_docs = []
-
         for neume in self.doc.getElementsByName('neume'):
             notes = neume.getDescendantsByName('note')
 
             if len(notes) < self.min_gram:
                 location = getLocation(notes, self.cache, get_neume=_get_neume_elem)
 
-                neume_docs.append({
+                yield {
                     'id': str(uuid.uuid4()),
                     'type': "cantusdata_music_notation",
                     'siglum_slug': self.siglum_slug,
                     'folio': self.page_number,
                     'neumes': str(neume.getAttribute('name').value),
                     'location': str(location)
-                })
-
-        return neume_docs
+                }
 
 
 def _get_distinct_neume_elems(notes):

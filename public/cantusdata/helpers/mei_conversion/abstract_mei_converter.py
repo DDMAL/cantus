@@ -43,17 +43,11 @@ class AbstractMEIConverter:
 
         meifiles.sort()
 
-        # Iterate through each MEI file in directory
-        # This list will represent one manuscript
-        output = []
-
         for file_name in meifiles:
             print '\nProcessing ' + str(file_name) + '...'
 
             inst = cls(file_name, siglum_slug, min_gram, max_gram)
-            output.append(inst.process())
-
-        return output
+            yield inst.process()
 
     @abstractmethod
     def process(self):
