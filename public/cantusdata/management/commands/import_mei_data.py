@@ -77,13 +77,18 @@ def dump_to_csv(mei_location, siglum, path):
     }
 
     with open(path, 'wb') as csv_file:
-        headings = None
         writer = None
 
         for page in convert_mei(mei_location, siglum):
             for row in page:
-                if headings is None:
+                if writer is None:
                     # We can only initialize the header once we have the first row
+
+                    # FIXME(wabain): This assumes that the first row will contain all the
+                    #   fields we're interested in, but that's not necessarily the case.
+                    #
+                    #   If the assumption breaks we'll get a ValueError: dict contains fields
+                    #   not in fieldname.
                     headings = list(sorted(row.keys(), key=lambda h: heading_order.get(h, -1)))
 
                     writer = csv.DictWriter(csv_file, headings)

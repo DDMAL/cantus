@@ -1,7 +1,7 @@
 from itertools import groupby
 
 
-def getLocation(notes, cache, get_neume=lambda note: note):
+def getLocation(tokens):
     """Get bounding boxes with the locations of the notes
 
     Given a sequence of notes and the corresponding MEI Document, calculates
@@ -12,13 +12,11 @@ def getLocation(notes, cache, get_neume=lambda note: note):
     """
     locs = []
 
-    for (_, group) in groupby(notes, cache.getSystemId):
-        zones = [cache.getNeumeZone(get_neume(note)) for note in group]
-
-        ulx = min(getCoordFromZones(zones, 'ulx'))
-        uly = min(getCoordFromZones(zones, 'uly'))
-        lrx = max(getCoordFromZones(zones, 'lrx'))
-        lry = max(getCoordFromZones(zones, 'lry'))
+    for group in getTokensBySystem(tokens):
+        ulx = min(tok.location['ulx'] for tok in group)
+        uly = min(tok.location['uly'] for tok in group)
+        lrx = max(tok.location['lrx'] for tok in group)
+        lry = max(tok.location['lry'] for tok in group)
 
         locs.append({
             'ulx': ulx,
@@ -30,28 +28,6 @@ def getLocation(notes, cache, get_neume=lambda note: note):
     return locs
 
 
-def getCoordFromZones(zones, c):
-    return [int(zone.getAttribute(c).value) for zone in zones]
-
-
-class LookupCache:
-    """Utility for quick lookup of systems and zones"""
-    def __init__(self, doc):
-        self._doc = doc
-        self._zones = {zone.getId(): zone for zone in doc.getElementsByName('zone')}
-        self._system_cache = {}
-
-    def getNeumeZone(self, neume):
-        return self._zones[neume.getAttribute('facs').value]
-
-    def getSystemId(self, elem):
-        elem_id = elem.getId()
-
-        try:
-            return self._system_cache[elem_id]
-        except KeyError:
-            system = elem.lookBack('sb')
-            system_id = system.getId() if system else None
-
-            self._system_cache[elem_id] = system_id
-            return system_id
+def getTokensBySystem(tokens):
+    for (_, group) in groupby(tokens, lambda tok: tok.system):
+        yield list(group)

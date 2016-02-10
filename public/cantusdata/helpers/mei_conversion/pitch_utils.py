@@ -70,11 +70,8 @@ def getPitches(seq):
     pnames = []
     midipitch = []
     for note in seq:
-        pnames.append(note.getAttribute("pname").value[0])  # a string of pitch names e.g. 'gbd'
-
-        step = str(note.getAttribute("pname").value[0])
-        octave = int(note.getAttribute("oct").value)
-        midipitch.append(int(convertStepToPs(step, octave)))
+        pnames.append(note.pitch_name)
+        midipitch.append(int(convertStepToPs(note.pitch_name, note.octave)))
 
     return "".join(pnames), midipitch
 

@@ -1,32 +1,45 @@
+from itertools import groupby
+
 import uuid
 
-from .abstract_mei_converter import AbstractMEIConverter, getNeumeNames
+from .abstract_mei_converter import AbstractMEIConverter
+from .mei_tokens import NeumeToken
 from .location_utils import getLocation
 from .pitch_utils import getPitches, getContour, getIntervals
 
 
 class MEIConverter (AbstractMEIConverter):
     def process(self):
-        for doc in self._get_pitch_sequences():
+        notes = []
+
+        standalone_neumes = []
+
+        for neume in NeumeToken.get_all_from_doc(self.doc):
+            neume_notes = list(neume.get_notes())
+
+            if len(neume_notes) < self.min_gram:
+                standalone_neumes.append(neume)
+
+            notes.extend(neume_notes)
+
+        for doc in self._get_note_ngrams(notes):
             yield doc
 
-        if self.min_gram > 1:
-            for doc in self._get_short_neumes():
-                yield doc
+        for neume in standalone_neumes:
+            yield self._get_neume_ngram(neume)
 
-    def _get_pitch_sequences(self):
-        notes = self.doc.getElementsByName('note')
+    def _get_note_ngrams(self, notes):
         note_count = len(notes)
 
         for i in range(self.min_gram, self.max_gram + 1):
             print "Processing pitch sequences... "
 
             for j in range(0, note_count - i):
-                yield self._process_sequence(notes[j:j + i])
+                yield self._get_note_ngram(notes[j:j + i])
 
-    def _process_sequence(self, seq):
-        neume_elems = _get_distinct_neume_elems(seq)
-        neume_names = getNeumeNames(neume_elems)
+    def _get_note_ngram(self, seq):
+        neumes = _get_distinct_neumes(seq)
+        neume_names = '_'.join(neume.name for neume in neumes)
 
         pnames, midipitch = getPitches(seq)
 
@@ -38,7 +51,7 @@ class MEIConverter (AbstractMEIConverter):
         intervals = getIntervals(semitones, pnames)
         contour = getContour(semitones)
 
-        location = getLocation(seq, self.cache, get_neume=_get_neume_elem)
+        location = getLocation(neumes)
 
         return {
             'id': str(uuid.uuid4()),
@@ -53,7 +66,7 @@ class MEIConverter (AbstractMEIConverter):
             'location': str(location)
         }
 
-    def _get_short_neumes(self):
+    def _get_neume_ngram(self, neume):
         """Extract single neumes whose note sequences are too short to be ngrams.
 
         Usually it is possible to do single neume search using the records
@@ -61,34 +74,17 @@ class MEIConverter (AbstractMEIConverter):
         short will only be indexed along with adjacent neumes. To be able to index
         them for single neume search we need to add them separately.
         """
-        for neume in self.doc.getElementsByName('neume'):
-            notes = neume.getDescendantsByName('note')
+        location = getLocation([neume])
 
-            if len(notes) < self.min_gram:
-                location = getLocation(notes, self.cache, get_neume=_get_neume_elem)
-
-                yield {
-                    'id': str(uuid.uuid4()),
-                    'type': "cantusdata_music_notation",
-                    'siglum_slug': self.siglum_slug,
-                    'folio': self.page_number,
-                    'neumes': str(neume.getAttribute('name').value),
-                    'location': str(location)
-                }
+        return {
+            'id': str(uuid.uuid4()),
+            'type': self.TYPE,
+            'siglum_slug': self.siglum_slug,
+            'folio': self.page_number,
+            'neumes': neume.name,
+            'location': str(location)
+        }
 
 
-def _get_distinct_neume_elems(notes):
-    neume_elems = []
-
-    for note in notes:
-        neume_elem = _get_neume_elem(note)
-
-        if not neume_elems or neume_elem.id != neume_elems[-1].id:
-            neume_elems.append(neume_elem)
-
-    return neume_elems
-
-
-def _get_neume_elem(note_elem):
-    # FIXME(wabain): This is quite fragile
-    return note_elem.parent.parent
+def _get_distinct_neumes(seq):
+    return [neume for (neume, _) in groupby(seq, lambda note: note.neume)]

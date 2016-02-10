@@ -3,9 +3,6 @@ from abc import ABCMeta, abstractmethod
 
 import pymei
 
-from .location_utils import LookupCache
-
-
 DEFAULT_MIN_GRAM = 2
 DEFAULT_MAX_GRAM = 10
 
@@ -24,8 +21,6 @@ class AbstractMEIConverter:
 
         self.doc = pymei.documentFromFile(str(file_name), False).getMeiDocument()
         self.page_number = getPageNumber(file_name)
-
-        self.cache = LookupCache(self.doc)
 
     @classmethod
     def convert(cls, directory, siglum_slug, min_gram=DEFAULT_MIN_GRAM, max_gram=DEFAULT_MAX_GRAM):
@@ -62,11 +57,3 @@ def getPageNumber(ffile):
     :return: page number as a string
     """
     return str(ffile).split('_')[-1].split('.')[0]
-
-
-def getNeumeNames(neumes):
-    """Get the neume names in a string separated by underscores
-
-    :param neumes: A list of MEI neume elements
-    """
-    return '_'.join(str(neume.getAttribute('name').value) for neume in neumes)
