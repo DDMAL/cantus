@@ -1,4 +1,4 @@
-"""Represents a single constituent of the *** indexed in an n-gram"""
+"""Represents the kinds of tokens which are used to form the n-grams indexed for search."""
 
 
 class MissingSystemBreak (object):
