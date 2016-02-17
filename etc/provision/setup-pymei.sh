@@ -14,7 +14,7 @@ fi
 
 echo "==================== INSTALLING LIBMEI ===================="
 
-apt-get install -y git cmake uuid-dev libboost-python-dev
+sudo apt-get install -y git cmake uuid-dev libboost-python-dev
 
 if [ ! -d libmei ]; then
     git clone "https://github.com/DDMAL/libmei.git" --branch v2.0.0 libmei
@@ -25,7 +25,8 @@ fi
 
     mkdir -p build; cd build
     cmake ..
-    make && make install
+    make
+    sudo make install
 
     cd ../python
 

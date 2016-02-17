@@ -24,8 +24,8 @@ django_system_dependencies=(
     libxml2-dev libxslt1-dev
     )
 
-apt-get install -y ${django_system_dependencies[@]}
-pip install virtualenv
+sudo apt-get install -y ${django_system_dependencies[@]}
+sudo pip install virtualenv
 
 
 echo "==================== INSTALLING DJANGO ===================="
@@ -39,11 +39,8 @@ echo "==================== INSTALLING DJANGO ===================="
 
     source app_env/bin/activate
 
-    # Install music21 without HTTP caching because it raises a memory error
-    pip install $( grep -v music21 requirements.txt )
-    pip --no-cache-dir install $( grep music21 requirements.txt )
-
-    pip install requirements-dev.txt
+    pip install -r requirements.txt
+    pip install -r requirements-dev.txt
 
     python manage.py makemigrations
     python manage.py migrate

@@ -12,7 +12,7 @@ else
 fi
 
 echo "Updating package listings"
-apt-get -qq update
+sudo apt-get -qq update
 
 "$ROOT/etc/provision/setup-django.sh" "$ROOT"
 "$ROOT/etc/provision/setup-solr.sh" "$ROOT"

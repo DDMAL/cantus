@@ -14,22 +14,16 @@ fi
 
 echo "=========== INSTALLING JAVA SYSTEM DEPENDENCIES ==========="
 
-apt-get install -y --no-install-recommends openjdk-7-jdk
+sudo apt-get install -y --no-install-recommends openjdk-7-jdk
 javac -version
 
-apt-get install -y maven
+sudo apt-get install -y maven
 
 
 echo "===================== INSTALLING SOLR ====================="
 
-(
-    cd "$ROOT/public/solr"
-    mvn --batch-mode install
-)
-
-
 # Set up relevant runtime paths
 if [ ! -d /var/db/solr ]; then
-    mkdir -p /var/db/solr
-    chgrp www-data /var/db/solr
+    sudo mkdir -p /var/db/solr
+    sudo chgrp www-data /var/db/solr
 fi
