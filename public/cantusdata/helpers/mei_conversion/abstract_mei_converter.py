@@ -26,34 +26,46 @@ class AbstractMEIConverter:
 
     @classmethod
     def convert(cls, directory, siglum_slug, processes=None, **options):
-        # Generate list of files to process, preferring human-corrected MEI files
-        meifiles = []
-        for bd, dn, fn in os.walk(directory):
-            if ".git" in bd:
-                continue
-            for f in fn:
-                if f.startswith("."):
-                    continue
-                if ".mei" in f:
-                    meifiles.append(os.path.join(bd, f))
-                    print "Adding {0}".format(f)
-
-        meifiles.sort()
+        mei_files = cls._get_file_list(directory)
 
         if processes == 0:
             def process_file(file_name):
                 ngrams = cls._process_file(file_name, siglum_slug, **options)
                 return file_name, ngrams
 
-            ngram_generator = (process_file(file_name) for file_name in meifiles)
+            ngram_generator = (process_file(file_name) for file_name in mei_files)
         else:
-            args = ((cls, file_name, siglum_slug, options) for file_name in meifiles)
+            args = ((cls, file_name, siglum_slug, options) for file_name in mei_files)
             pool = Pool(initializer=init_worker, processes=processes)
             ngram_generator = pool.imap(process_file_in_worker, args)
 
         for (file_name, ngrams) in ngram_generator:
             print 'Processed', file_name
             yield ngrams
+
+    @classmethod
+    def _get_file_list(cls, directory):
+        """Generate a list of files to process"""
+        mei_files = []
+
+        for root, dirs, files in os.walk(directory):
+            # Skip .git directories
+            try:
+                git_index = dirs.index('.git')
+            except ValueError:
+                pass
+            else:
+                del dirs[git_index]
+
+            for f in files:
+                if f.startswith("."):
+                    continue
+
+                if os.path.splitext(f)[1] == '.mei':
+                    mei_files.append(os.path.join(root, f))
+
+        mei_files.sort()
+        return mei_files
 
     @classmethod
     def _process_file(cls, file_name, siglum_slug, **options):
