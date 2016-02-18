@@ -27,7 +27,7 @@ class ExpandrFunctionsTestCase(TestCase):
         # Number and symbol ordering is important
         numbers = [1, 2, 3, 4, 5, 6, 7, 8]
         symbol_keys = ["*", "r", "?", "S", "T"]
-        symbols = {"*": "No music", "r": "Responsory (simple)",
+        symbols = {"*": "No music", "r": "Formulaic",
                    "?": "Uncertain", "S": "Responsory (special)",
                    "T": "Chant in Transposition"}
         max_length = 3

@@ -85,7 +85,7 @@ def expand_mode(mode_code):
     if "*" in input_list:
         mode_output.append("No music")
     if "r" in input_list:
-        mode_output.append("Responsory (simple)")
+        mode_output.append("Formulaic")
     if "?" in input_list:
         mode_output.append("Uncertain")
     if "S" in input_list:
