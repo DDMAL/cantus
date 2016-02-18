@@ -1,11 +1,18 @@
 import os
 import subprocess
 import csv
+import time
+
+import progressbar
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
 
 from cantusdata.helpers.mei_conversion import MEIConverter, StGallenMEIConverter
+
+
+UPLOAD_POLL_WAIT_SECS = 0.25
+UPLOAD_PROGRESS_STEP = 5
 
 
 class Command(BaseCommand):
@@ -44,14 +51,10 @@ class Command(BaseCommand):
             self.stdout.write("MEI dumped to CSV.")
 
         elif mode == "mei_to_solr":
-            self.stdout.write("Dumping MEI to CSV.")
             dump_to_csv(mei_location, siglum, csv_location)
-            self.stdout.write("Committing CSV to Solr.")
             upload_to_solr(csv_location)
-            self.stdout.write("MEI committed to Solr.")
 
         elif mode == "csv_to_solr":
-            self.stdout.write('Committing CSV to Solr')
             upload_to_solr(csv_location)
 
         else:
@@ -79,7 +82,13 @@ def dump_to_csv(mei_location, siglum, path):
     with open(path, 'wb') as csv_file:
         writer = None
 
-        for page in convert_mei(mei_location, siglum):
+        files, pages = convert_mei(mei_location, siglum)
+
+        prog_widgets = ['Parsing: ', progressbar.Percentage(), ' ', progressbar.Bar(), ' ', progressbar.ETA()]
+        prog_bar = progressbar.ProgressBar(widgets=prog_widgets, maxval=len(files))
+        prog_bar.start()
+
+        for page_idx, (file_name, page) in enumerate(pages):
             for row in page:
                 if writer is None:
                     # We can only initialize the header once we have the first row
@@ -96,6 +105,10 @@ def dump_to_csv(mei_location, siglum, path):
 
                 writer.writerow(row)
 
+            prog_bar.update(page_idx)
+
+        prog_bar.finish()
+
 
 def convert_mei(mei_location, siglum):
     return get_converter(siglum).convert(mei_location, siglum)
@@ -111,16 +124,43 @@ def get_converter(siglum):
 def upload_to_solr(filename):
     """Commit a CSV file to Solr using a stream"""
 
+    prog_widgets = ['Uploading... ', progressbar.BouncingBar(), ' ', progressbar.Timer(format='Time: %s')]
+    prog_bar = progressbar.ProgressBar(widgets=prog_widgets)
+    prog_bar.start()
+
     # Build the Solr upload URL
     url = ('"{server}/update?stream.file={path}&stream.contentType=text/csv;charset=utf-8&commit=true"'
             .format(server=settings.SOLR_SERVER, path=os.path.abspath(filename)))
 
     command = 'curl -s -o /dev/null -w "%{http_code}" ' + url
 
-    status = subprocess.check_output(command, shell=True)
+    proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
 
-    if not status or status[0] != '2':
-        print 'Upload failed (status {}). See the Solr logs for details.'.format(status)
+    polls = 0
+
+    while proc.returncode is None:
+        proc.poll()
+
+        polls += 1
+
+        prog_bar.update((polls * UPLOAD_PROGRESS_STEP) % prog_bar.maxval)
+        time.sleep(UPLOAD_POLL_WAIT_SECS)
+
+    prog_bar.finish()
+
+    if proc.returncode != 0:
+        failure_message = 'process returned {}'.format(proc.returncode)
     else:
-        print 'CSV upload successful.'
+        status = proc.communicate()[0]
+
+        if status[0] != '2':
+            failure_message = 'status {}'.format(status)
+
+        else:
+            failure_message = None
+
+    if failure_message is not None:
+        print 'Upload failed ({}). See the Solr logs for details.'.format(failure_message)
+    else:
+        print 'Upload successful.'
 

@@ -29,19 +29,11 @@ class AbstractMEIConverter:
         mei_files = cls._get_file_list(directory)
 
         if processes == 0:
-            def process_file(file_name):
-                ngrams = cls._process_file(file_name, siglum_slug, **options)
-                return file_name, ngrams
-
-            ngram_generator = (process_file(file_name) for file_name in mei_files)
+            processed = cls._process_in_sequence(mei_files, siglum_slug, **options)
         else:
-            args = ((cls, file_name, siglum_slug, options) for file_name in mei_files)
-            pool = Pool(initializer=init_worker, processes=processes)
-            ngram_generator = pool.imap(process_file_in_worker, args)
+            processed = cls._process_in_parallel(mei_files, siglum_slug, processes=processes, **options)
 
-        for (file_name, ngrams) in ngram_generator:
-            print 'Processed', file_name
-            yield ngrams
+        return mei_files, processed
 
     @classmethod
     def _get_file_list(cls, directory):
@@ -68,9 +60,20 @@ class AbstractMEIConverter:
         return mei_files
 
     @classmethod
-    def _process_file(cls, file_name, siglum_slug, **options):
-        print 'Processing {}...'.format(file_name)
+    def _process_in_sequence(cls, mei_files, siglum_slug, **options):
+        for file_name in mei_files:
+            ngrams = cls._process_file(file_name, siglum_slug, **options)
+            yield file_name, ngrams
 
+    @classmethod
+    def _process_in_parallel(cls, mei_files, siglum_slug, processes, **options):
+        pool = Pool(initializer=init_worker, processes=processes)
+        args = ((cls, file_name, siglum_slug, options) for file_name in mei_files)
+
+        return pool.imap(process_file_in_worker, args)
+
+    @classmethod
+    def _process_file(cls, file_name, siglum_slug, **options):
         inst = cls(file_name, siglum_slug, **options)
         return inst.process()
 
