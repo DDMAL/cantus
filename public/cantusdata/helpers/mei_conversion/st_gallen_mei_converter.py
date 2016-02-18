@@ -20,7 +20,6 @@ class StGallenMEIConverter (AbstractMEIConverter):
                 neume_count, self.min_gram, self.max_gram))
 
         for i in range(self.min_gram, self.max_gram + 1):
-            print "Processing pitch sequences..."
             for j in range(0, neume_count - i):
                 seq = neumes[j:j + i]
                 location = getLocation(seq)

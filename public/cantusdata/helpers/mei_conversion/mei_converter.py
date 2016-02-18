@@ -32,8 +32,6 @@ class MEIConverter (AbstractMEIConverter):
         note_count = len(notes)
 
         for i in range(self.min_gram, self.max_gram + 1):
-            print "Processing pitch sequences... "
-
             for j in range(0, note_count - i):
                 yield self._get_note_ngram(notes[j:j + i])
 
