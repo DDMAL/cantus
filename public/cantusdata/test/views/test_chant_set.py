@@ -1,6 +1,9 @@
-from cantusdata.helpers.solr_result_parsing import remove_all_solr_metadata
+from unittest import skip
+
 from rest_framework.test import APITestCase
 from rest_framework import status
+
+from cantusdata.helpers.solr_result_parsing import remove_all_solr_metadata
 
 
 class FolioChantSetViewTestCase(APITestCase):
@@ -10,6 +13,7 @@ class FolioChantSetViewTestCase(APITestCase):
     def setUp(self):
         self.client.login(username="ahankins", password="hahaha")
 
+    @skip('dummy data conflicts with other data in Solr (broken encapsulation)')
     def test_get(self):
         response = self.client.get("/chant-set/folio/1/")
         # Test that we get a response
@@ -38,6 +42,7 @@ class ManuscriptChantSetTestCase(APITestCase):
     def setUp(self):
         self.client.login(username="ahankins", password="hahaha")
 
+    @skip('dummy data conflicts with other data in Solr (broken encapsulation)')
     def test_get(self):
         response = self.client.get("/chant-set/manuscript/3/")
         # Test that we get a response

@@ -33,6 +33,4 @@ class ManuscriptFolioSetViewTestCase(APITestCase):
 
     def test_get_empty_folio(self):
         response = self.client.get("/folio-set/manuscript/3/66666666666/")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Empty response is just square brackets
-        self.assertJSONEqual(response.content, "[]")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

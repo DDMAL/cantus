@@ -31,10 +31,10 @@ class ImportAllDataTestCase(TestCase):
 
     def test_import_chant_errors(self):
         # File doesn't exist
-        with self.assertRaisesMessage(NameError, 'Please provide a file name!'):
+        with self.assertRaisesMessage(ValueError, 'Please provide a file name!'):
             call_command('import_chant_data', '')
         # File doesn't exist
-        with self.assertRaisesMessage(IOError, 'File blahblahblah does not exist!'):
+        with self.assertRaisesMessage(IOError, "[Errno 2] No such file or directory: 'data_dumps/blahblahblah'"):
             call_command('import_chant_data', 'blahblahblah')
 
     def tearDown(self):

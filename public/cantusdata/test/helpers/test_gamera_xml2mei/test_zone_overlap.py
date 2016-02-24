@@ -6,9 +6,9 @@ from cantusdata.helpers.gamera_xml2mei.converter import Zone, ZoneCluster, overl
 class ZoneOverlapTest (unittest.TestCase):
     def setUp(self):
         self.zones = [
-            Zone('1', 0,  0,  10, 5), # <-- no overlap with zone 2
-            Zone('3', 10, 10, 20, 25), # <-- overlaps with zone 3
-            Zone('3', 20, 20, 30, 30), # <-- no overlap with zone 4
+            Zone('1', 0,  0,  10, 5),   # no overlap with zone 2
+            Zone('3', 10, 10, 20, 25),  # overlaps with zone 3
+            Zone('3', 20, 20, 30, 30),  # no overlap with zone 4
             Zone('4', 30, 35, 40, 40)
         ]
 
