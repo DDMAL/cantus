@@ -44,12 +44,12 @@ define(["backbone", "config/GlobalVars"],
              * @param pluginName
              * @returns {boolean}
              */
-            isPluginActivated: function(pluginName)
+            isPluginActivated: function (pluginName)
             {
                 // Grab the plugin array
                 var plugins = this.get("plugins");
                 // Check if the plugin is activated
-                return plugins.indexOf(String(pluginName)) > -1;
+                return plugins.indexOf(pluginName) > -1;
             },
 
             /**
