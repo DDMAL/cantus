@@ -54,33 +54,33 @@ class ManuscriptModelTestCase(TestCase):
         second_folio = Folio.objects.create(number="f2",
                                             manuscript=self.second_manuscript)
         # No chants
-        self.assertEqual(set(self.first_manuscript.chant_set), set())
+        self.assertEqual(set(self.first_manuscript.chant_set.all()), set())
         # One chant
         first_chant = Chant.objects.create(sequence=1,
                                            manuscript=self.first_manuscript,
                                            folio=first_folio)
-        self.assertEqual(set(self.first_manuscript.chant_set), {first_chant})
+        self.assertEqual(set(self.first_manuscript.chant_set.all()), {first_chant})
         # Two chants
         second_chant = Chant.objects.create(sequence=2,
                                             manuscript=self.first_manuscript,
                                             folio=first_folio)
-        self.assertEqual(set(self.first_manuscript.chant_set),
+        self.assertEqual(set(self.first_manuscript.chant_set.all()),
                          {first_chant, second_chant})
         # Make sure that a chant from another manuscript doesn't affect set
-        self.assertEqual(set(self.second_manuscript.chant_set), set())
+        self.assertEqual(set(self.second_manuscript.chant_set.all()), set())
         third_chant = Chant.objects.create(sequence=3,
                                            manuscript=self.second_manuscript,
                                            folio=second_folio)
-        self.assertEqual(set(self.second_manuscript.chant_set),
+        self.assertEqual(set(self.second_manuscript.chant_set.all()),
                          {third_chant})
-        self.assertEqual(set(self.first_manuscript.chant_set),
+        self.assertEqual(set(self.first_manuscript.chant_set.all()),
                          {second_chant, first_chant})
         # First deletion
         first_chant.delete()
-        self.assertEqual(set(self.first_manuscript.chant_set), {second_chant})
+        self.assertEqual(set(self.first_manuscript.chant_set.all()), {second_chant})
         # Second deletion
         second_chant.delete()
-        self.assertEqual(set(self.first_manuscript.chant_set), set())
+        self.assertEqual(set(self.first_manuscript.chant_set.all()), set())
 
     def tearDown(self):
         """
