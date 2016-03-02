@@ -7,13 +7,11 @@ define(["marionette",
         "use strict";
 
         return Marionette.CollectionView.extend({
-            tagName: 'ul',
+            tagName: 'tbody',
 
             childView: ManuscriptItemView,
-
-            // This view gets rendered in an <ul> despite not being a <li>,
-            // which is inelegant at best, but temporary
             emptyView: Marionette.ItemView.extend({
+                tagName: 'tr',
                 template: '#manuscript-collection-empty-template'
             })
         });

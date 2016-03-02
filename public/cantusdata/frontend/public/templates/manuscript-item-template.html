@@ -1,13 +1,25 @@
-<p>
-    <a href="<%= url %>"><%= provenance %>, <%= siglum %></a><br>
-    <% if (_.has(cantusUrls, siglum_slug)) { %>
-    <small class="text-muted">
-        <span class="glyphicon glyphicon-share-alt"></span>
-        <a href="<%= cantusUrls[siglum_slug] %>" target="_blank">
-            Cantus Database
-        </a>
-    </small>
-    <br>
+<td>
+    <div>
+        <div>
+            <a href="<%= url %>" <% if (primary_url_is_external) { %>target="_blank"<% } %>>
+            <%- short_name %><!--
+         --></a>
+            <% if (cantus_url) { %>
+            <a href="<%= cantus_url %>" target="_blank" data-toggle="tooltip" title="Cantus Database">
+                <small class="text-muted">
+                    <span class="glyphicon glyphicon-share-alt"></span>
+                </small>
+            </a>
+            <% } %>
+        </div>
+        <div>
+            <small><%- name %></small>
+        </div>
+    </div>
+</td>
+<td><%- date %></td>
+<td>
+    <% if (chant_count != null) { %>
+    <%- chant_count %>
     <% } %>
-    <%= name %>, <%= date %>
-</p>
+</td>

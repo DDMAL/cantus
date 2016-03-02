@@ -1,20 +1,21 @@
-define(["marionette"], function (Marionette)
+define(["underscore", "views/ManuscriptItemBaseView"], function (_, ManuscriptItemBaseView)
 {
     "use strict";
 
-    return Marionette.ItemView.extend({
-        template: '#manuscript-item-template',
-        tagName: 'li',
+    return ManuscriptItemBaseView.extend({
+        serializeData: function ()
+        {
+            var data = _.pick(this.model.attributes, 'name', 'url', 'date', 'chant_count');
 
-        templateHelpers: {
-            // Map to the Cantus URLs for the various manuscripts
-            // Let this be a warning about the danger of non-meaningful URLs, I guess
-            cantusUrls: {
-                'cdn-hsmu-m2149l4': 'http://cantus.uwaterloo.ca/source/123723',
-                'ch-sgs-390': 'http://cantus.uwaterloo.ca/source/123717',
-                'ch-sgs-391': 'http://cantus.uwaterloo.ca/source/123718',
-                'nl-uu-406': 'http://cantus.uwaterloo.ca/source/123641'
-            }
+            // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
+
+            return _.extend(data, {
+                short_name: this.model.get('provenance') + ', ' + this.model.get('siglum'),
+                primary_url_is_external: false,
+                cantus_url: this.model.getCantusUrl()
+            });
+
+            // jscs:enable
         }
     });
 });

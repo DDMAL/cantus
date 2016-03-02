@@ -19,6 +19,16 @@ define(["backbone", "config/GlobalVars"],
 
             // jscs:enable
 
+            // Map to the Cantus URLs for the various manuscripts, since we don't
+            // have any other way of getting them.
+            // Let this be a warning about the danger of non-meaningful URLs, I guess.
+            _cantusUrls: {
+                'cdn-hsmu-m2149l4': 'http://cantus.uwaterloo.ca/source/123723',
+                'ch-sgs-390': 'http://cantus.uwaterloo.ca/source/123717',
+                'ch-sgs-391': 'http://cantus.uwaterloo.ca/source/123718',
+                'nl-uu-406': 'http://cantus.uwaterloo.ca/source/123641'
+            },
+
             url: function ()
             {
                 // jshint eqnull: true
@@ -40,6 +50,15 @@ define(["backbone", "config/GlobalVars"],
                 var plugins = this.get("plugins");
                 // Check if the plugin is activated
                 return plugins.indexOf(String(pluginName)) > -1;
+            },
+
+            /**
+             * Get the URL for this manuscript in the Cantus database,
+             * if it is known
+             */
+            getCantusUrl: function ()
+            {
+                return this._cantusUrls[this.get('siglum_slug')] || null;
             }
         });
     }
