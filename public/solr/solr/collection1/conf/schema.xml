@@ -146,9 +146,6 @@
     <field name="incipit" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="full_text" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="volpiano" type="volpiano_general" indexed="true" stored="true" multiValued="false" />
-
-     <!-- Fields related to concordances  -->
-    <field name="concordance_citation" type="text_general" indexed="true" stored="true" />
     <field name="concordances" type="string" indexed="true" stored="true" multiValued="true" />
 
      <!-- Fields related to OMR Data -->
