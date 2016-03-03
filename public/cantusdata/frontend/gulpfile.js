@@ -261,5 +261,6 @@ function lintJS()
     return gulp.src(sources.buildJS.concat('public/js/app/**/*.js'))
         .pipe(gulpif((/\.spec\.js$/), eslint(testEslintConfig), eslint()))
         .pipe(eslint.format())
-        .pipe(jscs());
+        .pipe(jscs())
+        .pipe(jscs.reporter());
 }
