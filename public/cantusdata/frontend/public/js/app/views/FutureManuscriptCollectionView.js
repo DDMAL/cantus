@@ -1,11 +1,9 @@
-define(["marionette", "views/ManuscriptItemBaseView", "views/futureManuscripts"],
-function(Marionette, ManuscriptItemBaseView, futureManuscripts)
-{
-    'use strict';
+import Marionette from "marionette";
+import ManuscriptItemBaseView from "views/ManuscriptItemBaseView";
+import futureManuscripts from "views/futureManuscripts";
 
-    return Marionette.CollectionView.extend({
-        tagName: 'tbody',
-        childView: ManuscriptItemBaseView,
-        collection: futureManuscripts
-    });
+export default Marionette.CollectionView.extend({
+    tagName: 'tbody',
+    childView: ManuscriptItemBaseView,
+    collection: futureManuscripts
 });

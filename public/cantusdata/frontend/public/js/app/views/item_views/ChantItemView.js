@@ -1,13 +1,10 @@
-define(['marionette', '../ChantRecordView'],
-function(Marionette, ChantRecordView)
-{
-
-"use strict";
+import Marionette from 'marionette';
+import ChantRecordView from '../ChantRecordView';
 
 /**
  * A panel containing chant information
  */
-return Marionette.LayoutView.extend({
+export default Marionette.LayoutView.extend({
     template: "#chant-item-template",
 
     // This needs to be set as the tag because Bootstrap
@@ -76,5 +73,4 @@ return Marionette.LayoutView.extend({
     {
         this.trigger('unfold:chant');
     }
-});
 });

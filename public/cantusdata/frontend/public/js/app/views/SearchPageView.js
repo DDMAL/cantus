@@ -1,42 +1,35 @@
-define(["marionette",
-        "views/SearchView",
-        "views/ChantSearchProvider"],
-    function(Marionette,
-             SearchView,
-             ChantSearchProvider)
+import Marionette from "marionette";
+import SearchView from "views/SearchView";
+import ChantSearchProvider from "views/ChantSearchProvider";
+
+/**
+ * This page is for searching.
+ *
+ * @constructor
+ */
+export default Marionette.LayoutView.extend({
+    template: '#search-page-template',
+
+    regions: {
+        searchRegion: '#search'
+    },
+
+    // Subviews
+    searchView: null,
+
+    initialize: function(options)
     {
-
-        "use strict";
-
-        /**
-         * This page is for searching.
-         *
-         * @constructor
-         */
-        return Marionette.LayoutView.extend({
-            template: '#search-page-template',
-
-            regions: {
-                searchRegion: '#search'
-            },
-
-            // Subviews
-            searchView: null,
-
-            initialize: function(options)
-            {
-                // Initialize the subview
-                this.searchView = new SearchView({
-                    providers: [new ChantSearchProvider({
-                        additionalResultFields: ['manuscript', 'genre', 'mode', 'feast', 'office', 'position']
-                    })],
-                    searchTerm: options.searchTerm
-                });
-            },
-
-            onRender: function()
-            {
-                this.searchRegion.show(this.searchView, {preventDestroy: true});
-            }
+        // Initialize the subview
+        this.searchView = new SearchView({
+            providers: [new ChantSearchProvider({
+                additionalResultFields: ['manuscript', 'genre', 'mode', 'feast', 'office', 'position']
+            })],
+            searchTerm: options.searchTerm
         });
-    });
+    },
+
+    onRender: function()
+    {
+        this.searchRegion.show(this.searchView, {preventDestroy: true});
+    }
+});

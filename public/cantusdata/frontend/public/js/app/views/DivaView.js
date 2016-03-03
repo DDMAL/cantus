@@ -1,28 +1,16 @@
-define(['marionette',
-        'backbone',
-        'jquery',
-        "underscore",
-        "diva",
-        "diva/plugins/highlight",
-        "diva/plugins/download",
-        "diva/plugins/canvas",
-        "diva/plugins/pagealias",
-        "utils/folioNameHelper",
-        "config/GlobalVars"],
-function(Marionette,
-         Backbone,
-         $,
-         _,
-         diva,
-         DivaHighlight,
-         DivaDownload,
-         DivaCanvas,
-         DivaPagealias,
-         folioNameHelper,
-         GlobalVars)
-{
+import Marionette from 'marionette';
+import Backbone from 'backbone';
+import $ from 'jquery';
+import _ from "underscore";
 
-"use strict";
+import diva from "diva";
+import "diva/plugins/highlight";
+import "diva/plugins/download";
+import "diva/plugins/canvas";
+import "diva/plugins/pagealias";
+
+import folioNameHelper from "utils/folioNameHelper";
+import GlobalVars from "config/GlobalVars";
 
 /** Define the format we expect the Diva filenames to adhere to */
 var DIVA_FILENAME_REGEX = (/^(.+)_(.*?)\.([^.]+)$/);
@@ -32,7 +20,7 @@ var manuscriptChannel = Backbone.Radio.channel('manuscript');
 /**
  * Manages the lifecycle and customization of the Diva viewer
  */
-return Marionette.ItemView.extend({
+export default Marionette.ItemView.extend({
     template: "#diva-template",
 
     ui: {
@@ -542,5 +530,4 @@ return Marionette.ItemView.extend({
 
         return components;
     }
-});
 });

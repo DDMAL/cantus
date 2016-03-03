@@ -1,15 +1,10 @@
-define(["backbone", "marionette"],
-    function(Backbone, Marionette)
-    {
+import Marionette from "marionette";
 
-    "use strict";
-
-    return Marionette.AppRouter.extend({
-        appRoutes: {
-            "manuscript/:id/": "manuscriptSingle",
-            "manuscripts/": "manuscripts",
-            "search/": "search",
-            '*path': "notFound"
-        }
-    });
+export default Marionette.AppRouter.extend({
+    appRoutes: {
+        "manuscript/:id/": "manuscriptSingle",
+        "manuscripts/": "manuscripts",
+        "search/": "search",
+        '*path': "notFound"
+    }
 });

@@ -1,14 +1,11 @@
-"use strict";
+import _ from 'underscore';
+import Backbone from 'backbone';
+
+import testSetup from 'test/setup';
+import SearchResultHeadingView from 'views/SearchResultHeadingView';
 
 describe('SearchResultHeadingView', function ()
 {
-    var testSetup = require('test/setup');
-
-    var _ = require('underscore');
-    var Backbone = require('backbone');
-
-    var SearchResultHeadingView = require('views/SearchResultHeadingView');
-
     var getDummyMetadata = _.constant({query: 'abab'});
 
     var testResponse = {

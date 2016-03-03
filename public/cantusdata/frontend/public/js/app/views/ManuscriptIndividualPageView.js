@@ -1,30 +1,14 @@
-define(['jquery',
-        'underscore',
-        'backbone.radio',
-        'marionette',
-        'diva',
-        "models/Manuscript",
-        "views/FolioView",
-        "views/DivaView",
-        "views/SearchView",
-        "views/ManuscriptDataPopoverView",
-        "views/ChantSearchProvider",
-        "views/NotationSearchProvider"],
-function($,
-         _,
-         Radio,
-         Marionette,
-         diva,
-         Manuscript,
-         FolioView,
-         DivaView,
-         SearchView,
-         ManuscriptDataPopoverView,
-         ChantSearchProvider,
-         NotationSearchProvider)
-{
-
-"use strict";
+import $ from 'jquery';
+import _ from 'underscore';
+import Radio from 'backbone.radio';
+import Marionette from 'marionette';
+import diva from 'diva';
+import FolioView from "views/FolioView";
+import DivaView from "views/DivaView";
+import SearchView from "views/SearchView";
+import ManuscriptDataPopoverView from "views/ManuscriptDataPopoverView";
+import ChantSearchProvider from "views/ChantSearchProvider";
+import NotationSearchProvider from "views/NotationSearchProvider";
 
 var manuscriptStateChannel = Radio.channel('manuscript');
 
@@ -34,7 +18,7 @@ var manuscriptStateChannel = Radio.channel('manuscript');
  *
  * @type {*|void}
  */
-return Marionette.LayoutView.extend({
+export default Marionette.LayoutView.extend({
     template: '#manuscript-template',
 
     ui: {
@@ -292,4 +276,4 @@ return Marionette.LayoutView.extend({
         this._updateViewport();
     }
 });
-});
+

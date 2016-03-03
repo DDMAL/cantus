@@ -1,24 +1,16 @@
-define(['underscore', 'backbone', 'marionette',
-        "models/Folio",
-        "collections/ChantCollection",
-        "views/collection_views/ChantCompositeView",
-        "views/DivaFolioAdvancerView",
-        "views/item_views/FolioItemView",
-        "config/GlobalVars"],
-function(_, Backbone, Marionette,
-         Folio,
-         ChantCollection,
-         ChantCompositeView,
-         DivaFolioAdvancerView,
-         FolioItemView,
-         GlobalVars)
-{
-
-"use strict";
+import _ from 'underscore';
+import Backbone from 'backbone';
+import Marionette from 'marionette';
+import Folio from "models/Folio";
+import ChantCollection from "collections/ChantCollection";
+import ChantCompositeView from "views/collection_views/ChantCompositeView";
+import DivaFolioAdvancerView from "views/DivaFolioAdvancerView";
+import FolioItemView from "views/item_views/FolioItemView";
+import GlobalVars from "config/GlobalVars";
 
 var manuscriptChannel = Backbone.Radio.channel('manuscript');
 
-return Marionette.LayoutView.extend({
+export default Marionette.LayoutView.extend({
     template: "#folio-template",
 
     regions: {
@@ -143,5 +135,4 @@ return Marionette.LayoutView.extend({
 
         this.divaFolioAdvancerRegion.show(new DivaFolioAdvancerView());
     }
-});
 });

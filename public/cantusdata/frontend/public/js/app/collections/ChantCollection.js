@@ -1,8 +1,6 @@
-define(["backbone", "models/Chant"], function(Backbone, Chant)
-{
-    'use strict';
+import Backbone from "backbone";
+import Chant from "models/Chant";
 
-    return Backbone.Collection.extend({
-        model: Chant
-    });
+export default Backbone.Collection.extend({
+    model: Chant
 });

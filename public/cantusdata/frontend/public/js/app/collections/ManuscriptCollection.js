@@ -1,8 +1,6 @@
-define(["backbone", "models/Manuscript"], function(Backbone, Manuscript)
-{
-    'use strict';
+import Backbone from "backbone";
+import Manuscript from "models/Manuscript";
 
-    return Backbone.Collection.extend({
-        model: Manuscript
-    });
+export default Backbone.Collection.extend({
+    model: Manuscript
 });

@@ -1,13 +1,10 @@
-define(["backbone"], function (Backbone)
-{
-    "use strict";
+import Backbone from "backbone";
 
-    return Backbone.Model.extend({
-        defaults: {
-            field: 'all',
-            query: '',
-            sortBy: 'folio',
-            reverseSort: false
-        }
-    });
+export default Backbone.Model.extend({
+    defaults: {
+        field: 'all',
+        query: '',
+        sortBy: 'folio',
+        reverseSort: false
+    }
 });

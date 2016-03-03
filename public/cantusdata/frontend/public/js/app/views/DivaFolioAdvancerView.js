@@ -1,13 +1,10 @@
-define(['marionette', 'jquery'],
-function(Marionette, $)
-{
-
-"use strict";
+import Marionette from 'marionette';
+import $ from 'jquery';
 
 /**
  * A widget with buttons that controls
  */
-return Marionette.ItemView.extend({
+export default Marionette.ItemView.extend({
     template: "#diva-folio-advancer-template",
     tagName: "nav",
 
@@ -79,5 +76,4 @@ return Marionette.ItemView.extend({
         // Tell Diva to go to the page specified by numberChangeFunction()
         divaData.gotoPageByIndex(numberChangeFunction(currentPageIndex));
     }
-});
 });

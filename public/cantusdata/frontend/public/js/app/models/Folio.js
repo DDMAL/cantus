@@ -1,11 +1,7 @@
-define(["backbone"], function(Backbone)
-{
+import Backbone from "backbone";
 
-    "use strict";
-
-    return Backbone.Model.extend({
-        defaults: {
-            number: null
-        }
-    });
+export default Backbone.Model.extend({
+    defaults: {
+        number: null
+    }
 });

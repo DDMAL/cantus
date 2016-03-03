@@ -1,11 +1,10 @@
-"use strict";
+import testSetup from 'test/setup';
+
+import SearchNotationResultView from './SearchNotationResultView';
+import SearchNotationResultCollection from 'collections/SearchNotationResultCollection';
 
 describe('SearchNotationResultView', function ()
 {
-    var testSetup = require('test/setup');
-    var SearchNotationResultView = require('./SearchNotationResultView');
-    var SearchNotationResultCollection = require('collections/SearchNotationResultCollection');
-
     // Fixtures
     var testParameters = {
         field: "pnames",

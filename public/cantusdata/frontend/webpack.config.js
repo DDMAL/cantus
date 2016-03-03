@@ -4,7 +4,8 @@ var path = require('path'),
     webpack = require('webpack'),
     yargs = require('yargs').argv;
 
-var APP_DIR = path.resolve(__dirname, 'public/js/app'),
+var APP_BASE_DIR = path.resolve(__dirname, 'public/js'),
+    APP_DIR = path.resolve(APP_BASE_DIR, 'app'),
     LIB_DIR = path.resolve(__dirname, 'public/node_modules'),
     TMP_DIR = path.resolve(__dirname, '.tmp');
 
@@ -65,6 +66,11 @@ module.exports = configureBuildMode({
 
     module: {
         loaders: [
+            {
+                include: [APP_BASE_DIR],
+                loader: 'babel-loader'
+            },
+
             // Export the Diva global, which for mysterious
             // reasons is defined in the utils file
             {

@@ -1,9 +1,5 @@
-define(['marionette'],
-function(Marionette)
-{
-    "use strict";
+import Marionette from 'marionette';
 
-    return Marionette.ItemView.extend({
-        template: "#chant-record-template"
-    });
+export default Marionette.ItemView.extend({
+    template: "#chant-record-template"
 });

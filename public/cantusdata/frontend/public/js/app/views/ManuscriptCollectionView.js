@@ -1,18 +1,12 @@
-define(["marionette",
-        "views/ManuscriptItemView"],
-    function(Marionette,
-             ManuscriptItemView)
-    {
+import Marionette from "marionette";
+import ManuscriptItemView from "views/ManuscriptItemView";
 
-        "use strict";
+export default Marionette.CollectionView.extend({
+    tagName: 'tbody',
 
-        return Marionette.CollectionView.extend({
-            tagName: 'tbody',
-
-            childView: ManuscriptItemView,
-            emptyView: Marionette.ItemView.extend({
-                tagName: 'tr',
-                template: '#manuscript-collection-empty-template'
-            })
-        });
-    });
+    childView: ManuscriptItemView,
+    emptyView: Marionette.ItemView.extend({
+        tagName: 'tr',
+        template: '#manuscript-collection-empty-template'
+    })
+});

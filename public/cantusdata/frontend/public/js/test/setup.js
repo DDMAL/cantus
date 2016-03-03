@@ -1,10 +1,13 @@
-// General initialization
-require('init/BackboneCustomization');
-require('App').behaviors.resize = require('behaviors/ResizeBehavior');
+// Initialization
+import 'init/BackboneCustomization';
+import App from 'App';
+import ResizeBehavior from 'behaviors/ResizeBehavior';
 
-// General test scaffolding
-var Marionette = require('marionette');
-var $ = require('jquery');
+App.behaviors.resize = ResizeBehavior;
+
+// Test scaffolding
+import Marionette from 'marionette';
+import $ from 'jquery';
 
 var testView = null;
 

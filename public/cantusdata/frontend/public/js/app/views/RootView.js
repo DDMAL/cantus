@@ -1,27 +1,22 @@
-define([
-    "marionette",
-    "views/HeaderView",
-    "views/MenuSidenavView"
-], function (Marionette, HeaderView, MenuSidenavView)
-{
-    "use strict";
+import Marionette from "marionette";
+import HeaderView from "views/HeaderView";
+import MenuSidenavView from "views/MenuSidenavView";
 
-    /** Root view for the application, parent of all other Backbone views. */
-    return Marionette.LayoutView.extend({
-        el: 'body',
+/** Root view for the application, parent of all other Backbone views. */
+export default Marionette.LayoutView.extend({
+    el: 'body',
 
-        template: false,
+    template: false,
 
-        regions: {
-            menuSidenav: '#menu-sidenav',
-            header: '#header-container',
-            mainContent: '#view-goes-here'
-        },
+    regions: {
+        menuSidenav: '#menu-sidenav',
+        header: '#header-container',
+        mainContent: '#view-goes-here'
+    },
 
-        onRender: function ()
-        {
-            this.menuSidenav.show(new MenuSidenavView());
-            this.header.show(new HeaderView());
-        }
-    });
+    onRender: function ()
+    {
+        this.menuSidenav.show(new MenuSidenavView());
+        this.header.show(new HeaderView());
+    }
 });

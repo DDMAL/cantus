@@ -1,14 +1,9 @@
-define(['marionette'],
-    function(Marionette)
-    {
+import Marionette from 'marionette';
 
-        "use strict";
-
-        /**
-         * View representing a Glyph Type with count.
-         */
-        return Marionette.ItemView.extend({
-            template: "#single-glyph-type-template",
-            tagName: "li"
-        });
-    });
+/**
+ * View representing a Glyph Type with count.
+ */
+export default Marionette.ItemView.extend({
+    template: "#single-glyph-type-template",
+    tagName: "li"
+});

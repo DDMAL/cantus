@@ -1,18 +1,15 @@
-define(['underscore', 'backbone', 'marionette', 'views/RootView'],
-    function (_, Backbone, Marionette, RootView)
+import Marionette from 'marionette';
+import RootView from 'views/RootView';
+
+var App = new Marionette.Application({
+    behaviors: {},
+
+    onBeforeStart: function ()
     {
-        "use strict";
+        // Instantiate the root view
+        this.rootView = new RootView();
+        this.rootView.render();
+    }
+});
 
-        var App = new Marionette.Application({
-            behaviors: {},
-
-            onBeforeStart: function ()
-            {
-                // Instantiate the root view
-                this.rootView = new RootView();
-                this.rootView.render();
-            }
-        });
-
-        return App;
-    });
+export default App;

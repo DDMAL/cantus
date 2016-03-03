@@ -1,15 +1,8 @@
-define(["backbone"],
-    function(Backbone)
+import Backbone from "backbone";
+
+export default Backbone.Model.extend({
+    initialize: function(url)
     {
-
-        "use strict";
-
-        return Backbone.Model.extend({
-            initialize: function(url)
-            {
-                this.url = url;
-            }
-        });
+        this.url = url;
     }
-
-);
+});
