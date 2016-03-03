@@ -1,4 +1,4 @@
-import testSetup from 'test/setup';
+import TestSetup from 'test/setup';
 
 import SearchNotationResultView from './SearchNotationResultView';
 import SearchNotationResultCollection from 'collections/SearchNotationResultCollection';
@@ -54,12 +54,12 @@ describe('SearchNotationResultView', function ()
             collection: this.collection
         });
 
-        testSetup.showView(this.view);
+        TestSetup.showView(this.view);
     });
 
     afterEach(function ()
     {
-        testSetup.clearView();
+        TestSetup.clearView();
         jasmine.Ajax.uninstall();
     });
 

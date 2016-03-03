@@ -11,33 +11,36 @@ import $ from 'jquery';
 
 var testView = null;
 
-module.exports.showView = function (view)
+export default class TestSetup
 {
-    if (testView === null)
+    static showView(view)
     {
-        var testParent = $('<div id="test-wrapper"><div id="test"></div></div>');
-        $(document.body).append(testParent);
+        if (testView === null)
+        {
+            var testParent = $('<div id="test-wrapper"><div id="test"></div></div>');
+            $(document.body).append(testParent);
 
-        testView = new Marionette.LayoutView({
-            el: testParent,
-            regions: {
-                testRegion: '#test'
-            }
-        });
+            testView = new Marionette.LayoutView({
+                el: testParent,
+                regions: {
+                    testRegion: '#test'
+                }
+            });
+        }
+        else if (testView.testRegion.currentView)
+        {
+            var err = new Error('Expected the test region to be empty');
+            err.name = 'TestSetupError';
+
+            throw err;
+        }
+
+        testView.testRegion.show(view);
     }
-    else if (testView.testRegion.currentView)
+
+    static clearView()
     {
-        var err = new Error('Expected the test region to be empty');
-        err.name = 'TestSetupError';
-
-        throw err;
+        if (testView)
+            testView.testRegion.empty();
     }
-
-    testView.testRegion.show(view);
-};
-
-module.exports.clearView = function ()
-{
-    if (testView)
-        testView.testRegion.empty();
-};
+}

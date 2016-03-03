@@ -253,12 +253,12 @@ function logWatchedChange(ev)
 function lintJS()
 {
     var testEslintConfig = {
-        configFile: 'public/js/app/.eslintrc.test.json'
+        configFile: 'public/js/.eslintrc.test.json'
     };
 
     // FIXME: this errors on jscs failure, even when we'd only
     // want it to print a warning
-    return gulp.src(sources.buildJS.concat('public/js/app/**/*.js'))
+    return gulp.src(sources.buildJS.concat('public/js/**/*.js'))
         .pipe(gulpif((/\.spec\.js$/), eslint(testEslintConfig), eslint()))
         .pipe(eslint.format())
         .pipe(jscs())

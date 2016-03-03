@@ -1,7 +1,7 @@
 import _ from 'underscore';
 import Backbone from 'backbone';
 
-import testSetup from 'test/setup';
+import TestSetup from 'test/setup';
 import SearchResultHeadingView from 'views/SearchResultHeadingView';
 
 describe('SearchResultHeadingView', function ()
@@ -27,13 +27,13 @@ describe('SearchResultHeadingView', function ()
             });
 
             this.view = new SearchResultHeadingView(opts);
-            testSetup.showView(this.view);
+            TestSetup.showView(this.view);
         };
     });
 
     afterEach(function ()
     {
-        testSetup.clearView();
+        TestSetup.clearView();
         jasmine.Ajax.uninstall();
     });
 
