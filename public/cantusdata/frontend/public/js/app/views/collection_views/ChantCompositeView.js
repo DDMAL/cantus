@@ -38,11 +38,10 @@ function(Backbone,
             var unfoldedChant = manuscriptChannel.request('chant');
 
             // Convert undefined to null and numerical strings to numbers
-            /* jshint eqnull:true */
-            if (unfoldedChant == null)
+            if (unfoldedChant == null) // eslint-disable-line eqeqeq
                 unfoldedChant = null;
             else
-                unfoldedChant |= 0;
+                unfoldedChant |= 0; // eslint-disable-line no-bitwise
 
             this.unfoldedChant = unfoldedChant;
 
@@ -59,10 +58,8 @@ function(Backbone,
          */
         childViewOptions: function (model, index)
         {
-            /* jshint eqnull:true */
-
             return {
-                open: this.unfoldedChant != null && this.unfoldedChant - 1 === index
+                open: this.unfoldedChant != null && this.unfoldedChant - 1 === index // eslint-disable-line eqeqeq
             };
         },
 
@@ -112,8 +109,7 @@ function(Backbone,
             var child;
 
             /* Check for a chant value of null or undefined */
-            /* jshint eqnull:true */
-            if (index == null)
+            if (index == null) // eslint-disable-line eqeqeq
             {
                 // If the chant is closed then collapse the chant panel
                 if (this.unfoldedChant !== null)
@@ -129,7 +125,7 @@ function(Backbone,
             else
             {
                 // Coerce to integer
-                index |= 0;
+                index |= 0; // eslint-disable-line no-bitwise
 
                 // If the chant has changed then expand the correct panel
                 // (this will automatically collapse other panels as necessary)

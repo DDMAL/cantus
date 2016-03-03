@@ -82,7 +82,7 @@ module.exports = configureBuildMode({
 
     plugins: [
         // Inject globals that Diva relies on. While this plugin applies
-        // globally, JSHint should ensure that these aren't injected in
+        // globally, ESLint should ensure that these aren't injected in
         // app code.
         new webpack.ProvidePlugin({
             diva: 'diva',

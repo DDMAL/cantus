@@ -31,8 +31,7 @@ define(["backbone", "config/GlobalVars"],
 
             url: function ()
             {
-                // jshint eqnull: true
-                if (this.id == null)
+                if (this.id == null) // eslint-disable-line eqeqeq
                     return null;
 
                 return GlobalVars.siteUrl + "manuscript/" + this.id + "/";

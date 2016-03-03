@@ -73,8 +73,6 @@ define(["underscore", "jquery", "qs", "backbone", "objects/OpenChantState", "mod
              */
             folioChanged: function ()
             {
-                /* jshint eqnull:true */
-
                 // If the chant was explicitly set in this round of updates then don't
                 // change it here (the chantChanged callback will handle the relevant
                 // state)
@@ -85,7 +83,7 @@ define(["underscore", "jquery", "qs", "backbone", "objects/OpenChantState", "mod
                 var folio = this.get('folio');
 
                 // Ensure that the manuscript and folio are not null or undefined
-                if (manuscript == null || folio == null)
+                if (manuscript == null || folio == null) // eslint-disable-line eqeqeq
                     return;
 
                 var currentChant = this.get('chant');
@@ -104,13 +102,11 @@ define(["underscore", "jquery", "qs", "backbone", "objects/OpenChantState", "mod
              */
             chantChanged: function ()
             {
-                /* jshint eqnull:true */
-
                 var manuscript = this.get('manuscript');
                 var folio = this.get('folio');
 
                 // Ensure that the manuscript and folio are not null or undefined
-                if (manuscript == null || folio == null)
+                if (manuscript == null || folio == null) // eslint-disable-line eqeqeq
                     return;
 
                 this.chantStateManager.set(manuscript, folio, this.get('chant'));
@@ -167,7 +163,7 @@ define(["underscore", "jquery", "qs", "backbone", "objects/OpenChantState", "mod
 
                 // If there is no manuscript, return a promise
                 // which resolves to null
-                if (this.get('manuscript') == null)
+                if (this.get('manuscript') == null) // eslint-disable-line eqeqeq
                     return $.when(null);
 
                 var deferred = $.Deferred();

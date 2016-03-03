@@ -34,8 +34,7 @@ var manuscriptStateChannel = Radio.channel('manuscript');
  *
  * @type {*|void}
  */
-return Marionette.LayoutView.extend
-({
+return Marionette.LayoutView.extend({
     template: '#manuscript-template',
 
     ui: {
@@ -107,7 +106,7 @@ return Marionette.LayoutView.extend
             divaColumn.css('width', (100 - newWidthPercentage) + '%');
             panes.css('width', newWidthPercentage + '%');
 
-            updateDivaSize();
+            updateDivaSize(); // eslint-disable-line no-use-before-define
         };
 
         var updateDivaSize = _.throttle(function ()

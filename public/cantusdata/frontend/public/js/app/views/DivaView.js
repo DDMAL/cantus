@@ -180,11 +180,12 @@ return Marionette.ItemView.extend({
 
         if (cssWidth && cssWidth !== inner.width())
         {
-            // jshint devel:true
+            /* eslint-disable no-console */
             console.warn(
                 "Trying to mitigate a Diva zooming bug...\n" +
                 "If you're not using Chrome, you shouldn't be seeing this.\n" +
                 "See https://github.com/DDMAL/cantus/issues/206");
+            /* eslint-enable no-console */
 
             inner[0].style.width = (cssWidth + 1) + 'px';
         }
@@ -421,8 +422,7 @@ return Marionette.ItemView.extend({
                 pageList.push(pageIndex);
             }
             // Page is in the hash, so we add to it.
-            highlightsByPageHash[pageIndex].push
-            ({
+            highlightsByPageHash[pageIndex].push({
                 'width': boxSet[i].w,
                 'height': boxSet[i].h,
                 'ulx': boxSet[i].x,
@@ -432,8 +432,7 @@ return Marionette.ItemView.extend({
         // Now we need to add all of the pages to the Diva viewer
         for (var j = 0; j < pageList.length; j++)
         {
-            this.divaInstance.highlightOnPage
-            (
+            this.divaInstance.highlightOnPage(
                 pageList[j], // The page number
                 highlightsByPageHash[pageList[j]] // List of boxes
             );

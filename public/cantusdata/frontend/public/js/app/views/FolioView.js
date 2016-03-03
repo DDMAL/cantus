@@ -50,8 +50,7 @@ return Marionette.LayoutView.extend({
         var manuscript = manuscriptChannel.request('manuscript');
         var folioNumber = manuscriptChannel.request('folio');
 
-        // jshint eqnull:true
-        if (folioNumber == null || manuscript == null)
+        if (folioNumber == null || manuscript == null) // eslint-disable-line eqeqeq
         {
             return;
         }

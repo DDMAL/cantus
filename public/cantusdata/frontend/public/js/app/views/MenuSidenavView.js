@@ -98,7 +98,7 @@ define([
 
             // Force a reflow
             // The logic here follows Bootstrap's very closely
-            this.backdrop[0].offsetWidth; // jshint ignore:line
+            this.backdrop[0].offsetWidth;
 
             this.backdrop.addClass('in');
             this.ui.sidenav.addClass('in');

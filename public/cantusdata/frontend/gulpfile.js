@@ -2,7 +2,7 @@
 
 var gulp = require('gulp');
 var runSequence = require('run-sequence');
-var jshint = require('gulp-jshint');
+var eslint = require('gulp-eslint');
 var jscs = require('gulp-jscs');
 var concat = require('gulp-concat');
 var sass = require('gulp-sass');
@@ -62,7 +62,7 @@ gulp.task('build', ['build:js', 'build:css']);
 
 gulp.task('lint:js', function ()
 {
-    return lintJS().pipe(jshint.reporter('fail'));
+    return lintJS().pipe(eslint.failAfterError());
 });
 
 gulp.task('lint-nofail:js', function ()
@@ -226,9 +226,8 @@ gulp.task('clean:css', function (done)
  * Watching
  */
 
-gulp.task('watch', function (done)
+gulp.task('watch', function (done) // eslint-disable-line no-unused-vars
 {
-    // jshint unused:false
     // Never call the callback: this runs forever
 
     // Run the livereload server
@@ -253,15 +252,14 @@ function logWatchedChange(ev)
 
 function lintJS()
 {
-    // For test files, use a specialized jshintrc with jasmine enabled
-    var testConfig = JSON.parse(fs.readFileSync('./public/js/app/.jshintrc').toString());
-    testConfig.lookup = false;
-    testConfig.jasmine = true;
+    var testEslintConfig = {
+        configFile: 'public/js/app/.eslintrc.test.json'
+    };
 
     // FIXME: this errors on jscs failure, even when we'd only
     // want it to print a warning
     return gulp.src(sources.buildJS.concat('public/js/app/**/*.js'))
-        .pipe(gulpif((/.spec.js$/), jshint(testConfig), jshint({lookup: true})))
-        .pipe(jshint.reporter('jshint-stylish'))
+        .pipe(gulpif((/\.spec\.js$/), eslint(testEslintConfig), eslint()))
+        .pipe(eslint.format())
         .pipe(jscs());
 }

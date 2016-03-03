@@ -4,8 +4,7 @@ define(["backbone"],
 
         "use strict";
 
-        return Backbone.Model.extend
-        ({
+        return Backbone.Model.extend({
             initialize: function(url)
             {
                 this.url = url;

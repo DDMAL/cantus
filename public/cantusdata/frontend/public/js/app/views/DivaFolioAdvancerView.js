@@ -7,8 +7,7 @@ function(Marionette, $)
 /**
  * A widget with buttons that controls
  */
-return Marionette.ItemView.extend
-({
+return Marionette.ItemView.extend({
     template: "#diva-folio-advancer-template",
     tagName: "nav",
 

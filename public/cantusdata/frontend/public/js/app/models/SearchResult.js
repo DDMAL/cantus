@@ -118,11 +118,12 @@ define(["underscore", "backbone"],
                 var highlighted = result.replace(regex, '<span class="bg-info">$&</span>');
 
                 // If something went wrong and there is no match, fail unobtrusively
-                if (highlighted === result)
+                /* eslint-disable no-console */
+                if (highlighted === result && console && console.error)
                 {
-                    // jshint devel:true
                     console.error('Failed to find the match for', query, 'in Volpiano string', result);
                 }
+                /* eslint-enable no-console */
 
                 return highlighted;
             },

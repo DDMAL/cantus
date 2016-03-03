@@ -153,9 +153,10 @@ define(["underscore",
                     // We can't trigger a browser reload since that would probably kick off an
                     // infinite loop.
 
-                    // jshint devel:true
+                    /* eslint-disable no-console */
                     console.error('Started at unrecognized page: %s (fragment %s)', window.location.href,
                         Backbone.history.fragment);
+                    /* eslint-enable no-console */
                 }
                 else if (Backbone.history._hasPushState)
                 {

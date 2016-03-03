@@ -13,7 +13,7 @@ define(['underscore', 'jquery', 'marionette', 'utils/afterTransition'],
             jqElem.addClass(baseClass);
 
             // Force layout calculation
-            jqElem[0].offsetHeight; // jshint ignore:line
+            jqElem[0].offsetHeight;
 
             jqElem.addClass(activeClass);
 

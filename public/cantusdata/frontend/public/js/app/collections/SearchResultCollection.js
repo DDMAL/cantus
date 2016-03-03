@@ -14,12 +14,14 @@ define(["underscore", "backbone", "models/SearchResult", "config/GlobalVars"],
          */
         function cmp(a, b)
         {
-            // jshint eqeqeq:false
+            /* eslint-disable eqeqeq */
 
             // Use weak equality because less-than uses weak semantics as well.
             // Ideally values should be of the same type, however.
             if (a == b)
                 return 0;
+
+            /* eslint-enable eqeqeq */
 
             return a < b ? -1 : 1;
         }

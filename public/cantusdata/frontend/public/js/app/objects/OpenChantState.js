@@ -20,9 +20,11 @@ define(['underscore', 'marionette'],
             {
                 if (!(_.isString(manuscript) && _.isString(folio)))
                 {
-                    // jshint devel:true
+                    /* eslint-disable no-console */
                     console.error('Invalid manuscript/folio ids for chant state; need strings but got:',
                         manuscript, folio);
+                    /* eslint-enable no-console */
+
                     return;
                 }
 
@@ -91,8 +93,9 @@ define(['underscore', 'marionette'],
                     }
                     catch (e)
                     {
-                        // jshint devel:true
+                        /* eslint-disable no-console */
                         console.error('Failed to save open chants to local storage:\n', e);
+                        /* eslint-enable no-console */
                     }
                 }
             },
@@ -122,9 +125,10 @@ define(['underscore', 'marionette'],
                     }
                     catch (e)
                     {
-                        // jshint devel:true
+                        /* eslint-disable no-console */
                         console.error('Failed to load open chants for manuscript', manuscript,
                             'from local storage:\n', e);
+                        /* eslint-enable no-console */
                     }
 
                     if (data)
@@ -136,8 +140,9 @@ define(['underscore', 'marionette'],
                         }
                         catch (e)
                         {
-                            // jshint devel:true
+                            /* eslint-disable no-console */
                             console.error('Failed to read open chant data for manuscript', manuscript, ':\n', e);
+                            /* eslint-enable no-console */
                         }
                     }
                 }
