@@ -5,7 +5,7 @@ set -e
 if [ "$#" -eq 1 ]; then
     ROOT=$1
 elif [ "$#" -eq 0 ]; then
-    ROOT=.
+    ROOT=`pwd`
 else
     echo "Usage: $0 [root_path]"
     exit 1

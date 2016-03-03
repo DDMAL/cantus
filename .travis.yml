@@ -1,0 +1,12 @@
+sudo: required
+
+language: node_js
+node_js: stable
+
+env:
+  - CANTUS_CI_TEST=frontend
+  - CANTUS_CI_TEST=server
+
+install: ./etc/ci/install.sh
+before_script: ./etc/ci/before-test.sh
+script: ./etc/ci/run-tests.sh

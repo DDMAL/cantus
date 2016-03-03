@@ -5,7 +5,7 @@ set -e
 if [ "$#" -eq 1 ]; then
     ROOT=$1
 elif [ "$#" -eq 0 ]; then
-    ROOT=.
+    ROOT=`pwd`
 else
     echo "Usage: $0 [root_path]"
     exit 1
@@ -16,11 +16,33 @@ echo "==================== INSTALLING LIBMEI ===================="
 
 sudo apt-get install -y git cmake uuid-dev libboost-python-dev
 
+# We need a version of GCC greater than 4.6.3. 4.8 should work.
+if [[ `gcc -dumpversion` < 4.8 ]]; then
+    echo "Updating GCC"
+    sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+    sudo apt-get update
+    sudo apt-get install gcc-4.8 g++-4.8
+fi
+
 if [ ! -d libmei ]; then
     git clone "https://github.com/DDMAL/libmei.git" --branch v2.0.0 libmei
 fi
 
 (
+    # We need a version of GCC greater than 4.6.3 for pymei. 4.8 should work.
+    if [[ `gcc -dumpversion` < 4.8 ]]; then
+        if [[ ! `which g++-4.8` ]]; then
+            echo Installing GCC v. 4.8...
+
+            sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+            sudo apt-get update -y
+            sudo apt-get install -y gcc-4.8 g++-4.8
+        fi
+
+        export CC=`which gcc-4.8`
+        export CXX=`which g++-4.8`
+    fi
+
     cd libmei
 
     mkdir -p build; cd build
