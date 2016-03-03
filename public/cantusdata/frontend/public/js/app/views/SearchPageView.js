@@ -1,6 +1,6 @@
 import Marionette from "marionette";
-import SearchView from "views/SearchView";
-import ChantSearchProvider from "views/ChantSearchProvider";
+import SearchView from "search/SearchView";
+import ChantSearchProvider from "search/chant-search/ChantSearchProvider";
 
 /**
  * This page is for searching.

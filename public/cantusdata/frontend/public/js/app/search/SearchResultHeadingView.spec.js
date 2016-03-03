@@ -2,7 +2,7 @@ import _ from 'underscore';
 import Backbone from 'backbone';
 
 import TestSetup from 'test/setup';
-import SearchResultHeadingView from 'views/SearchResultHeadingView';
+import SearchResultHeadingView from './SearchResultHeadingView';
 
 describe('SearchResultHeadingView', function ()
 {

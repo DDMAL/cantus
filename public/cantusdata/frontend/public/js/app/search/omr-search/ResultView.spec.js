@@ -1,9 +1,9 @@
 import TestSetup from 'test/setup';
 
-import SearchNotationResultView from './SearchNotationResultView';
 import SearchNotationResultCollection from 'collections/SearchNotationResultCollection';
+import ResultView from './ResultView';
 
-describe('SearchNotationResultView', function ()
+describe('search/omr-search/ResultView', function ()
 {
     // Fixtures
     var testParameters = {
@@ -50,7 +50,7 @@ describe('SearchNotationResultView', function ()
 
         this.collection = new SearchNotationResultCollection();
 
-        this.view = new SearchNotationResultView({
+        this.view = new ResultView({
             collection: this.collection
         });
 

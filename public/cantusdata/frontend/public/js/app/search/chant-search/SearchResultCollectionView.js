@@ -1,8 +1,9 @@
 import _ from 'underscore';
 import $ from 'jquery';
 import Marionette from 'marionette';
-import SearchResultItemView from 'views/item_views/SearchResultItemView';
 import lastChildVisible from 'utils/lastChildVisible';
+
+import SearchResultItemView from './SearchResultItemView';
 
 // TODO(wabain): this is misnamed since it's actually a CompositeView
 

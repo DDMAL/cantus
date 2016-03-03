@@ -1,12 +1,14 @@
 import _ from "underscore";
 import Backbone from "backbone";
 import Marionette from "marionette";
+
 import SearchNotationResultCollection from "collections/SearchNotationResultCollection";
-import NeumeGalleryView from "views/NeumeGalleryView";
-import SearchNotationInputView from "views/SearchNotationInputView";
-import SearchResultHeadingView from "views/SearchResultHeadingView";
-import SearchNotationResultView from "views/SearchNotationResultView";
 import IncrementalClientSideLoader from "utils/IncrementalClientSideLoader";
+
+import SearchResultHeadingView from "../SearchResultHeadingView";
+import NeumeGalleryView from "./NeumeGalleryView";
+import InputView from "./InputView";
+import ResultView from "./ResultView";
 
 /**
  * Provide support for searching OMR data via the search interface. Required
@@ -156,7 +158,7 @@ export default Marionette.Object.extend({
         this.results.reset();
 
         // Input
-        var inputView = new SearchNotationInputView({initialQuery: this.query});
+        var inputView = new InputView({initialQuery: this.query});
         regions.searchInput.show(inputView);
 
         // Neume gallery
@@ -182,7 +184,7 @@ export default Marionette.Object.extend({
         }));
 
         // Results
-        var resultView = new SearchNotationResultView({
+        var resultView = new ResultView({
             collection: this.displayedResults
         });
 

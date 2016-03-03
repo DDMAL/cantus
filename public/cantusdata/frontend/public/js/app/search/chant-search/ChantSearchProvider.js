@@ -1,12 +1,15 @@
 import _ from "underscore";
 import Marionette from "marionette";
+
 import SolrQuery from "utils/SolrQuery";
 import IncrementalSolrLoader from "utils/IncrementalSolrLoader";
+
 import SearchInput from "models/SearchInput";
 import SearchResultCollection from "collections/SearchResultCollection";
-import SearchInputView from "views/SearchInputView";
-import SearchResultCollectionView from "views/collection_views/SearchResultCollectionView";
-import SearchResultHeadingView from "views/SearchResultHeadingView";
+
+import SearchResultHeadingView from "../SearchResultHeadingView";
+import SearchInputView from "./SearchInputView";
+import SearchResultCollectionView from "./SearchResultCollectionView";
 
 var KNOWN_FIELDS = [
     {type: "all", "name": "All Text Fields"},

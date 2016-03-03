@@ -1,12 +1,14 @@
 import _ from "underscore";
 import Marionette from "marionette";
-import SearchNotationResultItemView from "views/SearchNotationResultItemView";
+
 import lastChildVisible from "utils/lastChildVisible";
+
+import ResultItemView from "./ResultItemView";
 
 export default Marionette.CompositeView.extend({
     template: '#search-notation-result-list-template',
 
-    childView: SearchNotationResultItemView,
+    childView: ResultItemView,
 
     childViewContainer: 'tbody',
 

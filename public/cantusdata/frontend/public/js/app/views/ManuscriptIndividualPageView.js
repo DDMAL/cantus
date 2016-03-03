@@ -3,12 +3,14 @@ import _ from 'underscore';
 import Radio from 'backbone.radio';
 import Marionette from 'marionette';
 import diva from 'diva';
+
 import FolioView from "views/FolioView";
 import DivaView from "views/DivaView";
-import SearchView from "views/SearchView";
 import ManuscriptDataPopoverView from "views/ManuscriptDataPopoverView";
-import ChantSearchProvider from "views/ChantSearchProvider";
-import NotationSearchProvider from "views/NotationSearchProvider";
+
+import SearchView from "search/SearchView";
+import ChantSearchProvider from "search/chant-search/ChantSearchProvider";
+import OMRSearchProvider from "search/omr-search/OMRSearchProvider";
 
 var manuscriptStateChannel = Radio.channel('manuscript');
 
@@ -164,7 +166,7 @@ export default Marionette.LayoutView.extend({
 
         chantSearchProvider.setRestriction('manuscript', '"' + this.model.get("siglum") + '"');
 
-        var notationSearchProvider = new NotationSearchProvider({
+        var notationSearchProvider = new OMRSearchProvider({
             divaView: divaView,
             manuscript: this.model
         });
