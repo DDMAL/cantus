@@ -62,7 +62,9 @@ gulp.task('build', ['build:js', 'build:css']);
 
 gulp.task('lint:js', function ()
 {
-    return lintJS().pipe(eslint.failAfterError());
+    return lintJS()
+        .pipe(jscs.reporter('fail'))
+        .pipe(eslint.failAfterError());
 });
 
 gulp.task('lint-nofail:js', function ()
@@ -256,8 +258,6 @@ function lintJS()
         configFile: 'public/js/.eslintrc.test.json'
     };
 
-    // FIXME: this errors on jscs failure, even when we'd only
-    // want it to print a warning
     return gulp.src(sources.buildJS.concat('public/js/**/*.js'))
         .pipe(gulpif((/\.spec\.js$/), eslint(testEslintConfig), eslint()))
         .pipe(eslint.format())
