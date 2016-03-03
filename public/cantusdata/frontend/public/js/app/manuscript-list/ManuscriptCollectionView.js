@@ -1,5 +1,5 @@
 import Marionette from "marionette";
-import ManuscriptItemView from "views/ManuscriptItemView";
+import ManuscriptItemView from "./ManuscriptItemView";
 
 export default Marionette.CollectionView.extend({
     tagName: 'tbody',

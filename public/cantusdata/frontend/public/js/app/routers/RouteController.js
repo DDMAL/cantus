@@ -3,12 +3,14 @@ import Backbone from "backbone";
 import Marionette from "marionette";
 import LinkWatcher from "link-watcher";
 import Qs from "qs";
+
 import GlobalVars from "config/GlobalVars";
 import ManuscriptStateModel from "models/ManuscriptStateModel";
-import ManuscriptsPageView from "views/ManuscriptsPageView";
+import NavigationManager from "singletons/NavigationManager";
+
+import ManuscriptListPageView from "manuscript-list/ManuscriptListPageView";
 import ManuscriptIndividualPageView from "views/ManuscriptIndividualPageView";
 import SearchPageView from "views/SearchPageView";
-import NavigationManager from "singletons/NavigationManager";
 
 export default Marionette.Object.extend({
     initialize: function(options)
@@ -44,7 +46,7 @@ export default Marionette.Object.extend({
     onBeforeStart: function()
     {
         // The manuscripts page has no state, so we might as well instantiate it
-        this.manuscriptsPageView = new ManuscriptsPageView();
+        this.manuscriptListPage = new ManuscriptListPageView();
 
         // Navigate to clicked links
         LinkWatcher.onLinkClicked(document.body, function (event, info)
@@ -62,7 +64,7 @@ export default Marionette.Object.extend({
      */
     manuscripts: function()
     {
-        this.showContentView(this.manuscriptsPageView, {title: 'Manuscripts'});
+        this.showContentView(this.manuscriptListPage, {title: 'Manuscripts'});
     },
 
     /**
@@ -171,7 +173,7 @@ export default Marionette.Object.extend({
      */
     shouldDestroyMainContentView: function()
     {
-        return this.rootView.mainContent.currentView === this.manuscriptsPageView;
+        return this.rootView.mainContent.currentView === this.manuscriptListPage;
     },
 
     /**

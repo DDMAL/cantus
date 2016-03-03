@@ -1,8 +1,10 @@
 import Marionette from "marionette";
-import ManuscriptCollection from "collections/ManuscriptCollection";
-import ManuscriptCollectionView from "views/ManuscriptCollectionView";
-import FutureManuscriptCollectionView from "views/FutureManuscriptCollectionView";
+
 import GlobalVars from "config/GlobalVars";
+import ManuscriptCollection from "collections/ManuscriptCollection";
+
+import ManuscriptCollectionView from "./ManuscriptCollectionView";
+import FutureManuscriptCollectionView from "./FutureManuscriptCollectionView";
 
 /**
  * This page is a big list of manuscripts.

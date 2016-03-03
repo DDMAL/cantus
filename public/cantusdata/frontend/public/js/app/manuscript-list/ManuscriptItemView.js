@@ -1,5 +1,5 @@
 import _ from "underscore";
-import ManuscriptItemBaseView from "views/ManuscriptItemBaseView";
+import ManuscriptItemBaseView from "./ManuscriptItemBaseView";
 
 export default ManuscriptItemBaseView.extend({
     serializeData: function ()
