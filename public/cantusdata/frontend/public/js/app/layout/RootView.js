@@ -1,6 +1,7 @@
 import Marionette from "marionette";
-import HeaderView from "views/HeaderView";
-import MenuSidenavView from "views/MenuSidenavView";
+
+import HeaderView from "./HeaderView";
+import MenuSidenavView from "./MenuSidenavView";
 
 /** Root view for the application, parent of all other Backbone views. */
 export default Marionette.LayoutView.extend({

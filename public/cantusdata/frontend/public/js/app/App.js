@@ -1,5 +1,5 @@
 import Marionette from 'marionette';
-import RootView from 'views/RootView';
+import RootView from 'layout/RootView';
 
 var App = new Marionette.Application({
     behaviors: {},

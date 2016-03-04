@@ -2,10 +2,10 @@ import Marionette from "marionette";
 import Radio from "backbone.radio";
 import NavigationManager from "singletons/NavigationManager";
 
-import ModalView from "views/ModalView";
-
 import SearchView from "search/SearchView";
 import ChantSearchProvider from "search/chant-search/ChantSearchProvider";
+
+import ModalView from "./ModalView";
 
 var sidenavChannel = Radio.channel('sidenav');
 
