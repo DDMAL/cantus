@@ -8,12 +8,13 @@ import SearchView from "search/SearchView";
 import ChantSearchProvider from "search/chant-search/ChantSearchProvider";
 import OMRSearchProvider from "search/omr-search/OMRSearchProvider";
 
+import SidenavView from 'ui/SidenavView';
+
 import FolioView from "./folio/FolioView";
 import DivaView from "./DivaView";
-import ManuscriptDataPopoverView from "./ManuscriptDataPopoverView";
+import ManuscriptInfoView from "./ManuscriptInfoView";
 
 import template from './manuscript.template.html';
-import manuscriptDataTemplate from './manuscript-data.template.html';
 
 var manuscriptStateChannel = Radio.channel('manuscript');
 
@@ -26,26 +27,24 @@ var manuscriptStateChannel = Radio.channel('manuscript');
 export default Marionette.LayoutView.extend({
     template,
 
+    regions: {
+        divaViewRegion: "#diva-column",
+        folioViewRegion: "#folio",
+        searchViewRegion: "#manuscript-search"
+    },
+
     ui: {
         toolbarRow: '#toolbar-row',
-        manuscriptInfo: '#manuscript-info-popover',
-        manuscriptInfoButton: '#manuscript-info-popover button',
+        manuscriptInfo: '#manuscript-info-target',
+        manuscriptInfoButton: '#manuscript-info-target button',
         resizer: '#manuscript-data-container .resizer',
         divaColumn: "#diva-column",
         manuscriptDataColumn: '#manuscript-data-column'
     },
 
-    // FIXME(wabain): use inserted.bs.popover after updating bootstrap
     events: {
         'mousedown @ui.resizer': 'startResizing',
-        'shown.bs.popover @ui.manuscriptInfoButton': 'instantiatePopoverView',
-        'hidden.bs.popover @ui.manuscriptInfoButton': 'destroyPopoverView'
-    },
-
-    regions: {
-        divaViewRegion: "#diva-column",
-        folioViewRegion: "#folio",
-        searchViewRegion: "#manuscript-search"
+        'click @ui.manuscriptInfoButton': '_showInfoSidenav'
     },
 
     behaviors: {
@@ -57,15 +56,7 @@ export default Marionette.LayoutView.extend({
 
     initialize: function ()
     {
-        _.bindAll(this, 'getPopoverContent');
-
-        this.popoverContent = null;
         this._viewportContent = null;
-    },
-
-    onBeforeDestroy: function()
-    {
-        this.destroyPopoverView();
     },
 
     startResizing: function (event)
@@ -113,34 +104,9 @@ export default Marionette.LayoutView.extend({
         $window.one('mouseup', stopResizing);
     },
 
-    instantiatePopoverView: function ()
+    _showInfoSidenav()
     {
-        this.popoverView = new ManuscriptDataPopoverView({
-            el: this.ui.manuscriptInfo.find('.popover')
-        });
-    },
-
-    destroyPopoverView: function ()
-    {
-        if (this.popoverView)
-        {
-            this.popoverView.destroy();
-            this.popoverView = null;
-        }
-    },
-
-    /**
-     * Get the HTML content for the manuscript data popover, generating it from a template if it has not
-     * already been initialized.
-     *
-     * @returns {string}
-     */
-    getPopoverContent: function ()
-    {
-        if (!this.popoverContent)
-            this.popoverContent = manuscriptDataTemplate(this.serializeData());
-
-        return this.popoverContent;
+        this._infoSidenav.show();
     },
 
     onRender: function()
@@ -189,15 +155,20 @@ export default Marionette.LayoutView.extend({
             manuscriptStateChannel.request('set:search', search, {replaceState: true});
         });
 
-        // Initialize the manuscript info button
-        this.ui.manuscriptInfoButton.popover({
-            content: this.getPopoverContent,
-            html: true
-        });
-
         // Render the subviews
         this.folioViewRegion.show(new FolioView());
         this.searchViewRegion.show(searchView);
+
+        // Attach the info sidenav
+        this._infoSidenavParent = $('<div class="manuscript-info-sidenav-container"></div>');
+        this._infoSidenavParent.appendTo(document.body);
+
+        this._infoSidenav = new SidenavView({
+            el: this._infoSidenavParent,
+            content: () => new ManuscriptInfoView({model: this.model})
+        });
+
+        this._infoSidenav.render();
 
         // We can't show the Diva view until this view has been attached to the DOM
         // See https://github.com/DDMAL/diva.js/issues/273
@@ -214,6 +185,12 @@ export default Marionette.LayoutView.extend({
             this._viewportContent = null;
             this._updateViewport();
         });
+    },
+
+    onDestroy()
+    {
+        this._infoSidenav.destroy();
+        this._infoSidenavParent.remove();
     },
 
     _configurePageLayout: function ()

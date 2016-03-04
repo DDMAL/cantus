@@ -79,7 +79,7 @@ pre.preformatted-text {
     max-width: 60%;
 }
 
-#manuscript-info-popover {
+#manuscript-info-target {
     float: right;
 
     // FIXME: This should actually be the padding for all .btn-sm elements; the Bootstrap button padding was
@@ -89,13 +89,16 @@ pre.preformatted-text {
     }
 }
 
-#manuscript-info-popover .popover-content {
-    max-height: 500px;
-    overflow-y: auto;
+.manuscript-info-sidenav-container .sidenav {
+    @include sidenav-size($width: 350px, $position: right);
 }
 
-#manuscript-info-popover dl.manuscript-data {
-    margin-bottom: 0;
+.manuscript-info {
+    padding: 0 15px;
+
+    dl {
+        margin-bottom: 0;
+    }
 }
 
 #manuscript-nav-container {
@@ -312,8 +315,8 @@ pre.preformatted-text {
         padding-right: 0 !important;
     }
 
-    // Hide the extra popover that was stuck into the Diva toolbar
-    #manuscript-info-popover {
+    // Hide the extra button that was stuck into the Diva toolbar
+    #manuscript-info-target {
         display: none;
     }
 }
