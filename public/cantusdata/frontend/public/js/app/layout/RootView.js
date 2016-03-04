@@ -12,7 +12,7 @@ export default Marionette.LayoutView.extend({
     regions: {
         menuSidenav: '#menu-sidenav',
         header: '#header-container',
-        mainContent: '#view-goes-here'
+        mainContent: '#content-root'
     },
 
     onRender: function ()
