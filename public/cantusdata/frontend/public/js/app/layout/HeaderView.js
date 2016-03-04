@@ -9,7 +9,7 @@ import ModalView from "./ModalView";
 
 import subheadTemplate from './navbar-subhead.template.html';
 
-var sidenavChannel = Radio.channel('sidenav');
+var sidenavChannel = Radio.channel('nav-menu');
 
 /**
  * Provide an alert message to the user.
