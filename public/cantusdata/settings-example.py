@@ -96,9 +96,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_URL_NEUMEEDITOR = "/neumeeditor/media/"
-# This needs to be an absolute path to the file system location...
-STATIC_ROOT = '/your/system/path/cantus/public/cantusdata/static/'
-MEDIA_ROOT = '/your/system/path/cantus/public/media/'
+
+# This needs to be an absolute path to the file system location
+STATIC_ROOT = os.path.join(BASE_DIR, 'cantusdata/static/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
