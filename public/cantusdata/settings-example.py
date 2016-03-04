@@ -107,7 +107,7 @@ REST_FRAMEWORK = {
     ),
 }
 
-SOLR_SERVER = "http://localhost:8080/cantusdata-solr/"
+SOLR_SERVER = "http://localhost:8080"
 
 LOGGING_CONFIG = None
 
