@@ -4,13 +4,13 @@ import Radio from 'backbone.radio';
 import Marionette from 'marionette';
 import diva from 'diva';
 
-import FolioView from "views/FolioView";
-import DivaView from "views/DivaView";
-import ManuscriptDataPopoverView from "views/ManuscriptDataPopoverView";
-
 import SearchView from "search/SearchView";
 import ChantSearchProvider from "search/chant-search/ChantSearchProvider";
 import OMRSearchProvider from "search/omr-search/OMRSearchProvider";
+
+import FolioView from "./folio/FolioView";
+import DivaView from "./DivaView";
+import ManuscriptDataPopoverView from "./ManuscriptDataPopoverView";
 
 var manuscriptStateChannel = Radio.channel('manuscript');
 

@@ -1,6 +1,6 @@
 import Backbone from 'backbone';
 import Marionette from 'marionette';
-import ChantItemView from "views/item_views/ChantItemView";
+import ChantItemView from "./ChantItemView";
 
 var manuscriptChannel = Backbone.Radio.channel('manuscript');
 

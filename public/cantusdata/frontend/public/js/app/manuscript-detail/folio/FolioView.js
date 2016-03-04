@@ -1,12 +1,14 @@
 import _ from 'underscore';
 import Backbone from 'backbone';
 import Marionette from 'marionette';
+
+import GlobalVars from "config/GlobalVars";
 import Folio from "models/Folio";
 import ChantCollection from "collections/ChantCollection";
-import ChantCompositeView from "views/collection_views/ChantCompositeView";
-import DivaFolioAdvancerView from "views/DivaFolioAdvancerView";
-import FolioItemView from "views/item_views/FolioItemView";
-import GlobalVars from "config/GlobalVars";
+
+import ChantCompositeView from "./ChantCompositeView";
+import DivaFolioAdvancerView from "./DivaFolioAdvancerView";
+import FolioItemView from "./FolioItemView";
 
 var manuscriptChannel = Backbone.Radio.channel('manuscript');
 

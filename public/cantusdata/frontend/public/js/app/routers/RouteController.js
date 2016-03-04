@@ -9,7 +9,7 @@ import ManuscriptStateModel from "models/ManuscriptStateModel";
 import NavigationManager from "singletons/NavigationManager";
 
 import ManuscriptListPageView from "manuscript-list/ManuscriptListPageView";
-import ManuscriptIndividualPageView from "views/ManuscriptIndividualPageView";
+import ManuscriptDetailPageView from "manuscript-detail/ManuscriptDetailPageView";
 import SearchPageView from "views/SearchPageView";
 
 export default Marionette.Object.extend({
@@ -102,7 +102,7 @@ export default Marionette.Object.extend({
          */
         this.listenToOnce(this.manuscriptState, 'load:manuscript', function (model)
         {
-            this.showContentView(new ManuscriptIndividualPageView({model: model}), {
+            this.showContentView(new ManuscriptDetailPageView({model: model}), {
                 title: model.get("name"),
                 navbarTitle: model.get("provenance") + ", " + model.get("siglum")
             });

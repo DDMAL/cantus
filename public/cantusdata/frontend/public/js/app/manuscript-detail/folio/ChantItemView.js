@@ -1,5 +1,5 @@
 import Marionette from 'marionette';
-import ChantRecordView from '../ChantRecordView';
+import ChantRecordView from './ChantRecordView';
 
 /**
  * A panel containing chant information
