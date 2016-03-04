@@ -1,10 +1,12 @@
 import Marionette from "marionette";
 
+import template from './input.template.html';
+
 /**
  * Handle the search box for notation search
  */
 export default Marionette.ItemView.extend({
-    template: '#search-notation-input-template',
+    template,
 
     ui: {
         form: "form",

@@ -1,6 +1,8 @@
 import Radio from 'backbone.radio';
 import Marionette from 'marionette';
 
+import template from './folio-item.template.html';
+
 var manuscriptChannel = Radio.channel('manuscript');
 
 /**
@@ -8,7 +10,7 @@ var manuscriptChannel = Radio.channel('manuscript');
  * Right now it's just a title.
  */
 export default Marionette.ItemView.extend({
-    template: "#folio-item-template",
+    template,
 
     onShow: function ()
     {

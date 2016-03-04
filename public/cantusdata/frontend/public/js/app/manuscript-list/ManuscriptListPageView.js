@@ -6,11 +6,13 @@ import ManuscriptCollection from "collections/ManuscriptCollection";
 import ManuscriptCollectionView from "./ManuscriptCollectionView";
 import FutureManuscriptCollectionView from "./FutureManuscriptCollectionView";
 
+import template from './manuscript-list-page.template.html';
+
 /**
  * This page is a big list of manuscripts.
  */
 export default Marionette.LayoutView.extend({
-    template: '#manuscripts-page-template',
+    template,
 
     regions: {
         manuscriptList: '.manuscript-list',

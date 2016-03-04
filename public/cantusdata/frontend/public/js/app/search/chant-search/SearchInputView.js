@@ -1,10 +1,12 @@
 import _ from "underscore";
 import Marionette from "marionette";
 
+import template from './search-input.template.html';
+
 /** Control an input for a search field, firing a `search` event when the query changes.
  * Takes a SearchInput model. */
 export default Marionette.ItemView.extend({
-    template: '#search-input-template',
+    template,
 
     events: {
         "submit": "preventSubmit",

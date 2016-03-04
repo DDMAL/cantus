@@ -5,6 +5,9 @@ import Radio from "backbone.radio";
 import NavigationManager from "singletons/NavigationManager";
 import afterTransition from "utils/afterTransition";
 
+import template from './menu-sidenav.template.html';
+import childTemplate from './menu-sidenav-item.template.html';
+
 var SIDENAV_TRANSITION_MS = 300;
 var BACKDROP_TRANSITION_MS = 150;
 
@@ -14,13 +17,13 @@ var sidenavChannel = Radio.channel('sidenav');
  * View for the primary navigation menu
  */
 export default Marionette.CompositeView.extend({
-    template: '#menu-sidenav-template',
+    template,
 
     childViewContainer: '.sidenav ul',
 
     childView: Marionette.ItemView.extend({
         tagName: 'li',
-        template: '#menu-sidenav-item-template',
+        template: childTemplate,
 
         events: {
             click: function (event)

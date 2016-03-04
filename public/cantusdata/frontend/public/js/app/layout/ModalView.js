@@ -1,5 +1,7 @@
 import Marionette from "marionette";
 
+import template from './modal.template.html';
+
 /**
  * Draw a modal box containing a particular view.
  * This view follows the visitor design pattern.
@@ -10,7 +12,7 @@ export default Marionette.LayoutView.extend({
     title: null,
     visitorView: null,
 
-    template: '#modal-template',
+    template,
 
     regions: {
         body: '.modal-body'

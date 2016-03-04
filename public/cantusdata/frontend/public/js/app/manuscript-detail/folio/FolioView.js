@@ -10,10 +10,12 @@ import ChantCompositeView from "./ChantCompositeView";
 import DivaFolioAdvancerView from "./DivaFolioAdvancerView";
 import FolioItemView from "./FolioItemView";
 
+import template from './folio.template.html';
+
 var manuscriptChannel = Backbone.Radio.channel('manuscript');
 
 export default Marionette.LayoutView.extend({
-    template: "#folio-template",
+    template,
 
     regions: {
         chantListRegion: '.chant-list-region',

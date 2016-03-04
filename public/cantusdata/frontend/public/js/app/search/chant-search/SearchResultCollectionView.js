@@ -5,6 +5,8 @@ import lastChildVisible from 'utils/lastChildVisible';
 
 import SearchResultItemView from './SearchResultItemView';
 
+import template from './search-result-collection.template.html';
+
 // TODO(wabain): this is misnamed since it's actually a CompositeView
 
 /**
@@ -24,7 +26,7 @@ function isDisplayed(jqElem)
  * View representing a Search Result with count.
  */
 export default Marionette.CompositeView.extend({
-    template: "#search-result-list-template",
+    template,
 
     childView: SearchResultItemView,
     childViewContainer: '.child-container',

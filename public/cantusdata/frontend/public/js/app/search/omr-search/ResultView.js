@@ -5,8 +5,10 @@ import lastChildVisible from "utils/lastChildVisible";
 
 import ResultItemView from "./ResultItemView";
 
+import template from './result-list.template.html';
+
 export default Marionette.CompositeView.extend({
-    template: '#search-notation-result-list-template',
+    template,
 
     childView: ResultItemView,
 

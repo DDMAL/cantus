@@ -20,13 +20,11 @@ var path = require('path');
 var fs = require('fs');
 var mkdirp = require('mkdirp');
 
-var bundleTemplates = require('./bundle-templates').bundle;
-
 // Set path variables
 var sources = {
     appJS: ['public/js/app/**/*.js', '!public/js/app/**/*.spec.js', 'public/modernizr-config.json'],
     buildJS: ['./*.js'],
-    templates: ['public/templates/**/*.html'],
+    templates: ['public/js/app/**/*.template.html'],
     css: ['public/css/**/*{.css,.scss}']
 };
 
@@ -87,7 +85,7 @@ gulp.task('build:js', function (cb)
 
 gulp.task('rebuild:js', ['bundle:js']);
 
-gulp.task('bundle:js', ['bundle:templates', 'build:modernizr'], function (cb)
+gulp.task('bundle:js', ['build:modernizr'], function (cb)
 {
     var onBundleComplete = function (err, stats)
     {
@@ -132,13 +130,6 @@ gulp.task('clean:js', function (done)
             done(err);
         else
             done();
-    });
-});
-
-gulp.task('bundle:templates', function ()
-{
-    return bundleTemplates('public/templates', '.tmp/templates.js', {
-        preface: 'var _ = require("underscore");\n'
     });
 });
 

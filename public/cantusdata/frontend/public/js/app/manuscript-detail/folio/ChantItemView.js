@@ -1,11 +1,13 @@
 import Marionette from 'marionette';
 import ChantRecordView from './ChantRecordView';
 
+import template from './chant-item.template.html';
+
 /**
  * A panel containing chant information
  */
 export default Marionette.LayoutView.extend({
-    template: "#chant-item-template",
+    template,
 
     // This needs to be set as the tag because Bootstrap
     // assumes an immediate-child relationship

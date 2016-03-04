@@ -12,6 +12,9 @@ import FolioView from "./folio/FolioView";
 import DivaView from "./DivaView";
 import ManuscriptDataPopoverView from "./ManuscriptDataPopoverView";
 
+import template from './manuscript.template.html';
+import manuscriptDataTemplate from './manuscript-data.template.html';
+
 var manuscriptStateChannel = Radio.channel('manuscript');
 
 /**
@@ -21,7 +24,7 @@ var manuscriptStateChannel = Radio.channel('manuscript');
  * @type {*|void}
  */
 export default Marionette.LayoutView.extend({
-    template: '#manuscript-template',
+    template,
 
     ui: {
         toolbarRow: '#toolbar-row',
@@ -135,7 +138,7 @@ export default Marionette.LayoutView.extend({
     getPopoverContent: function ()
     {
         if (!this.popoverContent)
-            this.popoverContent = Marionette.TemplateCache.get('#manuscript-data-template')(this.serializeData());
+            this.popoverContent = manuscriptDataTemplate(this.serializeData());
 
         return this.popoverContent;
     },

@@ -1,6 +1,10 @@
 import _ from 'underscore';
 import Marionette from 'marionette';
 
+import headingTemplate from './search-result-heading.template.html';
+import errorTemplate from './search-result-error.template.html';
+import loadingTemplate from './search-result-loading.template.html';
+
 // States for the view
 // These are published statically on the view
 var NO_SEARCH = 0,
@@ -36,9 +40,9 @@ export default Marionette.ItemView.extend({
 
     templateMap: [
         false, // NO_SEARCH
-        '#search-result-heading-template', // SUCCESS
-        '#search-result-error-template', // FAILURE
-        '#search-result-loading-template' // LOADING
+        headingTemplate, // SUCCESS
+        errorTemplate, // FAILURE
+        loadingTemplate // LOADING
     ],
 
     // Initial state
@@ -157,9 +161,9 @@ export default Marionette.ItemView.extend({
 }, {
     // Expose these for testing
     states: {
-        NO_SEARCH: NO_SEARCH,
-        SUCCESS: SUCCESS,
-        FAILURE: FAILURE,
-        LOADING: LOADING
+        NO_SEARCH,
+        SUCCESS,
+        FAILURE,
+        LOADING
     }
 });

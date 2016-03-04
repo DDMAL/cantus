@@ -2,13 +2,15 @@ import Marionette from "marionette";
 import SearchView from "search/SearchView";
 import ChantSearchProvider from "search/chant-search/ChantSearchProvider";
 
+import template from './search-page.template.html';
+
 /**
  * This page is for searching.
  *
  * @constructor
  */
 export default Marionette.LayoutView.extend({
-    template: '#search-page-template',
+    template,
 
     regions: {
         searchRegion: '#search'

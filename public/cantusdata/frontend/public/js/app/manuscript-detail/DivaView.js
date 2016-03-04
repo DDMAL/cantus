@@ -12,6 +12,8 @@ import "diva/plugins/pagealias";
 import folioNameHelper from "utils/folioNameHelper";
 import GlobalVars from "config/GlobalVars";
 
+import template from './diva.template.html';
+
 /** Define the format we expect the Diva filenames to adhere to */
 var DIVA_FILENAME_REGEX = (/^(.+)_(.*?)\.([^.]+)$/);
 
@@ -21,7 +23,7 @@ var manuscriptChannel = Backbone.Radio.channel('manuscript');
  * Manages the lifecycle and customization of the Diva viewer
  */
 export default Marionette.ItemView.extend({
-    template: "#diva-template",
+    template,
 
     ui: {
         divaWrapper: "#diva-wrapper"

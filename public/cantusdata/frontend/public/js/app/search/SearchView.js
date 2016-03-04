@@ -2,6 +2,8 @@ import _ from "underscore";
 import $ from "jquery";
 import Marionette from "marionette";
 
+import template from './search.template.html';
+
 /**
  * Top-level search view. This view delegates to search provider classes
  * to handle most of the actual business logic.
@@ -22,7 +24,7 @@ import Marionette from "marionette";
  *  better would be nice.
  */
 export default Marionette.LayoutView.extend({
-    template: "#search-template",
+    template,
 
     regions: {
         searchInput: ".search-input",

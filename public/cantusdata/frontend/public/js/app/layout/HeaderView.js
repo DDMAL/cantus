@@ -7,6 +7,8 @@ import ChantSearchProvider from "search/chant-search/ChantSearchProvider";
 
 import ModalView from "./ModalView";
 
+import subheadTemplate from './navbar-subhead.template.html';
+
 var sidenavChannel = Radio.channel('sidenav');
 
 /**
@@ -78,7 +80,7 @@ export default Marionette.LayoutView.extend({
         {
             this.pageTitle.show(new Marionette.ItemView({
                 tagName: 'span',
-                template: '#navbar-subhead-template',
+                template: subheadTemplate,
                 templateHelpers: {
                     subhead: title
                 }

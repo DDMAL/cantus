@@ -1,11 +1,13 @@
 import Marionette from 'marionette';
 import $ from 'jquery';
 
+import template from './diva-folio-advancer.template.html';
+
 /**
  * A widget with buttons that controls
  */
 export default Marionette.ItemView.extend({
-    template: "#diva-folio-advancer-template",
+    template,
     tagName: "nav",
 
     ui:

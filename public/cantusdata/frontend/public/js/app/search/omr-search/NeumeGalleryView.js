@@ -2,8 +2,11 @@ import _ from 'underscore';
 import Marionette from 'marionette';
 import pageSnippetUrl from 'utils/pageSnippetUrl';
 
+import template from './neume-gallery-list.template.html';
+import childTemplate from './neume-gallery-item.template.html';
+
 export default Marionette.CompositeView.extend({
-    template: '#neume-gallery-list-template',
+    template,
 
     onChildviewExemplarClicked: function (view)
     {
@@ -13,7 +16,7 @@ export default Marionette.CompositeView.extend({
     childViewContainer: '.child-container',
 
     childView: Marionette.ItemView.extend({
-        template: '#neume-gallery-item-template',
+        template: childTemplate,
 
         triggers: {
             'click .neume-gallery-entry': 'exemplar:clicked'

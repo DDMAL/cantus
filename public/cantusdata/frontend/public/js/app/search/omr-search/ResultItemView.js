@@ -3,10 +3,12 @@ import Backbone from "backbone";
 import Marionette from "marionette";
 import pageSnippetUrl from "utils/pageSnippetUrl";
 
+import template from './result-item.template.html';
+
 var manuscriptChannel = Backbone.Radio.channel('manuscript');
 
 export default Marionette.ItemView.extend({
-    template: '#search-notation-result-item-template',
+    template,
     tagName: 'tr',
 
     neumeImageHeight: 30,

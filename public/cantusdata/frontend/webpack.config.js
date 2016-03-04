@@ -67,8 +67,15 @@ module.exports = configureBuildMode({
     module: {
         loaders: [
             {
+                test: /\.js$/,
                 include: [APP_BASE_DIR],
                 loader: 'babel-loader'
+            },
+
+            {
+                test: /\.template\.html$/,
+                include: [APP_BASE_DIR],
+                loader: 'underscore-template-loader?engine=underscore'
             },
 
             // Export the Diva global, which for mysterious

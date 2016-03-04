@@ -4,6 +4,8 @@ import ChantItemView from "./ChantItemView";
 
 var manuscriptChannel = Backbone.Radio.channel('manuscript');
 
+import template from './chant-composite.template.html';
+
 /**
  * A composite view.
  */
@@ -11,7 +13,7 @@ export default Marionette.CompositeView.extend({
     childView: ChantItemView,
     childViewContainer: ".accordion",
 
-    template: "#chant-composite-template",
+    template,
 
     ui: {
         errorMessages: ".error-messages"

@@ -3,6 +3,8 @@ import $ from 'jquery';
 import Marionette from 'marionette';
 import afterTransition from 'utils/afterTransition';
 
+import template from './search-result-item.template.html';
+
 var FULL_RECORD_TRANSITION_MS = 600;
 
 function transitionWithClasses(jqElem, ms, baseClass, activeClass)
@@ -32,7 +34,7 @@ function transitionWithClasses(jqElem, ms, baseClass, activeClass)
  * View representing a single search result
  */
 export default Marionette.ItemView.extend({
-    template: "#search-result-item-template",
+    template,
 
     // Each result view gets its own tbody element.
     // Note that having more than one tbody per table is perfectly legal:
