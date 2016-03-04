@@ -10,7 +10,7 @@ import NavigationManager from "singletons/NavigationManager";
 
 import ManuscriptListPageView from "manuscript-list/ManuscriptListPageView";
 import ManuscriptDetailPageView from "manuscript-detail/ManuscriptDetailPageView";
-import SearchPageView from "views/SearchPageView";
+import SearchPageView from "search/SearchPageView";
 
 export default Marionette.Object.extend({
     initialize: function(options)
