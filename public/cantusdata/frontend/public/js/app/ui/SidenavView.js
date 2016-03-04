@@ -79,8 +79,17 @@ export default Marionette.LayoutView.extend({
             this._backdrop.on('click', () => this.hide());
         }
 
-        this._backdrop.appendTo(document.body);
+        const $body = $(document.body);
+
+        this._backdrop.appendTo($body);
+
+        $body.addClass('sidenav-animating');
         this.ui.sidenav.addClass('sliding');
+
+        afterTransition(this.ui.sidenav, SIDENAV_TRANSITION_MS, function ()
+        {
+            $body.removeClass('sidenav-animating');
+        }, this);
 
         // Force a reflow
         // The logic here follows Bootstrap's very closely
@@ -117,10 +126,14 @@ export default Marionette.LayoutView.extend({
 
         this.ui.sidenav.addClass('sliding');
 
+        const $body = $(document.body);
+        $body.addClass('sidenav-animating');
+
         this.ui.sidenav.removeClass('in');
-        afterTransition(this._backdrop, SIDENAV_TRANSITION_MS, function ()
+        afterTransition(this.ui.sidenav, SIDENAV_TRANSITION_MS, function ()
         {
             this.ui.sidenav.removeClass('sliding');
+            $body.removeClass('sidenav-animating');
         }, this);
 
         this._backdrop.removeClass('in');

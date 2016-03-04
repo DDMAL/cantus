@@ -1,17 +1,35 @@
-@mixin sidenav-width($width) {
+@mixin sidenav-size($width: 250px, $position: left) {
     width: $width;
 
     // Hold the sidebar just out of view until it's triggered
-    transform: translate(-$width, 0);
+    @if ($position == left) {
+        transform: translate(-$width, 0);
+    }
+    @else {
+        right: 0;
+        transform: translate($width, 0);
+    }
+
+    // Include this rule here as a hack to ensure specificity
+    &.in {
+        transform: translate(0, 0);
+    }
 }
 
 .sidenav {
-    // Default width
-    @include sidenav-width(250px);
+    // Default width and side
+    @include sidenav-size;
 
     transition: transform 300ms ease-in-out;
 
     display: none;
+
+    position: absolute;
+    top: 0;
+    bottom: 0;
+
+    height: 100%;
+    overflow: auto;
 
     // Copied from the Bootstrap modal settings
     box-shadow: 0 3px 9px rgba(0,0,0,.5);
@@ -23,18 +41,11 @@
     &.in, &.sliding {
         display: block;
     }
+}
 
-    &.in {
-        transform: translate(0, 0);
-    }
-
-    // A side nav which overlays the existing content
-    // TODO: implement side navs that don't do this...
-    &.sidenav-overlay {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-    }
+// Hide the body's scroll bar while the sidenav enters and exits
+.sidenav-animating {
+    overflow: hidden;
 }
 
 // Exactly the same as .modal-backdrop from Bootstrap
