@@ -16,14 +16,6 @@ echo "==================== INSTALLING LIBMEI ===================="
 
 sudo apt-get install -y git cmake uuid-dev libboost-python-dev
 
-# We need a version of GCC greater than 4.6.3. 4.8 should work.
-if [[ `gcc -dumpversion` < 4.8 ]]; then
-    echo "Updating GCC"
-    sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-    sudo apt-get update
-    sudo apt-get install gcc-4.8 g++-4.8
-fi
-
 if [ ! -d libmei ]; then
     git clone "https://github.com/DDMAL/libmei.git" --branch v2.0.0 libmei
 fi
