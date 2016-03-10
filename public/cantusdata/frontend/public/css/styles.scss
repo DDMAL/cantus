@@ -40,6 +40,12 @@ $zindex-diva-canvas:       $zindex-diva-fullscreen + 5;
 
 @import "sidenav";
 
+@mixin ua-support($modernizr-feature) {
+    html.supports-#{$modernizr-feature} & {
+        @content;
+    }
+}
+
 // Volpiano font
 @font-face {
   font-family: 'Volpiano';
@@ -201,7 +207,7 @@ pre.preformatted-text {
     // Quick and dirty compat value for when flexbox isn't supported.
     // This is really not very good (it's hard to make this one-size-
     // fits all), but it probably isn't worth spending too much time on.
-    html.supports-no-flexbox & {
+    @include ua-support(no-flexbox) {
         max-height: 500px;
     }
 }
@@ -216,17 +222,20 @@ pre.preformatted-text {
 // When applied to ancestors of a nested element, this class uses flexbox to set the height
 // of the element to the remaining height of the viewport.
 .propagate-height {
-    html.supports-flexbox & {
+    @include ua-support(flexbox) {
         display: flex;
         flex-direction: column;
         flex-grow: 1;
     }
 
-    html.supports-flexbox .tab-content > &.tab-pane {
-        display: none;
+    // Workaround for Bootstrap tabs
+    .tab-content > &.tab-pane {
+        @include ua-support(flexbox) {
+            display: none;
 
-        &.active {
-            display: flex;
+            &.active {
+                display: flex;
+            }
         }
     }
 }
@@ -236,12 +245,16 @@ body.propagate-height {
 }
 
 .manuscript-columns {
-    html.supports-flexbox &.propagate-height {
-        flex-direction: row;
+    @include ua-support(flexbox) {
+        &.propagate-height {
+            flex-direction: row;
+        }
     }
 
-    html.supports-no-flexbox & > * {
-        float: left;
+    @include ua-support(no-flexbox) {
+        > * {
+            float: left;
+        }
     }
 
     // Distribute width to the columns equally by default,
@@ -266,7 +279,7 @@ body.propagate-height {
     position: relative;
 
     // Fallback height for when we don't have flexbox
-    html.supports-no-flexbox & {
+    @include ua-support(no-flexbox) {
         // Magic number to approximate Diva's value
         height: 650px;
     }
@@ -389,7 +402,7 @@ body.propagate-height {
     border: none;
     border-right: 1px solid $border-color;
 
-    html.supports-flexbox & {
+    @include ua-support(flexbox) {
         height: 100%;
     }
 }
@@ -426,7 +439,7 @@ body.propagate-height {
     padding-left: 15px;
 }
 
-html.supports-flexbox {
+@include ua-support(flexbox) {
     .search-input-group {
         display: flex;
         flex-direction: row;
@@ -437,7 +450,7 @@ html.supports-flexbox {
     }
 }
 
-html.supports-no-flexbox {
+@include ua-support(no-flexbox) {
     .search-input-group > * {
         float: left;
     }
