@@ -27,6 +27,10 @@ var manuscriptStateChannel = Radio.channel('manuscript');
 export default Marionette.LayoutView.extend({
     template,
 
+    behaviors: {
+        fillViewportHeight: true
+    },
+
     regions: {
         divaViewRegion: "#diva-column",
         folioViewRegion: "#folio",
@@ -45,13 +49,6 @@ export default Marionette.LayoutView.extend({
     events: {
         'mousedown @ui.resizer': 'startResizing',
         'click @ui.manuscriptInfoButton': '_showInfoSidenav'
-    },
-
-    behaviors: {
-        resize: {
-            target: '#manuscript-data-container',
-            action: 'onWindowResized'
-        }
     },
 
     initialize: function ()

@@ -102,9 +102,9 @@ pre.preformatted-text {
 }
 
 #manuscript-nav-container {
-    // Add 1px to margins so that their borders are flush with the container's
+    // Subtract 1px from margins so that the borders are flush with the container's
     margin-top: -1px;
-    margin-left: -16px;
+    margin-left: -1px;
 }
 
 .volpiano, .field-volpiano {
@@ -197,6 +197,13 @@ pre.preformatted-text {
 .result-table-wrapper {
     overflow: auto;
     min-height: 200px;
+
+    // Quick and dirty compat value for when flexbox isn't supported.
+    // This is really not very good (it's hard to make this one-size-
+    // fits all), but it probably isn't worth spending too much time on.
+    html.supports-no-flexbox & {
+        max-height: 500px;
+    }
 }
 
 // Support reversible (i.e. upwards-pointing) carets without setting classes on ancestors
@@ -206,13 +213,63 @@ pre.preformatted-text {
     border-bottom: 4px solid;
 }
 
-#diva-wrapper {
-    width: 100%;
+// When applied to ancestors of a nested element, this class uses flexbox to set the height
+// of the element to the remaining height of the viewport.
+.propagate-height {
+    html.supports-flexbox & {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    html.supports-flexbox .tab-content > &.tab-pane {
+        display: none;
+
+        &.active {
+            display: flex;
+        }
+    }
+}
+
+body.propagate-height {
+    height: 100vh;
+}
+
+.manuscript-columns {
+    html.supports-flexbox &.propagate-height {
+        flex-direction: row;
+    }
+
+    html.supports-no-flexbox & > * {
+        float: left;
+    }
+
+    // Distribute width to the columns equally by default,
+    // allocating more for the Diva column on large screens
+    > * {
+        width: 50%;
+    }
+
+    @media (min-width: $screen-lg-min) {
+        > :first-child {
+            width: 60%;
+        }
+
+        > :last-child {
+            width: 40%;
+        }
+    }
 }
 
 #manuscript-data-container {
     // Relative-position the container so that percentage-based dimensions are calculated relative to it
     position: relative;
+
+    // Fallback height for when we don't have flexbox
+    html.supports-no-flexbox & {
+        // Magic number to approximate Diva's value
+        height: 650px;
+    }
 
     .resizer {
         position: absolute;
@@ -240,11 +297,6 @@ pre.preformatted-text {
                 margin-left: 1px;
             }
         }
-    }
-
-    .scrollable-area {
-        overflow-y: auto;
-        height: 100%;
     }
 }
 
@@ -334,11 +386,12 @@ pre.preformatted-text {
 }
 
 .diva-outer {
-    width: 100%;
-    margin-left: 0;
-    margin-right: 0;
     border: none;
     border-right: 1px solid $border-color;
+
+    html.supports-flexbox & {
+        height: 100%;
+    }
 }
 
 // Integrate Diva z-index values with the Bootstrap z-index hierarchy

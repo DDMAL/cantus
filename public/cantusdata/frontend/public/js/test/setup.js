@@ -1,9 +1,5 @@
 // Initialization
 import 'init/BackboneCustomization';
-import App from 'App';
-import ResizeBehavior from 'behaviors/ResizeBehavior';
-
-App.behaviors.resize = ResizeBehavior;
 
 // Test scaffolding
 import Marionette from 'marionette';

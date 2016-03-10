@@ -1,19 +1,14 @@
 import "init/BackboneCustomization";
 import "jquery";
+import "underscore";
 import "marionette";
 import "bootstrap";
 import "modernizr";
 
-import _ from "underscore";
 import Backbone from "backbone";
 import App from "App";
 import WorkSpace from "routers/WorkSpace";
 import RouteController from "routers/RouteController";
-import ResizeBehavior from "behaviors/ResizeBehavior";
-
-_.extend(App.behaviors, {
-    resize: ResizeBehavior
-});
 
 App.on('before:start', function ()
 {

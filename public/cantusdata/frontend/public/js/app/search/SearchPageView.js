@@ -11,6 +11,11 @@ import template from './search-page.template.html';
  */
 export default Marionette.LayoutView.extend({
     template,
+    tagName: 'div class="propagate-height"',
+
+    behaviors: {
+        fillViewportHeight: true
+    },
 
     regions: {
         searchRegion: '#search'

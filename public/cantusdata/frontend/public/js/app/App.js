@@ -1,8 +1,12 @@
 import Marionette from 'marionette';
 import RootView from 'layout/RootView';
 
+import FillViewportHeightBehavior from 'behaviors/FillViewportHeightBehavior';
+
 var App = new Marionette.Application({
-    behaviors: {},
+    behaviors: {
+        fillViewportHeight: FillViewportHeightBehavior
+    },
 
     onBeforeStart: function ()
     {

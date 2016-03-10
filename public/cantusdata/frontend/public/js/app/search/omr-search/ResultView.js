@@ -9,6 +9,7 @@ import template from './result-list.template.html';
 
 export default Marionette.CompositeView.extend({
     template,
+    tagName: 'div class="propagate-height"',
 
     childView: ResultItemView,
 
@@ -17,13 +18,6 @@ export default Marionette.CompositeView.extend({
     collectionEvents: {
         'reset sync': 'updateTable',
         request: 'handleRequest'
-    },
-
-    behaviors: {
-        resize: {
-            target: '.result-table-wrapper',
-            allowSmaller: true
-        }
     },
 
     ui: {

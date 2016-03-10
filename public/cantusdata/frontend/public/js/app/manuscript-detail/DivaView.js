@@ -24,16 +24,10 @@ var manuscriptChannel = Backbone.Radio.channel('manuscript');
  */
 export default Marionette.ItemView.extend({
     template,
+    tagName: 'div class="propagate-height"',
 
     ui: {
-        divaWrapper: "#diva-wrapper"
-    },
-
-    behaviors: {
-        resize: {
-            target: '.diva-outer',
-            action: 'publishDivaPanelResizedEvent'
-        }
+        divaWrapper: '#diva-wrapper'
     },
 
     initialize: function(options)
@@ -46,13 +40,6 @@ export default Marionette.ItemView.extend({
         this._imageSuffix = null;
 
         this.divaEventHandles = [];
-
-        // Create a debounced function to alert Diva that its panel size
-        // has changed
-        this.publishDivaPanelResizedEvent = _.debounce(function ()
-        {
-            diva.Events.publish("PanelSizeDidChange");
-        }, 500);
 
         // Create a debounced function to alert the site that Diva has
         // changed the folio

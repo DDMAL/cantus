@@ -25,6 +25,7 @@ import template from './search.template.html';
  */
 export default Marionette.LayoutView.extend({
     template,
+    tagName: 'div class="propagate-height"',
 
     regions: {
         searchInput: ".search-input",

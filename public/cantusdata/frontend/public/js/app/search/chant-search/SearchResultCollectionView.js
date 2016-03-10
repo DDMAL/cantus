@@ -27,6 +27,7 @@ function isDisplayed(jqElem)
  */
 export default Marionette.CompositeView.extend({
     template,
+    tagName: 'div class="propagate-height"',
 
     childView: SearchResultItemView,
     childViewContainer: '.child-container',
@@ -35,13 +36,6 @@ export default Marionette.CompositeView.extend({
 
     collectionEvents: {
         "update reset": "hideIfEmpty"
-    },
-
-    behaviors: {
-        resize: {
-            target: '.result-table-wrapper',
-            allowSmaller: true
-        }
     },
 
     ui: {

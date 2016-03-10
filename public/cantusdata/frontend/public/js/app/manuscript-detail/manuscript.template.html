@@ -1,41 +1,35 @@
-<div class="container-fluid">
-    <div class="row" id="toolbar-row">
-        <div class="toolbar-things"></div>
-        <div id="manuscript-info-target">
-            <button class="btn btn-link btn-sm">
-                Manuscript info
-            </button>
-        </div>
+<div id="toolbar-row">
+    <div class="toolbar-things"></div>
+    <div id="manuscript-info-target">
+        <button class="btn btn-link btn-sm">
+            Manuscript info
+        </button>
     </div>
-    <div class="row">
-        <div id="diva-column" class="col-xs-6 col-lg-7"></div>
-        <div id="manuscript-data-column" class="col-xs-6 col-lg-5">
-            <div id="manuscript-nav-container" class="row">
-                <!-- Nav tabs -->
-                <ul class="nav nav-tabs nav-justified">
-                    <li class="active"><a href="#manuscript-folio-pane" data-toggle="tab">Folio</a></li>
-                    <li><a href="#manuscript-search-pane" data-toggle="tab">Search Manuscript</a></li>
-                </ul>
+</div>
+<div class="manuscript-columns propagate-height">
+    <div id="diva-column" class="propagate-height"></div>
+    <div id="manuscript-data-column" class="propagate-height">
+        <div id="manuscript-nav-container">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs nav-justified">
+                <li class="active"><a href="#manuscript-folio-pane" data-toggle="tab">Folio</a></li>
+                <li><a href="#manuscript-search-pane" data-toggle="tab">Search Manuscript</a></li>
+            </ul>
+        </div>
+        <div id="manuscript-data-container" class="propagate-height">
+            <div class="resizer">
+                <div class="prong"></div>
+                <div class="prong"></div>
             </div>
-            <div id="manuscript-data-container" class="row">
-                <div class="resizer">
-                    <div class="prong"></div>
-                    <div class="prong"></div>
-                </div>
 
-                <div class="scrollable-area">
-                    <div class="tab-pane col-md-12 active">
-                        <!-- Tab panes -->
-                        <div class="tab-content">
-                            <div class="tab-pane active" id="manuscript-folio-pane" >
-                                <div id="folio"></div>
-                            </div>
-                            <div class="tab-pane" id="manuscript-search-pane">
-                                <h3>Search this manuscript</h3>
-                                <div id="manuscript-search"></div>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Tab panes -->
+            <div class="tab-content propagate-height">
+                <div role="tabpanel" class="tab-pane col-md-12 active" id="manuscript-folio-pane" >
+                    <div id="folio"></div>
+                </div>
+                <div role="tabpanel" class="tab-pane col-md-12 propagate-height" id="manuscript-search-pane">
+                    <h3>Search this manuscript</h3>
+                    <div id="manuscript-search" class="propagate-height"></div>
                 </div>
             </div>
         </div>
