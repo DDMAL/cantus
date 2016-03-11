@@ -17,6 +17,11 @@ The build system supplies the following high-level commands:
   - `gulp lint:js`: Lint the JavaScript files.
   - `gulp watch`: Watch for changes to the source files and lint and build as needed.
 
+Testing
+=======
+
+Run `npm test` to execute the test suite, and `npm test -- --no-single-run` to have the tests automatically run whenever the source changes.
+
 Client-side dependencies
 ========================
 
