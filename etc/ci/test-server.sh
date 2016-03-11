@@ -6,4 +6,4 @@ cd ./public
 
 source app_env/bin/activate
 
-./runtests.py
+coverage run runtests.py

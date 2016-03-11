@@ -1,0 +1,11 @@
+[run]
+source =
+    cantusdata
+    neumeeditor
+
+omit =
+    cantusdata/wsgi.py
+    */test/*
+    */__init__*
+    */migrations/*
+

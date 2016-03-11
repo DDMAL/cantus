@@ -10,3 +10,4 @@ env:
 install: ./etc/ci/install.sh
 before_script: ./etc/ci/before-test.sh
 script: ./etc/ci/run-tests.sh
+after_success: ./etc/ci/post-coverage.sh
