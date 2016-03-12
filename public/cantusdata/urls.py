@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from rest_framework.urlpatterns import format_suffix_patterns
-from cantusdata.views.main import api_root
+from cantusdata.views.browse import browse_view
 from cantusdata.views.manuscript import ManuscriptList, ManuscriptDetail
 from cantusdata.views.chant import ChantList, ChantDetail
 from cantusdata.views.folio import FolioList, FolioDetail
@@ -14,7 +14,7 @@ from cantusdata.views.manuscript_glyph_set import ManuscriptGlyphSetView
 
 
 urlpatterns = format_suffix_patterns([
-     url(r'^browse/$', api_root, name="api-root"),
+     url(r'^browse/$', browse_view, name="api-root"),
      # Manuscripts
      url(r'^manuscripts/$', ManuscriptList.as_view(), name="manuscript-list"),
      url(r'^manuscript/(?P<pk>[0-9]+)/$', ManuscriptDetail.as_view(),
