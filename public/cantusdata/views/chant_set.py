@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer, JSONPRenderer
 from cantusdata.serializers.search import SearchSerializer
+from cantusdata.helpers.strip_solr_metadata import strip_solr_metadata
 import solr
 
 
@@ -18,9 +19,9 @@ class FolioChantSetView(APIView):
         # Connect to Solr
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
         # Query
-        result = solrconn.query(composed_request, sort="sequence asc",
-                                rows=100)
-        return Response(result)
+        results = solrconn.query(composed_request, sort="sequence asc",
+                                 rows=100)
+        return Response([strip_solr_metadata(result) for result in results])
 
 
 class ManuscriptChantSetView(APIView):
@@ -35,6 +36,6 @@ class ManuscriptChantSetView(APIView):
             start = 0
         composed_request = u'type:"cantusdata_chant" AND manuscript_id:{0}'.format(manuscript_id)
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
-        result = solrconn.query(composed_request, sort="sequence asc",
-                                start=start, rows=100)
-        return Response(result)
+        results = solrconn.query(composed_request, sort="sequence asc",
+                                 start=start, rows=100)
+        return Response([strip_solr_metadata(result) for result in results])
