@@ -51,18 +51,6 @@ def ordinal(value):
     return ordval
 
 
-def feast_code_lookup(feast_code, feast_file):
-    # f = [r for r in feastfile if r['FeastCode'] == feastcode]
-    for record in feast_file:
-        if not record["FeastCode"]:
-            continue
-        if len(record["FeastCode"]) == 7:
-            record["FeastCode"] = "0{0}".format(record["FeastCode"])
-        if str(record["FeastCode"]) == str(feast_code):
-            return record["EnglishName"]
-    return None
-
-
 def expand_mode(mode_code):
     input_list = mode_code.strip()
     mode_output = []

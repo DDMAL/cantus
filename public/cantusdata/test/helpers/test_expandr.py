@@ -20,9 +20,6 @@ class ExpandrFunctionsTestCase(TestCase):
         self.assertEquals(expandr.ordinal(11), "11th")
         self.assertEquals(expandr.ordinal(12), "12th")
 
-    def test_feast_code_lookup(self):
-        pass
-
     def test_expand_mode(self):
         # Number and symbol ordering is important
         numbers = [1, 2, 3, 4, 5, 6, 7, 8]
