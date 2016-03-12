@@ -22,4 +22,3 @@ def api_root(request, format=None):
 def home(request):
     data = {}
     return render(request, "require.html", data)
-    #return render(request, "manuscript/manuscript_list.html", data)

@@ -4,29 +4,21 @@ from neumeeditor.models import Name
 from neumeeditor.models.image import Image
 from neumeeditor.serializers.glyph import GlyphSerializer
 from neumeeditor.models.glyph import Glyph
-from cantusdata.renderers.custom_html_renderer import CustomHTMLRenderer
 from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.renderers import JSONRenderer, JSONPRenderer
+from rest_framework.renderers import JSONRenderer, JSONPRenderer, TemplateHTMLRenderer
 from rest_framework.permissions import IsAuthenticated
 from neumeeditor.serializers.image import ImageSerializer
 from neumeeditor.serializers.name import NameSerializer
-
-
-class GlyphListHTMLRenderer(CustomHTMLRenderer):
-    template_name = "neumeeditor/index.html"
-
-
-class GlyphDetailHTMLRenderer(CustomHTMLRenderer):
-    template_name = "neumeeditor/index.html"
 
 
 class GlyphList(generics.ListCreateAPIView):
     model = Glyph
     queryset = Glyph.objects.all()
     serializer_class = GlyphSerializer
+    template_name = 'neumeeditor/index.html'
     renderer_classes = (JSONRenderer, JSONPRenderer,
-                        GlyphListHTMLRenderer)
+                        TemplateHTMLRenderer)
     authentication_classes = (ExpiringTokenAuthentication,
                               SessionAuthentication)
     permission_classes = (IsAuthenticated,)
@@ -36,8 +28,9 @@ class GlyphDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Glyph
     queryset = Glyph.objects.all()
     serializer_class = GlyphSerializer
+    template_name = 'neumeeditor/index.html'
     renderer_classes = (JSONRenderer, JSONPRenderer,
-                        GlyphDetailHTMLRenderer)
+                        TemplateHTMLRenderer)
     authentication_classes = (ExpiringTokenAuthentication,
                               SessionAuthentication)
     permission_classes = (IsAuthenticated,)
