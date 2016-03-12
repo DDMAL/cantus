@@ -1,9 +1,4 @@
 import re
-import math
-
-
-def incorporate_zoom(dimension, zoom_difference):
-    return dimension / math.pow(2, zoom_difference)
 
 
 def get_transpositions(sequence):
@@ -33,6 +28,7 @@ def get_transpositions(sequence):
         transposed = ''.join(chr(i) for i in asciinum)  # convert to string
         transpositions = transpositions + [transposed]
     return transpositions
+
 
 def get_neumes_length(neumes):
     lengths = {
