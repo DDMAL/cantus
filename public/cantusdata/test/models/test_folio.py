@@ -5,11 +5,7 @@ from cantusdata.models.manuscript import Manuscript
 
 
 class FolioModelTestCase(TransactionTestCase):
-
-    fixtures = ["1_users", "2_initial_data"]
-
-    manuscript = None
-    folio = None
+    fixtures = ["2_initial_data"]
 
     def setUp(self):
         self.manuscript = Manuscript.objects.get(name="geoff")
@@ -37,12 +33,3 @@ class FolioModelTestCase(TransactionTestCase):
         self.assertEqual(self.folio.chant_count, 2)
         another_chant.delete()
         self.assertEqual(self.folio.chant_count, 1)
-
-    def tearDown(self):
-        """
-        It's important that we delete the models in the order of their
-        dependancy.
-        """
-        Chant.objects.all().delete()
-        Folio.objects.all().delete()
-        Manuscript.objects.all().delete()

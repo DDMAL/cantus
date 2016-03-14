@@ -3,8 +3,7 @@ from rest_framework import status
 
 
 class FolioChantSetViewTestCase(APITransactionTestCase):
-
-    fixtures = ["1_users", "2_initial_data"]
+    fixtures = ["2_initial_data"]
 
     def test_get(self):
         response = self.client.get("/chant-set/folio/1/")
@@ -25,11 +24,7 @@ class FolioChantSetViewTestCase(APITransactionTestCase):
 
 
 class ManuscriptChantSetTestCase(APITransactionTestCase):
-
-    fixtures = ["1_users", "2_initial_data"]
-
-    def setUp(self):
-        self.client.login(username="ahankins", password="hahaha")
+    fixtures = ["2_initial_data"]
 
     def test_get(self):
         response = self.client.get("/chant-set/manuscript/3/")

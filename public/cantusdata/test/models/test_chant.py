@@ -6,12 +6,7 @@ from cantusdata.models.folio import Folio
 
 
 class ChantModelTestCase(TransactionTestCase):
-
-    fixtures = ["1_users", "2_initial_data"]
-
-    manuscript = None
-    folio = None
-    chant = None
+    fixtures = ['2_initial_data.json']
 
     def setUp(self):
         self.manuscript = Manuscript.objects.get(name="MyName")
@@ -32,12 +27,3 @@ class ChantModelTestCase(TransactionTestCase):
         self.chant.sequence = 59
         self.chant.save()
         self.assertNotEqual(self.chant.sequence, duplicate_chant.sequence)
-
-    def tearDown(self):
-        """
-        It's important that we delete the models in the order of their
-        dependancy.
-        """
-        Chant.objects.all().delete()
-        Folio.objects.all().delete()
-        Manuscript.objects.all().delete()

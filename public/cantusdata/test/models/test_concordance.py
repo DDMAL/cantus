@@ -4,10 +4,7 @@ from cantusdata.models.concordance import Concordance
 
 
 class ConcordanceModelTestCase(TransactionTestCase):
-
-    fixtures = ["1_users", "2_initial_data"]
-
-    concordance = None
+    fixtures = ["2_initial_data"]
 
     def setUp(self):
         self.concordance = Concordance.objects.get(letter_code="A")
@@ -32,6 +29,3 @@ class ConcordanceModelTestCase(TransactionTestCase):
         self.concordance.save()
         self.assertNotEqual(self.concordance.institution_city,
                             duplicate_concordance.institution_city)
-
-    def tearDown(self):
-        Concordance.objects.all().delete()

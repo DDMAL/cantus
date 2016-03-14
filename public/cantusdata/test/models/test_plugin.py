@@ -4,12 +4,7 @@ from cantusdata.models.manuscript import Manuscript
 
 
 class FolioModelTestCase(TransactionTestCase):
-
-    fixtures = ["1_users", "2_initial_data"]
-
-    first_plugin = None
-    second_plugin = None
-    manuscript = None
+    fixtures = ["2_initial_data"]
 
     def setUp(self):
         self.first_plugin = Plugin(name="A very nice plugin!")
