@@ -10,6 +10,7 @@ This is a pattern described (recommended?) at
 import os
 import sys
 import contextlib
+import argparse
 
 import requests
 
@@ -17,6 +18,24 @@ import django
 from django.conf import settings
 from django.test.utils import get_runner
 from cantusdata import settings as base_settings
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('tests', nargs='*', default=['cantusdata', 'neumeeditor'])
+    args = parser.parse_args()
+
+    failures = run_tests(args.tests)
+    sys.exit(bool(failures))
+
+
+def run_tests(tests):
+    with create_test_solr_core():
+        os.environ['DJANGO_SETTINGS_MODULE'] = 'cantusdata.test.test_settings'
+        django.setup()
+        TestRunner = get_runner(settings)
+        test_runner = TestRunner()
+        return test_runner.run_tests(tests)
 
 
 @contextlib.contextmanager
@@ -52,11 +71,4 @@ def run_solr_admin_cmd(msg, args):
 
 
 if __name__ == "__main__":
-    with create_test_solr_core():
-        os.environ['DJANGO_SETTINGS_MODULE'] = 'cantusdata.test.test_settings'
-        django.setup()
-        TestRunner = get_runner(settings)
-        test_runner = TestRunner()
-        failures = test_runner.run_tests(['cantusdata', 'neumeeditor'])
-
-    sys.exit(bool(failures))
+    main()
