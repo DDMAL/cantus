@@ -1,10 +1,10 @@
-from rest_framework.test import APITestCase
+from rest_framework.test import APITransactionTestCase
 from rest_framework import status
 from cantusdata.models import Chant, Folio, Manuscript, Concordance
 # Refer to http://www.django-rest-framework.org/api-guide/testing
 
 
-class MainViewTestCase(APITestCase):
+class MainViewTestCase(APITransactionTestCase):
 
     fixtures = ["1_users", "2_initial_data"]
 

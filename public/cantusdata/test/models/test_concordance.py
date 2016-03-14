@@ -1,9 +1,9 @@
 import copy
-from django.test import TestCase
+from django.test import TransactionTestCase
 from cantusdata.models.concordance import Concordance
 
 
-class ConcordanceModelTestCase(TestCase):
+class ConcordanceModelTestCase(TransactionTestCase):
 
     fixtures = ["1_users", "2_initial_data"]
 

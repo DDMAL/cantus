@@ -1,12 +1,10 @@
-from django.middleware import transaction
-from django.test import TestCase
-from django.db import IntegrityError
+from django.test import TransactionTestCase
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.chant import Chant
 from cantusdata.models.folio import Folio
 
 
-class ManuscriptModelTestCase(TestCase):
+class ManuscriptModelTestCase(TransactionTestCase):
 
     fixtures = ["1_users", "2_initial_data"]
 

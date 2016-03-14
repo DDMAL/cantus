@@ -1,8 +1,8 @@
-from rest_framework.test import APITestCase
+from rest_framework.test import APITransactionTestCase
 from rest_framework import status
 
 
-class ManuscriptFolioSetViewTestCase(APITestCase):
+class ManuscriptFolioSetViewTestCase(APITransactionTestCase):
 
     fixtures = ["1_users", "2_initial_data"]
 

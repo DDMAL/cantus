@@ -1,9 +1,9 @@
-from django.test import TestCase
+from django.test import TransactionTestCase
 from cantusdata.models.plugin import Plugin
 from cantusdata.models.manuscript import Manuscript
 
 
-class FolioModelTestCase(TestCase):
+class FolioModelTestCase(TransactionTestCase):
 
     fixtures = ["1_users", "2_initial_data"]
 

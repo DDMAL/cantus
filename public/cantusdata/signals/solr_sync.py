@@ -86,6 +86,16 @@ class SolrSynchronizer (object):
             sess.schedule_update(instance.folio)
             sess.schedule_update(instance.manuscript)
 
+    # The handler for this is attached in CantusdataConfig.ready
+    # so that it gets run when the config is changed for tests
+    def db_flushed(self, **kwargs):
+        assert Chant.objects.all().count() == 0
+        assert Folio.objects.all().count() == 0
+        assert Manuscript.objects.all().count() == 0
+
+        with self.get_session() as sess:
+            sess.schedule_full_flush()
+
 
 class SynchronizationSession (object):
     def __init__(self, solr_server_url):
@@ -118,6 +128,16 @@ class SynchronizationSession (object):
             pass
 
         self._deletions.add(model)
+
+    def schedule_full_flush(self):
+        self._additions.clear()
+        self._deletions.clear()
+        self._deletions.add(DbFlusher())
+
+
+class DbFlusher (object):
+    def delete_from_solr(self, conn):
+        conn.delete_query('type:cantusdata_chant OR type:cantusdata_folio OR type:cantusdata_manuscript')
 
 
 solr_synchronizer = SolrSynchronizer(settings.SOLR_SERVER)

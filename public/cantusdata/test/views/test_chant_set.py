@@ -1,17 +1,11 @@
-from unittest import skip
-
-from rest_framework.test import APITestCase
+from rest_framework.test import APITransactionTestCase
 from rest_framework import status
 
 
-class FolioChantSetViewTestCase(APITestCase):
+class FolioChantSetViewTestCase(APITransactionTestCase):
 
     fixtures = ["1_users", "2_initial_data"]
 
-    def setUp(self):
-        self.client.login(username="ahankins", password="hahaha")
-
-    @skip('dummy data conflicts with other data in Solr (broken encapsulation)')
     def test_get(self):
         response = self.client.get("/chant-set/folio/1/")
         # Test that we get a response
@@ -27,19 +21,16 @@ class FolioChantSetViewTestCase(APITestCase):
                           ' "genre": "", "manuscript_id": 3, "full_text": "",' \
                           ' "feast": "", "mode": "", "finalis": "",' \
                           ' "position": ""}]'
-        # We want to remove the version id and unique id because they're always
-        # different.
         self.assertJSONEqual(response.content, expected_string)
 
 
-class ManuscriptChantSetTestCase(APITestCase):
+class ManuscriptChantSetTestCase(APITransactionTestCase):
 
     fixtures = ["1_users", "2_initial_data"]
 
     def setUp(self):
         self.client.login(username="ahankins", password="hahaha")
 
-    @skip('dummy data conflicts with other data in Solr (broken encapsulation)')
     def test_get(self):
         response = self.client.get("/chant-set/manuscript/3/")
         # Test that we get a response
@@ -56,8 +47,6 @@ class ManuscriptChantSetTestCase(APITestCase):
                           ' "genre": "", "manuscript_id": 3, "full_text": "",' \
                           ' "feast": "", "mode": "", "finalis": "",' \
                           ' "position": ""}]'
-        # We want to remove the version id and unique id because they're always
-        # different.
         self.assertJSONEqual(response.content, expected_string)
 
     def test_get_empty_chant(self):

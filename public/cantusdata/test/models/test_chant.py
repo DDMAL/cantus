@@ -1,11 +1,11 @@
 import copy
-from django.test import TestCase
+from django.test import TransactionTestCase
 from cantusdata.models.chant import Chant
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.folio import Folio
 
 
-class ChantModelTestCase(TestCase):
+class ChantModelTestCase(TransactionTestCase):
 
     fixtures = ["1_users", "2_initial_data"]
 
