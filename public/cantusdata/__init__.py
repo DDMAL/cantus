@@ -13,4 +13,4 @@ class CantusdataConfig (AppConfig):
         # Enable the app's signals
         import cantusdata.signals
 
-        post_migrate.connect(cantusdata.signals.solr_synchronizer.db_flushed, sender=self)
+        post_migrate.connect(cantusdata.signals.solr_synchronizer.db_refresh, sender=self)

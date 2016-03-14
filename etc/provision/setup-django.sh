@@ -41,8 +41,4 @@ echo "==================== INSTALLING DJANGO ===================="
 
     pip install -r requirements.txt
     pip install -r requirements-dev.txt
-
-    python manage.py makemigrations
-    python manage.py migrate
-    deactivate
 )

@@ -88,13 +88,12 @@ class SolrSynchronizer (object):
 
     # The handler for this is attached in CantusdataConfig.ready
     # so that it gets run when the config is changed for tests
-    def db_flushed(self, **kwargs):
-        assert Chant.objects.all().count() == 0
-        assert Folio.objects.all().count() == 0
-        assert Manuscript.objects.all().count() == 0
+    def db_refresh(self, verbosity=0, **kwargs):
+        if verbosity > 0:
+            print 'Updating Solr index after database flush or migration...'
 
         with self.get_session() as sess:
-            sess.schedule_full_flush()
+            sess.schedule_full_refresh()
 
 
 class SynchronizationSession (object):
@@ -129,10 +128,14 @@ class SynchronizationSession (object):
 
         self._deletions.add(model)
 
-    def schedule_full_flush(self):
-        self._additions.clear()
+    def schedule_full_refresh(self):
         self._deletions.clear()
         self._deletions.add(DbFlusher())
+
+        self._additions.clear()
+        self._additions.update(Manuscript.objects.all())
+        self._additions.update(Folio.objects.all())
+        self._additions.update(Chant.objects.all())
 
 
 class DbFlusher (object):

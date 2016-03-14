@@ -17,3 +17,6 @@ cd ./public
 source app_env/bin/activate
 
 ./manage.py wait_until_solr_ready
+
+./manage.py makemigrations
+./manage.py migrate
