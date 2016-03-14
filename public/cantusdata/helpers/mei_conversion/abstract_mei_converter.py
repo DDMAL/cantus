@@ -62,7 +62,7 @@ class AbstractMEIConverter:
     @classmethod
     def _process_in_sequence(cls, mei_files, siglum_slug, **options):
         for file_name in mei_files:
-            ngrams = cls._process_file(file_name, siglum_slug, **options)
+            ngrams = cls.process_file(file_name, siglum_slug, **options)
             yield file_name, ngrams
 
     @classmethod
@@ -73,7 +73,7 @@ class AbstractMEIConverter:
         return pool.imap(process_file_in_worker, args)
 
     @classmethod
-    def _process_file(cls, file_name, siglum_slug, **options):
+    def process_file(cls, file_name, siglum_slug, **options):
         inst = cls(file_name, siglum_slug, **options)
         return inst.process()
 
@@ -90,7 +90,7 @@ def init_worker():
 def process_file_in_worker(params):
     cls, file_name, siglum_slug, options = params
 
-    ngrams = list(cls._process_file(file_name, siglum_slug, **options))
+    ngrams = list(cls.process_file(file_name, siglum_slug, **options))
 
     return file_name, ngrams
 
