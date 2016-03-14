@@ -44,7 +44,7 @@ class MEIConverter (AbstractMEIConverter):
         semitones = [m - n for n, m in
                      zip(midipitch[:-1], midipitch[1:])]
 
-        str_semitones = '_'.join(str(s) for s in semitones[1:-1])
+        str_semitones = '_'.join(str(s) for s in semitones)
 
         intervals = getIntervals(semitones, pnames)
         contour = getContour(semitones)

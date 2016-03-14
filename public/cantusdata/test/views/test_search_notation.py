@@ -1,6 +1,5 @@
 import os
 import json
-import unittest
 
 from solr import SolrConnection
 
@@ -59,10 +58,7 @@ class SearchNotationTestCase(APITestCase):
             ]
         })
 
-    @unittest.expectedFailure  # For some reason the first and last semitones are missing
     def test_get_neumes(self):
-        self.maxDiff = None
-
         response = self.client.get("/notation-search/", {
             "q": "torculus punctum punctum clivis",
             "type": "neumes",
