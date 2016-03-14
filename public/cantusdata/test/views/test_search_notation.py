@@ -48,7 +48,7 @@ class SearchNotationTestCase(APITestCase):
             "numFound": 1,
             "results": [
                 {
-                    "semitones": [3, 0, 2, -2, 0],
+                    "semitones": [-2, 3, 0, 2, -2, 0, 7],
                     "pnames": ["e", "d", "f", "f", "g", "f", "f", "c"],
                     "neumes": ["clivis", "punctum", "punctum", "punctum", "punctum", "punctum", "punctum"],
                     "boxes": [{"y": 3252, "p": "001r", "x": 1262, "w": 498, "h": 231}],
