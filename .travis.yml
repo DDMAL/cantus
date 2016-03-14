@@ -1,13 +1,35 @@
 sudo: required
+dist: trusty
 
-language: node_js
-node_js: stable
+env: CANTUS_CI_TEST=base_config
 
-env:
-  - CANTUS_CI_TEST=frontend
-  - CANTUS_CI_TEST=server
+matrix:
+  exclude:
+    - env: CANTUS_CI_TEST=base_config
+  include:
+    - language: node_js
+      node_js: stable
+      env: CANTUS_CI_TEST=frontend
 
-install: ./etc/ci/install.sh
-before_script: ./etc/ci/before-test.sh
-script: ./etc/ci/run-tests.sh
-after_success: ./etc/ci/post-coverage.sh
+      before_install:
+        - cd public/cantusdata/frontend
+      install:
+        - npm install
+      before_script:
+        - npm run build
+      script:
+        - npm run lint
+        - npm test
+
+    - language: python
+      python: "2.7"
+      env: CANTUS_CI_TEST=server
+
+      install:
+        - ./etc/provision/setup.sh
+      before_script:
+        - ./etc/ci/prepare-server.sh
+      script:
+        - ./etc/ci/test-server.sh
+      after_success:
+        - ./etc/ci/post-coverage.sh

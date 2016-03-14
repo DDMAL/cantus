@@ -16,6 +16,8 @@ cd ./public
 
 source app_env/bin/activate
 
+cp ./cantusdata/settings-example.py ./cantusdata/settings.py
+
 ./manage.py wait_until_solr_ready
 
 ./manage.py makemigrations
