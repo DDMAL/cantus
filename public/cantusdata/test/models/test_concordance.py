@@ -1,4 +1,3 @@
-import copy
 from django.test import TransactionTestCase
 from cantusdata.models.concordance import Concordance
 
@@ -16,16 +15,3 @@ class ConcordanceModelTestCase(TransactionTestCase):
         self.assertEqual(self.concordance.citation,
                              "A  Montreal, DDMAL, ABC123" +
                              " (Today, from Saturn) [RISM: QUE - 982]")
-
-    def test_update_solr(self):
-        """
-        Test that we can update the concordance in Solr.
-        """
-        duplicate_concordance = copy.deepcopy(self.concordance)
-        self.assertFalse(self.concordance is duplicate_concordance)
-        self.assertEqual(self.concordance.institution_city,
-                         duplicate_concordance.institution_city)
-        self.concordance.institution_city = "Toronto"
-        self.concordance.save()
-        self.assertNotEqual(self.concordance.institution_city,
-                            duplicate_concordance.institution_city)

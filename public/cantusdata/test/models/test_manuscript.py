@@ -1,4 +1,8 @@
+import solr
+
 from django.test import TransactionTestCase
+from django.conf import settings
+
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.chant import Chant
 from cantusdata.models.folio import Folio
@@ -75,3 +79,31 @@ class ManuscriptModelTestCase(TransactionTestCase):
         # Second deletion
         second_chant.delete()
         self.assertEqual(set(self.first_manuscript.chant_set.all()), set())
+
+    def test_solr_update(self):
+        ms = self.first_manuscript
+        ms.name = 'I am the best book'
+
+        solrconn = solr.SolrConnection(settings.SOLR_SERVER)
+        prior_resp = ms.fetch_solr_records(solrconn)
+
+        self.assertEqual(prior_resp.numFound, 1)
+        self.assertNotEqual(prior_resp.results[0]['name'], 'I am the best book')
+
+        ms.save()
+
+        post_resp = ms.fetch_solr_records(solrconn)
+
+        self.assertEqual(post_resp.numFound, 1)
+        self.assertEqual(post_resp.results[0]['name'], 'I am the best book')
+
+    def test_solr_deletion(self):
+        pk = self.first_manuscript.pk
+
+        solrconn = solr.SolrConnection(settings.SOLR_SERVER)
+        self.first_manuscript.delete_from_solr(solrconn)
+
+        solrconn.commit()
+
+        indexed = solrconn.query('type:cantusdata_manuscript AND item_id:{}'.format(pk))
+        self.assertEqual(indexed.numFound, 0)
