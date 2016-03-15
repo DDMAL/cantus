@@ -1,5 +1,8 @@
-import copy
+import solr
+
+from django.conf import settings
 from django.test import TransactionTestCase
+
 from cantusdata.models.chant import Chant
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.folio import Folio
@@ -21,9 +24,17 @@ class ChantModelTestCase(TransactionTestCase):
         """
         Test that we can update the chant in Solr
         """
-        duplicate_chant = copy.deepcopy(self.chant)
-        self.assertFalse(self.chant is duplicate_chant)
-        self.assertEqual(self.chant.sequence, duplicate_chant.sequence)
         self.chant.sequence = 59
+
+        solrconn = solr.SolrConnection(settings.SOLR_SERVER)
+        prior_resp = self.chant.fetch_solr_records(solrconn)
+
+        self.assertEqual(prior_resp.numFound, 1)
+        self.assertNotEqual(prior_resp[0].sequence, 59)
+
         self.chant.save()
-        self.assertNotEqual(self.chant.sequence, duplicate_chant.sequence)
+
+        post_resp = self.chant.fetch_solr_records(solrconn)
+
+        self.assertEqual(post_resp.numFound, 1)
+        self.assertEqual(post_resp[0].sequence, 59)
