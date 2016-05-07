@@ -31,6 +31,8 @@ module.exports = function (config)
         files: ['public/js/**/*.spec.js'],
         frameworks: ['jasmine-jquery', 'jasmine-ajax', 'jasmine'],
 
+        reporters: ['mocha'],
+
         preprocessors: {
             'public/js/**/*.js': ['webpack', 'sourcemap']
         },
