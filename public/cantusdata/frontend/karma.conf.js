@@ -38,7 +38,7 @@ module.exports = function (config)
 
     config.set({
         browsers: ['PhantomJS'],
-        files: ['public/js/**/*.spec.js'],
+        files: ['public/js/test/main.js'],
         frameworks: ['jasmine'],
 
         reporters: ['mocha', 'coverage'],
