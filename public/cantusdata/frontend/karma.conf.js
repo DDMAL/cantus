@@ -10,9 +10,6 @@ module.exports = function (config)
     var webpackConfig = _.defaults({
         devtool: 'inline-source-map',
 
-        // Hack to let .tmp/templates be built
-        bundleDelay: 1000,
-
         plugins: generalWebpackConfig.plugins.concat([
             new webpack.optimize.LimitChunkCountPlugin({
                 maxChunks: 1
