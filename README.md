@@ -7,7 +7,35 @@ Serving images on a website using [Apache Solr](http://lucene.apache.org/solr/),
 
 ## Setup
 
-Rename `gunicorn_start-example.sh` and `settings-example.py` when cloning/pulling from repo and running.
+### Server
+
+The easiest way to set up a development environment is to set up a virtual machine using [Vagrant](https://www.vagrantup.com/). It should also be possible (with some work) to set up the development server directly in a Unix-like environment; see the [provisioning script](https://github.com/DDMAL/cantus/blob/develop/etc/provision/setup.sh) for inspiration.
+
+With Vagrant, execute the following commands from the root directory of the repo:
+
+```sh
+# Set up the VM (this will take a while)
+$ vagrant up
+
+# SSH into the VM and start the Solr server
+$ vagrant ssh
+[vagrant]$ cd /vagrant/public/solr
+[vagrant]$ sudo mvn jetty:run-war
+
+# Now in a separate shell run the Django development server
+$ vagrant ssh
+[vagrant]$ cd /vagrant/public
+# Set up site-specific Django settings
+[vagrant]$ cp cantusdata/settings-example.py cantusdata/settings.py
+# Activate the Python virtualenv
+[vagrant]$ source app_env/bin/activate
+# We can now run the server tests
+[vagrant](app_env)$ ./runtests.py
+# We need to run the server on 0.0.0.0 to expose it outside of the VM
+[vagrant](app_env)$ python manage.py runserver 0.0.0.0:8000
+```
+
+The site should now be running on localhost:8000.
 
 ### Cantusdata client code
 
