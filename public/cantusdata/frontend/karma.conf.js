@@ -1,9 +1,10 @@
 "use strict";
 
+var _ = require('underscore');
+
 module.exports = function (config)
 {
     var path = require('path'),
-        _ = require('underscore'),
         webpack = require('webpack'),
         generalWebpackConfig = require('./webpack.config');
 
@@ -15,7 +16,19 @@ module.exports = function (config)
                 maxChunks: 1
             })
         ])
-    }, generalWebpackConfig);
+    }, deepClone(generalWebpackConfig));
+
+    // Instrument code for coverage info
+    webpackConfig.module.preLoaders = (webpackConfig.module.preLoaders || []).concat([
+        {
+            test: function (fname)
+            {
+                return /\.js$/.test(fname) && !/\.spec\.js/.test(fname);
+            },
+            include: path.resolve('public/js/app'),
+            loader: 'babel-istanbul'
+        }
+    ]);
 
     // Support the "test" module
     webpackConfig.resolve.alias.test = path.resolve(__dirname, 'public/js/test');
@@ -28,7 +41,19 @@ module.exports = function (config)
         files: ['public/js/**/*.spec.js'],
         frameworks: ['jasmine-jquery', 'jasmine-ajax', 'jasmine'],
 
-        reporters: ['mocha'],
+        reporters: ['mocha', 'coverage'],
+
+        coverageReporter: {
+            instrumenters: {
+                'babel-istanbul': require('babel-istanbul')
+            },
+            reporters: [
+                { type: 'html' },
+                { type: 'lcovonly', subdir: '.' },
+                { type: 'text-summary' }
+            ],
+            dir: 'coverage/'
+        },
 
         preprocessors: {
             'public/js/**/*.js': ['webpack', 'sourcemap']
@@ -41,3 +66,11 @@ module.exports = function (config)
         }
     });
 };
+
+function deepClone(obj)
+{
+    if (!obj || typeof obj !== 'object' || obj.__proto__ !== Object.prototype)
+        return obj;
+
+    return _.mapObject(obj, deepClone);
+}
