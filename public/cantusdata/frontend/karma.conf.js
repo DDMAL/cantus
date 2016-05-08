@@ -48,9 +48,9 @@ module.exports = function (config)
                 'babel-istanbul': require('babel-istanbul')
             },
             reporters: [
-                { type: 'html' },
-                { type: 'lcovonly', subdir: '.' },
-                { type: 'text-summary' }
+                {type: 'html'},
+                {type: 'lcovonly', subdir: '.'},
+                {type: 'text-summary'}
             ],
             dir: 'coverage/'
         },
