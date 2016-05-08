@@ -1,5 +1,7 @@
 // Initialization
 import 'init/BackboneCustomization';
+import 'jasmine-jquery';
+import 'jasmine-ajax';
 
 // Test scaffolding
 import Marionette from 'marionette';
