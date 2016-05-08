@@ -41,7 +41,7 @@ $zindex-diva-canvas:       $zindex-diva-fullscreen + 5;
 @import "sidenav";
 
 @mixin ua-support($modernizr-feature) {
-    html.supports-#{$modernizr-feature} & {
+    @at-root html.supports-#{$modernizr-feature} #{&} {
         @content;
     }
 }
