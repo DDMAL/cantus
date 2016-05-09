@@ -7,6 +7,7 @@ import IncrementalClientSideLoader from "utils/IncrementalClientSideLoader";
 
 import SearchResultHeadingView from "../SearchResultHeadingView";
 import NeumeGalleryView from "./NeumeGalleryView";
+import ContourChoiceView from "./ContourChoiceView";
 import InputView from "./InputView";
 import ResultView from "./ResultView";
 
@@ -168,8 +169,20 @@ export default Marionette.Object.extend({
                 collection: this.neumeExemplars
             });
 
-            inputView.listenTo(gallery, 'use:neume', inputView.insertSearchString);
+            inputView.listenTo(gallery, 'use:neume', function(newQuery)
+            {
+                inputView.insertSearchString(newQuery, true);
+            });
             regions.searchHelper.show(gallery);
+        }
+        else if (field.type === 'contour')
+        {
+            var contourChoices = new ContourChoiceView();
+            inputView.listenTo(contourChoices, 'use:contour', function(newQuery)
+            {
+                inputView.insertSearchString(newQuery, false);
+            });
+            regions.searchHelper.show(contourChoices);
         }
         else
         {

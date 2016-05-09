@@ -32,7 +32,7 @@ export default Marionette.ItemView.extend({
     },
 
     /** Insert a string into the search input at the current caret position */
-    insertSearchString: function (newQuery)
+    insertSearchString: function (newQuery, addSpace)
     {
         var input = this.ui.searchBox[0];
         var text = this.ui.searchBox.val();
@@ -43,7 +43,7 @@ export default Marionette.ItemView.extend({
         {
             // Place a space before the new term if the existing input
             // ends with a non-space character
-            if (text.length > 0 && !/\s/.test(text.charAt(text.length - 1)))
+            if (addSpace && text.length > 0 && !/\s/.test(text.charAt(text.length - 1)))
                 text += ' ' + newQuery;
             else
                 text += newQuery;
@@ -64,13 +64,16 @@ export default Marionette.ItemView.extend({
 
         // Place a space before the new term if the existing input
         // ends with a non-space character
-        var prevChar = text.charAt(selStart - 1);
-        if (prevChar && !/\s/.test(prevChar))
-            newQuery = ' ' + newQuery;
+        if (addSpace)
+        {
+            var prevChar = text.charAt(selStart - 1);
+            if (prevChar && !/\s/.test(prevChar))
+                newQuery = ' ' + newQuery;
 
-        var nextChar = text.charAt(selStart + 1);
-        if (nextChar && !/\s/.test(nextChar))
-            newQuery += ' ';
+            var nextChar = text.charAt(selStart + 1);
+            if (nextChar && !/\s/.test(nextChar))
+                newQuery += ' ';
+        }
 
         input.setRangeText(newQuery, selStart, selStart);
 
