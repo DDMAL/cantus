@@ -79,7 +79,10 @@ export default Marionette.LayoutView.extend({
             var difference = initialX - event.clientX;
             var newWidthPercentage = (initialWidth + difference) / (divaColumn.width() + panes.width()) * 100;
 
-            // FIXME(wabain): Handle min-width issues
+            //Prevent one of the two elements to have a width smaller than 5%
+            newWidthPercentage = Math.max(newWidthPercentage, 5);
+            newWidthPercentage = Math.min(newWidthPercentage, 95);
+
             divaColumn.css('width', (100 - newWidthPercentage) + '%');
             panes.css('width', newWidthPercentage + '%');
 

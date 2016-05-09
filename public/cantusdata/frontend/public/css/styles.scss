@@ -401,6 +401,7 @@ body.propagate-height {
 .diva-outer {
     border: none;
     border-right: 1px solid $border-color;
+    min-width: 0;
 
     @include ua-support(flexbox) {
         height: 100%;
