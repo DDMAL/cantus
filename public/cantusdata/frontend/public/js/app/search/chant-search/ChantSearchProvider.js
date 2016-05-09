@@ -29,7 +29,7 @@ var CLIENT_SIDE_SORT_LIMIT = 500;
  * See SearchView for a description of the contract this class fulfills.
  */
 export default Marionette.Object.extend({
-    description: 'Chant search',
+    description: 'Cantus Search',
 
     /** Search fields this class provides */
     fields: KNOWN_FIELDS.filter(function (field)

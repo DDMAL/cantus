@@ -19,7 +19,7 @@ import ResultView from "./ResultView";
  * See SearchView for a further description of the contract this class fulfills.
  */
 export default Marionette.Object.extend({
-    description: 'Music search',
+    description: 'OMR Search',
 
     results: null,
     divaView: null,
