@@ -58,6 +58,10 @@ export default Marionette.LayoutView.extend({
 
     startResizing: function (event)
     {
+        //Only resize if the resizer was left clicked
+        if (event.button !== 0)
+            return;
+
         event.preventDefault();
 
         // Set up
