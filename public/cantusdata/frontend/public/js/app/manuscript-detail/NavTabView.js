@@ -1,18 +1,15 @@
 import Radio from 'backbone.radio';
 import Marionette from 'marionette';
 
-import template from './folio-item.template.html';
+import template from './nav-tab.template.html';
 
 var manuscriptChannel = Radio.channel('manuscript');
 
-/**
- * View representing a folio's data.
- * Right now it's just a title.
- */
+
 export default Marionette.ItemView.extend({
     template,
 
-    onShow: function ()
+    initialize: function ()
     {
         this.listenTo(manuscriptChannel, 'change:folio', this.render);
     },

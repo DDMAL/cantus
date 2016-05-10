@@ -8,7 +8,6 @@ import ChantCollection from "collections/ChantCollection";
 
 import ChantCompositeView from "./ChantCompositeView";
 import DivaFolioAdvancerView from "./DivaFolioAdvancerView";
-import FolioItemView from "./FolioItemView";
 
 import template from './folio.template.html';
 
@@ -19,7 +18,6 @@ export default Marionette.LayoutView.extend({
 
     regions: {
         chantListRegion: '.chant-list-region',
-        folioItemRegion: '.folio-item-region',
         divaFolioAdvancerRegion: '.diva-folio-advancer-region'
     },
 
@@ -131,8 +129,6 @@ export default Marionette.LayoutView.extend({
 
     onShow: function()
     {
-        this.folioItemRegion.show(new FolioItemView());
-
         this.chantListRegion.show(new ChantCompositeView({
             collection: this.chantCollection
         }));

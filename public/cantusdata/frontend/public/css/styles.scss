@@ -164,6 +164,12 @@ pre.preformatted-text {
 }
 
 
+//Override bootstrap in order to align the folio navigation buttons on the right
+.pager.text-right {
+    text-align: right;
+}
+
+
 .full-result-record {
     .content-enter,
     .content-exit {
@@ -462,6 +468,9 @@ body.propagate-height {
     }
 }
 
+#manuscript-search {
+    margin-top: 21px;
+}
 
 #menu-sidenav {
     .sidenav a {
