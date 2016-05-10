@@ -1,16 +1,18 @@
 import _ from "underscore";
 import Backbone from "backbone";
+import Radio from "backbone.radio";
 import Marionette from "marionette";
 import LinkWatcher from "link-watcher";
 import Qs from "qs";
 
 import GlobalVars from "config/GlobalVars";
 import ManuscriptStateModel from "models/ManuscriptStateModel";
-import NavigationManager from "singletons/NavigationManager";
 
 import ManuscriptListPageView from "manuscript-list/ManuscriptListPageView";
 import ManuscriptDetailPageView from "manuscript-detail/ManuscriptDetailPageView";
 import SearchPageView from "search/SearchPageView";
+
+var navChannel = Radio.channel('navigation');
 
 export default Marionette.Object.extend({
     initialize: function(options)
@@ -21,12 +23,6 @@ export default Marionette.Object.extend({
         this.listenToOnce(Backbone.history, 'route', function ()
         {
             this.initialRouteComplete = true;
-        });
-
-        // Change the document title when the title global changes
-        this.listenTo(NavigationManager.titling, 'change:title', function (model, title)
-        {
-            this.setDocumentTitle(title);
         });
 
         // Maintain a manuscript state object that persists as long as the
@@ -162,7 +158,9 @@ export default Marionette.Object.extend({
     showContentView: function(newView, titleSettings)
     {
         this.rootView.mainContent.show(newView, {preventDestroy: this.shouldDestroyMainContentView()});
-        NavigationManager.registerPage(titleSettings);
+
+        navChannel.request('set:navbarTitle', titleSettings.navbarTitle || titleSettings.title);
+        this.setDocumentTitle(titleSettings.title);
     },
 
     /**

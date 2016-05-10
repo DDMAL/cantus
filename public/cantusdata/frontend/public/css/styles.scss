@@ -584,29 +584,31 @@ body.propagate-height {
     padding-left: 15px;
 }
 
-// If there's a subhead then hide the primary component on smaller screens
 @media (max-width: $screen-sm-min - 1) {
-    .primary-brand-component {
-        display: none;
-
-        // .no-subhead will only be set if there's JS, so we also check for html.no-js
-        .no-subhead &, html.no-js & {
-            display: block;
-        }
-    }
-
-    .secondary-brand-component {
-        display: block;
-
-        // Some quick and dirty overflow protection
-        max-width: 70vw;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-
-        // Hide the breadcrumb-style continuation
-        &::before {
+    // If there's a subhead and JS enhancements are supported then hide the
+    // primary component on smaller screens
+    html.js {
+        .primary-brand-component {
             display: none;
+
+            .no-subhead & {
+                display: block;
+            }
+        }
+
+        .secondary-brand-component {
+            display: block;
+
+            // Some quick and dirty overflow protection
+            max-width: 70vw;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+
+            // Hide the breadcrumb
+            &::before {
+                display: none;
+            }
         }
     }
 }

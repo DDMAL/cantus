@@ -1,5 +1,17 @@
 {% extends "base.html" %}
 
+{% block document_title %}
+    Cantus Ultimus {% if not flatpage.url == "/" %}— {{ flatpage.title }}{% endif %}
+{% endblock %}
+
+{% spaceless %}
+    {% block breadcrumb %}
+        {% if not flatpage.url == "/" %}
+            <a class="secondary-brand-component">{{ flatpage.title }}</a>
+        {% endif %}
+    {% endblock %}
+{% endspaceless %}
+
 {% block body %}
     <div class="container">
         <div class="row">

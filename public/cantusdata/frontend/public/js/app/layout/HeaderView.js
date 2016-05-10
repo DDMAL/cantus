@@ -1,6 +1,5 @@
 import Marionette from "marionette";
 import Radio from "backbone.radio";
-import NavigationManager from "singletons/NavigationManager";
 
 import SearchView from "search/SearchView";
 import ChantSearchProvider from "search/chant-search/ChantSearchProvider";
@@ -12,7 +11,7 @@ import subheadTemplate from './navbar-subhead.template.html';
 var navChannel = Radio.channel('navigation');
 
 /**
- * Provide an alert message to the user.
+ * Add JS enhancements to the page header.
  */
 export default Marionette.LayoutView.extend({
     el: '#page-header',
@@ -38,13 +37,9 @@ export default Marionette.LayoutView.extend({
         'click @ui.navButton': 'toggleNavigationDrawer'
     },
 
-    modelEvents: {
-        'change:navbarTitle': 'updateNavbarTitle'
-    },
-
     initialize: function()
     {
-        this.model = NavigationManager.titling;
+        navChannel.reply('set:navbarTitle', this.updateNavbarTitle, this);
 
         // The search view that we will shove into the modal box
         this.searchView = new SearchView({
@@ -71,10 +66,9 @@ export default Marionette.LayoutView.extend({
      * When the global navbarTitle changes, update the pageTitle region
      * to display it
      *
-     * @param model
      * @param title
      */
-    updateNavbarTitle: function (model, title)
+    updateNavbarTitle: function (title)
     {
         if (title)
         {
@@ -105,9 +99,10 @@ export default Marionette.LayoutView.extend({
         // Dynamically make the search link a modal
         this.ui.searchModalLink.attr(searchModalAttrs);
 
-        // Extract nav links from the DOM and move them into the navigation manager.
+        // Get the nav links from the DOM and add them to the collection.
         // The advantage of doing things this way is that it makes it possible to
         // provide a simple, mobile-friendly, JavaScript-free default.
+        var navLinkCollection = this.collection;
         var searchModalLinkElem = this.ui.searchModalLink[0];
 
         this.ui.navLinks.each(function ()
@@ -118,7 +113,7 @@ export default Marionette.LayoutView.extend({
             if (this === searchModalLinkElem)
                 profile.attr = searchModalAttrs;
 
-            NavigationManager.navItems.add(profile);
+            navLinkCollection.add(profile);
         });
 
         this.searchModalRegion.show(this.searchModalView, {preventDestroy: true});

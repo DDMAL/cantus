@@ -22,7 +22,7 @@ export default Marionette.LayoutView.extend({
     onRender()
     {
         const sidenav = new SidenavView({
-            content: () => new MenuSidenavContentView()
+            content: () => new MenuSidenavContentView({collection: this.collection})
         });
 
         this.sidenavContainer.show(sidenav);
