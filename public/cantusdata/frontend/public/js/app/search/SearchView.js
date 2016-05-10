@@ -88,13 +88,13 @@ export default Marionette.LayoutView.extend({
         // search field and an empty query
         if (searchTypeFound)
         {
-            this.query = searchTerm.query;
+            this._setQuery(searchTerm.query);
         }
         else
         {
             this.activeProvider = this.providers[0];
             this.activeField = this.activeProvider.fields[0];
-            this.query = '';
+            this._setQuery('');
         }
     },
 
@@ -124,13 +124,25 @@ export default Marionette.LayoutView.extend({
         }, this);
     },
 
+    /** Set both the query and the cached query to a new string.
+     * Makes it simpler to set the query in order to avoid forgetting
+     * to also set the cachedQueries array
+     *
+     * @param {String} query
+     * @private
+     */
+    _setQuery: function (query)
+    {
+        this.query = this.cachedQueries[this.activeField.type] = query;
+    },
+
     /** Add a binding to listen for `search` on the input view whenever an
      * input view is shown. */
     bindInputSearchEvent: function (inputView)
     {
         this.listenTo(inputView, 'search', function (query)
         {
-            this.query = this.cachedQueries[this.activeField.type] = query;
+            this._setQuery(query);
 
             this.trigger('search', {type: this.activeField.type, query: query});
             this.activeProvider.triggerMethod('search', query);
