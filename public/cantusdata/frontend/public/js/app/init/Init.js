@@ -1,10 +1,4 @@
-import "init/BackboneCustomization";
-import "jquery";
-import "underscore";
-import "marionette";
-import "bootstrap";
-import "modernizr";
-
+import "./GlobalSetup";
 import Backbone from "backbone";
 import App from "App";
 import WorkSpace from "routers/WorkSpace";

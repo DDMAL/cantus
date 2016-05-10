@@ -1,11 +1,18 @@
 /**
- * Provide general, global configuration for Backbone and Marionette.
+ * Provide general, global configuration.
  */
 
+// Ensure Bootstrap JS runs
+import "bootstrap";
+
+// Ensure Modernizr runs
+import "modernizr";
+
 import _ from 'underscore';
-import App from 'App';
 import Backbone from 'backbone';
 import Marionette from 'marionette';
+
+import App from 'App';
 
 // Marionette inspector
 if (window.__agent)
@@ -26,5 +33,5 @@ Marionette.TemplateCache.prototype.loadTemplate = function (templateId)
     throw new Error(`Cannot load template "${templateId}" by ID. Load it via import instead.`);
 };
 
+// Set the global behaviors lookup
 Marionette.Behaviors.behaviorsLookup = _.constant(App.behaviors);
-

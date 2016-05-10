@@ -1,7 +1,7 @@
 /* eslint-env commonjs */
 
 // Initialization
-import 'init/BackboneCustomization';
+import 'init/GlobalSetup';
 import 'jasmine-jquery';
 import 'jasmine-ajax';
 
