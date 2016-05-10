@@ -6,7 +6,7 @@ import NavigationManager from "singletons/NavigationManager";
 import contentTemplate from './menu-sidenav-content.template.html';
 import itemTemplate from './menu-sidenav-item.template.html';
 
-var sidenavChannel = Radio.channel('nav-menu');
+var navChannel = Radio.channel('navigation');
 
 export const SidenavContentItemView = Marionette.ItemView.extend({
     tagName: 'li',
@@ -17,7 +17,7 @@ export const SidenavContentItemView = Marionette.ItemView.extend({
         {
             if (!event.defaultPrevented)
             {
-                sidenavChannel.request('collapse');
+                navChannel.request('collapse:menu');
             }
         }
     },

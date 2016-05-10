@@ -7,7 +7,7 @@ import MenuSidenavContentView from './MenuSidenavContentView';
 
 import template from './menu-sidenav.template.html';
 
-var sidenavChannel = Radio.channel('nav-menu');
+var navChannel = Radio.channel('navigation');
 
 /**
  * View for the primary navigation menu
@@ -27,14 +27,15 @@ export default Marionette.LayoutView.extend({
 
         this.sidenavContainer.show(sidenav);
 
-        sidenavChannel.reply('toggle', () => sidenav.toggle(), this);
-        sidenavChannel.reply('expand', () => sidenav.show(), this);
-        sidenavChannel.reply('collapse', () => sidenav.hide(), this);
+        // Set the context so there's an easy way to clear the bindings
+        navChannel.reply('toggle:menu', () => sidenav.toggle(), this);
+        navChannel.reply('expand:menu', () => sidenav.show(), this);
+        navChannel.reply('collapse:menu', () => sidenav.hide(), this);
     },
 
     onDestroy()
     {
         // Stop replying to all requests where `this` is the context
-        sidenavChannel.stopReplying(null, null, this);
+        navChannel.stopReplying(null, null, this);
     }
 });

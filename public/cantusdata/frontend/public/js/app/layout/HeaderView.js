@@ -9,7 +9,7 @@ import ModalView from "./ModalView";
 
 import subheadTemplate from './navbar-subhead.template.html';
 
-var sidenavChannel = Radio.channel('nav-menu');
+var navChannel = Radio.channel('navigation');
 
 /**
  * Provide an alert message to the user.
@@ -64,7 +64,7 @@ export default Marionette.LayoutView.extend({
     toggleNavigationDrawer: function (event)
     {
         event.preventDefault();
-        sidenavChannel.request('toggle');
+        navChannel.request('toggle:menu');
     },
 
     /**
