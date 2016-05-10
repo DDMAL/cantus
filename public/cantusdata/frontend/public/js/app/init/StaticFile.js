@@ -4,6 +4,7 @@ import "underscore";
 import "backbone";
 import "marionette";
 import "bootstrap";
+import "modernizr";
 
 import App from "App";
 import NavigationManager from "singletons/NavigationManager";
