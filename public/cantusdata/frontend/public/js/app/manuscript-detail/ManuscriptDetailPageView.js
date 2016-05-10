@@ -13,7 +13,8 @@ import SidenavView from 'ui/SidenavView';
 import FolioView from "./folio/FolioView";
 import DivaView from "./DivaView";
 import ManuscriptInfoView from "./ManuscriptInfoView";
-import NavTabView from './NavTabView';
+import NavFolioView from './NavFolioView';
+import ToolbarView from './ToolbarView';
 
 import template from './manuscript.template.html';
 
@@ -36,7 +37,8 @@ export default Marionette.LayoutView.extend({
         divaViewRegion: "#diva-column",
         folioViewRegion: "#folio",
         searchViewRegion: "#manuscript-search",
-        navTabsRegion: '#manuscript-nav-container'
+        navFolioRegion: '#manuscript-nav-folio',
+        toolbarRegion: '#manuscript-toolbar-container'
     },
 
     ui: {
@@ -164,7 +166,8 @@ export default Marionette.LayoutView.extend({
         // Render the subviews
         this.folioViewRegion.show(new FolioView());
         this.searchViewRegion.show(searchView);
-        this.navTabsRegion.show(new NavTabView());
+        this.navFolioRegion.show(new NavFolioView());
+        this.toolbarRegion.show(new ToolbarView());
 
         // Attach the info sidenav
         this._infoSidenavParent = $('<div class="manuscript-info-sidenav-container"></div>');

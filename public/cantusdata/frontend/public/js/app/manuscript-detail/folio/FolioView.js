@@ -7,7 +7,6 @@ import Folio from "models/Folio";
 import ChantCollection from "collections/ChantCollection";
 
 import ChantCompositeView from "./ChantCompositeView";
-import DivaFolioAdvancerView from "./DivaFolioAdvancerView";
 
 import template from './folio.template.html';
 
@@ -17,8 +16,7 @@ export default Marionette.LayoutView.extend({
     template,
 
     regions: {
-        chantListRegion: '.chant-list-region',
-        divaFolioAdvancerRegion: '.diva-folio-advancer-region'
+        chantListRegion: '.chant-list-region'
     },
 
     modelEvents: {
@@ -132,7 +130,5 @@ export default Marionette.LayoutView.extend({
         this.chantListRegion.show(new ChantCompositeView({
             collection: this.chantCollection
         }));
-
-        this.divaFolioAdvancerRegion.show(new DivaFolioAdvancerView());
     }
 });
