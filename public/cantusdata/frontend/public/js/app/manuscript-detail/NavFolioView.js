@@ -11,7 +11,7 @@ export default Marionette.ItemView.extend({
 
     tagName: 'span',
 
-    initialize: function ()
+    onShow: function ()
     {
         this.listenTo(manuscriptChannel, 'change:folio', this.render);
     },
