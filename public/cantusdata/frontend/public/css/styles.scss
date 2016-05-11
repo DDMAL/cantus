@@ -315,6 +315,11 @@ body.propagate-height {
             }
         }
     }
+
+    //Allow chants to be scrolled in the manuscript-info pane
+    .tab-content {
+        overflow: auto;
+    }
 }
 
 .dragging-overlay {
