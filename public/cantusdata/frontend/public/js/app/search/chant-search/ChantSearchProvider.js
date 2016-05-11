@@ -47,6 +47,7 @@ export default Marionette.Object.extend({
         "genre",
         "position",
         "mode",
+        "incipit",
         "differentia",
         "finalis",
         "folio"

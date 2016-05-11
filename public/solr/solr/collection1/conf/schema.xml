@@ -143,7 +143,7 @@
     <field name="mode" type="string" indexed="true" stored="true" multiValued="false" />
     <field name="differentia" type="string" indexed="true" stored="true" multiValued="false" />
     <field name="finalis" type="string" indexed="true" stored="true" multiValued="false" />
-    <field name="incipit" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="incipit" type="string" indexed="true" stored="true" multiValued="false" />
     <field name="full_text" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="volpiano" type="volpiano_general" indexed="true" stored="true" multiValued="false" />
     <field name="concordances" type="string" indexed="true" stored="true" multiValued="true" />
@@ -335,6 +335,7 @@
     <copyField source="differentia" dest="differentia_t_hidden" />
     <copyField source="finalis" dest="finalis_t_hidden" />
     <copyField source="folio" dest="folio_t_hidden" />
+    <copyField source="incipit" dest="incipit_t_hidden" />
 
    <!-- copy name to alphaNameSort, a field designed for sorting by name -->
    <!-- <copyField source="name" dest="alphaNameSort"/> -->
