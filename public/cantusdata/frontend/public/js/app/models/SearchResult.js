@@ -71,6 +71,8 @@ export default Backbone.Model.extend({
                     "full_text"
                 ]));
 
+                newElement.mode = this._getFormattedMode(newElement.mode);
+
                 if (searchType === 'volpiano')
                 {
                     newElement.volpiano = this.highlightVolpianoResult(result.volpiano, query, false);
@@ -201,5 +203,19 @@ export default Backbone.Model.extend({
 
 
         return regex;
+    },
+
+    /**
+     * Formats the mode to remove all occurences of "No music" and
+     * replace "Chant in Transposition" by "T"
+     * @param mode {string} the mode as returned from the server
+     * @returns {string}
+     * @private
+     */
+    _getFormattedMode: function(mode)
+    {
+        mode = mode.replace("No music", "");
+        mode = mode.replace("Chant in Transposition", "T");
+        return mode;
     }
 });
