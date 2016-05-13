@@ -118,6 +118,9 @@ export default Backbone.Model.extend({
         // Format the Volpiano as a lenient regex
         var regex = this.getVolpianoRegex(query, onlyLiteralMatches);
 
+        if (!regex)
+            return result;
+
         var highlighted = result.replace(regex, '<span class="bg-info">$&</span>');
 
         // If something went wrong and there is no match, fail unobtrusively
@@ -180,7 +183,9 @@ export default Backbone.Model.extend({
 
         // Now we have a string representing a good regex, so we must
         // create an actual regex object
-        var regex = new RegExp(outputAsString, "g");
+        var regex = null;
+        if (outputAsString)
+            regex = new RegExp(outputAsString, "g");
 
         // Cache the generated regex
         if (onlyLiteralMatches)
