@@ -28,7 +28,7 @@ class Manuscript(models.Model):
                                      blank=True, null=True)
 
     def __unicode__(self):
-        return u"{0} - {1}".format(self.siglum, self.name)
+        return u"{}, {}".format(self.provenance, self.siglum)
 
     @property
     def folio_count(self):
