@@ -14,7 +14,7 @@ class SearchView(APIView):
     def get(self, request, *args, **kwargs):
         querydict = request.GET
 
-        s = SolrSearch(request)
+        s = SolrSearch(request, {'public': 'true'})
 
         if not querydict:
             return Response({'query': '', 'numFound': 0, 'results': []})

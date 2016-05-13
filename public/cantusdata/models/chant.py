@@ -55,6 +55,7 @@ class Chant(models.Model):
             'manuscript': self.manuscript.siglum,
             'manuscript_id': self.manuscript.id,
             'manuscript_name_hidden': self.manuscript.name,
+            'public': self.manuscript.public,
             'folio': self.folio.number,
             'folio_id': self.folio.id,
             'sequence': self.sequence,

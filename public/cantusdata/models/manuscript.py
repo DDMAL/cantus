@@ -58,6 +58,7 @@ class Manuscript(models.Model):
             'siglum': self.siglum,
             'siglum_slug': self.siglum_slug,
             'date': self.date,
+            'public': self.public,
             'chant_count': self.chant_count,
             'folio_count': self.folio_count,
             'provenance': self.provenance,

@@ -117,6 +117,8 @@
     <field name="provenance" type="text_general" indexed="true" stored="true"/>
     <field name="description" type="text_general" indexed="true" stored="true"/>
 
+    <field name="public" type="boolean" default="true" indexed="true" stored="true"/>
+
     <field name="number" type="string" indexed="true" stored="true"/>
 
     <field name="manuscript" type="text_general" indexed="true" stored="true"/>
