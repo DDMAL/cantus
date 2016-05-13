@@ -146,6 +146,7 @@
     <field name="incipit" type="string" indexed="true" stored="true" multiValued="false" />
     <field name="full_text" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="volpiano" type="volpiano_general" indexed="true" stored="true" multiValued="false" />
+    <field name="volpiano_literal" type="volpiano_literal" indexed="true" stored="false" multiValued="false" />
     <field name="concordances" type="string" indexed="true" stored="true" multiValued="true" />
 
      <!-- Fields related to OMR Data -->
@@ -337,6 +338,8 @@
     <copyField source="folio" dest="folio_t_hidden" />
     <copyField source="incipit" dest="incipit_t_hidden" />
 
+    <copyField source="volpiano" dest="volpiano_literal" />
+
    <!-- copy name to alphaNameSort, a field designed for sorting by name -->
    <!-- <copyField source="name" dest="alphaNameSort"/> -->
  
@@ -514,14 +517,27 @@
     <fieldType name="volpiano_general" class="solr.TextField" positionIncrementGap="100">
       <analyzer type="index">
         <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ExtractVolpianoNotes.txt"/>
-        <tokenizer class="solr.StandardTokenizerFactory"/>
-        <filter class="solr.NGramFilterFactory" minGramSize="2" maxGramSize="50"/>
+        <filter class="solr.PatternReplaceFilterFactory" pattern="-" replacement=""/>
+        <tokenizer class="solr.NGramTokenizerFactory" minGramSize="2" maxGramSize="50"/>
       </analyzer>
       <analyzer type="query">
         <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ExtractVolpianoNotes.txt"/>
-        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.PatternReplaceFilterFactory" pattern="-" replacement=""/>
+        <tokenizer class="solr.KeywordTokenizerFactory"/>
       </analyzer>
     </fieldType>
+
+      <!-- A text field for literal Volpiano music notation data. -->
+     <fieldType name="volpiano_literal" class="solr.TextField" positionIncrementGap="100">
+       <analyzer type="index">
+         <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ExtractVolpianoNotes.txt"/>
+         <tokenizer class="solr.NGramTokenizerFactory" minGramSize="2" maxGramSize="50"/>
+       </analyzer>
+       <analyzer type="query">
+         <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ExtractVolpianoNotes.txt"/>
+         <tokenizer class="solr.KeywordTokenizerFactory"/>
+       </analyzer>
+     </fieldType>
 
     <!-- A text field with defaults appropriate for English: it
          tokenizes with StandardTokenizer, removes English stop words

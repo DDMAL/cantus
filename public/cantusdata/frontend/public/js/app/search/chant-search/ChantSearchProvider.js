@@ -15,6 +15,7 @@ var KNOWN_FIELDS = [
     {type: "all", "name": "All Text Fields"},
     {type: "manuscript", "name": "Manuscript"},
     {type: "volpiano", "name": "Volpiano"},
+    {type: "volpiano_literal", "name": "Volpiano (Literal)"},
     {type: "mode", "name": "Mode"},
     {type: "feast", "name": "Feast"},
     {type: "genre", "name": "Genre"},

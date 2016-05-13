@@ -109,7 +109,7 @@ export default Marionette.ItemView.extend({
             infoFields: infoFields,
             searchType: searchType,
             result: this.model.getFormattedData(searchType, query),
-            isVolpianoSearch: searchType === 'volpiano',
+            isVolpianoSearch: searchType === 'volpiano' || searchType === 'volpiano_literal',
             columnCount: infoFields.length + 2
         };
     }

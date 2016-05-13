@@ -8,6 +8,8 @@ import Backbone from "backbone";
 // Cache the Volpiano query which  was last turned into a regex
 var lastVolpianoQuery = null,
     lastVolpianoRegex = null,
+    lastLiteralVolpianoQuery = null,
+    lastLiteralVolpianoRegex = null,
     volpianoMap = {};
 
 // Build a mapping of equivalent Volpiano characters
@@ -71,7 +73,11 @@ export default Backbone.Model.extend({
 
                 if (searchType === 'volpiano')
                 {
-                    newElement.volpiano = this.highlightVolpianoResult(result.volpiano, query);
+                    newElement.volpiano = this.highlightVolpianoResult(result.volpiano, query, false);
+                }
+                else if (searchType === 'volpiano_literal')
+                {
+                    newElement.volpiano = this.highlightVolpianoResult(result.volpiano, query, true);
                 }
                 else
                 {
@@ -107,10 +113,10 @@ export default Backbone.Model.extend({
      * @param result volpiano result string
      * @returns {string} highlighted string
      */
-    highlightVolpianoResult: function(result, query)
+    highlightVolpianoResult: function(result, query, onlyLiteralMatches)
     {
         // Format the Volpiano as a lenient regex
-        var regex = this.getVolpianoRegex(query);
+        var regex = this.getVolpianoRegex(query, onlyLiteralMatches);
 
         var highlighted = result.replace(regex, '<span class="bg-info">$&</span>');
 
@@ -118,7 +124,7 @@ export default Backbone.Model.extend({
         /* eslint-disable no-console */
         if (highlighted === result && console && console.error)
         {
-            console.error('Failed to find the match for', query, 'in Volpiano string', result);
+            console.error('Failed to find the match for', query, 'in Volpiano string', result, 'with regex', regex);
         }
         /* eslint-enable no-console */
 
@@ -138,11 +144,13 @@ export default Backbone.Model.extend({
      * @param volpiano {string} a Volpiano query
      * @returns {RegExp}
      */
-    getVolpianoRegex: function(volpiano)
+    getVolpianoRegex: function(volpiano, onlyLiteralMatches)
     {
         // Use a cached regex if one is available
-        if (volpiano === lastVolpianoQuery)
+        if (!onlyLiteralMatches && volpiano === lastVolpianoQuery)
             return lastVolpianoRegex;
+        if (onlyLiteralMatches && volpiano === lastLiteralVolpianoQuery)
+            return lastLiteralVolpianoRegex;
 
         // Empty string that we will fill up
         var outputAsString = "";
@@ -153,16 +161,21 @@ export default Backbone.Model.extend({
         {
             var symbol = volpiano.charAt(i);
 
-            // Ignore unsupported characters
-            if (!(symbol in volpianoMap))
+            // Use this variable to check if the symbol is a dash and a
+            // literal search is being performed.
+            var isLiteralDash = onlyLiteralMatches && symbol === '-';
+
+            if (!(symbol in volpianoMap) && !isLiteralDash)
                 continue;
 
             // If this is not the start of the regex, allow optional
             // characters in between the new character and the prior ones
+            // Add the dash symbol to the optional characters list if not
+            // performing a literal search
             if (outputAsString)
-                outputAsString += "[-1-7]*";
+                outputAsString += "[" + (onlyLiteralMatches ? '' : '-') + "1-7]*";
 
-            outputAsString += '[' + volpianoMap[symbol] + ']';
+            outputAsString += isLiteralDash ? '-' : '[' + volpianoMap[symbol] + ']';
         }
 
         // Now we have a string representing a good regex, so we must
@@ -170,8 +183,17 @@ export default Backbone.Model.extend({
         var regex = new RegExp(outputAsString, "g");
 
         // Cache the generated regex
-        lastVolpianoQuery = volpiano;
-        lastVolpianoRegex = regex;
+        if (onlyLiteralMatches)
+        {
+            lastLiteralVolpianoQuery = volpiano;
+            lastLiteralVolpianoRegex = regex;
+        }
+        else
+        {
+            lastVolpianoQuery = volpiano;
+            lastVolpianoRegex = regex;
+        }
+
 
         return regex;
     }
