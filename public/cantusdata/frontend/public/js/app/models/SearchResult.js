@@ -216,6 +216,9 @@ export default Backbone.Model.extend({
     {
         mode = mode.replace("No music", "");
         mode = mode.replace("Chant in Transposition", "T");
+        mode = mode.replace("Formulaic", "F");
+        mode = mode.replace("Uncertain", "U");
+        mode = mode.replace("Responsory (special)", "R");
         return mode;
     }
 });
