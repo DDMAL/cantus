@@ -8,8 +8,6 @@ import progressbar
 from django.core.management.base import BaseCommand
 from django.conf import settings
 
-from cantusdata.helpers.mei_conversion import MEIConverter, StGallenMEIConverter
-
 
 UPLOAD_POLL_WAIT_SECS = 0.25
 UPLOAD_PROGRESS_STEP = 5
@@ -115,6 +113,8 @@ def convert_mei(mei_location, siglum):
 
 
 def get_converter(siglum):
+    from cantusdata.helpers.mei_conversion import MEIConverter, StGallenMEIConverter
+
     if siglum == "ch-sgs-390" or siglum == "ch-sgs-391":
         return StGallenMEIConverter
 
