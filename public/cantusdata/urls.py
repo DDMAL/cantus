@@ -7,6 +7,7 @@ from cantusdata.views.chant import ChantList, ChantDetail
 from cantusdata.views.folio import FolioList, FolioDetail
 from cantusdata.views.concordance import ConcordanceList, ConcordanceDetail
 from cantusdata.views.search import SearchView
+from cantusdata.views.suggestion import SuggestionView
 from cantusdata.views.search_notation import SearchNotationView
 from cantusdata.views.chant_set import FolioChantSetView, ManuscriptChantSetView
 from cantusdata.views.folio_set import ManuscriptFolioSetView
@@ -57,6 +58,7 @@ urlpatterns = format_suffix_patterns([
          name="manuscript-folio-set-view-index"),
      # Search
      url(r'^search/$', SearchView.as_view(), name="search-view"),
+     url(r'^suggest/$', SuggestionView.as_view(), name='suggestion-view'),
      url(r'^admin/', include(admin.site.urls)),
 
      # Notation search

@@ -20,6 +20,9 @@ $brand-info:            #5bc0de;
 $brand-warning:         #E99002;
 $brand-danger:          #F04124;
 
+//Bootstrap colors
+$bootstrap-blue:        #337ab7;
+
 //** Global textual link color.
 $link-color:            $brand-primary;
 $link-hover-color:      darken($link-color, 15%);
@@ -444,10 +447,29 @@ body.propagate-height {
     z-index: $zindex-diva-canvas + 5;
 }
 
-
-.search-input {
+.search-field {
     padding-left: 15px;
 }
+
+.search-input .form-group {
+    margin-bottom: 0;
+}
+
+.search-suggestions {
+    position: absolute;
+    background-color: white;
+    z-index: 100;
+}
+
+.search-suggestions .list-group {
+    margin: 0;
+}
+
+.search-suggestions .list-group-item.active, .search-suggestions .list-group-item.active:hover{
+    background-color: $bootstrap-blue;
+    border-color: $bootstrap-blue;
+}
+
 
 @include ua-support(flexbox) {
     .search-input-group {
@@ -455,7 +477,7 @@ body.propagate-height {
         flex-direction: row;
     }
 
-    .search-input {
+    .search-field {
         flex-grow: 1;
     }
 }
@@ -465,7 +487,7 @@ body.propagate-height {
         float: left;
     }
 
-    .search-input {
+    .search-field {
         min-width: 100px;
         max-width: 300px;
     }

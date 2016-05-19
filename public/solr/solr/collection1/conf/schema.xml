@@ -138,6 +138,8 @@
     <field name="feast_code" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="feast_explanation" type="text_general" indexed="true" stored="true" multiValued="false" />
 
+     <!-- This field is necessary for the suggesters to work but is empty -->
+    <field name="weight_field" type="float" indexed="false" stored="true" />
 
     <field name="office" type="string" indexed="true" stored="true" multiValued="false" />
     <field name="genre" type="string" indexed="true" stored="true" multiValued="false" />
@@ -530,16 +532,25 @@
     </fieldType>
 
       <!-- A text field for literal Volpiano music notation data. -->
-     <fieldType name="volpiano_literal" class="solr.TextField" positionIncrementGap="100">
-       <analyzer type="index">
-         <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ExtractVolpianoNotes.txt"/>
-         <tokenizer class="solr.NGramTokenizerFactory" minGramSize="2" maxGramSize="50"/>
-       </analyzer>
-       <analyzer type="query">
-         <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ExtractVolpianoNotes.txt"/>
-         <tokenizer class="solr.KeywordTokenizerFactory"/>
-       </analyzer>
-     </fieldType>
+    <fieldType name="volpiano_literal" class="solr.TextField" positionIncrementGap="100">
+      <analyzer type="index">
+        <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ExtractVolpianoNotes.txt"/>
+        <tokenizer class="solr.NGramTokenizerFactory" minGramSize="2" maxGramSize="50"/>
+      </analyzer>
+      <analyzer type="query">
+        <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ExtractVolpianoNotes.txt"/>
+        <tokenizer class="solr.KeywordTokenizerFactory"/>
+      </analyzer>
+    </fieldType>
+
+    <!-- A text field for suggestions -->
+    <fieldType name="suggest_text" class="solr.TextField" positionIncrementGap="100">
+      <analyzer>
+        <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="[^a-zA-Z0-9]" replacement=" "/>
+        <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+        <filter class="solr.LowerCaseFilterFactory"/>
+      </analyzer>
+    </fieldType>
 
     <!-- A text field with defaults appropriate for English: it
          tokenizes with StandardTokenizer, removes English stop words

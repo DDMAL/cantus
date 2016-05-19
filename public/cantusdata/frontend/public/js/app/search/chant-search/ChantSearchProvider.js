@@ -6,9 +6,11 @@ import IncrementalSolrLoader from "utils/IncrementalSolrLoader";
 
 import SearchInput from "models/SearchInput";
 import SearchResultCollection from "collections/SearchResultCollection";
+import SuggestionCollection from "collections/SuggestionCollection";
 
 import SearchResultHeadingView from "../SearchResultHeadingView";
 import SearchInputView from "./SearchInputView";
+import SuggestionCollectionView from './suggestions/SuggestionCollectionView';
 import SearchResultCollectionView from "./SearchResultCollectionView";
 
 var KNOWN_FIELDS = [
@@ -75,6 +77,7 @@ export default Marionette.Object.extend({
 
         // Initialize search result collection
         this.collection = new SearchResultCollection();
+        this.suggestionCollection = new SuggestionCollection();
 
         this.resultLoadingHandler = new IncrementalSolrLoader(this.collection, {
             baseUrl: this.collection.baseUrl()
@@ -160,6 +163,11 @@ export default Marionette.Object.extend({
         {
             queryBuilder.setField(this.getSearchField(field), value);
         }, this);
+
+        var suggestionQuery = queryBuilder.toSuggestString();
+        // suggestionQuery will be null if no suggesters are defined for this search
+        if (suggestionQuery)
+            this.suggestionCollection.fetch({url: this.suggestionCollection.baseUrl() + '?' + suggestionQuery});
 
         this.resultLoadingHandler.fetch(queryBuilder);
     },
@@ -248,7 +256,14 @@ export default Marionette.Object.extend({
         // FIXME(wabain): This triggers changes on the model, as well as going through
         // the SearchView event feedback path. I don't think this is a real problem,
         // but it is deeply confusing.
-        regions.searchInput.show(new SearchInputView({model: this.searchParameters}));
+        var searchInputView = new SearchInputView({model: this.searchParameters});
+
+        //Reset the suggestion collection since we are now searching for something else
+        this.suggestionCollection.reset();
+        var suggestionCollectionView = new SuggestionCollectionView({collection: this.suggestionCollection});
+
+        regions.searchInput.show(searchInputView);
+        regions.searchSuggestions.show(suggestionCollectionView);
 
         regions.searchHelper.empty();
 
@@ -280,6 +295,11 @@ export default Marionette.Object.extend({
         {
             resultsView.triggerMethod('recalculate:size');
         });
+        //Send information from the search input view to the suggestion collection view and vice-versa
+        this.listenTo(searchInputView, 'focus:input', suggestionCollectionView.show);
+        this.listenTo(searchInputView, 'blur:input', suggestionCollectionView.hide);
+        this.listenTo(searchInputView, 'keydown:input', suggestionCollectionView.keyDown);
+        this.listenTo(suggestionCollectionView, 'click:suggestion', searchInputView.setQuery);
     },
 
     /**

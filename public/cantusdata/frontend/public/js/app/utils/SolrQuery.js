@@ -81,33 +81,33 @@ var SolrQuery = Marionette.Object.extend({
         });
     },
 
-    /**
-     *
-     * @param value
-     * @returns {*}
-     */
-    getSolrTerm: function (value)
+    getSolrTerm: function (value, surroundByParentheses=true)
     {
+        var solrTerm = value;
+
         if (_.isObject(value))
         {
             if (value.terms)
             {
                 if (value.terms.length > 1)
                 {
-                    return '(' + _.map(value.terms, this.getSolrTerm).join(' ' + value.connective + ' ') + ')';
+                    solrTerm = _.map(value.terms, this.getSolrTerm).join(' ' + value.connective + ' ');
                 }
                 else if (value.terms.length === 1)
                 {
-                    value = value.terms[0];
+                    solrTerm = this.escapeSolrTerm(value.terms[0]);
                 }
                 else
                 {
-                    return '';
+                    solrTerm =  '';
                 }
             }
         }
 
-        return '(' + this.escapeSolrTerm(value) + ')';
+        if (solrTerm && surroundByParentheses)
+            return '(' + solrTerm + ')';
+        else
+            return solrTerm;
     },
 
     /**
@@ -156,6 +156,30 @@ var SolrQuery = Marionette.Object.extend({
         {
             return key + '=' + encodeURIComponent(value);
         }).join('&');
+    },
+
+    /**
+     * Generates a url corresponding to the query to get suggestions
+     * Returns null if there is no suggester set up for this field
+     * @returns {string}
+     */
+    toSuggestString: function ()
+    {
+        var self = this;
+        var suggestString = null;
+
+        ['feast', 'genre', 'office'].forEach(function (field)
+        {
+            var term = self.fields[field] || self.fields[field + '_t_hidden'];
+            if (term && self.fields.manuscript)
+            {
+                suggestString = 'q=' + self.getSolrTerm(term, false) +
+                    '&dictionary=' + field + 'Suggester' +
+                    '&manuscript=' + self.fields.manuscript;
+            }
+        });
+
+        return suggestString;
     }
 });
 

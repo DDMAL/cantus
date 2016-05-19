@@ -29,6 +29,7 @@ export default Marionette.LayoutView.extend({
 
     regions: {
         searchInput: ".search-input",
+        searchSuggestions: ".search-suggestions",
         searchHelper: ".search-helper",
         searchResultHeading: ".search-heading",
         searchResults: ".search-results"

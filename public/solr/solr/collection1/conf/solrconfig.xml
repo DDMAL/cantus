@@ -1233,6 +1233,51 @@
        always be executed after the "last-components" 
        
      -->
+
+    <searchComponent name="suggest" class="solr.SuggestComponent">
+      <lst name="suggester">
+        <str name="name">feastSuggester</str>
+        <str name="lookupImpl">AnalyzingInfixLookupFactory</str>
+        <str name="dictionaryImpl">DocumentDictionaryFactory</str>
+        <str name="field">feast</str>
+        <str name="weightField">weight_field</str>
+        <str name="contextField">manuscript</str>
+        <str name="buildOnStartup">false</str>
+        <str name="suggestAnalyzerFieldType">suggest_text</str>
+      </lst>
+      <lst name="suggester">
+        <str name="name">genreSuggester</str>
+        <str name="lookupImpl">AnalyzingInfixLookupFactory</str>
+        <str name="dictionaryImpl">DocumentDictionaryFactory</str>
+        <str name="field">genre</str>
+        <str name="weightField">weight_field</str>
+        <str name="contextField">manuscript</str>
+        <str name="buildOnStartup">false</str>
+        <str name="suggestAnalyzerFieldType">suggest_text</str>
+      </lst>
+      <lst name="suggester">
+        <str name="name">officeSuggester</str>
+        <str name="lookupImpl">AnalyzingInfixLookupFactory</str>
+        <str name="dictionaryImpl">DocumentDictionaryFactory</str>
+        <str name="field">office</str>
+        <str name="weightField">weight_field</str>
+        <str name="contextField">manuscript</str>
+        <str name="buildOnStartup">false</str>
+        <str name="suggestAnalyzerFieldType">suggest_text</str>
+      </lst>
+    </searchComponent>
+
+    <requestHandler name="/suggest" class="solr.SearchHandler" startup="lazy">
+        <lst name="defaults">
+            <str name="suggest">true</str>
+            <!-- Get a lot of suggestions so that the duplicates can be removed on the server side -->
+            <str name="suggest.count">50</str>
+            <str name="wt">json</str>
+        </lst>
+        <arr name="components">
+            <str>suggest</str>
+        </arr>
+    </requestHandler>
   
    <!-- Spell Check
 

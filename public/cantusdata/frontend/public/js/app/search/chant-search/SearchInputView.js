@@ -15,6 +15,11 @@ export default Marionette.ItemView.extend({
         "keydown .search-input": "updateQueryInput"
     },
 
+    triggers: {
+        "blur .search-input": "blur:input",
+        "focus .search-input": "focus:input"
+    },
+
     ui: {
         searchInput: '.search-input'
     },
@@ -32,8 +37,12 @@ export default Marionette.ItemView.extend({
         event.preventDefault();
     },
 
-    setQuery: function ()
+    setQuery: function (e, query)
     {
+        //If a query is passed, update the value of the text field
+        if (query)
+            this.ui.searchInput.val(query);
+
         // FIXME(wabain): While this class needs to take a SearchInput model so it can initially
         // be rendered, we're not actually updating that model here - we're just triggering
         // an event which will cause the appropriate changes to propagate. That's kind of
@@ -45,7 +54,7 @@ export default Marionette.ItemView.extend({
     /**
      * Update the `search-text-entered` class on the query input when that input changes.
      */
-    updateQueryInput: function ()
+    updateQueryInput: function (e)
     {
         if (this.ui.searchInput.val())
         {
@@ -55,6 +64,10 @@ export default Marionette.ItemView.extend({
         {
             this.ui.searchInput.removeClass('search-text-entered');
         }
+
+        // Send the keycode to the SuggestionCollectionView
+        if (e)
+            this.trigger('keydown:input', e.keyCode);
     },
 
     onRender: function ()
