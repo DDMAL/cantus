@@ -17,7 +17,7 @@ class ManuscriptModelTestCase(TransactionTestCase):
 
     def test_unicode(self):
         self.assertEqual(self.first_manuscript.__unicode__(),
-                         "    67  a# _ 1* - MyName")
+                         "provigo,     67  a# _ 1*")
 
     def test_folio_count(self):
         """
