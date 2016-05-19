@@ -289,12 +289,6 @@ export default Marionette.Object.extend({
 
         this.listenTo(resultsView, 'continue:loading', this._continueLoadingResults);
 
-        // Trigger size recomputation in the results view when the
-        // heading view changes
-        this.listenTo(headingView, 'render', function ()
-        {
-            resultsView.triggerMethod('recalculate:size');
-        });
         //Send information from the search input view to the suggestion collection view and vice-versa
         this.listenTo(searchInputView, 'focus:input', suggestionCollectionView.show);
         this.listenTo(searchInputView, 'blur:input', suggestionCollectionView.hide);
