@@ -13,7 +13,7 @@ var lastVolpianoQuery = null,
     volpianoMap = {};
 
 // Build a mapping of equivalent Volpiano characters
-_.forEach(['iwxyz', 'IWXYZ', 'eEmM', 'fFnN', 'gG9)oO', 'hHaApP', 'jJbBqQ', 'kKcCrR', 'lLdDsS'],
+_.forEach(['iwxyz', 'IWXYZ', 'eEmM', 'fF8(nN', 'gG9)oO', 'hHaApP', 'jJbBqQ', 'kKcCrR', 'lLdDsS'],
 function (equivalent)
 {
     _.forEach(equivalent, function (value)
