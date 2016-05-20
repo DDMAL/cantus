@@ -33,8 +33,8 @@ export default Marionette.ItemView.extend({
     initialize: function(options)
     {
         _.bindAll(this, 'propagateFolioChange', 'onViewerLoad', 'setFolio',
-            'onFullScreenChanged', 'zoomToLocation', 'getPageAlias',
-            'gotoInputPage', 'getPageWhichMatchesAlias', 'onDocLoad');
+            'zoomToLocation', 'getPageAlias', 'gotoInputPage',
+            'getPageWhichMatchesAlias', 'onDocLoad');
 
         this._imagePrefix = null;
         this._imageSuffix = null;
@@ -128,7 +128,6 @@ export default Marionette.ItemView.extend({
 
         this.onDivaEvent("ViewerDidLoad", this.onViewerLoad);
         this.onDivaEvent("VisiblePageDidChange", this.propagateFolioChange);
-        this.onDivaEvent("ModeDidSwitch", this.onFullScreenChanged);
         this.onDivaEvent("DocumentDidLoad", this.onDocLoad);
     },
 
@@ -266,19 +265,12 @@ export default Marionette.ItemView.extend({
         this.initializeDiva();
     },
 
-    onFullScreenChanged: function(isFullScreen)
-    {
-        if (!isFullScreen)
-            this.triggerMethod('recalculate:size');
-    },
-
     /**
      * Calculate the page size and store the index and filename of the first
      * loaded page.
      */
     onViewerLoad: function()
     {
-        this.triggerMethod('recalculate:size');
         this.trigger('loaded:viewer');
 
         // Go to the predetermined initial folio if one is set

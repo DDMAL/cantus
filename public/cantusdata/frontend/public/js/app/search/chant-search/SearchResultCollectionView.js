@@ -72,7 +72,6 @@ export default Marionette.CompositeView.extend({
     {
         this.hideIfEmpty();
         this.triggerMethod('sorting:changed');
-        this.triggerMethod('recalculate:size');
 
         // We can't use the events hash for this because it relies on events
         // bubbling, and the scroll event does not bubble
@@ -106,13 +105,8 @@ export default Marionette.CompositeView.extend({
         // the view's root element or the result list is shown
         var requiresSizeCalculation;
 
-        if (isDisplayed(this.$el))
+        if (!isDisplayed(this.$el))
         {
-            requiresSizeCalculation = false;
-        }
-        else
-        {
-            requiresSizeCalculation = true;
             this.$el.show();
         }
 
@@ -122,12 +116,8 @@ export default Marionette.CompositeView.extend({
         }
         else if (!isDisplayed(this.ui.resultList))
         {
-            requiresSizeCalculation = true;
             this.ui.resultList.show();
         }
-
-        if (requiresSizeCalculation)
-            this.triggerMethod('recalculate:size');
     },
 
     /**

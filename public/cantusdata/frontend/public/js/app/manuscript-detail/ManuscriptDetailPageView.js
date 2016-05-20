@@ -132,8 +132,6 @@ export default Marionette.LayoutView.extend({
         this.listenToOnce(divaView, 'loaded:viewer', function ()
         {
             this.ui.manuscriptInfo.prependTo(this.ui.toolbarRow.find('.diva-tools-right'));
-            this.triggerMethod('recalculate:size');
-            divaView.triggerMethod('recalculate:size');
         });
 
         // Initialize the search view

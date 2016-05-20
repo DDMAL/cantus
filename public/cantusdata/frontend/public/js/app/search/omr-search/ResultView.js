@@ -42,7 +42,6 @@ export default Marionette.CompositeView.extend({
         if (this.collection.length)
         {
             this.ui.tableWrapper.show();
-            this.triggerMethod('recalculate:size');
         }
         else
         {
