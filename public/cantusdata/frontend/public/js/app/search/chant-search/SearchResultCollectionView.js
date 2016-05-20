@@ -101,10 +101,6 @@ export default Marionette.CompositeView.extend({
             return;
         }
 
-        // We need to trigger a sizing recalculation if either
-        // the view's root element or the result list is shown
-        var requiresSizeCalculation;
-
         if (!isDisplayed(this.$el))
         {
             this.$el.show();
