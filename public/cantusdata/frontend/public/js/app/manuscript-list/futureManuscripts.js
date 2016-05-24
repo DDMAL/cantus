@@ -61,7 +61,7 @@ export default new Backbone.Collection([
     {
         name: 'Utrecht, Universiteitsbibliotheek, MS 3 J 7',
         short_name: 'Utrecht 406',
-        url: 'http://dev-cantus.simssa.ca/manuscript/51/',
+        url: 'http://www.diamm.ac.uk/jsp/Descriptions?op=SOURCE&sourceKey=1355',
         primary_url_is_external: true,
         cantus_url: 'http://cantus.uwaterloo.ca/source/123641',
         date: 'ca. 12th–15th C',
