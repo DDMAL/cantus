@@ -8,7 +8,6 @@ import template from './diva-folio-advancer.template.html';
  */
 export default Marionette.ItemView.extend({
     template,
-    tagName: "nav",
 
     ui:
     {
