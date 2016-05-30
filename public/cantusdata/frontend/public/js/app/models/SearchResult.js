@@ -93,19 +93,40 @@ export default Backbone.Model.extend({
     },
 
     /**
-     * Formats the mode to remove all occurences of "No music" and
-     * replace "Chant in Transposition" by "T"
+     * Formats the mode to remove all occurences of "No music",
+     * "Chant in Transposition", "Formulaic", "Uncertain" and
+     * "Responsory" and replace them by an acronym.
+     * Also adds a tooltip to the mode.
      * @param mode {string} the mode as returned from the server
      * @returns {string}
      * @private
      */
     _getFormattedMode: function(mode)
     {
-        mode = mode.replace("No music", "");
-        mode = mode.replace("Chant in Transposition", "T");
-        mode = mode.replace("Formulaic", "F");
-        mode = mode.replace("Uncertain", "U");
-        mode = mode.replace("Responsory (special)", "R");
-        return mode;
+        var regex = /No music|Chant in Transposition|Formulaic|Uncertain|Responsory( \(special\))?/i;
+        var tooltip = '';
+
+        mode = mode.replace(regex, function(match) {
+            tooltip = match;
+            switch (match.toLowerCase())
+            {
+                case 'no music':
+                    return '';
+                case 'chant in transposition':
+                    return 'T';
+                case 'formulaic':
+                    return 'F';
+                case 'uncertain':
+                    return 'U';
+                case 'responsory (special)':
+                    return 'R';
+                case 'responsory':
+                    return 'R';
+                default:
+                    return '';
+            }
+        });
+
+        return "<span data-toggle='tooltip' title='" + tooltip + "'>" + mode + "</span>";
     }
 });
