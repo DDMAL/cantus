@@ -106,7 +106,8 @@ export default Backbone.Model.extend({
         var regex = /No music|Chant in Transposition|Formulaic|Uncertain|Responsory( \(special\))?/i;
         var tooltip = '';
 
-        mode = mode.replace(regex, function(match) {
+        mode = mode.replace(regex, function(match)
+        {
             tooltip = match;
             switch (match.toLowerCase())
             {
