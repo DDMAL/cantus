@@ -119,7 +119,31 @@ pre.preformatted-text {
 .volpiano, .field-volpiano, .field-volpiano_literal {
     font-family: 'Volpiano';
     font-size: 22pt;
-    line-height: 2em;
+    line-height: 2.5em;
+}
+
+// For the volpiano in the quick view section, a few adjustments are necessary
+// in order for the volpiano and its text underlay to be displayed properly
+.full-result-record-content .volpiano {
+    overflow: hidden; // Make the parent take the height of the volpiano which is floating
+    padding-bottom: 7px; // Avoid cropping the bottom of the text underlay
+}
+
+.volpiano-syllable {
+    float: left;
+    position: relative;
+}
+
+.volpiano-text {
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    margin-top: 35px;
+    position: absolute;
+    left: 0;
+}
+
+.volpiano-spacer {
+    height: 20px;
 }
 
 .field-volpiano, .field-volpiano_literal {

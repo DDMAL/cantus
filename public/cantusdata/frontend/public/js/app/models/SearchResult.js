@@ -1,26 +1,10 @@
 import _ from "underscore";
 import Backbone from "backbone";
+import { formatVolpianoResult, parseVolpianoSyllables } from 'utils/VolpianoDisplayHelper';
 
 /* TODO(wabain): This model class is supposed to be generic over search result types - it can handle
  * manuscripts, chants, or whatever. In practice the only thing it's useful to search is chants.
  * Usages of this should be replaced with the normal Chant model. */
-
-// Cache the Volpiano query which  was last turned into a regex
-var lastVolpianoQuery = null,
-    lastVolpianoRegex = null,
-    lastLiteralVolpianoQuery = null,
-    lastLiteralVolpianoRegex = null,
-    volpianoMap = {};
-
-// Build a mapping of equivalent Volpiano characters
-_.forEach(['iwxyz', 'IWXYZ', 'eEmM', 'fF8(nN', 'gG9)oO', 'hHaApP', 'jJbBqQ', 'kKcCrR', 'lLdDsS'],
-function (equivalent)
-{
-    _.forEach(equivalent, function (value)
-    {
-        volpianoMap[value] = equivalent;
-    });
-});
 
 /**
  * This represents a search result.  It is experimental.
@@ -75,15 +59,15 @@ export default Backbone.Model.extend({
 
                 if (searchType === 'volpiano')
                 {
-                    newElement.volpiano = this.highlightVolpianoResult(result.volpiano, query, false);
+                    newElement.volpiano = formatVolpianoResult(newElement.full_text, result.volpiano, query, false);
                 }
                 else if (searchType === 'volpiano_literal')
                 {
-                    newElement.volpiano = this.highlightVolpianoResult(result.volpiano, query, true);
+                    newElement.volpiano = formatVolpianoResult(newElement.full_text, result.volpiano, query, true);
                 }
                 else
                 {
-                    newElement.volpiano = result.volpiano;
+                    newElement.volpiano = parseVolpianoSyllables(newElement.full_text, result.volpiano);
                 }
 
                 newElement.url = "/manuscript/" + result.manuscript_id + "/?folio=" + result.folio +
@@ -106,103 +90,6 @@ export default Backbone.Model.extend({
         // jscs:enable
 
         return newElement;
-    },
-
-    /**
-     *  Take a volpiano result string and highlight the substrings
-     *  that are part of the query.
-     *
-     * @param result volpiano result string
-     * @returns {string} highlighted string
-     */
-    highlightVolpianoResult: function(result, query, onlyLiteralMatches)
-    {
-        // Format the Volpiano as a lenient regex
-        var regex = this.getVolpianoRegex(query, onlyLiteralMatches);
-
-        if (!regex)
-            return result;
-
-        var highlighted = result.replace(regex, '<span class="bg-info">$&</span>');
-
-        // If something went wrong and there is no match, fail unobtrusively
-        /* eslint-disable no-console */
-        if (highlighted === result && console && console.error)
-        {
-            console.error('Failed to find the match for', query, 'in Volpiano string', result, 'with regex', regex);
-        }
-        /* eslint-enable no-console */
-
-        return highlighted;
-    },
-
-    /**
-     * Create a RegExp which supports lenient matching against a Volpiano query.
-     * Its behaviour should match that in the Solr installation at
-     * mapping-ExtractVolpianoNotes.txt
-     *
-     * TODO: if we ever add highlighting for other fields, it would be good to
-     * use Solr's built in highlighting functionality. But configuring that to
-     * work character by character is non-trivial, so we'll just highlight on the
-     * client side for now.
-     *
-     * @param volpiano {string} a Volpiano query
-     * @returns {RegExp}
-     */
-    getVolpianoRegex: function(volpiano, onlyLiteralMatches)
-    {
-        // Use a cached regex if one is available
-        if (!onlyLiteralMatches && volpiano === lastVolpianoQuery)
-            return lastVolpianoRegex;
-        if (onlyLiteralMatches && volpiano === lastLiteralVolpianoQuery)
-            return lastLiteralVolpianoRegex;
-
-        // Empty string that we will fill up
-        var outputAsString = "";
-
-        var queryLength = volpiano.length;
-
-        for (var i = 0; i < queryLength; i++)
-        {
-            var symbol = volpiano.charAt(i);
-
-            // Use this variable to check if the symbol is a dash and a
-            // literal search is being performed.
-            var isLiteralDash = onlyLiteralMatches && symbol === '-';
-
-            if (!(symbol in volpianoMap) && !isLiteralDash)
-                continue;
-
-            // If this is not the start of the regex, allow optional
-            // characters in between the new character and the prior ones
-            // Add the dash symbol to the optional characters list if not
-            // performing a literal search
-            if (outputAsString)
-                outputAsString += "[" + (onlyLiteralMatches ? '' : '-') + "1-7]*";
-
-            outputAsString += isLiteralDash ? '-' : '[' + volpianoMap[symbol] + ']';
-        }
-
-        // Now we have a string representing a good regex, so we must
-        // create an actual regex object
-        var regex = null;
-        if (outputAsString)
-            regex = new RegExp(outputAsString, "g");
-
-        // Cache the generated regex
-        if (onlyLiteralMatches)
-        {
-            lastLiteralVolpianoQuery = volpiano;
-            lastLiteralVolpianoRegex = regex;
-        }
-        else
-        {
-            lastVolpianoQuery = volpiano;
-            lastVolpianoRegex = regex;
-        }
-
-
-        return regex;
     },
 
     /**
