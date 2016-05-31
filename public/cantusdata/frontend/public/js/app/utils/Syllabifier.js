@@ -2,11 +2,11 @@
 /* eslint-disable */
 //
 // Author(s):
-// Matthew Spencer, OSJ <matthew@osjoseph.org>
+// Matthew Spencer, OSJ <mspencer@osjusa.org>
 //
-// Taken from http://marello.org/tools/syllabifier
+// Taken from https://github.com/frmatthew/exsurge/blob/master/src/Exsurge.Text.js
 //
-// Copyright (c) 2008-2011 Oblates of St. Joseph
+// Copyright (c) 2008-2016 Fr. Matthew Spencer, OSJ
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -145,8 +145,6 @@ var Syllabifier =
             haveCompleteSyllable = false;
         }
 
-        c = ' '; // used just for a silly breakpoint in firebug!
-
         for (var i = 0, wordLength = workingString.length; i < wordLength; i++) {
 
             c = workingString[i];
@@ -163,15 +161,15 @@ var Syllabifier =
             // i is a special case for a vowel. when i is at the beginning
             // of the word (Iesu) or i is between vowels (alleluia),
             // then the i is treated as a consonant (y)
-            if (c == 'i') {
-                if (i == 0 && haveLookahead && this.isVowel(lookahead))
+            if (c === 'i') {
+                if (i === 0 && haveLookahead && this.isVowel(lookahead))
                     cIsVowel = false;
                 else if (previousWasVowel && haveLookahead && this.isVowel(lookahead)) {
                     cIsVowel = false;
                 }
             }
 
-            if (c == '-') {
+            if (c === '-') {
 
                 // a hyphen forces a syllable break, which effectively resets
                 // the logic...
@@ -195,8 +193,8 @@ var Syllabifier =
 
             } else if (haveLookahead) {
 
-                if ((c == 'q' && lookahead == 'u') ||
-                    (lookahead == 'h' && (c == 'c' || c == 'p' || c == 't'))) {
+                if ((c === 'q' && lookahead === 'u') ||
+                    (lookahead === 'h' && (c === 'c' || c === 'p' || c === 't'))) {
                     // handle wheelock's exceptions for qu, ch, ph and th
                     makeSyllable(i - startSyllable);
                     i++; // skip over the 'h' or 'u'
