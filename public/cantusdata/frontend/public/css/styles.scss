@@ -122,6 +122,11 @@ pre.preformatted-text {
     line-height: 2.5em;
 }
 
+// Volpiano in the serach results needs extra margin
+.result-list .volpiano {
+    margin-bottom: 20px;
+}
+
 // For the volpiano in the quick view section, a few adjustments are necessary
 // in order for the volpiano and its text underlay to be displayed properly
 .full-result-record-content .volpiano {
@@ -130,7 +135,7 @@ pre.preformatted-text {
 }
 
 .volpiano-syllable {
-    float: left;
+    display: inline-block;
     position: relative;
 }
 
@@ -140,10 +145,6 @@ pre.preformatted-text {
     margin-top: 35px;
     position: absolute;
     left: 0;
-}
-
-.volpiano-spacer {
-    height: 20px;
 }
 
 .field-volpiano, .field-volpiano_literal {
