@@ -4,7 +4,7 @@ import ManuscriptItemBaseView from "./ManuscriptItemBaseView";
 export default ManuscriptItemBaseView.extend({
     serializeData: function ()
     {
-        var data = _.pick(this.model.attributes, 'name', 'url', 'date', 'chant_count');
+        var data = _.pick(this.model.attributes, 'name', 'url', 'date', 'folio_count', 'chant_count');
 
         // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 

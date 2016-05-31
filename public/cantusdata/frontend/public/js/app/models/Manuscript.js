@@ -11,6 +11,7 @@ export default Backbone.Model.extend({
         date: null,
         provenance: null,
         description: null,
+        folio_count: null,
         chant_count: null
     },
 

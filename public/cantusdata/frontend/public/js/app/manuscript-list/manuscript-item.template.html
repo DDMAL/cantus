@@ -19,7 +19,12 @@
 </td>
 <td><%- date %></td>
 <td>
-    <% if (chant_count != null) { %>
+    <% if (folio_count) { %>
+    <%- folio_count %>
+    <% } %>
+</td>
+<td>
+    <% if (chant_count) { %>
     <%- chant_count %>
     <% } %>
 </td>

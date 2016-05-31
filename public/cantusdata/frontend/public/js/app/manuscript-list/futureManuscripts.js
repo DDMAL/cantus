@@ -10,6 +10,7 @@ export default new Backbone.Collection([
         primary_url_is_external: true,
         cantus_url: 'http://cantus.uwaterloo.ca/source/123613',
         date: '12th C',
+        folio_count: null,
         chant_count: null
     },
     {
@@ -19,6 +20,7 @@ export default new Backbone.Collection([
         primary_url_is_external: true,
         cantus_url: 'http://cantus.uwaterloo.ca/source/123616',
         date: '14th C',
+        folio_count: null,
         chant_count: null
     },
     {
@@ -28,6 +30,7 @@ export default new Backbone.Collection([
         primary_url_is_external: true,
         cantus_url: 'http://cantus.uwaterloo.ca/source/123628',
         date: '12th C',
+        folio_count: null,
         chant_count: null
     },
     {
@@ -38,6 +41,7 @@ export default new Backbone.Collection([
         primary_url_is_external: true,
         cantus_url: 'http://cantus.uwaterloo.ca/source/601861',
         date: '13th C',
+        folio_count: null,
         chant_count: null
     },
     {
@@ -47,6 +51,7 @@ export default new Backbone.Collection([
         primary_url_is_external: true,
         cantus_url: 'http://cantus.uwaterloo.ca/source/123631',
         date: '14th C',
+        folio_count: null,
         chant_count: null
     },
     {
@@ -56,6 +61,7 @@ export default new Backbone.Collection([
         primary_url_is_external: true,
         cantus_url: 'http://cantus.uwaterloo.ca/source/123606',
         date: '14th C',
+        folio_count: null,
         chant_count: null
     },
     {
@@ -65,6 +71,7 @@ export default new Backbone.Collection([
         primary_url_is_external: true,
         cantus_url: 'http://cantus.uwaterloo.ca/source/123641',
         date: 'ca. 12th–15th C',
+        folio_count: null,
         chant_count: null
     }
 ]);
