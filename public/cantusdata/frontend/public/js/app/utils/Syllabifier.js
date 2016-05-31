@@ -32,7 +32,7 @@ var Syllabifier =
 
     // fixme: should we include 'diphthongs' with accented vowels, e.g., áe?
     // fixme: ui is only diphthong in the exceptional cases below (according to Wheelock's Latin)
-    diphthongs: ["ae", "au", "oe"],
+    diphthongs: ["ae", "au", "oe", "aé", "áu", "oé"],
 
     // some words that are simply exceptions to standard syllabification rules!
     // ui combos pronounced as dipthongs
