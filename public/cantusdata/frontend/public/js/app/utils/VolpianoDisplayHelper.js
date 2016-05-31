@@ -52,7 +52,7 @@ export function parseVolpianoSyllables(text, volpiano)
     // volpiano words like numbers are going to be skipped
     var textWordIndex = 0;
 
-    for (var i = 0, len = volpianoWords.length; i < len; i++)
+    for (var i = 0, len = volpianoWords.length; i < len && volpianoWords[i]; i++)
     {
         var wordString = '';
         var volpianoSyllables = volpianoWords[i].split("--");
