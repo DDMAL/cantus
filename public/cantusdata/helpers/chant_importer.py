@@ -1,59 +1,12 @@
-import csv
-from optparse import make_option
-
-from django.core.management.base import BaseCommand
 from django.utils.text import slugify
 from django.conf import settings
-
-from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.chant import Chant
+from cantusdata.models.folio import Folio
 from cantusdata.models.concordance import Concordance
-from cantusdata.models import Folio
+from cantusdata.models.manuscript import Manuscript
 from cantusdata.helpers import expandr
 from cantusdata.signals.solr_sync import solr_synchronizer
-
-
-class Command(BaseCommand):
-    args = 'filename.csv'
-
-    option_list = BaseCommand.option_list + (
-        make_option('--delete-existing',
-                    action='store_true',
-                    dest='delete_existing',
-                    default=False,
-                    help='Delete existing chant records for all manuscripts touched by the import'),
-
-        make_option('--no-save',
-                    action='store_true',
-                    dest='no_save',
-                    default=False,
-                    help="Process but don't save the new chants (useful for testing).")
-    )
-
-    def handle(self, *args, **options):
-        """
-        Run "python manage.py import_chant_data filename.csv" to import a chant
-        file into the db.  filename.csv must exist in /public/data_dumps/.
-        """
-        if args and args[0]:
-            csv_file_name = args[0]
-        else:
-            raise ValueError("Please provide a file name!")
-
-        importer = ChantImporter(self.stdout)
-
-        chant_count = importer.import_csv("data_dumps/" + str(csv_file_name))
-
-        if options['no_save']:
-            self.stdout.write(u"Found {0} chants to import. Exiting.".format(chant_count))
-            return
-
-        self.stdout.write(u"Preparing to import {0} chants into the database".format(chant_count))
-
-        # Save the new chants
-        importer.save(delete_existing=options['delete_existing'])
-
-        self.stdout.write(u"Import successful")
+import csv
 
 
 class ChantImporter:
@@ -106,7 +59,7 @@ class ChantImporter:
         chant = Chant()
         chant.marginalia = row["Marginalia"].strip().decode('utf-8')
         chant.sequence = row["Sequence"].strip().decode('utf-8')
-        chant.cantus_id = row["Cantus ID"].strip().decode('utf-8')
+        chant.cantus_id = row["Cantus ID"].strip().rstrip(' _').decode('utf-8')
         chant.feast = row["Feast"].strip().decode('utf-8')
         chant.office = expandr.expand_office(row["Office"].strip()).decode('utf-8')
         chant.genre = expandr.expand_genre(row["Genre"].strip()).decode('utf-8')
@@ -114,7 +67,7 @@ class ChantImporter:
         chant.differentia = expandr.expand_differentia(row["Differentia"].strip()).decode('utf-8')
         chant.finalis = row["Finalis"].strip().decode('utf-8')
         chant.incipit = row["Incipit"].strip().decode('utf-8')
-        chant.full_text = row["Fulltext"].strip().decode('utf-8')
+        chant.full_text = row["Full text (standardized)"].strip().decode('utf-8')
         chant.volpiano = row["Volpiano"].strip().decode('utf-8')
         chant.lit_position = self.position_expander.get_text(
             row["Office"].strip(), row["Genre"].strip(),
@@ -140,7 +93,7 @@ class ChantImporter:
 
         # Concordances
         concordances = []
-        for c in list(row["Concordances"]):
+        for c in list(row["CAO Concordances"]):
             matching_concordance = Concordance.objects.filter(letter_code=c)
             if matching_concordance:
                 concordances.append(matching_concordance[0])
