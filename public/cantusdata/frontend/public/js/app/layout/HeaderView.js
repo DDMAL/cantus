@@ -49,7 +49,7 @@ export default Marionette.LayoutView.extend({
         // The search view that we will shove into the modal box
         this.searchView = new SearchView({
             providers: [new ChantSearchProvider({
-                additionalResultFields: ['manuscript', 'genre', 'mode', 'feast', 'office', 'position']
+                additionalResultFields: ['manuscript', 'genre', 'mode', 'feast', 'office']
             })]
         });
 
