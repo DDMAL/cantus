@@ -22,14 +22,16 @@ class Command(BaseCommand):
     # All files must be in data-dumps/
     CHANT_FILE_MAPPING = {'salzinnes': 'salzinnes-chants.csv', 'st-gallen-390': 'st-gallen-390-chants.csv',
                           'st-gallen-391': 'st-gallen-391-chants.csv', 'utrecht-406': 'utrecht-406-chants.csv'}
-    MANUSCRIPT_FILE = "sources_export.csv"
+    MANUSCRIPT_FILE = "sources-export.csv"
     CONCORDANCE_FILE = "concordances"
 
     help = 'Usage:'\
             '\tAdd everything you want to import as arguments. (or use --all)\n'\
             "\tSelect arguments from this list: {0}\n"\
             "\tTo import chants from a specific manuscript, add arguments from\n"\
-            "\tthis list: {1}".format(TYPE_MAPPING.keys(), CHANT_FILE_MAPPING.keys())
+            "\tthis list: {1},\n"\
+            "\tor enter their full path from the data_dumps folder"\
+            .format(TYPE_MAPPING.keys(), CHANT_FILE_MAPPING.keys())
 
     option_list = BaseCommand.option_list + (
         make_option('--all',
@@ -44,12 +46,14 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if options['all']:
-            args += self.TYPE_MAPPING.keys()
+            args += tuple(self.TYPE_MAPPING.keys())
 
         # Go through the arguments to see if some files have been specified
         for arg in args:
             if arg in self.CHANT_FILE_MAPPING.keys():
                 self.chant_files.append(self.CHANT_FILE_MAPPING[arg])
+            elif arg.endswith('.csv'):
+                self.chant_files.append(arg)
 
         # If no files were specified, import all of them
         if not self.chant_files:
@@ -61,8 +65,7 @@ class Command(BaseCommand):
                     # Remove the trailing 's' to make the type singular
                     type_singular = type.rstrip('s')
 
-                    # Chants are deleted on import in the chant_importer
-                    # TODO however, folios need to be deleted?
+                    # Chants are deleted on import in the chant_importer, but not the folios
                     if type == 'chants':
                         self.stdout.write('Deleting old folio data...')
                         Folio.objects.all().delete()
@@ -78,7 +81,7 @@ class Command(BaseCommand):
         try:
             csv_file = csv.DictReader(open("data_dumps/{0}".format(self.MANUSCRIPT_FILE), "rU"))
         except IOError:
-            raise IOError("File 'data_dumps/{0} does not exist!".format(self.MANUSCRIPT_FILE))
+            raise IOError("File 'data_dumps/{0}' does not exist!".format(self.MANUSCRIPT_FILE))
 
         # Load in the csv file.  This is a massive list of dictionaries.
         self.stdout.write("Starting manuscript import process.")

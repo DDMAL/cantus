@@ -27,18 +27,21 @@ class ChantImporter:
     def import_csv(self, file_name):
         index = 0
 
+        try:
+            csv_file = csv.DictReader(open(file_name, "rU"))
+        except IOError:
+            raise IOError(u"File '{0}' does not exist!".format(file_name))
+
         # Load in the csv file.  This is a massive list of dictionaries.
-        with open(file_name) as csv_file:
-            csv_content = csv.DictReader(csv_file)
-            self.stdout.write("Starting chant import process.")
+        self.stdout.write("Starting chant import process.")
 
-            # Create chants and save them
-            for index, row in enumerate(csv_content):
-                self.add_chant(row)
+        # Create chants and save them
+        for index, row in enumerate(csv_file):
+            self.add_chant(row)
 
-                # Tracking
-                if (index % 100) == 0:
-                    self.stdout.write(u"{0} chants processed for import.".format(index))
+            # Tracking
+            if (index % 100) == 0:
+                self.stdout.write(u"{0} chants processed for import.".format(index))
 
         return index
 
