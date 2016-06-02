@@ -57,7 +57,7 @@ class Command(BaseCommand):
 
         # If no files were specified, import all of them
         if not self.chant_files:
-            self.chant_files = self.CHANT_FILE_MAPPING.keys()
+            self.chant_files = self.CHANT_FILE_MAPPING.values()
 
         with solr_synchronizer.get_session():
             for type in self.TYPE_MAPPING.keys():
@@ -65,13 +65,13 @@ class Command(BaseCommand):
                     # Remove the trailing 's' to make the type singular
                     type_singular = type.rstrip('s')
 
-                    # Chants are deleted on import in the chant_importer, but not the folios
+                    # Special case for chants, need to delete the folios too
                     if type == 'chants':
                         self.stdout.write('Deleting old folio data...')
                         Folio.objects.all().delete()
-                    else:
-                        self.stdout.write('Deleting old {0} data...'.format(type_singular))
-                        self.TYPE_MAPPING[type].objects.all().delete()
+
+                    self.stdout.write('Deleting old {0} data...'.format(type_singular))
+                    self.TYPE_MAPPING[type].objects.all().delete()
 
                     self.stdout.write('Importing new {0} data...'.format(type_singular))
                     # Call the method corresponding with the current type
@@ -139,6 +139,6 @@ class Command(BaseCommand):
             chant_count = importer.import_csv("data_dumps/{0}".format(chant_file))
 
             # Save the new chants
-            importer.save(delete_existing=True)
+            importer.save()
 
             self.stdout.write("Successfully imported {0} chants into database.".format(chant_count))
