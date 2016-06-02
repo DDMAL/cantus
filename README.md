@@ -15,13 +15,11 @@ With Vagrant, execute the following commands from the root directory of the repo
 # Set up the VM (this will take a while)
 $ vagrant up
 
-# SSH into the VM and start the Solr server
+# SSH into the VM
 $ vagrant ssh
-[vagrant]$ cd /vagrant/public/solr
-[vagrant]$ sudo mvn jetty:run-war
-
-# Now in a separate shell run the Django development server
-$ vagrant ssh
+# Start the Solr server
+[vagrant]$ solr start -p 8080
+# Now run the Django development server
 [vagrant]$ cd /vagrant/public
 # Set up site-specific Django settings
 [vagrant]$ cp cantusdata/settings-example.py cantusdata/settings.py
