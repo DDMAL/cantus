@@ -64,7 +64,7 @@ def create_test_solr_core():
 def run_solr_admin_cmd(msg, args):
     print>>sys.stderr, msg
 
-    cmd = base_settings.SOLR_SERVER + '/admin/cores?' + args
+    cmd = base_settings.SOLR_ADMIN + '/cores?' + args
     resp = requests.get(cmd)
     resp.raise_for_status()
     return resp

@@ -109,6 +109,7 @@ REST_FRAMEWORK = {
 }
 
 SOLR_SERVER = "http://localhost:8080/solr/collection1"
+SOLR_ADMIN = "http://localhost:8080/solr/admin"
 SOLR_TEST_SERVER = "http://localhost:8080/solr/cantus-test"
 
 LOGGING_CONFIG = None
