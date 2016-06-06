@@ -29,6 +29,14 @@
        have your own custom plugins.
     -->
 
+    <!--
+        Solr now has a managed schema which allows to not use solrconfig.xml
+        at all. Instead, you can use their Schema API to create or update
+        fields. We, however, will still to the more git friendly
+        classic schema method.
+    -->
+    <schemaFactory class="ClassicIndexSchemaFactory"/>
+
   <!-- Controls what version of Lucene various components of Solr
        adhere to.  Generally, you want to use the latest version to
        get all bug fixes and improvements. It is highly recommended
