@@ -19,7 +19,9 @@ class SuggestionView(APIView):
         connection = solr.Solr(settings.SOLR_SERVER)
         search_handler = solr.SearchHandler(connection, "/suggest")
 
-        search_results = search_handler(q=q, suggest_dictionary=dictionary, suggest_cfq=manuscript)
+        # TODO fix solr so that the suggesters work with a context field (cfq)]
+        # search_results = search_handler(q=q, suggest_dictionary=dictionary, suggest_cfq=manuscript)
+        search_results = search_handler(q=q, suggest_dictionary=dictionary)
 
         results = search_results.suggest[dictionary][q]
 

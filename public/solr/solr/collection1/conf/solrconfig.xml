@@ -511,10 +511,9 @@
             <str name="indexPath">suggestions/feastSuggest_dict</str>
             <str name="field">feast</str>
             <str name="weightField">weight_field</str>
-            <str name="contextField">manuscript</str>
-            <str name="buildOnStartup">true</str>
+            <!--<str name="contextField">manuscript</str>-->
+            <str name="buildOnStartup">True</str>
             <str name="suggestAnalyzerFieldType">suggest_text</str>
-            <str name="highlight">true</str>
         </lst>
         <lst name="suggester">
             <str name="name">genreSuggester</str>
@@ -523,10 +522,9 @@
             <str name="indexPath">suggestions/genreSuggest_dict</str>
             <str name="field">genre</str>
             <str name="weightField">weight_field</str>
-            <str name="contextField">manuscript</str>
-            <str name="buildOnStartup">true</str>
+            <!--<str name="contextField">manuscript</str>-->
+            <str name="buildOnStartup">True</str>
             <str name="suggestAnalyzerFieldType">suggest_text</str>
-            <str name="highlight">true</str>
         </lst>
         <lst name="suggester">
             <str name="name">officeSuggester</str>
@@ -535,10 +533,9 @@
             <str name="indexPath">suggestions/officeSuggest_dict</str>
             <str name="field">office</str>
             <str name="weightField">weight_field</str>
-            <str name="contextField">manuscript</str>
-            <str name="buildOnStartup">true</str>
+            <!--<str name="contextField">manuscript</str>-->
+            <str name="buildOnStartup">True</str>
             <str name="suggestAnalyzerFieldType">suggest_text</str>
-            <str name="highlight">true</str>
         </lst>
     </searchComponent>
     <requestHandler name="/suggest" class="solr.SearchHandler" startup="lazy">
