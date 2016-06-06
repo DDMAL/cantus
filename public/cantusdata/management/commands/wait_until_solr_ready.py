@@ -25,7 +25,7 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **kwargs):
-        status_url = '{}/admin/ping?wt=json'.format(settings.SOLR_SERVER)
+        status_url = '{}/ping?wt=json'.format(settings.SOLR_ADMIN)
 
         poll_wait = kwargs['wait_between_polls']
         timeout = kwargs['timeout']
