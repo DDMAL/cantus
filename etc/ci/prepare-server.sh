@@ -9,11 +9,11 @@ cd ./public
 # Print the current working directory
 pwd
 
-./solr -h
+solr -h
 echo "Starting Solr"
-#./solr start -p 8080
+#solr start -p 8080
 #echo "Getting Solr Status"
-#./solr status
+#solr status
 
 (
     cd /home/travis
