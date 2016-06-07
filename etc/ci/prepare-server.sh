@@ -24,7 +24,14 @@ echo "Starting Solr"
     ls
     cd server
     ls
+    cd solr
+    echo "In Solr"
+    ls
 )
+
+solr start -p 8080
+
+solr status
 
 source app_env/bin/activate
 
