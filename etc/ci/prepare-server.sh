@@ -11,10 +11,10 @@ which solr
 # Print the current working directory
 pwd
 
-solr status
-# echo Starting Solr
+solr -h
+echo "Starting Solr"
 solr start -p 8080
-# echo Getting Solr Status
+echo "Getting Solr Status"
 solr status
 
 source app_env/bin/activate
