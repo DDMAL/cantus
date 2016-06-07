@@ -31,11 +31,11 @@ fi
 
 solr_version=6.0.1
 
+echo "========== Installing Solr $solr_version ==========="
+
 # FIXME: Get a better way of checking the current Solr version
 if [ ! `which solr` ] || [[  `readlink -f $( which solr )` != *"solr-$solr_version"* ]]; then
     (
-        echo "Installing Solr $solr_version..."
-
         mkdir -p ~/solr
         cd ~/solr
 
@@ -56,6 +56,8 @@ if [ ! `which solr` ] || [[  `readlink -f $( which solr )` != *"solr-$solr_versi
         echo "Solr installed!"
     )
 fi
+
+which solr
 
 # Set up relevant runtime paths
 if [ ! -d /var/db/solr ]; then

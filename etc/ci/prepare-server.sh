@@ -6,8 +6,14 @@ set -e
 
 cd ./public
 
+which solr
+
 # Print the current working directory
 pwd
+
+cd solr
+
+which solr
 
 # echo Starting Solr
 # solr start -p 8080
