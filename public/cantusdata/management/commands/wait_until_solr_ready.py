@@ -27,6 +27,8 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         status_url = '{}/admin/ping?wt=json'.format(settings.SOLR_SERVER)
 
+        self.stderr.write(status_url)
+
         poll_wait = kwargs['wait_between_polls']
         timeout = kwargs['timeout']
 
@@ -45,6 +47,7 @@ class Command(BaseCommand):
             except requests.ConnectionError:
                 if last_state != 'failed':
                     self.stderr.write('Connection failed...')
+                    self.stderr.write(response.content)
                     last_state = 'failed'
             else:
                 if last_state != 'connected' or last_http_status != response.status_code:

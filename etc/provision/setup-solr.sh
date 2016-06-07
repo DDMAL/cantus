@@ -62,8 +62,6 @@ if [ ! `which solr` ] || [[  `readlink -f $( which solr )` != *"solr-$solr_versi
     )
 fi
 
-which solr
-
 # Set up relevant runtime paths
 if [ ! -d /var/db/solr ]; then
     sudo mkdir -p /var/db/solr
