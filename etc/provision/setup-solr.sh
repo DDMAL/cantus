@@ -50,10 +50,10 @@ if [ ! `which solr` ] || [[  `readlink -f $( which solr )` != *"solr-$solr_versi
 
         # Symlink the Solr config directory from Cantus into the server directory
         mkdir -p                        "./solr-$solr_version/server"
-        rm -r                           "./solr-$solr_version/server/solr"
 
         # Symlink only if Vagrant is installed
         if [[ -d "/vagrant/public/solr/solr" && ! -L "/vagrant/public/solr/solr" ]]; then
+            rm -r                           "./solr-$solr_version/server/solr"
             ln -s /vagrant/public/solr/solr "./solr-$solr_version/server/solr"
             echo "Symlinked Solr config directory"
         fi
