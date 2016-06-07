@@ -6,19 +6,24 @@ set -e
 
 cd ./public
 
+# Print the current working directory
+pwd
+
+./solr -h
+echo "Starting Solr"
+#./solr start -p 8080
+#echo "Getting Solr Status"
+#./solr status
+
 (
-    cd ./solr
-
-    which solr
-
-    # Print the current working directory
-    pwd
-
-    solr -h
-    echo "Starting Solr"
-    solr start -p 8080
-    echo "Getting Solr Status"
-    solr status
+    cd /home/travis
+    ls
+    cd solr
+    ls
+    cd solr-6.0.1
+    ls
+    cd server
+    ls
 )
 
 source app_env/bin/activate
