@@ -6,16 +6,12 @@ set -e
 
 cd ./public
 
-cd ./public
+# Print the current working directory
+pwd
 
-(
-    cd solr
-
-    # The `which mvn` seems to be a necessary workaround for some kind of path reset problem
-    # FIXME: The output here probably shouldn't be swallowed
-    sudo `which mvn` jetty:run-war > /dev/null 2>&1 &
-)
-
+echo Starting Solr
+solr start -p 8080
+echo Getting Solr Status
 solr status
 
 source app_env/bin/activate
