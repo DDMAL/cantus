@@ -55,6 +55,7 @@ if [ ! `which solr` ] || [[  `readlink -f $( which solr )` != *"solr-$solr_versi
         # Symlink only if Vagrant is installed
         if [[ -d "/vagrant/public/solr/solr" && ! -L "/vagrant/public/solr/solr" ]]; then
             ln -s /vagrant/public/solr/solr "./solr-$solr_version/server/solr"
+            echo "Symlinked Solr config directory"
         fi
 
         echo "Solr installed!"

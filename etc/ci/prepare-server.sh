@@ -11,8 +11,17 @@ pwd
 
 solr -h
 echo "Starting Solr"
+#solr start -p 8080
+#echo "Getting Solr Status"
+#solr status
+
+(
+    cd /home/travis/solr/solr-6.0.1/server
+    ls -l
+)
+
 solr start -p 8080
-echo "Getting Solr Status"
+
 solr status
 
 source app_env/bin/activate
