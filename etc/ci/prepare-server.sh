@@ -9,10 +9,10 @@ cd ./public
 # Print the current working directory
 pwd
 
-echo Starting Solr
-solr start -p 8080
-echo Getting Solr Status
-solr status
+# echo Starting Solr
+# solr start -p 8080
+# echo Getting Solr Status
+# solr status
 
 source app_env/bin/activate
 
