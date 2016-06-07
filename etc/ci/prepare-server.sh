@@ -23,7 +23,7 @@ echo "Starting Solr"
     cd solr-6.0.1
     ls
     cd server
-    ls
+    ls -l
     cd solr
     echo "In Solr"
     ls
