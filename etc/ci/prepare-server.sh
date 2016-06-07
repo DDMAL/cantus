@@ -11,15 +11,13 @@ which solr
 # Print the current working directory
 pwd
 
+solr status
 # echo Starting Solr
-# solr start -p 8080
+solr start -p 8080
 # echo Getting Solr Status
-# solr status
+solr status
 
 source app_env/bin/activate
-
-pwd
-which solr
 
 cp ./cantusdata/settings-example.py ./cantusdata/settings.py
 
