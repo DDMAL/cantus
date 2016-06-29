@@ -69,6 +69,6 @@ fi
 # Set up relevant runtime paths
 if [ ! -d /var/db/solr ]; then
     sudo mkdir -p /var/db/solr
-    ls -l /var/db
+    sudo mkdir -p /var/db/solr/cantusdata-solr
     sudo chgrp www-data /var/db/solr
 fi
