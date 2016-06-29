@@ -29,7 +29,7 @@ if [[ "$java_version" != "1.8"* ]]; then
     sudo update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/java-8-openjdk-i386/bin/javac    2000
 fi
 
-solr_version=6.0.1
+solr_version=6.1.0
 
 echo "========== Installing Solr $solr_version ==========="
 
@@ -38,6 +38,8 @@ if [ ! `which solr` ] || [[  `readlink -f $( which solr )` != *"solr-$solr_versi
     (
         mkdir -p ~/solr
         cd ~/solr
+
+        # sudo apt-get -y install solr-tomcat
 
         url="https://www.apache.org/dist/lucene/solr/$solr_version/solr-$solr_version.tgz"
 
