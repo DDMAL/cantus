@@ -70,6 +70,7 @@ fi
 if [ ! -d /var/db/solr ]; then
     sudo mkdir -p /var/db/solr
     sudo mkdir -p /var/db/solr/cantusdata-solr
-    sudo chmod a+w /var/db/solr -R
-    sudo chgrp www-data /var/db/solr
+    ps aux | grep "solr"
+    #sudo chmod a+w /var/db/solr -R
+    sudo chgrp www-data /var/db/solr -R
 fi
