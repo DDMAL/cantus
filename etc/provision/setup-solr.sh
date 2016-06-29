@@ -58,7 +58,7 @@ if [ ! `which solr` ] || [[  `readlink -f $( which solr )` != *"solr-$solr_versi
         if [[ -d "/vagrant/public/solr/solr" && ! -L "/vagrant/public/solr/solr" ]]; then
             ln -s /vagrant/public/solr/solr "./solr-$solr_version/server/solr"
         else
-            ln -s ~/DDMAL/cantus/public/solr/solr "./solr-$solr_version/server/solr"
+            ln -s /home/travis/build/DDMAL/cantus/public/solr/solr "./solr-$solr_version/server/solr"
         fi
         echo "Symlinked Solr config directory"
 
@@ -66,12 +66,9 @@ if [ ! `which solr` ] || [[  `readlink -f $( which solr )` != *"solr-$solr_versi
     )
 fi
 
-users
-groups
-
 # Set up relevant runtime paths
 if [ ! -d /var/db/solr ]; then
     sudo mkdir -p /var/db/solr
-    ls -l /var/db/solr
+    ls -l /var/db
     sudo chgrp www-data /var/db/solr
 fi
