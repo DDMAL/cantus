@@ -53,23 +53,25 @@ if [ ! `which solr` ] || [[  `readlink -f $( which solr )` != *"solr-$solr_versi
         # Symlink the Solr config directory from Cantus into the server directory
         mkdir -p                        "./solr-$solr_version/server"
 
-        # Symlink only if Vagrant is installed
+        # Symlink the cores
+        rm -r                           "./solr-$solr_version/server/solr"
         if [[ -d "/vagrant/public/solr/solr" && ! -L "/vagrant/public/solr/solr" ]]; then
-            rm -r                           "./solr-$solr_version/server/solr"
             ln -s /vagrant/public/solr/solr "./solr-$solr_version/server/solr"
-            echo "Symlinked Solr config directory"
         else
-            rm -r                           "./solr-$solr_version/server/solr"
-            ln -s /home/travis/build/DDMAL/cantus/public/solr/solr "./solr-$solr_version/server/solr"
-            echo "Symlinked Solr config directory"
+            ln -s ~/DDMAL/cantus/public/solr/solr "./solr-$solr_version/server/solr"
         fi
+        echo "Symlinked Solr config directory"
 
         echo "Solr installed!"
     )
 fi
 
+users
+groups
+
 # Set up relevant runtime paths
 if [ ! -d /var/db/solr ]; then
     sudo mkdir -p /var/db/solr
+    ls -l /var/db/solr
     sudo chgrp www-data /var/db/solr
 fi
