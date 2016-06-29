@@ -59,11 +59,9 @@ if [ ! `which solr` ] || [[  `readlink -f $( which solr )` != *"solr-$solr_versi
             ln -s /vagrant/public/solr/solr "./solr-$solr_version/server/solr"
             echo "Symlinked Solr config directory"
         else
-            pwd
-            cd ..
-            ls
             #rm -r                           "./solr-$solr_version/server/solr"
-            #ln -s "`pwd`/solr/solr" "./solr-$solr_version/server/solr"
+            ls /home/travis/build
+            #ln -s /home/travis/build/DDMAL/cantus/public/solr/solr "./solr-$solr_version/server/solr"
             echo "Symlinked Solr config directory"
         fi
 
