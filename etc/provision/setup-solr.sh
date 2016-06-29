@@ -70,5 +70,6 @@ fi
 if [ ! -d /var/db/solr ]; then
     sudo mkdir -p /var/db/solr
     sudo mkdir -p /var/db/solr/cantusdata-solr
+    sudo mkdir -p /var/db/solr/cantusdata-solr/index
     sudo chgrp www-data /var/db/solr
 fi
