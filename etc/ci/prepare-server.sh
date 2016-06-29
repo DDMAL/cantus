@@ -12,10 +12,6 @@ solr status
 
 source app_env/bin/activate
 
-#Find where the solr folder is located so that it can be symlinked
-ls
-ls public
-
 cp ./cantusdata/settings-example.py ./cantusdata/settings.py
 
 # ./manage.py wait_until_solr_ready --timeout=90
