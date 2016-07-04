@@ -24,10 +24,11 @@ class SolrSearch(object):
         helpers that do all the work.
 
     """
-    def __init__(self, request):
+    def __init__(self, request, additional_query_params=None):
         self.server = solr.Solr(settings.SOLR_SERVER)
         # self.query_dict = query_dict
         self.request = request
+        self.additional_query_params = additional_query_params
         self.parsed_request = {}
         self.prepared_query = u""
         self.solr_params = {}
@@ -72,8 +73,11 @@ class SolrSearch(object):
             self.parsed_request[k] = v
 
     def _prepare_query(self):
+        arr = []
+        if self.additional_query_params:
+            for k, v in self.additional_query_params.iteritems():
+                arr.append(u"{0}:({1})".format(k, v))
         if self.parsed_request:
-            arr = []
             for k, v in self.parsed_request.iteritems():
                 if not v:
                     continue
@@ -88,6 +92,8 @@ class SolrSearch(object):
                     self.solr_params['sort'] = str(v[0])
                 else:
                     arr.append(u"{0}:({1})".format(k, " OR ".join(["\"{0}\"".format(s) for s in v if v is not None])))
+
+        if arr:
             self.prepared_query = u" AND ".join(arr)
         else:
             self.prepared_query = u"*:*"

@@ -1,0 +1,26 @@
+<form>
+    <div class="form-group input-section">
+        <% // Use a fixed selection if field is 'mode' %>
+        <% // FIXME(wabain): would a typeahead be better? %>
+        <% if (field === 'mode') { %>
+        <select multiple class="form-control search-input">
+            <option value="1">Mode 1</option>
+            <option value="2">Mode 2</option>
+            <option value="3">Mode 3</option>
+            <option value="4">Mode 4</option>
+            <option value="5">Mode 5</option>
+            <option value="6">Mode 6</option>
+            <option value="7">Mode 7</option>
+            <option value="8">Mode 8</option>
+            <option>No Music</option>
+            <option>F, Formulaic</option>
+            <option>U, Uncertain</option>
+            <option>R, Responsory (special)</option>
+            <option>T, Chant in Transposition</option>
+        </select>
+        <% } else { %>
+        <input type="text" class="form-control search-input field-<%= field %>"
+               placeholder="Search" value="<%= query %>">
+        <% } %>
+    </div>
+</form>

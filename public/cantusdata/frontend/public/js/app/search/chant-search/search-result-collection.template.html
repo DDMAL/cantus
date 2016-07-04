@@ -1,0 +1,24 @@
+<div class="result-table-wrapper">
+    <table class="table table-condensed result-list child-container">
+        <thead>
+            <tr>
+                <th>
+                    <a href="#">Folio</a>
+                    <span class="search-caret"></span>
+                </th>
+
+                <th>
+                    <a href="#">Incipit</a>
+                    <span class="search-caret"></span>
+                </th>
+
+                <% _.forEach(infoFields, function (field) { %>
+                <th>
+                    <a href="#"><%= field.name %></a>
+                    <span class="search-caret"></span>
+                </th>
+                <% }); %>
+            </tr>
+        </thead>
+    </table>
+</div>

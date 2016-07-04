@@ -1,15 +1,10 @@
-from django.test import TestCase
+from django.test import TransactionTestCase
 from cantusdata.models.plugin import Plugin
 from cantusdata.models.manuscript import Manuscript
 
 
-class FolioModelTestCase(TestCase):
-
-    fixtures = ["1_users", "2_initial_data"]
-
-    first_plugin = None
-    second_plugin = None
-    manuscript = None
+class FolioModelTestCase(TransactionTestCase):
+    fixtures = ["2_initial_data"]
 
     def setUp(self):
         self.first_plugin = Plugin(name="A very nice plugin!")

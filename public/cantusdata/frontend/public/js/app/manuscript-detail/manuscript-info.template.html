@@ -1,0 +1,16 @@
+<div class="manuscript-info">
+    <h3 class="h4"><%- name %></h3>
+
+    <dl>
+        <dt>Siglum</dt>
+        <dd><%= siglum %></dd>
+        <dt>Date</dt>
+        <dd><%= date %></dd>
+        <dt>Provenance</dt>
+        <dd><%= provenance %></dd>
+        <% if (description) { %>
+        <dt>Description</dt>
+        <dd><pre class="preformatted-text"><%= description %></pre></dd>
+        <% } %>
+    </dl>
+</div>

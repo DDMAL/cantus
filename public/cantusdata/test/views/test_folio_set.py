@@ -1,9 +1,8 @@
-from cantusdata.helpers.solr_result_parsing import remove_all_solr_metadata
-from rest_framework.test import APITestCase
+from rest_framework.test import APITransactionTestCase
 from rest_framework import status
 
 
-class ManuscriptFolioSetViewTestCase(APITestCase):
+class ManuscriptFolioSetViewTestCase(APITransactionTestCase):
 
     fixtures = ["1_users", "2_initial_data"]
 
@@ -19,8 +18,7 @@ class ManuscriptFolioSetViewTestCase(APITestCase):
                           ' "item_id": "1", "type": "cantusdata_folio"}]'
         # We want to remove the version id and unique id because they're always
         # different.
-        self.assertJSONEqual(remove_all_solr_metadata(response.content),
-                         expected_string)
+        self.assertJSONEqual(response.content, expected_string)
 
     def test_get_specific_folio(self):
         response = self.client.get("/folio-set/manuscript/3/123/")
@@ -28,11 +26,8 @@ class ManuscriptFolioSetViewTestCase(APITestCase):
         expected_string = '{"manuscript_id": 3, "number": "123",' \
                           ' "item_id": "1", "type": "cantusdata_folio"}'
         # Empty response is just square brackets
-        self.assertJSONEqual(remove_all_solr_metadata(response.content),
-                         expected_string)
+        self.assertJSONEqual(response.content, expected_string)
 
     def test_get_empty_folio(self):
         response = self.client.get("/folio-set/manuscript/3/66666666666/")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # Empty response is just square brackets
-        self.assertJSONEqual(response.content, "[]")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

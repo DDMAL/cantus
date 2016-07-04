@@ -5,29 +5,11 @@ from itertools import combinations
 
 class ExpandrFunctionsTestCase(TestCase):
 
-    def test_ordinal(self):
-        self.assertEquals(expandr.ordinal("error"), "error")
-        self.assertEquals(expandr.ordinal(1), "1st")
-        self.assertEquals(expandr.ordinal(2), "2nd")
-        self.assertEquals(expandr.ordinal(3), "3rd")
-        self.assertEquals(expandr.ordinal(4), "4th")
-        self.assertEquals(expandr.ordinal(5), "5th")
-        self.assertEquals(expandr.ordinal(6), "6th")
-        self.assertEquals(expandr.ordinal(7), "7th")
-        self.assertEquals(expandr.ordinal(8), "8th")
-        self.assertEquals(expandr.ordinal(9), "9th")
-        self.assertEquals(expandr.ordinal(10), "10th")
-        self.assertEquals(expandr.ordinal(11), "11th")
-        self.assertEquals(expandr.ordinal(12), "12th")
-
-    def test_feast_code_lookup(self):
-        pass
-
     def test_expand_mode(self):
         # Number and symbol ordering is important
         numbers = [1, 2, 3, 4, 5, 6, 7, 8]
         symbol_keys = ["*", "r", "?", "S", "T"]
-        symbols = {"*": "No music", "r": "Responsory (simple)",
+        symbols = {"*": "No music", "r": "Formulaic",
                    "?": "Uncertain", "S": "Responsory (special)",
                    "T": "Chant in Transposition"}
         max_length = 3
@@ -53,22 +35,22 @@ class ExpandrFunctionsTestCase(TestCase):
 
     def test_expand_genre(self):
         self.assertEquals(expandr.expand_genre("A"), "Antiphon")
-        self.assertEquals(expandr.expand_genre("AV"), "Antiphon Verse")
+        self.assertEquals(expandr.expand_genre("AV"), "Antiphon verse")
         self.assertEquals(expandr.expand_genre("R"), "Responsory")
-        self.assertEquals(expandr.expand_genre("V"), "Responsory Verse")
+        self.assertEquals(expandr.expand_genre("V"), "Responsory verse")
         self.assertEquals(expandr.expand_genre("W"), "Versicle")
         self.assertEquals(expandr.expand_genre("H"), "Hymn")
         self.assertEquals(expandr.expand_genre("I"), "Invitatory antiphon")
-        self.assertEquals(expandr.expand_genre("P"), "Invitatory Psalm")
-        self.assertEquals(expandr.expand_genre("M"), "Miscellaneous")
-        self.assertEquals(expandr.expand_genre("G"), "Mass chants")
-        self.assertEquals(expandr.expand_genre("Z"), "Error")
+        self.assertEquals(expandr.expand_genre("Pr"), "Prefatio")
+        self.assertEquals(expandr.expand_genre("IP"), "Invitatory psalm")
+        self.assertEquals(expandr.expand_genre("[M]"), "Miscellaneous")
+        self.assertEquals(expandr.expand_genre("G"), "Mass chant")
+        self.assertEquals(expandr.expand_genre("?"), "Unknown")
+        self.assertEquals(expandr.expand_genre("Z"), "Z")
 
     def test_expand_differentia(self):
-        self.assertEquals(expandr.expand_differentia("?"), "Uncertain")
         self.assertEquals(expandr.expand_differentia("*"), "No differentia")
         # Test that whitespace is stripped
-        self.assertEquals(expandr.expand_differentia("  ?  "), "Uncertain")
         self.assertEquals(expandr.expand_differentia("    *   "), "No differentia")
         # Test all other cases
         self.assertEquals(expandr.expand_differentia("Normal string"), "Normal string")
@@ -100,8 +82,8 @@ class PositionExpanderTestCase(TestCase):
         self.position_expander = expandr.PositionExpander()
 
     def test_get_text(self):
-        output = self.position_expander.get_text("E", "A", "4")
-        self.assertEqual("4th Antiphon for the Magnificat or Benidictus", output)
+        output = self.position_expander.get_text("M", "A", "3. ")
+        self.assertEqual("Antiphon for all Psalms of Nocturn 3", output)
 
     def test_get_nonexistant_text(self):
         output = self.position_expander.get_text("Z", "Z", "Z")

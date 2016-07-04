@@ -1,38 +1,21 @@
-from cantusdata.models.manuscript import Manuscript
-from cantusdata.serializers.manuscript import ManuscriptSerializer
-from cantusdata.renderers.custom_html_renderer import CustomHTMLRenderer
 from rest_framework import generics
-from rest_framework.renderers import JSONRenderer, JSONPRenderer
+
+from cantusdata.models.manuscript import Manuscript
+from cantusdata.serializers.manuscript import ManuscriptSerializer, ManuscriptListSerializer
+from cantusdata.renderers import templated_view_renderers
 
 
-class ManuscriptListHTMLRenderer(CustomHTMLRenderer):
-    template_name = "require.html"
-
-
-class ManuscriptDetailHTMLRenderer(CustomHTMLRenderer):
-    template_name = "require.html"
-
-
-class ManuscriptHasChantsMixin(object):
-    """
-    This Mixin filters out manuscripts that have no chants.
-    """
-    def get_queryset(self):
-        queryset = Manuscript.objects.all()
-        return queryset.filter(chant_count__gt=0)
-
-
-class ManuscriptList(ManuscriptHasChantsMixin, generics.ListCreateAPIView):
+class ManuscriptList(generics.ListCreateAPIView):
     model = Manuscript
-    queryset = Manuscript.objects.all()
-    serializer_class = ManuscriptSerializer
-    renderer_classes = (JSONRenderer, JSONPRenderer,
-                        ManuscriptListHTMLRenderer)
+    queryset = Manuscript.objects.filter(public=True)
+    serializer_class = ManuscriptListSerializer
+    template_name = "require.html"
+    renderer_classes = templated_view_renderers
 
 
 class ManuscriptDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Manuscript
     queryset = Manuscript.objects.all()
     serializer_class = ManuscriptSerializer
-    renderer_classes = (JSONRenderer, JSONPRenderer,
-                        ManuscriptDetailHTMLRenderer)
+    template_name = "require.html"
+    renderer_classes = templated_view_renderers

@@ -1,0 +1,11 @@
+<td><%= _.result(boxes[0], 'p') %></td>
+<td>
+    <a href="#" class="result-target neume-images">
+        <% _.forEach(boxes, function (box) { %>
+            <img src="<%= thumbnailUrl(box) %>"
+                 style="width: <%- box.w / box.h * neumeImageHeight %>px; height: <%- neumeImageHeight %>px">
+        <% }); %>
+    </a>
+</td>
+<td><%= _.map(pnames).join(' ') %></td>
+<td><%= contourGraph(semitones) %></td>

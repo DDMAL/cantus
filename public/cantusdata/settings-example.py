@@ -57,7 +57,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware'
+    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
+    'livereload.middleware.LiveReloadScript'
 )
 
 ROOT_URLCONF = 'urls'
@@ -95,17 +96,21 @@ USE_TZ = True
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_URL_NEUMEEDITOR = "/neumeeditor/media/"
-# This needs to be an absolute path to the file system location...
-STATIC_ROOT = '/your/system/path/cantus/public/cantusdata/static/'
-MEDIA_ROOT = '/your/system/path/cantus/public/media/'
+
+# This needs to be an absolute path to the file system location
+STATIC_ROOT = os.path.join(BASE_DIR, 'cantusdata/static/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
     ),
 }
 
-SOLR_SERVER = "http://localhost:8080/cantusdata-solr/"
+SOLR_SERVER = "http://localhost:8080/solr/collection1"
+SOLR_ADMIN = "http://localhost:8080/solr/admin"
+SOLR_TEST_SERVER = "http://localhost:8080/solr/cantus-test"
 
 LOGGING_CONFIG = None
 

@@ -1,14 +1,9 @@
-from cantusdata.helpers.solr_result_parsing import remove_all_solr_metadata
-from rest_framework.test import APITestCase
+from rest_framework.test import APITransactionTestCase
 from rest_framework import status
 
 
-class FolioChantSetViewTestCase(APITestCase):
-
-    fixtures = ["1_users", "2_initial_data"]
-
-    def setUp(self):
-        self.client.login(username="ahankins", password="hahaha")
+class FolioChantSetViewTestCase(APITransactionTestCase):
+    fixtures = ["2_initial_data"]
 
     def test_get(self):
         response = self.client.get("/chant-set/folio/1/")
@@ -25,18 +20,11 @@ class FolioChantSetViewTestCase(APITestCase):
                           ' "genre": "", "manuscript_id": 3, "full_text": "",' \
                           ' "feast": "", "mode": "", "finalis": "",' \
                           ' "position": ""}]'
-        # We want to remove the version id and unique id because they're always
-        # different.
-        self.assertJSONEqual(remove_all_solr_metadata(response.content),
-                         expected_string)
+        self.assertJSONEqual(response.content, expected_string)
 
 
-class ManuscriptChantSetTestCase(APITestCase):
-
-    fixtures = ["1_users", "2_initial_data"]
-
-    def setUp(self):
-        self.client.login(username="ahankins", password="hahaha")
+class ManuscriptChantSetTestCase(APITransactionTestCase):
+    fixtures = ["2_initial_data"]
 
     def test_get(self):
         response = self.client.get("/chant-set/manuscript/3/")
@@ -54,10 +42,7 @@ class ManuscriptChantSetTestCase(APITestCase):
                           ' "genre": "", "manuscript_id": 3, "full_text": "",' \
                           ' "feast": "", "mode": "", "finalis": "",' \
                           ' "position": ""}]'
-        # We want to remove the version id and unique id because they're always
-        # different.
-        self.assertJSONEqual(remove_all_solr_metadata(response.content),
-                         expected_string)
+        self.assertJSONEqual(response.content, expected_string)
 
     def test_get_empty_chant(self):
         response = self.client.get("/chant-set/manuscript/3/page-2/")

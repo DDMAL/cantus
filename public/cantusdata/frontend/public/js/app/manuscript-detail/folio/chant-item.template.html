@@ -1,0 +1,10 @@
+<div class="panel-heading">
+    <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent=".accordion" href="#collapse-<%= sequence %>">
+            <%= incipit %>
+        </a>
+    </h4>
+</div>
+<div id="collapse-<%= sequence %>" class="panel-collapse collapse <%= isOpen() ? 'in' : '' %>">
+    <div class="panel-body"></div>
+</div>

@@ -1,66 +1,6 @@
 import csv
-
-
-def ordinal(value):
-    """
-    Converts zero or a *postive* integer (or their string
-    representations) to an ordinal value.
-
-    >>> for i in range(1, 13):
-    ...     ordinal(i)
-    ...
-    u'1st'
-    u'2nd'
-    u'3rd'
-    u'4th'
-    u'5th'
-    u'6th'
-    u'7th'
-    u'8th'
-    u'9th'
-    u'10th'
-    u'11th'
-    u'12th'
-
-    >>> for i in (100, '111', '112',1011):
-    ...     ordinal(i)
-    ...
-    u'100th'
-    u'111th'
-    u'112th'
-    u'1011th'
-
-    """
-    try:
-        value = int(value)
-    except ValueError:
-        return value
-
-    if value % 100//10 != 1:
-        if value % 10 == 1:
-            ordval = u"%d%s" % (value, "st")
-        elif value % 10 == 2:
-            ordval = u"%d%s" % (value, "nd")
-        elif value % 10 == 3:
-            ordval = u"%d%s" % (value, "rd")
-        else:
-            ordval = u"%d%s" % (value, "th")
-    else:
-        ordval = u"%d%s" % (value, "th")
-
-    return ordval
-
-
-def feast_code_lookup(feast_code, feast_file):
-    # f = [r for r in feastfile if r['FeastCode'] == feastcode]
-    for record in feast_file:
-        if not record["FeastCode"]:
-            continue
-        if len(record["FeastCode"]) == 7:
-            record["FeastCode"] = "0{0}".format(record["FeastCode"])
-        if str(record["FeastCode"]) == str(feast_code):
-            return record["EnglishName"]
-    return None
+import urllib2
+import re
 
 
 def expand_mode(mode_code):
@@ -85,7 +25,7 @@ def expand_mode(mode_code):
     if "*" in input_list:
         mode_output.append("No music")
     if "r" in input_list:
-        mode_output.append("Responsory (simple)")
+        mode_output.append("Formulaic")
     if "?" in input_list:
         mode_output.append("Uncertain")
     if "S" in input_list:
@@ -97,18 +37,47 @@ def expand_mode(mode_code):
 
 
 def expand_genre(genre_code):
-    return {
-        "A": "Antiphon",
-        "AV": "Antiphon Verse",
-        "R": "Responsory",
-        "V": "Responsory Verse",
-        "W": "Versicle",
-        "H": "Hymn",
-        "I": "Invitatory antiphon",
-        "P": "Invitatory Psalm",
-        "M": "Miscellaneous",
-        "G": "Mass chants"
-    }.get(genre_code, "Error")
+    """
+    Get the text file listing all genres directly from
+    the cantus DB website. What it looks like:
+
+    Genre;Description;MassOffice;tid
+    A;Antiphon
+    ;Office;122
+    Ag;Agnus dei
+    ;Mass;124
+    Ig;Ingressa (for the Beneventan liturgy)
+    ;Office;142
+    [...]
+
+    We care only about the even lines since we only need the Genre
+    and Description fields.
+    Anything between parentheses is irrelevant and too long, it is
+    thus removed.
+    """
+
+    # Cache the data so that it doesn't get downloaded multiple times per import
+    if not hasattr(expand_genre, 'response_lines'):
+        response = urllib2.urlopen('http://cantus.uwaterloo.ca/genre-export.txt')
+        expand_genre.response_lines = response.readlines()
+
+    # Skip the first line and every other line
+    for line in expand_genre.response_lines[1::2]:
+        code, description = line.split(';')
+
+        # Some genre codes are of the form [G] but it is unclear if the
+        # brackets are part of the code or if they are there to indicate
+        # that those codes are from old versions of the cantus DB
+        if genre_code == code or genre_code == code.strip('[]'):
+            # Remove anything between parentheses and any space before
+            description = re.sub(r'\s*\(.*\)', '', description)
+            # Take only the first term when there is a list (separated by commas)
+            description = re.sub(r',.*', '', description)
+            description = description.rstrip('\n')
+            return description
+
+    # If nothing was found, return the original
+    return genre_code
 
 
 def expand_differentia(differentia_code):
@@ -118,10 +87,7 @@ def expand_differentia(differentia_code):
     :param differentia_code:
     :return:
     """
-    return{
-        "*": "No differentia",
-        "?": "Uncertain",
-    }.get(differentia_code.strip(), differentia_code)
+    return 'No differentia' if '*' in differentia_code else differentia_code
 
 
 def expand_office(office_code):
@@ -135,6 +101,10 @@ def expand_office(office_code):
         "S": "Sext",
         "N": "None",
         "V2": "Second Vespers",
+        "MI": "Mass",
+        "MI1": "First Mass",
+        "MI2": "Second Mass",
+        "MI3": "Third Mass",
         "D": "Day Hours",
         "R": "Memorial",
         "E": "Antiphons for the Magnificat or Benedictus",
@@ -154,8 +124,7 @@ class PositionExpander(object):
         for row in self.csv_file:
             office_code = self.remove_double_dash(row["Office"]).strip()
             genre_code = self.remove_double_dash(row["Genre"]).strip()
-            position_code = self.remove_double_dash(row["Position"]).strip()\
-                .lstrip("0").rstrip(".")
+            position_code = self.remove_double_dash(row["Position"]).strip().lstrip("0").rstrip("._ ")
             text = self.remove_double_dash(row["Text Phrase"]).strip()
 
             # We are creating a 3-dimensional dictionary for fast lookup of names
@@ -163,7 +132,8 @@ class PositionExpander(object):
 
     def get_text(self, office_code, genre_code, position_code):
         try:
-            return self.position_data_base[office_code.strip()][genre_code.strip()][position_code.strip().lstrip("0").rstrip(".")]
+            return self.position_data_base[office_code.strip()][genre_code.strip()]\
+                [position_code.strip().lstrip("0").rstrip("._ ")]
         except KeyError:
             # If it's not in the dictionary then we just use an empty string
             return ""

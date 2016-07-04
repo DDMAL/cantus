@@ -1,9 +1,4 @@
 from django.db import models
-from django.db.models.signals import post_save, post_delete
-
-from cantusdata.models.concordance import Concordance
-
-from cantusdata.helpers.signal_wrangler import retrievable_receiver
 
 
 class Chant(models.Model):
@@ -35,8 +30,7 @@ class Chant(models.Model):
                                           related_name="concordances",
                                           blank=True)
     volpiano = models.TextField(blank=True, null=True)
-    manuscript = models.ForeignKey("cantusdata.Manuscript",
-                                   related_name="chants")
+    manuscript = models.ForeignKey('Manuscript')
 
     def __unicode__(self):
         return u"{0} - {1}".format(self.cantus_id, self.incipit)
@@ -61,6 +55,7 @@ class Chant(models.Model):
             'manuscript': self.manuscript.siglum,
             'manuscript_id': self.manuscript.id,
             'manuscript_name_hidden': self.manuscript.name,
+            'public': self.manuscript.public,
             'folio': self.folio.number,
             'folio_id': self.folio.id,
             'sequence': self.sequence,
@@ -80,52 +75,11 @@ class Chant(models.Model):
 
     def fetch_solr_records(self, solrconn):
         """Query Solr for this object, returning a list of results"""
-        return solrconn.query("type:cantusdata_chant item_id:{0}"
-                              .format(self.id), q_op="AND")
-
-    def add_to_solr(self, solrconn):
-        """
-        Add a Solr entry for this chant
-
-        Return true
-        """
-        solrconn.add(**self.create_solr_record())
-        return True
+        return solrconn.query(self._get_solr_query())
 
     def delete_from_solr(self, solrconn):
-        """
-        Delete the Solr entry for this chant if it exists
+        """Delete the Solr entry for this chant if it exists"""
+        solrconn.delete_query(self._get_solr_query())
 
-        Return true if there was an entry
-        """
-        record = self.fetch_solr_records()
-
-        if record:
-            solrconn.delete(self.results[0]['id'])
-            return True
-
-        return False
-
-
-@retrievable_receiver(post_save, sender=Chant, dispatch_uid='cantusdata_chant_solr_add')
-def solr_index(sender, instance, created, **kwargs):
-    from django.conf import settings
-    import solr
-
-    solrconn = solr.SolrConnection(settings.SOLR_SERVER)
-
-    instance.delete_from_solr(solrconn)
-    instance.add_to_solr(solrconn)
-
-    solrconn.commit()
-
-
-@retrievable_receiver(post_delete, sender=Chant, dispatch_uid='cantusdata_chant_solr_delete')
-def solr_delete(sender, instance, **kwargs):
-    from django.conf import settings
-    import solr
-
-    solrconn = solr.SolrConnection(settings.SOLR_SERVER)
-
-    if instance.delete_from_solr(solrconn):
-        solrconn.commit()
+    def _get_solr_query(self):
+        return "(type:cantusdata_chant AND item_id:{0})".format(self.id)

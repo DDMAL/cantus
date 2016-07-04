@@ -770,7 +770,7 @@
             tagName: 'form class="form" action="#"',
 
             ui: {
-                "shortCodeField": "[name='glyph-short-code-field']",
+                "shortCodeField": "#glyph-short-code-field",
                 "statusDiv": ".status-message"
             },
 

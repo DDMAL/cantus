@@ -18,7 +18,7 @@ class NotationException(APIException):
 
 class SearchNotationView(APIView):
     """
-    Search algorithm copied over from the Liber Usualis code
+    Search algorithm adapted from the Liber Usualis code
     """
 
     def get(self, request, *args, **kwargs):
@@ -31,11 +31,11 @@ class SearchNotationView(APIView):
 
         # Give a 400 if there's a notation exception, and let
         # anything else give a 500
-        results = self.do_query(manuscript, stype, q, 5, 5)
+        results = self.do_query(manuscript, stype, q)
 
         return Response({'numFound': len(results), 'results': results})
 
-    def do_query(self, manuscript, qtype, query, zoom_level, max_zoom=4):
+    def do_query(self, manuscript, qtype, query):
         # This will be appended to the search query so that we only get
         # data from the manuscript that we want!
         manuscript_query = ' AND siglum_slug:\"{0}\"'.format(manuscript)
@@ -54,7 +54,7 @@ class SearchNotationView(APIView):
             if not search_utils.valid_pitch_sequence(query):
                 raise NotationException("The query you provided is not a valid pitch sequence")
             real_query = query if qtype == 'pnames' else ' OR '.join(search_utils.get_transpositions(query))
-            query_stmt = 'pnames:{0}'.format(real_query)
+            query_stmt = 'pnames:({0})'.format(real_query)
         elif qtype == "contour":
             query_stmt = 'contour:{0}'.format(query)
         elif qtype == "text":
@@ -76,10 +76,8 @@ class SearchNotationView(APIView):
             response = solrconn.query(query_stmt + manuscript_query,
                                       score=False, sort="folio asc",
                                       rows=1000000)
-        numfound = response.numFound
 
         results = []
-        boxes = []
 
         # get only the longest ngram in the results, for results which are associated with
         # a pitch sequence
@@ -90,6 +88,8 @@ class SearchNotationView(APIView):
                 notegrams_num = search_utils.get_neumes_length(query)
                 response = [r for r in response if not r.get('pnames') or len(r['pnames']) == notegrams_num]
 
+        box_sort_key = itemgetter('p', 'y')
+
         for d in response:
             page_number = d['folio']
             locations = json.loads(d['location'].replace("'", '"'))
@@ -99,8 +99,10 @@ class SearchNotationView(APIView):
                 box_h = locations['height']
                 box_x = locations['ulx']
                 box_y = locations['uly']
-                boxes.append({'p': page_number, 'w': box_w, 'h': box_h, 'x': box_x, 'y': box_y})
+                boxes = [{'p': page_number, 'w': box_w, 'h': box_h, 'x': box_x, 'y': box_y}]
             else:
+                boxes = []
+
                 for location in locations:
                     box_w = location['width']
                     box_h = location['height']
@@ -108,18 +110,25 @@ class SearchNotationView(APIView):
                     box_y = location['uly']
                     boxes.append({'p': page_number, 'w': box_w, 'h': box_h, 'x': box_x, 'y': box_y})
 
-        zoom_diff = max_zoom - int(zoom_level)
-        real_boxes = []
-        for box in boxes:
-            #incorporate zoom
-            box['w'] = search_utils.incorporate_zoom(box['w'], zoom_diff)
-            box['h'] = search_utils.incorporate_zoom(box['h'], zoom_diff)
-            box['x'] = search_utils.incorporate_zoom(box['x'], zoom_diff)
-            box['y'] = search_utils.incorporate_zoom(box['y'], zoom_diff)
+                boxes.sort(key=box_sort_key)
 
-            if box['w'] > 0 and box['h'] > 0:
-                real_boxes.append(box)
+            results.append({
+                'boxes': boxes,
+                'contour': get_value(d, 'contour', list),
+                'intervals': get_value(d, 'intervals', lambda i: i.split('_')),
+                'neumes': get_value(d, 'neumes', lambda i: i.split('_')),
+                'pnames': get_value(d, 'pnames', list),
+                'semitones': get_value(d, 'semitones', lambda tones: [int(s) for s in tones.split('_')])
+            })
 
-        boxes_sorted = sorted(real_boxes, key=itemgetter('p', 'y'))
+        results.sort(key=lambda result: [box_sort_key(box) for box in result['boxes']])
 
-        return boxes_sorted
+        return results
+
+def get_value(d, key, transform):
+    try:
+        value = d[key]
+    except KeyError:
+        return None
+
+    return transform(value)

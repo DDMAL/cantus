@@ -1,0 +1,37 @@
+<div id="toolbar-row">
+    <div class="toolbar-things"></div>
+    <div id="manuscript-info-target">
+        <button class="btn btn-link btn-sm">
+            Manuscript info
+        </button>
+    </div>
+</div>
+<div class="manuscript-columns propagate-height">
+    <div id="diva-column" class="propagate-height"></div>
+    <div id="manuscript-data-column" class="propagate-height">
+        <div id="manuscript-folio-advancer-container"></div>
+        <div id="manuscript-nav-container">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs nav-justified">
+                <li class="active"><a id="manuscript-nav-folio-number" href="#manuscript-folio-pane" data-toggle="tab"></a></li>
+                <li><a href="#manuscript-search-pane" data-toggle="tab">Search Manuscript</a></li>
+            </ul>
+        </div>
+        <div id="manuscript-data-container" class="propagate-height">
+            <div class="resizer">
+                <div class="prong"></div>
+                <div class="prong"></div>
+            </div>
+
+            <!-- Tab panes -->
+            <div class="tab-content propagate-height">
+                <div role="tabpanel" class="tab-pane col-md-12 active" id="manuscript-folio-pane" >
+                    <div id="folio"></div>
+                </div>
+                <div role="tabpanel" class="tab-pane col-md-12 propagate-height" id="manuscript-search-pane">
+                    <div id="manuscript-search" class="propagate-height"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

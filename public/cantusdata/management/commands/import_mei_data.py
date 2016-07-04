@@ -1,29 +1,29 @@
 import os
 import subprocess
 import csv
+import time
 
-import solr
+import progressbar
+
 from django.core.management.base import BaseCommand
+from django.conf import settings
 
-from cantusdata import settings
-from cantusdata.helpers.parsers.csv_parser import CSVParser
+
+UPLOAD_POLL_WAIT_SECS = 0.25
+UPLOAD_PROGRESS_STEP = 5
 
 
 class Command(BaseCommand):
     args = "mode manuscript"
 
     def handle(self, *args, **kwargs):
-        solrconn = solr.SolrConnection(settings.SOLR_SERVER)
-
-        mode = None
-        manuscript = None
-        # Grab the terminal params
         if args and args[0] and args[1]:
             mode = args[0]
             manuscript = args[1]
         else:
             raise Exception("Please provide arguments for processing"
                             " mode and manuscript name.")
+
         # Make sure we're working with the right manuscript
         if manuscript == "salzinnes":
             self.stdout.write("Salzinnes manuscript selected.")
@@ -45,97 +45,122 @@ class Command(BaseCommand):
 
         if mode == "mei_to_csv":
             self.stdout.write("Dumping MEI to CSV.")
-            if manuscript == "st_gallen_390" or manuscript == "st_gallen_391":
-                from cantusdata.helpers.parsers.gallen_mei2_parser import GallenMEI2Parser
-                parser = GallenMEI2Parser(mei_location, siglum)
-            else:
-                from cantusdata.helpers.parsers.mei2_parser import MEI2Parser
-                parser = MEI2Parser(mei_location, siglum)
-            data = parser.parse()
-            self.data_to_csv(data, csv_location)
+            dump_to_csv(mei_location, siglum, csv_location)
             self.stdout.write("MEI dumped to CSV.")
 
         elif mode == "mei_to_solr":
-            self.stdout.write("Committing MEI to Solr.")
-            if manuscript == "st_gallen_390" or manuscript == "st_gallen_391":
-                from cantusdata.helpers.parsers.gallen_mei2_parser import GallenMEI2Parser
-                parser = GallenMEI2Parser(mei_location, siglum)
-            else:
-                from cantusdata.helpers.parsers.mei2_parser import MEI2Parser
-                parser = MEI2Parser(mei_location, siglum)
-            data = parser.parse()
-            self.data_to_solr(data, solrconn)
-            self.stdout.write("MEI committed to Solr.")
+            dump_to_csv(mei_location, siglum, csv_location)
+            upload_to_solr(csv_location)
 
         elif mode == "csv_to_solr":
-            self.csv_to_solr(csv_location)
-
-        elif mode == "gall_hack":
-            data = CSVParser("data_dumps/hacky_csv_mei/csg_390_ordered_2.csv",
-                             "ch-sgs-390").parse()
-            self.data_to_solr(data, solrconn)
+            upload_to_solr(csv_location)
 
         else:
             raise Exception("Please provide mode!")
 
-    def data_to_csv(self, data, path):
-        """
-        Dump the data to a CSV file.
 
-        :param data:
-        :param path:
-        :return:
-        """
-        heading_order = {
-            h: i for (i, h) in enumerate((
-                'folio', 'pnames', 'neumes', 'siglum_slug', 'intervals', 'id',
-                'semitones', 'contour', 'project', 'location', 'type'
-            ))
-        }
+def dump_to_csv(mei_location, siglum, path):
+    """
+    Dump the data to a CSV file.
 
-        # Maintain a stable heading order for Salzinnes-style CSV so that it's possible to run word-by-word
-        # diffs on the output
-        headings = list(sorted(data[0][0].keys(), key=lambda h: heading_order.get(h, -1)))
+    :param mei_location:
+    :param siglum:
+    :param path:
+    :return:
+    """
+    # Maintain a stable heading order for Salzinnes-style CSV so that it's possible to run word-by-word
+    # diffs on the output
+    heading_order = {
+        h: i for (i, h) in enumerate((
+            'folio', 'pnames', 'neumes', 'siglum_slug', 'intervals', 'id',
+            'semitones', 'contour', 'project', 'location', 'type'
+        ))
+    }
 
-        csv_file = open(path, 'wb')
-        w = csv.DictWriter(csv_file, headings)
-        w.writeheader()
-        for page in data:
+    with open(path, 'wb') as csv_file:
+        writer = None
+
+        files, pages = convert_mei(mei_location, siglum)
+
+        prog_widgets = ['Parsing: ', progressbar.Percentage(), ' ', progressbar.Bar(), ' ', progressbar.ETA()]
+        prog_bar = progressbar.ProgressBar(widgets=prog_widgets, maxval=len(files))
+        prog_bar.start()
+
+        for page_idx, (file_name, page) in enumerate(pages):
             for row in page:
-                w.writerow(row)
-        csv_file.close()
+                if writer is None:
+                    # We can only initialize the header once we have the first row
 
-    def data_to_solr(self, data, solrconn):
-        """
-        Commit the data to Solr.
+                    # FIXME(wabain): This assumes that the first row will contain all the
+                    #   fields we're interested in, but that's not necessarily the case.
+                    #
+                    #   If the assumption breaks we'll get a ValueError: dict contains fields
+                    #   not in fieldname.
+                    headings = list(sorted(row.keys(), key=lambda h: heading_order.get(h, -1)))
 
-        :param data:
-        :param solrconn:
-        :return:
-        """
-        rows = []
+                    writer = csv.DictWriter(csv_file, headings)
+                    writer.writeheader()
 
-        for page in data:
-            rows.extend(page)
+                writer.writerow(row)
 
-        solrconn.add_many(rows)
-        solrconn.commit()
+            prog_bar.update(page_idx)
 
-    def csv_to_solr(self, filename):
-        """Commit a CSV file to Solr using a stream"""
+        prog_bar.finish()
 
-        # Build the Solr upload URL
-        url = ('"{server}/update?stream.file={path}&stream.contentType=text/csv;charset=utf-8&commit=true"'
-                .format(server=settings.SOLR_SERVER, path=os.path.abspath(filename)))
 
-        command = 'curl -s -o /dev/null -w "%{http_code}" ' + url
+def convert_mei(mei_location, siglum):
+    return get_converter(siglum).convert(mei_location, siglum)
 
-        print 'Sending CSV to Solr.'
 
-        status = subprocess.check_output(command, shell=True)
+def get_converter(siglum):
+    from cantusdata.helpers.mei_conversion import MEIConverter, StGallenMEIConverter
 
-        if not status or status[0] != '2':
-            print 'Upload failed (status {}). See the Solr logs for details.'.format(status)
+    if siglum == "ch-sgs-390" or siglum == "ch-sgs-391":
+        return StGallenMEIConverter
+
+    return MEIConverter
+
+
+def upload_to_solr(filename):
+    """Commit a CSV file to Solr using a stream"""
+
+    prog_widgets = ['Uploading... ', progressbar.BouncingBar(), ' ', progressbar.Timer(format='Time: %s')]
+    prog_bar = progressbar.ProgressBar(widgets=prog_widgets)
+    prog_bar.start()
+
+    # Build the Solr upload URL
+    url = ('"{server}/update?stream.file={path}&stream.contentType=text/csv;charset=utf-8&commit=true"'
+            .format(server=settings.SOLR_SERVER, path=os.path.abspath(filename)))
+
+    command = 'curl -s -o /dev/null -w "%{http_code}" ' + url
+
+    proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+
+    polls = 0
+
+    while proc.returncode is None:
+        proc.poll()
+
+        polls += 1
+
+        prog_bar.update((polls * UPLOAD_PROGRESS_STEP) % prog_bar.maxval)
+        time.sleep(UPLOAD_POLL_WAIT_SECS)
+
+    prog_bar.finish()
+
+    if proc.returncode != 0:
+        failure_message = 'process returned {}'.format(proc.returncode)
+    else:
+        status = proc.communicate()[0]
+
+        if status[0] != '2':
+            failure_message = 'status {}'.format(status)
+
         else:
-            print 'CSV upload successful.'
+            failure_message = None
+
+    if failure_message is not None:
+        print 'Upload failed ({}). See the Solr logs for details.'.format(failure_message)
+    else:
+        print 'Upload successful.'
 

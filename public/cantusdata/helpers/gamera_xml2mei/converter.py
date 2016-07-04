@@ -7,7 +7,7 @@ import argparse
 from uuid import uuid4
 from lxml import etree
 
-from pymei import MeiDocument, MeiElement, MeiAttribute, XmlExport
+from pymei import MeiDocument, MeiElement, MeiAttribute, documentToFile
 
 
 class GameraXMLConverter:
@@ -30,7 +30,7 @@ class GameraXMLConverter:
             self.initLayer.addChild(element)
 
     def write(self):
-        XmlExport.meiDocumentToFile(self.meiDoc, self.meiFile)
+        documentToFile(self.meiDoc, self.meiFile)
 
     def getMEIContent(self, dumpVisualization=False):
         """Extract zones and neumes from the source file"""

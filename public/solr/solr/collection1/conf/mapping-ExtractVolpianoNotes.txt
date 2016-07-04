@@ -1,6 +1,7 @@
 # Remove empty staff segments, clefs and bar lines
 # We assume that we're working with a treble clef in C major (this should be checked before upload!)
-"-" => ""
+# Dashes are not removed here for the literal volpiano search to work
+# Instead, they are remove by a PatternReplaceFilter in the schema when necessary
 "1" => ""
 "2" => ""
 "3" => ""
@@ -39,6 +40,9 @@
 "L" => "l"
 
 # Raise notes
+"8" => "f"
+"(" => "f"
+
 "9" => "g"
 ")" => "g"
 

@@ -1,0 +1,49 @@
+<tr>
+    <td><%= result.folio %></td>
+
+    <td>
+        <a href="<%= result.url %>" class="chant-link"><%= result.name %></a>
+        <a href="" class="quick-view" data-toggle="tooltip" title="Quick view">
+            <span class="glyphicon glyphicon-flash"></span>
+        </a>
+    </td>
+
+    <% _.forEach(infoFields, function (field) { %>
+    <td><%= result[field.type] %></td>
+    <% }); %>
+</tr>
+
+<% if (isVolpianoSearch) { %>
+<tr>
+    <td colspan="<%- columnCount %>">
+        <div class="volpiano"><%= result.volpiano %></div>
+    </td>
+</tr>
+<% } %>
+
+<tr class="full-result-record hidden">
+    <td colspan="<%- columnCount %>">
+        <div class="full-result-record-content well">
+            <dl>
+                <dt>Cantus ID</dt>
+                <dd>
+                    <p><%- result.cantus_id %></p>
+                </dd>
+
+                <dt>Full Text</dt>
+                <dd>
+                    <p><%- result.full_text %></p>
+                </dd>
+
+                <% if (!isVolpianoSearch && result.volpiano) { %>
+                <dt>Volpiano</dt>
+                <dd>
+                    <div class="volpiano">
+                        <%= result.volpiano %>
+                    </div>
+                </dd>
+                <% } %>
+            </dl>
+        </div>
+    </td>
+</tr>

@@ -1,6 +1,10 @@
 import csv
+import re
 
 from django.core.management.base import BaseCommand
+
+
+W_REGEX = re.compile(r'^(\d+)w$')
 
 
 class Command (BaseCommand):
@@ -27,15 +31,35 @@ class Command (BaseCommand):
         for row in rows:
             row['Cantus ID'] = row['Cantus ID'].strip(' _')
 
+        # Rename folios [n]w to [n+1]r, for integer [n]
+        # For context here see:
+        #     https://github.com/DDMAL/cantus/issues/180
+        #     https://github.com/DDMAL/cantus/issues/245
+        for row in rows:
+            old_folio = row['Folio']
+            match = W_REGEX.match(old_folio)
+
+            if match:
+                new_folio = str(int(match.group(1)) + 1) + 'r'
+                self.stdout.write('WARNING: Automatically renaming folio {} to {}!'.format(old_folio, new_folio))
+                self.stdout.write('         You may want to manually verify or revert this change')
+                row['Folio'] = new_folio
+
         with open(target, 'wb') as f:
-            writer = csv.DictWriter(f, fields, quoting=csv.QUOTE_ALL)
+            writer = csv.DictWriter(f, fields, lineterminator='\n', quoting=csv.QUOTE_ALL)
             writer.writeheader()
 
-            for row in rows: writer.writerow(row)
+            for row in rows:
+                writer.writerow(row)
 
 
 def rename_field(fields, rows, old, new):
-    fields[fields.index(old)] = new
+    try:
+        old_index = fields.index(old)
+    except ValueError:
+        return
+
+    fields[old_index] = new
 
     for row in rows:
         row[new] = row[old]

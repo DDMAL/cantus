@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.http import Http404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer, JSONPRenderer
@@ -6,32 +7,37 @@ from cantusdata.serializers.search import SearchSerializer
 import solr
 
 
+FOLIO_FIELDS = [
+    'type',
+    'number',
+    'item_id',
+    'manuscript_id',
+]
+
+
 class ManuscriptFolioSetView(APIView):
     serializer_class = SearchSerializer
     renderer_classes = (JSONRenderer, JSONPRenderer)
 
     def get(self, request, *args, **kwargs):
-
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
 
         manuscript_id = kwargs['pk']
 
         if 'number' in kwargs:
             folio_number = kwargs['number']
-            composed_request =\
-                u'type:"cantusdata_folio" AND manuscript_id:{0} AND number:{1}'\
+            composed_request = u'type:"cantusdata_folio" AND manuscript_id:{0} AND number:{1}'\
                 .format(manuscript_id, folio_number)
-            result = solrconn.query(composed_request, sort="number asc",
-                        rows=1)
+
+            result = solrconn.query(composed_request, sort="number asc", rows=1, fields=FOLIO_FIELDS, score=False)
+
             # We only want the single result!
             # TODO: Figure out the best way to handle this
             if (result.results):
                 return Response(result.results[0])
             else:
-                return Response(result)
+                raise Http404("No data for a folio with that number")
         else:
-            composed_request = u'type:"cantusdata_folio" AND manuscript_id:{0}'\
-            .format(manuscript_id)
-            result = solrconn.query(composed_request, sort="number asc",
-                                rows=1000)
-            return Response(result)
+            composed_request = u'type:"cantusdata_folio" AND manuscript_id:{0}'.format(manuscript_id)
+            results = solrconn.query(composed_request, sort="number asc", rows=1000, fields=FOLIO_FIELDS, score=False)
+            return Response(results)

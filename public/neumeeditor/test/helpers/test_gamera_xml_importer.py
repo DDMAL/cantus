@@ -1,4 +1,3 @@
-from lxml import etree
 from django.test import TestCase
 from cantusdata.settings import MEDIA_ROOT, BASE_DIR
 from neumeeditor.helpers.gamera_xml import GameraXML
@@ -9,10 +8,10 @@ from neumeeditor.helpers.run_length_image import RunLengthImage
 
 class NeumeNameStripperTestCase(TestCase):
     def test_does_begin(self):
-        self.assertEquals(strip_leading_characters("neume.some.other.stuff"), "some.other.stuff")
+        self.assertEquals(strip_leading_characters("neume.some.other.stuff", "neume."), "some.other.stuff")
 
     def test_does_not_begin(self):
-        self.assertEquals(strip_leading_characters("other.stuff"), "other.stuff")
+        self.assertEquals(strip_leading_characters("other.stuff", "neume."), "other.stuff")
 
 
 class GameraXMLImportTestCase(TestCase):
@@ -36,7 +35,7 @@ class GameraXMLTestCase(TestCase):
 
 class RunLengthImageTestCase(TestCase):
     def test_get_location_of_runlength(self):
-        rli = RunLengthImage(3, 3, "5 4")
+        rli = RunLengthImage(0, 0, 3, 3, "5 4")
         self.assertEquals(rli.get_location_of_runlength(0), (0, 0))
         self.assertEquals(rli.get_location_of_runlength(1), (1, 0))
         self.assertEquals(rli.get_location_of_runlength(2), (2, 0))
@@ -55,6 +54,6 @@ class RunLengthImageTestCase(TestCase):
              " 47 11 46 11 47 9 48 9 49 9 48 9 49 9 48 6 51 5 53 4 54 " \
              "3 55 2 56 0 "
 
-        rli = RunLengthImage(58, 52, rl)
+        rli = RunLengthImage(0, 0, 58, 52, rl)
         image = rli.get_image()
         image.save(MEDIA_ROOT + "test.png")

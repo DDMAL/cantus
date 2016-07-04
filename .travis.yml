@@ -1,0 +1,58 @@
+sudo: required
+dist: trusty
+
+env: CANTUS_CI_TEST=base_config
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - env: CANTUS_CI_TEST=coveralls
+
+  exclude:
+    - env: CANTUS_CI_TEST=base_config
+  include:
+    - language: node_js
+      node_js: stable
+      env: CANTUS_CI_TEST=frontend
+
+      before_install:
+        - cd public/cantusdata/frontend
+      install:
+        - npm install
+      before_script:
+        - npm run build
+      script:
+        - npm run lint
+        - npm test
+
+    - language: python
+      python: "2.7"
+      env: CANTUS_CI_TEST=server
+
+      install:
+        - ./etc/provision/setup.sh
+      before_script:
+        - ./etc/ci/prepare-server.sh
+      script:
+        - ./etc/ci/test-server.sh
+      after_success:
+        - ./etc/ci/print-server-coverage.sh
+
+    - language: python
+      python: "2.7"
+      env: CANTUS_CI_TEST=coveralls
+
+      before_install:
+        - nvm install stable
+      install:
+        - ./etc/provision/setup.sh
+        - npm --prefix=public/cantusdata/frontend install
+      before_script:
+        - ./etc/ci/prepare-server.sh
+        - npm --prefix=public/cantusdata/frontend run build
+      script:
+        - ./etc/ci/test-server.sh
+        - npm --prefix=public/cantusdata/frontend run lint
+        - npm --prefix=public/cantusdata/frontend test
+      after_success:
+        - ./etc/ci/post-combined-coverage.sh

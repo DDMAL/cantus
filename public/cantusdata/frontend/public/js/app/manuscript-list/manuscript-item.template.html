@@ -1,0 +1,30 @@
+<td>
+    <div>
+        <div>
+            <a href="<%= url %>" <% if (primary_url_is_external) { %>target="_blank"<% } %>>
+            <%- short_name %><!--
+         --></a>
+            <% if (cantus_url) { %>
+            <a href="<%= cantus_url %>" target="_blank" data-toggle="tooltip" title="Cantus Database">
+                <small class="text-muted">
+                    <span class="glyphicon glyphicon-share-alt"></span>
+                </small>
+            </a>
+            <% } %>
+        </div>
+        <div>
+            <small><%- name %></small>
+        </div>
+    </div>
+</td>
+<td><%- date %></td>
+<td>
+    <% if (folio_count) { %>
+    <%- folio_count %>
+    <% } %>
+</td>
+<td>
+    <% if (chant_count) { %>
+    <%- chant_count %>
+    <% } %>
+</td>
