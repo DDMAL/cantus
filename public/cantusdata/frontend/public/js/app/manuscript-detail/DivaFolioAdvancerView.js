@@ -32,7 +32,7 @@ export default Marionette.ItemView.extend({
     },
 
     /**
-     * Increase the page by 1.
+     * Increase the page by 1, or 2 if in 'Book' view.
      */
     nextButtonCallbackHandler: function(event)
     {
@@ -40,15 +40,16 @@ export default Marionette.ItemView.extend({
         event.preventDefault();
 
         this.changeDivaPage(
-            function(index)
+            function(index, divaData)
             {
-                return index + 1;
+                var inBookView = divaData.getState().v === 'b';
+                return index + (inBookView ? 2 : 1);
             }
         );
     },
 
     /**
-     * Decrease the page by 1.
+     * Decrease the page by 1, or 2 if in 'Book' view.
      */
     previousButtonCallbackHandler: function(event)
     {
@@ -56,9 +57,10 @@ export default Marionette.ItemView.extend({
         event.preventDefault();
 
         this.changeDivaPage(
-            function(index)
+            function(index, divaData)
             {
-                return index - 1;
+                var inBookView = divaData.getState().v === 'b';
+                return index - (inBookView ? 2 : 1);
             }
         );
     },
@@ -75,6 +77,6 @@ export default Marionette.ItemView.extend({
         var divaData = this.getDivaData(),
             currentPageIndex = divaData.getCurrentPageIndex();
         // Tell Diva to go to the page specified by numberChangeFunction()
-        divaData.gotoPageByIndex(numberChangeFunction(currentPageIndex));
+        divaData.gotoPageByIndex(numberChangeFunction(currentPageIndex, divaData));
     }
 });

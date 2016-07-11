@@ -52,13 +52,6 @@ export default Marionette.ItemView.extend({
 
         // TODO(wabain): get this from the manuscript channel for consistency
         this.siglum = options.siglum;
-
-        // Update the folio on change
-        // FIXME(wabain): Support manuscript change?
-        this.listenTo(manuscriptChannel, 'change:folio', function (number)
-        {
-            this.setFolio(number);
-        });
     },
 
     onBeforeDestroy: function()

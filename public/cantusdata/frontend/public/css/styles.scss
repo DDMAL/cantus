@@ -375,10 +375,6 @@ body.propagate-height {
     }
 }
 
-.diva-page-nav {
-    padding-right: 15px;
-}
-
 .diva-tools {
     margin-top: 0;
     padding: 20px 15px;
@@ -386,7 +382,7 @@ body.propagate-height {
     border-right: 1px solid $border-color;
     border-bottom: 1px solid $border-color;
 
-    .button {
+    .diva-button {
         border-color: #DADADA;
         background-color: #E7E7E7;
         height: 30px;
@@ -400,6 +396,11 @@ body.propagate-height {
     .diva-buttons-label, .diva-page-label {
         padding: 5px 10px !important;
         line-height: 1.5 !important;
+        margin: 0;
+    }
+
+    .diva-goto-form {
+        line-height: inherit;
     }
 
     // Stopgap to stop the "Zoom level" control from falling below the row
