@@ -47,7 +47,9 @@ export default Marionette.CompositeView.extend({
     {
         // Get the active suggestion
         var el = this.$('.active');
-        this.trigger('click:suggestion', null, el.text());
+        // Add boolean operator 'AND' between all words, in order to match exactly the suggestion
+        var text = el.text().replace(/(?!^)\s+(?!$)/g, ' AND ');
+        this.trigger('click:suggestion', null, text);
         this.hide();
     },
 

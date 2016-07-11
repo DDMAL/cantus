@@ -2,6 +2,6 @@ import Backbone from 'backbone';
 
 export default Backbone.Model.extend({
     defaults: {
-        term: 'Hello World'
+        term: ''
     }
 });

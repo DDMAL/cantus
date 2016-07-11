@@ -342,7 +342,7 @@
             <filter class="solr.SynonymFilterFactory" synonyms="index_synonyms.txt" ignoreCase="true" expand="false"/>
             -->
             <filter class="solr.LowerCaseFilterFactory" />
-            <filter class="solr.NGramFilterFactory" minGramSize="2" maxGramSize="15" />
+            <filter class="solr.NGramFilterFactory" minGramSize="1" maxGramSize="15" />
         </analyzer>
         <analyzer type="query">
             <tokenizer class="solr.StandardTokenizerFactory" />
