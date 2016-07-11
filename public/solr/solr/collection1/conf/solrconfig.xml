@@ -512,7 +512,7 @@
             <str name="field">feast</str>
             <str name="weightField">weight_field</str>
             <!--<str name="contextField">manuscript</str>-->
-            <str name="buildOnStartup">True</str>
+            <str name="buildOnStartup">false</str>
             <str name="suggestAnalyzerFieldType">suggest_text</str>
         </lst>
         <lst name="suggester">
@@ -523,7 +523,7 @@
             <str name="field">genre</str>
             <str name="weightField">weight_field</str>
             <!--<str name="contextField">manuscript</str>-->
-            <str name="buildOnStartup">True</str>
+            <str name="buildOnStartup">false</str>
             <str name="suggestAnalyzerFieldType">suggest_text</str>
         </lst>
         <lst name="suggester">
@@ -534,7 +534,7 @@
             <str name="field">office</str>
             <str name="weightField">weight_field</str>
             <!--<str name="contextField">manuscript</str>-->
-            <str name="buildOnStartup">True</str>
+            <str name="buildOnStartup">false</str>
             <str name="suggestAnalyzerFieldType">suggest_text</str>
         </lst>
     </searchComponent>
