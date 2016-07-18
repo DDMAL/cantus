@@ -10,7 +10,6 @@ import "diva/plugins/canvas";
 import "diva/plugins/pagealias";
 
 import folioNameHelper from "utils/folioNameHelper";
-import GlobalVars from "config/GlobalVars";
 
 import template from './diva.template.html';
 
@@ -105,9 +104,7 @@ export default Marionette.ItemView.extend({
             enableSpaceScroll: false,
             enableCanvas: true,
 
-            iipServerURL: GlobalVars.iipImageServerUrl,
-            objectData: "/static/" + siglum + ".json",
-            imageDir: GlobalVars.divaImageDirectory + siglum,
+            objectData: "/static/iiif/" + siglum + ".json",
 
             blockMobileMove: false
         };
