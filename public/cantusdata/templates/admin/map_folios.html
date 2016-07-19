@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    form.paths, h2, h5 {
+        width: 100%;
+        text-align: center;
+    }
+
+    .mapping-column {
+        display: inline-block;
+        width: 49%;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+        vertical-align:top;
+    }
+
+    ul {
+        list-style: none;
+    }
+
+    li {
+        margin-bottom: 3px;
+    }
+
+    li > h4 {
+        text-decoration: underline;
+    }
+
+    li > input {
+        width: 70px;
+        margin-left: 20px;
+    }
+
+    .button {
+        display: inline-block;
+        cursor: pointer;
+        background-color: #e0e0e0;
+        border: solid 1px #b6b6b6;
+        padding: 4px;
+        margin-left: 5px;
+        width: 55px;
+    }
+
+    .final-submit {
+        position: fixed;
+        top: 50%;
+        right: 25px;
+    }
+
+    .final-submit > input {
+        background-color: #264cff;
+        color: white;
+        border: solid 1px #0b97c4;
+    }
+
+    .error-message {
+        color: red;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+
+{% if posted %}
+<h2>The mapping has been succesfully saved</h2>
+<h5>Solr is in the process of refreshing the chant data. The changes should appear in a few minutes.</h5>
+
+{% elif error %}
+<h2 class="error-message">{{ error }}</h2>
+
+{% elif uris == None or folios == None or manuscript_id == None %}
+<h5><br>The manifest file has to be in <em>public/cantusdata/static/iiif/</em>
+    <br>and the data file has to be in <em>public/data_dumps/</em></h5>
+<form class="paths" action="/admin/map_folios/" method="get">
+    <input type="text" name="manifest" placeholder="Manifest file name" />
+    <input type="text" name="data" placeholder="Data dump file name" />
+    <input type="text" name="manuscript_id" placeholder="Manuscript ID" />
+    <input type="submit" />
+</form>
+
+{% else %}
+
+<h5><br><em>Tip: Use 'Tab' and 'Shift+Tab' to navigate the input fields.</em></h5>
+
+<form class="mapping-column" action="/admin/map_folios/" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="manuscript_id" value="{{ manuscript_id }}" />
+    <ul>
+        <li><h4>Pages from the manifest:</h4></li>
+        {% for uri in uris %}
+        <li>
+            <img src={{ uri.thumbnail }} />
+            {{ uri.short }}
+            <input type="text" class="folio-mapping" name={{ uri.full }} />
+            <div class="button" onclick="onMoveUp({{ forloop.counter0 }})" tabindex="-1">Up</div>
+            <div class="button" onclick="onMoveDown({{ forloop.counter0 }})" tabindex="-1">Down</div>
+        </li>
+        {% endfor %}
+    </ul>
+    <div class="final-submit">
+        <input type="submit" value="Submit this Mapping">
+        <h6><em>May take a while</em></h6>
+    </div>
+</form>
+<ul class="mapping-column">
+    <li><h4>Folio names from the data:</h4></li>
+    {% for folio in folios %}
+    <li class="folio-name">{{ folio }}</li>
+    {% endfor %}
+</ul>
+
+<script>
+    var folios = document.getElementsByClassName('folio-name');
+    var inputs = document.getElementsByClassName('folio-mapping');
+
+    for (var i = 0; i < inputs.length && i < folios.length; i++) {
+        inputs[i].value = folios[i].textContent;
+    }
+
+    function onMoveUp(startIndex) {
+        // Move up should change the value above the current input field
+        if (startIndex > 0)
+            startIndex--;
+        var temp = inputs[startIndex].value;
+
+        for (var i = startIndex; i < inputs.length - 1; i++) {
+            inputs[i].value = inputs[i + 1].value;
+        }
+        inputs[inputs.length - 1].value = temp;
+    }
+
+    function onMoveDown(startIndex) {
+        var temp = inputs[inputs.length - 1].value;
+        for (var i = inputs.length - 1; i > startIndex; i--) {
+            inputs[i].value = inputs[i - 1].value;
+        }
+        inputs[startIndex].value = temp;
+    }
+</script>
+{% endif %}
+{% endblock %}

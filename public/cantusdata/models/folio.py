@@ -11,6 +11,7 @@ class Folio(models.Model):
         ordering = ['number']
 
     number = models.CharField(max_length=50, blank=True, null=True)
+    image_uri = models.CharField(max_length=255, blank=True, null=True)
     manuscript = models.ForeignKey("Manuscript")
 
     @property
@@ -26,6 +27,7 @@ class Folio(models.Model):
             'id': str(uuid.uuid4()),
             'number': self.number,
             'item_id': self.id,
+            'image_uri': self.image_uri,
             'manuscript_id': self.manuscript.id,
         }
 
