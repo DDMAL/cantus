@@ -57,7 +57,6 @@ class Chant(models.Model):
             'manuscript_name_hidden': self.manuscript.name,
             'public': self.manuscript.public,
             'folio': self.folio.number,
-            'image_uri': self.folio.image_uri,
             'folio_id': self.folio.id,
             'sequence': self.sequence,
             'cantus_id': self.cantus_id,

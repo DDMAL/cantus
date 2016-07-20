@@ -34,15 +34,15 @@ export default Marionette.LayoutView.extend({
             this.updateFolio();
         }
 
-        this.listenTo(manuscriptChannel, 'change:folio', this.updateFolio);
+        this.listenTo(manuscriptChannel, 'change:imageURI', this.updateFolio);
     },
 
     updateFolio: function ()
     {
         var manuscript = manuscriptChannel.request('manuscript');
-        var folioNumber = manuscriptChannel.request('folio');
+        var imageURI = manuscriptChannel.request('imageURI');
 
-        if (folioNumber == null || manuscript == null) // eslint-disable-line eqeqeq
+        if (imageURI == null || manuscript == null) // eslint-disable-line eqeqeq
         {
             return;
         }
@@ -59,8 +59,9 @@ export default Marionette.LayoutView.extend({
             }
         }, this), 250);
 
+        imageURI = encodeURIComponent(imageURI);
         this.model.fetch({
-            url: GlobalVars.siteUrl + "folio-set/manuscript/" + manuscript + "/" + folioNumber + "/"
+            url: GlobalVars.siteUrl + "folio-set/manuscript/" + manuscript + "/" + imageURI + "/"
         }).always(function ()
         {
             loaded = true;
@@ -69,6 +70,8 @@ export default Marionette.LayoutView.extend({
 
     _onFetch: function ()
     {
+        // Broadcast that the folio name has been received
+        manuscriptChannel.request('set:folio', this.model.get('number'), {replaceState: true});
         this.assignChants();
     },
 

@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import $ from 'jquery';
+import Backbone from 'backbone';
 import Marionette from 'marionette';
 import afterTransition from 'utils/afterTransition';
 
@@ -30,6 +31,8 @@ function transitionWithClasses(jqElem, ms, baseClass, activeClass)
     return deferred;
 }
 
+var manuscriptChannel = Backbone.Radio.channel('manuscript');
+
 /**
  * View representing a single search result
  */
@@ -43,13 +46,15 @@ export default Marionette.ItemView.extend({
     tagName: 'tbody',
 
     ui: {
+        chantLink: '.chant-link',
         quickView: '.quick-view',
         fullRecord: '.full-result-record',
         fullRecordContent: '.full-result-record-content'
     },
 
     events: {
-        'click @ui.quickView': '_onQuickViewClicked'
+        'click @ui.quickView': '_onQuickViewClicked',
+        'click @ui.chantLink': '_onChantLinkClicked'
     },
 
     _onQuickViewClicked: function (evt)
@@ -60,6 +65,10 @@ export default Marionette.ItemView.extend({
             this._showFullRecord();
         else
             this._hideFullRecord();
+    },
+
+    _onChantLinkClicked: function () {
+        manuscriptChannel.request('set:imageURI', this.model.get('image_uri'), {replaceState: true});
     },
 
     _showFullRecord: function ()

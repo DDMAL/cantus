@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
 from django.core.management import call_command
 from cantusdata.models.folio import Folio
+from cantusdata.models.manuscript import Manuscript
 import json
 import csv
 import re
@@ -52,6 +53,7 @@ class MapFoliosView(APIView):
         # A file dump should also be created so that Solr can be refreshed
 
         manuscript_id = request.POST['manuscript_id']
+        manuscript = Manuscript.objects.get(id=manuscript_id)
         data = [['folio', 'uri']] # CSV column headers
 
         try:
@@ -61,7 +63,14 @@ class MapFoliosView(APIView):
                     continue
 
                 # Save in the Django DB
-                folio_obj = Folio.objects.get(number=value, manuscript_id=manuscript_id)
+                try:
+                    folio_obj = Folio.objects.get(number=value, manuscript_id=manuscript_id)
+                except Folio.DoesNotExist:
+                    # If no folio is found, create one
+                    folio_obj = Folio()
+                    folio_obj.number = value
+                    folio_obj.manuscript = manuscript
+
                 folio_obj.image_uri = index
                 folio_obj.save()
 
@@ -72,10 +81,6 @@ class MapFoliosView(APIView):
             with open('./data_dumps/folio_mapping/{0}.csv'.format(manuscript_id), 'w') as dump_csv:
                 csv_writer = csv.writer(dump_csv)
                 csv_writer.writerows(data)
-
-            # Refresh all chants in solr after the folios have been updated
-            thread = threading.Thread(target=call_command, args=('refresh_solr', 'chants'), kwargs={})
-            thread.start()
 
         except Exception as e:
             return Response({'error': e})
