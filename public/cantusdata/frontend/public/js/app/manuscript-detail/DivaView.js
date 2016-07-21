@@ -174,7 +174,7 @@ export default Marionette.ItemView.extend({
 
         this.getPageWhichMatchesAlias(pageAlias).done(_.bind(function (page)
         {
-           this.divaInstance.gotoPageByName(page);
+            this.divaInstance.gotoPageByName(page);
 
         }, this)).fail(function ()
         {
@@ -200,7 +200,7 @@ export default Marionette.ItemView.extend({
             url: GlobalVars.siteUrl + 'folios/?number=' + alias + '&manuscript=' + manuscript,
             success: function (response)
             {
-                deferred.resolve(response[0]['image_uri']);
+                deferred.resolve(response[0]['image_uri']); // eslint-disable-line
             },
             error: _.bind(function(response)
             {

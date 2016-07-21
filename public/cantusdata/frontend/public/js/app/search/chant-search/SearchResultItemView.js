@@ -67,7 +67,8 @@ export default Marionette.ItemView.extend({
             this._hideFullRecord();
     },
 
-    _onChantLinkClicked: function () {
+    _onChantLinkClicked: function ()
+    {
         manuscriptChannel.request('set:imageURI', this.model.get('image_uri'), {replaceState: true});
     },
 
