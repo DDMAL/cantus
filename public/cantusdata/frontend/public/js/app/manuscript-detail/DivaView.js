@@ -356,9 +356,7 @@ export default Marionette.ItemView.extend({
         for (var i = 0; i < boxSet.length; i++)
         {
             // Translate folio to Diva page
-            var folioCode = boxSet[i].p;
-            // TODO(jeromepl): Fix when solr will be set to return the image_uri instead of folio name
-            var pageFilename = this.divaFilenames[0];
+            var pageFilename = boxSet[i].p;
             var pageIndex = this.divaFilenames.indexOf(pageFilename);
 
             if (highlightsByPageHash[pageIndex] === undefined)
@@ -405,9 +403,7 @@ export default Marionette.ItemView.extend({
         var divaOuter = divaSettings.outerObject;
         var zoomLevel = divaData.getZoomLevel();
 
-        var folioCode = box.p;
-        // TODO(jeromepl): Same as above, fix when solr will be set to return the image_uri instead of folio name
-        var pageFilename = this.divaFilenames[0];
+        var pageFilename = box.p;
         var desiredPage = this.divaFilenames.indexOf(pageFilename) + 1;
 
         // Now jump to that page

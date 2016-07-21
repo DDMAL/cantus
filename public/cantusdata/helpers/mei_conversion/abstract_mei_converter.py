@@ -2,8 +2,10 @@ import os
 import signal
 from abc import ABCMeta, abstractmethod
 from multiprocessing import Pool
+from django.conf import settings
 
 import pymei
+import solr
 
 DEFAULT_MIN_GRAM = 2
 DEFAULT_MAX_GRAM = 10
@@ -23,6 +25,14 @@ class AbstractMEIConverter:
 
         self.doc = pymei.documentFromFile(str(file_name), False).getMeiDocument()
         self.page_number = getPageNumber(file_name)
+
+        # Get the manuscript ID from the siglum slug
+        solrconn = solr.SolrConnection(settings.SOLR_SERVER)
+        composed_request = u'type:"cantusdata_manuscript" AND siglum_slug:"{0}"'.format(self.siglum_slug)
+        result = solrconn.query(composed_request, rows=1, fields=['item_id'])
+        manuscript_id = result.results[0]['item_id']
+
+        self.image_uri = getImageURI(file_name, manuscript_id, solrconn)
 
     @classmethod
     def convert(cls, directory, siglum_slug, processes=None, **options):
@@ -94,12 +104,30 @@ def process_file_in_worker(params):
 
     return file_name, ngrams
 
-
 def getPageNumber(ffile):
     """
     Extract the page number from the file name
 
     :param ffile:
-    :return: page number as a string
+    :return: image URI as a string
     """
     return str(ffile).split('_')[-1].split('.')[0]
+
+def getImageURI(ffile, manuscript_id, solrconn):
+    """
+    Extract the page number from the file name
+    and get the corresponding image URI from Solr
+
+    :param ffile:
+    :param manuscript_id:
+    :param solrconn:
+    :return: image URI as a string
+    """
+
+    # Send the value of the folio name to Solr and get the corresponding URI
+    folio_name = getPageNumber(ffile)
+    composed_request = u'type:"cantusdata_folio" AND manuscript_id:{0} AND number:{1}' \
+        .format(manuscript_id, folio_name)
+
+    result = solrconn.query(composed_request, rows=1, fields=['image_uri'])
+    return result.results[0]['image_uri']

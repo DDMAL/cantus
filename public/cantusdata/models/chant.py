@@ -58,6 +58,7 @@ class Chant(models.Model):
             'public': self.manuscript.public,
             'folio': self.folio.number,
             'folio_id': self.folio.id,
+            'image_uri': self.folio.image_uri,
             'sequence': self.sequence,
             'cantus_id': self.cantus_id,
             'feast': self.feast,

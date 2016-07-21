@@ -1,5 +1,4 @@
 import _ from 'underscore';
-import GlobalVars from 'config/GlobalVars';
 
 /**
  * Generate a IIIF URL for a snippet of a page
@@ -16,15 +15,14 @@ import GlobalVars from 'config/GlobalVars';
  */
 export default function pageSnippetUrl(siglumSlug, loc, dimens)
 {
-    // FIXME: hard coding this path is awkward
-    var filename = GlobalVars.divaImageDirectory + siglumSlug + '/' + siglumSlug + '_' + loc.p + '.jp2';
+    var filename = loc.p;
     var bounds = [loc.x, loc.y, loc.w, loc.h].join(',');
 
     var outputWidth = _.has(dimens, 'width') ? dimens.width : '';
     var outputHeight = _.has(dimens, 'height') ? dimens.height : '';
     var dimensions = outputWidth + ',' + outputHeight;
 
-    var iiifQuery = filename + '/' + bounds + '/' + dimensions + '/0/native.jpg';
+    var iiifQuery = filename + '/' + bounds + '/' + dimensions + '/0/default.jpg';
 
-    return GlobalVars.iipImageServerUrl + '?IIIF=' + iiifQuery;
+    return iiifQuery;
 }

@@ -73,6 +73,8 @@ class MapFoliosView(APIView):
 
                 folio_obj.image_uri = index
                 folio_obj.save()
+                # Also update the solr record of the manuscript since it holds the image_uri too:
+                folio_obj.manuscript.save()
 
                 # Data to be saved in a CSV file
                 data.append([value, index])
