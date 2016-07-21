@@ -62,7 +62,7 @@ class MapFoliosView(APIView):
 
                 # Save in the Django DB
                 try:
-                    folio_obj = Folio.objects.get(number=value, manuscript_id=manuscript_id)
+                    folio_obj = Folio.objects.get(number=value, manuscript__id=manuscript_id)
                 except Folio.DoesNotExist:
                     # If no folio is found, create one
                     folio_obj = Folio()
