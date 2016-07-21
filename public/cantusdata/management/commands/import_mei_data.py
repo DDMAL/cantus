@@ -72,7 +72,7 @@ def dump_to_csv(mei_location, siglum, path):
     # diffs on the output
     heading_order = {
         h: i for (i, h) in enumerate((
-            'folio', 'pnames', 'neumes', 'siglum_slug', 'intervals', 'id',
+            'folio', 'image_uri', 'pnames', 'neumes', 'siglum_slug', 'intervals', 'id',
             'semitones', 'contour', 'project', 'location', 'type'
         ))
     }

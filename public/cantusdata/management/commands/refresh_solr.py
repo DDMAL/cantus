@@ -47,3 +47,4 @@ class Command(BaseCommand):
         solr_conn.add_many(solr_records)
         self.stdout.write('Committing changes...')
         solr_conn.commit()
+        self.stdout.write('Done!')

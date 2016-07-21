@@ -12,6 +12,8 @@ from cantusdata.views.search_notation import SearchNotationView
 from cantusdata.views.chant_set import FolioChantSetView, ManuscriptChantSetView
 from cantusdata.views.folio_set import ManuscriptFolioSetView
 from cantusdata.views.manuscript_glyph_set import ManuscriptGlyphSetView
+from cantusdata.views.map_folios import MapFoliosView
+from django.contrib.admin.views.decorators import staff_member_required
 
 
 urlpatterns = format_suffix_patterns([
@@ -53,12 +55,15 @@ urlpatterns = format_suffix_patterns([
      url(r'^folio-set/manuscript/(?P<pk>[0-9]+)/$',
          ManuscriptFolioSetView.as_view(),
          name="manuscript-folio-set-view"),
-     url(r'^folio-set/manuscript/(?P<pk>[0-9]+)/(?P<number>[a-zA-Z0-9]+)/$',
+     url(r'^folio-set/manuscript/(?P<pk>[0-9]+)/(?P<image_uri>([!#$&-;=?-[\]_a-zA-Z0-9~]|%[0-9a-fA-F]{2})+)/$',
          ManuscriptFolioSetView.as_view(),
          name="manuscript-folio-set-view-index"),
      # Search
      url(r'^search/$', SearchView.as_view(), name="search-view"),
      url(r'^suggest/$', SuggestionView.as_view(), name='suggestion-view'),
+
+     # Admin pages
+     url(r'^admin/map_folios/', staff_member_required(MapFoliosView.as_view()), name="map-folios-view"),
      url(r'^admin/', include(admin.site.urls)),
 
      # Notation search

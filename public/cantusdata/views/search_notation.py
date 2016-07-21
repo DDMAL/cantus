@@ -91,7 +91,8 @@ class SearchNotationView(APIView):
         box_sort_key = itemgetter('p', 'y')
 
         for d in response:
-            page_number = d['folio']
+            image_uri = d['image_uri']
+            folio = d['folio']
             locations = json.loads(d['location'].replace("'", '"'))
 
             if isinstance(locations, types.DictType):
@@ -99,7 +100,7 @@ class SearchNotationView(APIView):
                 box_h = locations['height']
                 box_x = locations['ulx']
                 box_y = locations['uly']
-                boxes = [{'p': page_number, 'w': box_w, 'h': box_h, 'x': box_x, 'y': box_y}]
+                boxes = [{'p': image_uri, 'f': folio, 'w': box_w, 'h': box_h, 'x': box_x, 'y': box_y}]
             else:
                 boxes = []
 
@@ -108,7 +109,7 @@ class SearchNotationView(APIView):
                     box_h = location['height']
                     box_x = location['ulx']
                     box_y = location['uly']
-                    boxes.append({'p': page_number, 'w': box_w, 'h': box_h, 'x': box_x, 'y': box_y})
+                    boxes.append({'p': image_uri, 'f': folio, 'w': box_w, 'h': box_h, 'x': box_x, 'y': box_y})
 
                 boxes.sort(key=box_sort_key)
 

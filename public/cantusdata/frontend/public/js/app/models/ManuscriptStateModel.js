@@ -15,6 +15,7 @@ var manuscriptStateChannel = Backbone.Radio.channel('manuscript');
 export default Backbone.Model.extend({
     defaults: {
         manuscript: undefined,
+        imageURI: undefined,
         folio: undefined,
         chant: undefined,
         search: undefined
@@ -195,7 +196,7 @@ export default Backbone.Model.extend({
         var composedUrl = "manuscript/" + this.get('manuscript') + "/";
 
         // Get truthy attributes which are not manuscript
-        var parameters = _.chain(this.attributes).omit('manuscript').pick(_.identity).value();
+        var parameters = _.chain(this.attributes).omit('manuscript', 'imageURI').pick(_.identity).value();
         var paramString = Qs.stringify(parameters);
 
         if (paramString)

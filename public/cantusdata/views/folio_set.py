@@ -10,6 +10,7 @@ import solr
 FOLIO_FIELDS = [
     'type',
     'number',
+    'image_uri',
     'item_id',
     'manuscript_id',
 ]
@@ -24,10 +25,10 @@ class ManuscriptFolioSetView(APIView):
 
         manuscript_id = kwargs['pk']
 
-        if 'number' in kwargs:
-            folio_number = kwargs['number']
-            composed_request = u'type:"cantusdata_folio" AND manuscript_id:{0} AND number:{1}'\
-                .format(manuscript_id, folio_number)
+        if 'image_uri' in kwargs:
+            image_uri = kwargs['image_uri']
+            composed_request = u'type:"cantusdata_folio" AND manuscript_id:{0} AND image_uri:"{1}"'\
+                .format(manuscript_id, image_uri)
 
             result = solrconn.query(composed_request, sort="number asc", rows=1, fields=FOLIO_FIELDS, score=False)
 

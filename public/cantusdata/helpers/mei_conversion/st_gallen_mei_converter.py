@@ -34,6 +34,7 @@ class StGallenMEIConverter (AbstractMEIConverter):
                     'type': self.TYPE,
                     'siglum_slug': self.siglum_slug,
                     'folio': self.page_number,
+                    'image_uri': self.image_uri,
                     'neumes': n_gram_neumes,
                     'location': str(location)
                 }

@@ -56,6 +56,7 @@ class MEIConverter (AbstractMEIConverter):
             'type': self.TYPE,
             'siglum_slug': self.siglum_slug,
             'folio': self.page_number,
+            'image_uri': self.image_uri,
             'pnames': pnames,
             'neumes': neume_names,
             'contour': contour,
@@ -79,6 +80,7 @@ class MEIConverter (AbstractMEIConverter):
             'type': self.TYPE,
             'siglum_slug': self.siglum_slug,
             'folio': self.page_number,
+            'image_uri': self.image_uri,
             'neumes': neume.name,
             'location': str(location)
         }

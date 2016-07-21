@@ -9,13 +9,9 @@ import "diva/plugins/download";
 import "diva/plugins/canvas";
 import "diva/plugins/pagealias";
 
-import folioNameHelper from "utils/folioNameHelper";
-import GlobalVars from "config/GlobalVars";
+import GlobalVars from '../config/GlobalVars';
 
 import template from './diva.template.html';
-
-/** Define the format we expect the Diva filenames to adhere to */
-var DIVA_FILENAME_REGEX = (/^(.+)_(.*?)\.([^.]+)$/);
 
 var manuscriptChannel = Backbone.Radio.channel('manuscript');
 
@@ -32,21 +28,21 @@ export default Marionette.ItemView.extend({
 
     initialize: function(options)
     {
-        _.bindAll(this, 'propagateFolioChange', 'onViewerLoad', 'setFolio',
-            'zoomToLocation', 'getPageAlias', 'gotoInputPage',
+        _.bindAll(this, 'propagateFolioChange', 'onViewerLoad', 'setImageURI',
+            'paintBoxes', 'zoomToLocation', 'updatePageAlias', 'gotoInputPage',
             'getPageWhichMatchesAlias', 'onDocLoad');
-
-        this._imagePrefix = null;
-        this._imageSuffix = null;
 
         this.divaEventHandles = [];
 
         // Create a debounced function to alert the site that Diva has
         // changed the folio
-        this.triggerFolioChange = _.debounce(function (folio)
+        this.triggerFolioChange = _.debounce(function (imageURI)
         {
-            manuscriptChannel.request('set:folio', folio, {replaceState: true});
+            manuscriptChannel.request('set:imageURI', imageURI, {replaceState: true});
         }, 250);
+
+        this.listenTo(manuscriptChannel, 'change:imageURI', this.setImageURI);
+        this.listenTo(manuscriptChannel, 'change:folio', this.updatePageAlias);
 
         this.toolbarParentObject = this.options.toolbarParentObject;
 
@@ -71,9 +67,6 @@ export default Marionette.ItemView.extend({
 
             this.divaEventHandles.splice(this.divaEventHandles.length);
         }
-
-        this._imagePrefix = null;
-        this._imageSuffix = null;
     },
 
     /**
@@ -96,18 +89,13 @@ export default Marionette.ItemView.extend({
             enableHighlight: true,
             enableDownload: true,
 
-            enablePagealias: true,
-            pageAliasFunction: this.getPageAlias,
-
             fixedHeightGrid: false,
 
             enableKeyScroll: false,
             enableSpaceScroll: false,
             enableCanvas: true,
 
-            iipServerURL: GlobalVars.iipImageServerUrl,
-            objectData: "/static/" + siglum + ".json",
-            imageDir: GlobalVars.divaImageDirectory + siglum,
+            objectData: "/static/iiif/" + siglum + ".json",
 
             blockMobileMove: false
         };
@@ -120,6 +108,7 @@ export default Marionette.ItemView.extend({
         this.divaInstance = this.ui.divaWrapper.data('diva');
 
         this.onDivaEvent("ViewerDidLoad", this.onViewerLoad);
+        this.onDivaEvent("ViewerDidLoad", this.propagateFolioChange);
         this.onDivaEvent("VisiblePageDidChange", this.propagateFolioChange);
         this.onDivaEvent("DocumentDidLoad", this.onDocLoad);
     },
@@ -161,21 +150,13 @@ export default Marionette.ItemView.extend({
     },
 
     /**
-     * Return an alias for display based on the folio for the page at the given index
+     * Update Diva's page index to show the folio name
      *
-     * @param pageIndex
-     * @returns {string}
+     * @param folioName
      */
-    getPageAlias: function (pageIndex)
+    updatePageAlias: function (folioName)
     {
-        var folio = this.imageNameToFolio(this.divaFilenames[pageIndex]);
-
-        var pageNumber = pageIndex + 1;
-
-        // Append an opening parenthesis and the page number
-        // This is a hack, since Diva doesn't have functionality to customize the page label
-        // beyond the pagealias plugin
-        return folio + ' (' + pageNumber;
+        this.folioNumberSpan.textContent = folioName;
     },
 
     /**
@@ -191,66 +172,55 @@ export default Marionette.ItemView.extend({
         if (!pageAlias)
             return;
 
-        var actualPage = this.getPageWhichMatchesAlias(pageAlias);
+        this.getPageWhichMatchesAlias(pageAlias).done(_.bind(function (page)
+        {
+            this.divaInstance.gotoPageByName(page);
 
-        if (actualPage === null)
+        }, this)).fail(function ()
         {
             alert("Invalid page number");
-        }
-        else
-        {
-            this.divaInstance.gotoPageByIndex(actualPage);
-        }
+        });
     },
 
     /**
-     * Implement lenient matching for a page alias. Handle leading zeros for
-     * numerical folio names, prefix characters (for appendices, etc.) and suffix
-     * characters (e.g. r and v for recto and verso).
+     * Query Solr to convert a folio name to an image URI
      *
-     * Given a bare page number, it will automatically match it with a recto page
-     * with that number.
-     *
-     * Examples: Suppose the folios are named 0000a, 0000b, 001r, 001v, and A001r
-     *
-     *   - 0a would match 0000a
-     *   - a1 would match A001r
-     *   - 0001 would match 001r
-     *
-     * @param alias {string}
-     * @returns {number|null} The index of the page with the matching folio name
+     * @param alias {string} A folio name or page index
+     * @returns {object} A promise that the image URI will be retrieved from Solr
      */
     getPageWhichMatchesAlias: function (alias)
     {
+        var deferred = $.Deferred();
+
         if (!alias)
-            return null;
+            return deferred.reject(null);
 
-        var aliasRegex = folioNameHelper.getMatcher(alias);
-
-        // Find a folio which matches this pattern
-        // TODO(wabain): cache folio names
-        var length = this.divaFilenames.length;
-        for (var i = 0; i < length; i++)
-        {
-            if (this.imageNameToFolio(this.divaFilenames[i]).match(aliasRegex))
+        var manuscript = manuscriptChannel.request('manuscript');
+        $.ajax({
+            url: GlobalVars.siteUrl + 'folios/?number=' + alias + '&manuscript=' + manuscript,
+            success: function (response)
             {
-                return i;
-            }
-        }
-
-        // We didn't find a match; fall back to treating this as a non-aliased page number
-        if (alias.match(/^\d+$/))
-        {
-            var pageIndex = parseInt(alias, 10) - 1;
-
-            if (pageIndex >= 0 && pageIndex < length)
+                deferred.resolve(response[0]['image_uri']); // eslint-disable-line
+            },
+            error: _.bind(function(response)
             {
-                return pageIndex;
-            }
-        }
+                // We didn't find a match; fall back to treating this as a non-aliased page number
+                if (alias.match(/^\d+$/))
+                {
+                    var pageIndex = parseInt(alias, 10) - 1;
 
-        // If nothing worked, then just return null
-        return null;
+                    if (pageIndex >= 0 && pageIndex < this.divaFilenames.length)
+                    {
+                        return deferred.resolve(this.divaFilenames[pageIndex]);
+                    }
+                }
+
+                // If nothing worked, then just return null
+                return deferred.reject(response);
+            }, this)
+        });
+
+        return deferred.promise();
     },
 
     onShow: function()
@@ -270,13 +240,17 @@ export default Marionette.ItemView.extend({
         var initialFolio = manuscriptChannel.request('folio');
         if (initialFolio !== null)
         {
-            this.setFolio(initialFolio);
+            this.getPageWhichMatchesAlias(initialFolio).done(_.bind(function (initialImageURI)
+            {
+                this.setImageURI(initialImageURI);
+                this.updatePageAlias(initialFolio);
+            }, this));
         }
         else
         {
             // If one is not set, then set the global folio to the Diva viewer's initial page
-            var folio = this.imageNameToFolio(this.divaInstance.getCurrentPageFilename());
-            manuscriptChannel.request('set:folio', folio, {replaceState: true});
+            var imageURI = this.divaInstance.getCurrentPageFilename();
+            manuscriptChannel.request('set:imageURI', imageURI, {replaceState: true});
         }
 
         // Store the list of filenames
@@ -299,6 +273,12 @@ export default Marionette.ItemView.extend({
         var pageLabel = this.toolbarParentObject.find('.diva-page-label')[0];
         pageLabel.firstChild.textContent = 'Folio ';
 
+        // Add an empty span to display the folio name
+        this.folioNumberSpan = document.createElement('span');
+        pageLabel.insertBefore(this.folioNumberSpan, pageLabel.firstChild.nextSibling);
+
+        pageLabel.insertBefore($('<span>').text(' (')[0], this.folioNumberSpan.nextSibling);
+
         // Add a closing parenthesis (the opening is within the page alias)
         pageLabel.appendChild(document.createTextNode(')'));
 
@@ -319,23 +299,21 @@ export default Marionette.ItemView.extend({
     },
 
     /**
-     * Set the diva viewer to load a specific folio...
+     * Set the diva viewer to load a specific folio, based on the image URI
      *
-     * @param folioCode
+     * @param imageURI
      */
-    setFolio: function(folioCode)
+    setImageURI: function(imageURI)
     {
         if (!this.divaInstance)
             return;
 
-        var newImageName = this.folioToImageName(folioCode);
-
         // Don't jump to the folio if we're already somewhere on it (this would just make Diva
         // jump to the top of the page)
-        if (newImageName === this.divaInstance.getCurrentPageFilename())
+        if (imageURI === this.divaInstance.getCurrentPageFilename())
             return;
 
-        this.divaInstance.gotoPageByName(newImageName);
+        this.divaInstance.gotoPageByName(imageURI);
     },
 
     /**
@@ -344,9 +322,14 @@ export default Marionette.ItemView.extend({
      * @param {Number} index
      * @param {String} fileName
      */
-    propagateFolioChange: function(index, fileName)
+    propagateFolioChange: function(_, imageURI)
     {
-        this.triggerFolioChange(this.imageNameToFolio(fileName));
+        // In the case that this is triggered by the 'ViewerDidLoad' event,
+        // Set the imageURI to be URI of the first page of the document
+        if (!imageURI)
+            imageURI = this.divaInstance.getCurrentPageFilename();
+
+        this.triggerFolioChange(imageURI);
     },
 
     /**
@@ -363,9 +346,6 @@ export default Marionette.ItemView.extend({
 
         this.divaInstance.resetHighlights();
 
-        // Grab the array of page filenames straight from Diva.
-        var pageFilenameArray = this.divaInstance.getFilenames();
-
         // Use the Diva highlight plugin to draw the boxes
         var highlightsByPageHash = {};
         var pageList = [];
@@ -373,9 +353,8 @@ export default Marionette.ItemView.extend({
         for (var i = 0; i < boxSet.length; i++)
         {
             // Translate folio to Diva page
-            var folioCode = boxSet[i].p;
-            var pageFilename = this.folioToImageName(folioCode);
-            var pageIndex = pageFilenameArray.indexOf(pageFilename);
+            var pageFilename = boxSet[i].p;
+            var pageIndex = this.divaFilenames.indexOf(pageFilename);
 
             if (highlightsByPageHash[pageIndex] === undefined)
             {
@@ -421,11 +400,8 @@ export default Marionette.ItemView.extend({
         var divaOuter = divaSettings.outerObject;
         var zoomLevel = divaData.getZoomLevel();
 
-        // Grab the array of page filenames straight from Diva.
-        var pageFilenameArray = divaData.getFilenames();
-        var folioCode = box.p;
-        var pageFilename = this.folioToImageName(folioCode);
-        var desiredPage = pageFilenameArray.indexOf(pageFilename) + 1;
+        var pageFilename = box.p;
+        var desiredPage = this.divaFilenames.indexOf(pageFilename) + 1;
 
         // Now jump to that page
         divaData.gotoPageByNumber(desiredPage);
@@ -443,65 +419,5 @@ export default Marionette.ItemView.extend({
         var boxLeft = divaData.translateFromMaxZoomLevel(box.x);
         divaOuter.scrollLeft(boxLeft - (divaOuter.width() / 2) + (box.w / 2) + leftMarginConsiderations);
         // Will include the padding between pages for best results
-    },
-
-    /*
-     * Helpers for filename/folio translation
-     *
-     * FIXME: We shouldn't need to translate between filenames and folios at all
-     *
-     * Maybe IIIF metadata can help with that?
-     */
-
-    /**
-     * Takes an image file name and returns the folio code.
-     *
-     * @param imageName Some image name, ex: "folio_001.jpg"
-     * @returns string "001"
-     */
-    imageNameToFolio: function(imageName)
-    {
-        return this._parseDivaFilename(imageName)[2];
-    },
-
-    /**
-     * Return the image filename corresponding to a given folio number
-     *
-     * This function relies on the assumption that all images in a document
-     * have the filename format, consisting of [siglum slug]_[folio number].[extension]
-     *
-     * @param {string} folioCode
-     * @returns {string}
-     */
-    folioToImageName: function(folioCode)
-    {
-        // If we haven't yet stored the filename prefix and extension, do it now
-        if (this._imagePrefix === null)
-        {
-            var filename = this.divaInstance.getFilenames()[0];
-            var components = this._parseDivaFilename(filename);
-
-            this._imagePrefix = components[1];
-            this._imageSuffix = components[3];
-        }
-
-        return this._imagePrefix + '_' + folioCode + '.' + this._imageSuffix;
-    },
-
-    /**
-     * Parse a given Diva image filename into its constituent parts, throwing
-     * an error on failure
-     * @param filename
-     * @returns {Array}
-     * @private
-     */
-    _parseDivaFilename: function(filename)
-    {
-        var components = DIVA_FILENAME_REGEX.exec(filename);
-
-        if (!components)
-            throw new Error('failed to parse Diva image filename "' + filename + '"');
-
-        return components;
     }
 });
