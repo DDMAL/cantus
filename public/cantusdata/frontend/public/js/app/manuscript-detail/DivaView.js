@@ -13,9 +13,6 @@ import GlobalVars from '../config/GlobalVars';
 
 import template from './diva.template.html';
 
-/** Define the format we expect the Diva filenames to adhere to */
-var DIVA_FILENAME_REGEX = (/^(.+)_(.*?)\.([^.]+)$/);
-
 var manuscriptChannel = Backbone.Radio.channel('manuscript');
 
 /**

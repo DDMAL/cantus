@@ -1,13 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
-from django.core.management import call_command
 from cantusdata.models.folio import Folio
 from cantusdata.models.manuscript import Manuscript
 import json
 import csv
 import re
-import threading
 
 
 class MapFoliosView(APIView):
