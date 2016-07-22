@@ -200,7 +200,9 @@ export default Marionette.ItemView.extend({
             url: GlobalVars.siteUrl + 'folios/?number=' + alias + '&manuscript=' + manuscript,
             success: function (response)
             {
-                deferred.resolve(response[0]['image_uri']); // eslint-disable-line
+                // jscs:disable requireDotNotation
+                deferred.resolve(response[0]['image_uri']);
+                // jscs:enable requireDotNotation
             },
             error: _.bind(function(response)
             {
