@@ -156,7 +156,7 @@ export default Marionette.CompositeView.extend({
         if (this.collection.length === 0)
         {
             // No chants
-            this.ui.errorMessages.html("This folio does not contain musical data.");
+            this.ui.errorMessages.html("No chants begin on this page or folio side.");
         }
         else
         {
