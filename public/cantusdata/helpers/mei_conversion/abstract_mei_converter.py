@@ -16,9 +16,10 @@ class AbstractMEIConverter:
 
     TYPE = "cantusdata_music_notation"
 
-    def __init__(self, file_name, siglum_slug, min_gram=DEFAULT_MIN_GRAM, max_gram=DEFAULT_MAX_GRAM):
+    def __init__(self, file_name, siglum_slug, manuscript_id, min_gram=DEFAULT_MIN_GRAM, max_gram=DEFAULT_MAX_GRAM):
         self.file_name = file_name
         self.siglum_slug = siglum_slug
+        self.manuscript_id = manuscript_id
 
         self.min_gram = min_gram
         self.max_gram = max_gram
@@ -26,22 +27,17 @@ class AbstractMEIConverter:
         self.doc = pymei.documentFromFile(str(file_name), False).getMeiDocument()
         self.page_number = getPageNumber(file_name)
 
-        # Get the manuscript ID from the siglum slug
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
-        composed_request = u'type:"cantusdata_manuscript" AND siglum_slug:"{0}"'.format(self.siglum_slug)
-        result = solrconn.query(composed_request, rows=1, fields=['item_id'])
-        manuscript_id = result.results[0]['item_id']
-
         self.image_uri = getImageURI(file_name, manuscript_id, solrconn)
 
     @classmethod
-    def convert(cls, directory, siglum_slug, processes=None, **options):
+    def convert(cls, directory, siglum_slug, id, processes=None, **options):
         mei_files = cls._get_file_list(directory)
 
         if processes == 0:
-            processed = cls._process_in_sequence(mei_files, siglum_slug, **options)
+            processed = cls._process_in_sequence(mei_files, siglum_slug, id, **options)
         else:
-            processed = cls._process_in_parallel(mei_files, siglum_slug, processes=processes, **options)
+            processed = cls._process_in_parallel(mei_files, siglum_slug, id, processes=processes, **options)
 
         return mei_files, processed
 
@@ -70,21 +66,21 @@ class AbstractMEIConverter:
         return mei_files
 
     @classmethod
-    def _process_in_sequence(cls, mei_files, siglum_slug, **options):
+    def _process_in_sequence(cls, mei_files, siglum_slug, id, **options):
         for file_name in mei_files:
-            ngrams = cls.process_file(file_name, siglum_slug, **options)
+            ngrams = cls.process_file(file_name, siglum_slug, id, **options)
             yield file_name, ngrams
 
     @classmethod
-    def _process_in_parallel(cls, mei_files, siglum_slug, processes, **options):
+    def _process_in_parallel(cls, mei_files, siglum_slug, id, processes, **options):
         pool = Pool(initializer=init_worker, processes=processes)
-        args = ((cls, file_name, siglum_slug, options) for file_name in mei_files)
+        args = ((cls, file_name, siglum_slug, id, options) for file_name in mei_files)
 
         return pool.imap(process_file_in_worker, args)
 
     @classmethod
-    def process_file(cls, file_name, siglum_slug, **options):
-        inst = cls(file_name, siglum_slug, **options)
+    def process_file(cls, file_name, siglum_slug, id, **options):
+        inst = cls(file_name, siglum_slug, id, **options)
         return inst.process()
 
     @abstractmethod
@@ -98,9 +94,9 @@ def init_worker():
 
 
 def process_file_in_worker(params):
-    cls, file_name, siglum_slug, options = params
+    cls, file_name, siglum_slug, id, options = params
 
-    ngrams = list(cls.process_file(file_name, siglum_slug, **options))
+    ngrams = list(cls.process_file(file_name, siglum_slug, id, **options))
 
     return file_name, ngrams
 

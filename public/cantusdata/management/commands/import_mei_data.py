@@ -28,16 +28,19 @@ class Command(BaseCommand):
         if manuscript == "salzinnes":
             self.stdout.write("Salzinnes manuscript selected.")
             siglum = "cdn-hsmu-m2149l4"
+            id = 133
             mei_location = "data_dumps/mei/salz"
             csv_location = "data_dumps/mei_csv/salzinnes.csv"
         elif manuscript == "st_gallen_390":
             self.stdout.write("St. Gallen 390 manuscript selected.")
             siglum = "ch-sgs-390"
+            id = 127
             mei_location = "data_dumps/mei/csg-390"
             csv_location = "data_dumps/mei_csv/csg-390.csv"
         elif manuscript == "st_gallen_391":
             self.stdout.write("St. Gallen 391 manuscript selected.")
             siglum = "ch-sgs-391"
+            id = 128
             mei_location = "data_dumps/mei/csg-391"
             csv_location = "data_dumps/mei_csv/csg-391.csv"
         else:
@@ -45,11 +48,11 @@ class Command(BaseCommand):
 
         if mode == "mei_to_csv":
             self.stdout.write("Dumping MEI to CSV.")
-            dump_to_csv(mei_location, siglum, csv_location)
+            dump_to_csv(mei_location, siglum, id, csv_location)
             self.stdout.write("MEI dumped to CSV.")
 
         elif mode == "mei_to_solr":
-            dump_to_csv(mei_location, siglum, csv_location)
+            dump_to_csv(mei_location, siglum, id, csv_location)
             upload_to_solr(csv_location)
 
         elif mode == "csv_to_solr":
@@ -59,7 +62,7 @@ class Command(BaseCommand):
             raise Exception("Please provide mode!")
 
 
-def dump_to_csv(mei_location, siglum, path):
+def dump_to_csv(mei_location, siglum, id, path):
     """
     Dump the data to a CSV file.
 
@@ -80,7 +83,7 @@ def dump_to_csv(mei_location, siglum, path):
     with open(path, 'wb') as csv_file:
         writer = None
 
-        files, pages = convert_mei(mei_location, siglum)
+        files, pages = convert_mei(mei_location, siglum, id)
 
         prog_widgets = ['Parsing: ', progressbar.Percentage(), ' ', progressbar.Bar(), ' ', progressbar.ETA()]
         prog_bar = progressbar.ProgressBar(widgets=prog_widgets, maxval=len(files))
@@ -108,8 +111,8 @@ def dump_to_csv(mei_location, siglum, path):
         prog_bar.finish()
 
 
-def convert_mei(mei_location, siglum):
-    return get_converter(siglum).convert(mei_location, siglum)
+def convert_mei(mei_location, siglum, id):
+    return get_converter(siglum).convert(mei_location, siglum, id)
 
 
 def get_converter(siglum):
