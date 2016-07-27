@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from cantusdata.models.folio import Folio
 from cantusdata.models.manuscript import Manuscript
+from django.core.management import call_command
 import csv
 
 
@@ -60,3 +61,8 @@ class Command(BaseCommand):
                 self.stdout.write("Imported {0} folios".format(index))
 
         self.stdout.write("All folios have been imported")
+
+        # Refreshing Solr chants is necessary since chants have a field image_uri
+        # which is used when clicking on a search result
+        self.stdout.write("Refreshing Solr chants")
+        call_command('refresh_solr', 'chants')
