@@ -1,11 +1,13 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
+from django.core.management import call_command
 from cantusdata.models.folio import Folio
 from cantusdata.models.manuscript import Manuscript
 import json
 import csv
 import re
+import threading
 
 
 class MapFoliosView(APIView):
@@ -79,6 +81,10 @@ class MapFoliosView(APIView):
             with open('./data_dumps/folio_mapping/{0}.csv'.format(manuscript_id), 'w') as dump_csv:
                 csv_writer = csv.writer(dump_csv)
                 csv_writer.writerows(data)
+
+            # Refresh all chants in solr after the folios have been updated
+            thread = threading.Thread(target=call_command, args=('refresh_solr', 'chants'), kwargs={})
+            thread.start()
 
         except Exception as e:
             return Response({'error': e})
