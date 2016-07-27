@@ -21,7 +21,8 @@ class Command(BaseCommand):
 
     # All files must be in data-dumps/
     CHANT_FILE_MAPPING = {'salzinnes': 'salzinnes-chants.csv', 'st-gallen-390': 'st-gallen-390-chants.csv',
-                          'st-gallen-391': 'st-gallen-391-chants.csv', 'utrecht-406': 'utrecht-406-chants.csv'}
+                          'st-gallen-391': 'st-gallen-391-chants.csv', 'utrecht-406': 'utrecht-406-chants.csv',
+                          'paris-12044': 'paris-12044.csv'}
     MANUSCRIPT_FILE = "sources-export.csv"
     CONCORDANCE_FILE = "concordances"
 

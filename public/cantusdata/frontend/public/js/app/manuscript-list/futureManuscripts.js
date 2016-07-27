@@ -24,16 +24,6 @@ export default new Backbone.Collection([
         chant_count: null
     },
     {
-        name: 'Bibliothèque nationale, Département des manuscrits, Latin 12044',
-        short_name: 'Paris 12044',
-        url: 'http://gallica.bnf.fr/ark:/12148/btv1b6000531z.r=latin+12044.langEN',
-        primary_url_is_external: true,
-        cantus_url: 'http://cantus.uwaterloo.ca/source/123628',
-        date: '12th C',
-        folio_count: null,
-        chant_count: null
-    },
-    {
         name: 'Köln, Dombibliothek, Codex 1161',
         short_name: 'Cologne 1161',
         url: 'http://www.ceec.uni-koeln.de/ceec-cgi/kleioc/0010/exec/pagemed/%22kn28-1161_001.jpg%22' +
