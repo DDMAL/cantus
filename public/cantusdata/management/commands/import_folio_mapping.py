@@ -55,8 +55,6 @@ class Command(BaseCommand):
 
             folio_obj.image_uri = uri
             folio_obj.save()
-            # Also update the solr record of the manuscript since it holds the image_uri too:
-            folio_obj.manuscript.save()
 
             if index > 0 and index % 50 == 0:
                 self.stdout.write("Imported {0} folios".format(index))
