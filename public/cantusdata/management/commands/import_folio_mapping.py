@@ -84,5 +84,5 @@ class Command(BaseCommand):
             self.stdout.write()
             call_command('refresh_solr', 'chants', ' '.join([ str(man['id']) for man in manuscripts ]))
         else:
-            self.stdout.write("Import process completed. To refresh Solr,'\
-                                'use './manage.py refresh_solr chants [manuscript_id ...]'")
+            self.stdout.write("Import process completed. To refresh Solr,"\
+                                "use './manage.py refresh_solr chants [manuscript_id ...]'")
