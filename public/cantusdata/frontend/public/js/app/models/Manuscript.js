@@ -24,7 +24,8 @@ export default Backbone.Model.extend({
         'cdn-hsmu-m2149l4': 'http://cantus.uwaterloo.ca/source/123723',
         'ch-sgs-390': 'http://cantus.uwaterloo.ca/source/123717',
         'ch-sgs-391': 'http://cantus.uwaterloo.ca/source/123718',
-        'nl-uu-406': 'http://cantus.uwaterloo.ca/source/123641'
+        'nl-uu-406': 'http://cantus.uwaterloo.ca/source/123641',
+        'f-pn-lat-12044': 'http://cantus.uwaterloo.ca/source/123628'
     },
 
     url: function ()
