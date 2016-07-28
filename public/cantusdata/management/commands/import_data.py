@@ -20,19 +20,23 @@ class Command(BaseCommand):
     TYPE_MAPPING = {'manuscripts': Manuscript, 'concordances': Concordance, 'chants': Chant}
 
     # All files must be in data-dumps/
-    CHANT_FILE_MAPPING = {'salzinnes': 'salzinnes-chants.csv', 'st-gallen-390': 'st-gallen-390-chants.csv',
-                          'st-gallen-391': 'st-gallen-391-chants.csv', 'utrecht-406': 'utrecht-406-chants.csv',
-                          'paris-12044': 'paris-12044.csv'}
+    # The second item is the manuscript ID the chants are attached to
+    CHANT_FILE_MAPPING = {
+        'salzinnes': ['salzinnes-chants.csv', 133],
+        'st-gallen-390': ['st-gallen-390-chants.csv', 127],
+        'st-gallen-391': ['st-gallen-391-chants.csv', 128],
+        'utrecht-406': ['utrecht-406-chants.csv', 51],
+        'paris-12044': ['paris-12044.csv', 38]
+    }
     MANUSCRIPT_FILE = "sources-export.csv"
     CONCORDANCE_FILE = "concordances"
 
-    help = 'Usage:'\
+    help = 'Usage: ./manage.py import_data {{{0}}} [chant_file ...]\n'\
             '\tAdd everything you want to import as arguments. (or use --all)\n'\
-            "\tSelect arguments from this list: {0}\n"\
+            "\tSelect arguments from this list: {1}\n"\
             "\tTo import chants from a specific manuscript, add arguments from\n"\
-            "\tthis list: {1},\n"\
-            "\tor enter their full path from the data_dumps folder"\
-            .format(TYPE_MAPPING.keys(), CHANT_FILE_MAPPING.keys())
+            "\tthis list: {2}"\
+            .format('|'.join(TYPE_MAPPING.keys()), TYPE_MAPPING.keys(), CHANT_FILE_MAPPING.keys())
 
     option_list = BaseCommand.option_list + (
         make_option('--all',
@@ -43,7 +47,7 @@ class Command(BaseCommand):
     )
 
     # Used to specify which chant files to import
-    chant_files = []
+    chants = []
 
     def handle(self, *args, **options):
         if options['all']:
@@ -52,13 +56,11 @@ class Command(BaseCommand):
         # Go through the arguments to see if some files have been specified
         for arg in args:
             if arg in self.CHANT_FILE_MAPPING.keys():
-                self.chant_files.append(self.CHANT_FILE_MAPPING[arg])
-            elif arg.endswith('.csv'):
-                self.chant_files.append(arg)
+                self.chants.append(self.CHANT_FILE_MAPPING[arg])
 
         # If no files were specified, import all of them
-        if not self.chant_files:
-            self.chant_files = self.CHANT_FILE_MAPPING.values()
+        if not self.chants:
+            self.chants = self.CHANT_FILE_MAPPING.values()
 
         with solr_synchronizer.get_session():
             for type in self.TYPE_MAPPING.keys():
@@ -66,13 +68,17 @@ class Command(BaseCommand):
                     # Remove the trailing 's' to make the type singular
                     type_singular = type.rstrip('s')
 
-                    # Special case for chants, need to delete the folios too
-                    if type == 'chants':
-                        self.stdout.write('Deleting old folio data...')
-                        Folio.objects.all().delete()
+                    # Make an array of all the manuscript IDs
+                    manuscript_ids = [ chant[1] for chant in self.chants ]
 
                     self.stdout.write('Deleting old {0} data...'.format(type_singular))
-                    self.TYPE_MAPPING[type].objects.all().delete()
+                    # Special case for chants, do not delete everything and we need to delete the folios
+                    if type == 'chants':
+                        self.TYPE_MAPPING[type].objects.filter(manuscript__id__in=manuscript_ids).delete()
+                        self.stdout.write('Deleting old folio data...')
+                        Folio.objects.filter(manuscript__id__in=manuscript_ids).delete()
+                    else:
+                        self.TYPE_MAPPING[type].objects.all().delete()
 
                     self.stdout.write('Importing new {0} data...'.format(type_singular))
                     # Call the method corresponding with the current type
@@ -137,7 +143,8 @@ class Command(BaseCommand):
         self.stdout.write("Successfully imported {0} concordances into database.".format(index))
 
     def import_chant_data(self, **options):
-        for chant_file in self.chant_files:
+        for chant in self.chants:
+            chant_file = chant[0]
             importer = ChantImporter(self.stdout)
 
             chant_count = importer.import_csv("data_dumps/{0}".format(chant_file))
