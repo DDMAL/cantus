@@ -11,9 +11,9 @@ class Command(BaseCommand):
 
     TYPE_MAPPING = {'manuscripts': Manuscript, 'chants': Chant, 'folios': Folio}
 
-    help = 'Usage:'\
-           '\tAdd everything you want to refresh as arguments.\n'\
-           '\tSelect arguments from this list: {0}'.format(TYPE_MAPPING.keys())
+    help = 'Usage: ./manage.py refresh_solr {{{0}}} [manuscript_id ...]'\
+           '\n\tSpecify manuscript ID(s) to only refresh selected items in that/those manuscript(s)'\
+           '\n\tUse --all to refresh all {1} types.'.format('|'.join(TYPE_MAPPING.keys()), len(TYPE_MAPPING))
 
     option_list = BaseCommand.option_list + (
         make_option('--all',
@@ -27,21 +27,49 @@ class Command(BaseCommand):
         solr_conn = solr.SolrConnection(settings.SOLR_SERVER)
         solr_records = []
 
+        types = []
+        manuscript_ids = None
+
         if options['all']:
-            args += tuple(self.TYPE_MAPPING.keys())
+            types += self.TYPE_MAPPING.keys()
+        elif len(args) == 0:
+            self.stdout.write(self.help)
+            return
+        elif len(args) > 0:
+            types.append(args[0])
 
-        for type in self.TYPE_MAPPING.keys():
-            if type in args:
-                # Remove the trailing 's' to make the type singular
-                type_singular = type.rstrip('s')
+        if len(args) > 1:
+            manuscript_ids = args[1:]
 
-                self.stdout.write('Flushing {0} data...'.format(type_singular))
-                solr_conn.delete_query('type:cantusdata_{0}'.format(type_singular))
-                self.stdout.write('Creating Solr {0} records...'.format(type_singular))
+        for type in types:
+            # Remove the trailing 's' to make the type singular
+            type_singular = type.rstrip('s')
+            model = self.TYPE_MAPPING[type]
 
-                model = self.TYPE_MAPPING[type]
-                for object in model.objects.all():
-                    solr_records.append(object.create_solr_record())
+            self.stdout.write('Flushing {0} data...'.format(type_singular))
+
+            if manuscript_ids:
+                formatted_ids = '(' + ' OR '.join(manuscript_ids) + ')'
+                if model == Manuscript:
+                    delete_query = 'type:cantusdata_{0} AND item_id:{1}'.format(type_singular, formatted_ids)
+                else:
+                    delete_query = 'type:cantusdata_{0} AND manuscript_id:{1}'.format(type_singular, formatted_ids)
+            else:
+                delete_query = 'type:cantusdata_{0}'.format(type_singular)
+
+            solr_conn.delete_query(delete_query)
+            self.stdout.write('Creating Solr {0} records...'.format(type_singular))
+
+            if not manuscript_ids:
+                objects = model.objects.all()
+            else:
+                if model == Manuscript:
+                    objects = model.objects.filter(id__in=manuscript_ids)
+                else:
+                    objects = model.objects.filter(manuscript__id__in=manuscript_ids)
+
+            for object in objects:
+                solr_records.append(object.create_solr_record())
 
         self.stdout.write('Re-adding data... (may take a few minutes)')
         solr_conn.add_many(solr_records)
