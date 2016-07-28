@@ -28,9 +28,9 @@ class SolrSynchronizer (object):
 
     def _instantiate_handlers(self):
         handlers = [
-            (Manuscript, post_save,   self.manuscript_saved),
+            (Manuscript, post_save,   self.folio_or_manuscript_saved),
             (Manuscript, post_delete, self.folio_or_manuscript_deleted),
-            (Folio,      post_save,   self.folio_saved),
+            (Folio,      post_save,   self.folio_or_manuscript_saved),
             (Folio,      post_delete, self.folio_or_manuscript_deleted),
             (Chant,      post_save,   self.chant_saved),
             (Chant,      post_delete, self.chant_deleted),
@@ -64,14 +64,9 @@ class SolrSynchronizer (object):
 
     # Handlers #
 
-    def manuscript_saved(self, sender, instance, created, **kwargs):
+    def folio_or_manuscript_saved(self, sender, instance, created, **kwargs):
         with self.get_session() as sess:
             sess.schedule_update(instance, is_new=created)
-
-    def folio_saved(self, sender, instance, created, **kwargs):
-        with self.get_session() as sess:
-            sess.schedule_update(instance, is_new=created)
-            sess.schedule_update(instance.manuscript)
 
     def folio_or_manuscript_deleted(self, sender, instance, **kwargs):
         with self.get_session() as sess:
