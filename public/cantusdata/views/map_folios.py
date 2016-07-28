@@ -85,7 +85,7 @@ class MapFoliosView(APIView):
                 csv_writer.writerows(data)
 
             # Refresh all chants in solr after the folios have been updated
-            thread = threading.Thread(target=call_command, args=('refresh_solr', 'chants'), kwargs={})
+            thread = threading.Thread(target=call_command, args=('refresh_solr', 'chants', manuscript_id), kwargs={})
             thread.start()
 
         except Exception as e:
