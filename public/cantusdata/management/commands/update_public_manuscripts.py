@@ -10,7 +10,7 @@ class Command(BaseCommand):
 
     CSV_PATH = 'data_dumps/public-manuscripts.csv'
 
-    help = 'Reads the file \'{0}\' and updates or creates manuscripts accordingly.' \
+    help = 'Reads the file \'{0}\' and updates manuscripts accordingly.' \
            '\nSets all manuscripts found in this file to public=True.'.format(CSV_PATH)
 
     option_list = BaseCommand.option_list + (
