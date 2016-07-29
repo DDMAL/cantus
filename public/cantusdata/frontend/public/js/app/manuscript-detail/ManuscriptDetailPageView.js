@@ -123,7 +123,7 @@ export default Marionette.LayoutView.extend({
 
         // Initialize the Diva view
         var divaView = new DivaView({
-            siglum: this.model.get("siglum_slug"),
+            manifestUrl: this.model.get("manifest_url"),
             toolbarParentObject: this.ui.toolbarRow
         });
 

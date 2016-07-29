@@ -47,7 +47,7 @@ export default Marionette.ItemView.extend({
         this.toolbarParentObject = this.options.toolbarParentObject;
 
         // TODO(wabain): get this from the manuscript channel for consistency
-        this.siglum = options.siglum;
+        this.manifestUrl = options.manifestUrl;
     },
 
     onBeforeDestroy: function()
@@ -74,7 +74,7 @@ export default Marionette.ItemView.extend({
      */
     initializeDiva: function()
     {
-        var siglum = this.siglum;
+        var manifestUrl = this.manifestUrl;
 
         var options = {
             toolbarParentObject: this.toolbarParentObject,
@@ -95,7 +95,7 @@ export default Marionette.ItemView.extend({
             enableSpaceScroll: false,
             enableCanvas: true,
 
-            objectData: "/static/iiif/" + siglum + ".json",
+            objectData: manifestUrl,
 
             blockMobileMove: false
         };

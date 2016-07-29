@@ -19,4 +19,4 @@ class ManuscriptSerializer(serializers.HyperlinkedModelSerializer):
 class ManuscriptListSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Manuscript
-        fields = ('name', 'url', 'id', 'siglum', 'siglum_slug', 'date', 'provenance', 'folio_count', 'chant_count')
+        fields = ('name', 'url', 'id', 'siglum', 'siglum_slug', 'date', 'provenance', 'folio_count', 'chant_count', 'cantus_url', 'manifest_url')

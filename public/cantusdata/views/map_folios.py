@@ -4,6 +4,7 @@ from rest_framework.renderers import TemplateHTMLRenderer
 from django.core.management import call_command
 from cantusdata.models.folio import Folio
 from cantusdata.models.manuscript import Manuscript
+import urllib
 import json
 import csv
 import re
@@ -26,14 +27,14 @@ class MapFoliosView(APIView):
 
 
         uris = []
-        with open('./cantusdata/static/iiif/' + manifest) as manifest_json:
-            manifest_data = json.load(manifest_json)
+        manifest_json = urllib.urlopen(manifest)
+        manifest_data = json.load(manifest_json)
 
-            for canvas in manifest_data['sequences'][0]['canvases']:
-                service = canvas['images'][0]['resource']['service']
-                uri = service['@id']
-                path_tail = 'default.png' if service['@context'] == 'http://iiif.io/api/image/2/context.json' else 'native.png'
-                uris.append({'full': uri, 'thumbnail': uri + '/full/,160/0/' + path_tail, 'short': re.sub(r'^.*/(?!$)', '', uri)})
+        for canvas in manifest_data['sequences'][0]['canvases']:
+            service = canvas['images'][0]['resource']['service']
+            uri = service['@id']
+            path_tail = 'default.png' if service['@context'] == 'http://iiif.io/api/image/2/context.json' else 'native.png'
+            uris.append({'full': uri, 'thumbnail': uri + '/full/,160/0/' + path_tail, 'short': re.sub(r'^.*/(?!$)', '', uri)})
 
 
         folios = []

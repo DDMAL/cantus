@@ -27,6 +27,9 @@ class Manuscript(models.Model):
                                      related_name="plugins",
                                      blank=True, null=True)
 
+    cantus_url = models.CharField(max_length=255, blank=True, null=True)
+    manifest_url = models.CharField(max_length=255, blank=True, null=True)
+
     def __unicode__(self):
         return u"{}, {}".format(self.provenance, self.siglum)
 

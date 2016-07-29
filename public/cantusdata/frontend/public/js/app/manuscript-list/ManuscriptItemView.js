@@ -11,7 +11,7 @@ export default ManuscriptItemBaseView.extend({
         return _.extend(data, {
             short_name: this.model.get('provenance') + ', ' + this.model.get('siglum'),
             primary_url_is_external: false,
-            cantus_url: this.model.getCantusUrl()
+            cantus_url: this.model.get('cantus_url')
         });
 
         // jscs:enable

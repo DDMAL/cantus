@@ -1218,7 +1218,7 @@
             {
                 var json = this.model.toJSON();
                 json.image_file = this.model.getAbsoluteImageFile();
-                json.cantus_url = this.model.getCantusUrl();
+                json.cantus_url = this.model.get('cantus_url');
                 // json.thumbnail = this.model.getAbsoluteThumbnail();
                 console.log(json);
                 return json;
