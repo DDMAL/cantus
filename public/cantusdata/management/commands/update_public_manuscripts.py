@@ -1,6 +1,8 @@
 from django.core.management.base import BaseCommand
+from django.core.management import call_command
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.plugin import Plugin
+from optparse import make_option
 import csv
 
 
@@ -11,8 +13,16 @@ class Command(BaseCommand):
     help = 'Reads the file \'{0}\' and updates or creates manuscripts accordingly.' \
            '\nSets all manuscripts found in this file to public=True.'.format(CSV_PATH)
 
+    option_list = BaseCommand.option_list + (
+        make_option('--no-refresh',
+                    action='store_false',
+                    dest='refresh',
+                    default=True,
+                    help='Do not refresh the chants in Solr after the import'),
+    )
 
-    def handle(self, *args, **kwargs):
+
+    def handle(self, *args, **options):
         try:
             csv_file = csv.DictReader(open(self.CSV_PATH, "rU"))
         except IOError:
@@ -47,5 +57,12 @@ class Command(BaseCommand):
                         continue
 
             manuscript.save()
+
+            if options['refresh']:
+                self.stdout.write("Updating chants of manuscript {0}".format(manuscript.id))
+                call_command('refresh_solr', 'chants', manuscript.id)
+            else:
+                self.stdout.write("The chants will need to be refreshed. To do so, use"\
+                                  "./manage.py refresh_solr chants {0}".format(manuscript.id))
 
         self.stdout.write("Successfully updated {0} public manuscripts.".format(index))
