@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.management import call_command
 from django.utils.text import slugify
 
 from cantusdata.models.neume_exemplar import NeumeExemplar
@@ -29,6 +30,19 @@ class Manuscript(models.Model):
 
     cantus_url = models.CharField(max_length=255, blank=True, null=True)
     manifest_url = models.CharField(max_length=255, blank=True, null=True)
+
+    # Store the initial value of public in order to detect any changes.
+    def __init__(self, *args, **kwargs):
+        super(Manuscript, self).__init__(*args, **kwargs)
+        self._last_public_value = self.public
+
+    def save(self, force_insert=False, force_update=False, *args, **kwargs):
+        super(Manuscript, self).save(force_insert, force_update, *args, **kwargs)
+
+        if self.public != self._last_public_value:
+            # The public property has changed, we need to refresh the Solr chants
+            call_command('refresh_solr', 'chants', str(self.id))
+            self._last_public_value = self.public
 
     def __unicode__(self):
         return u"{}, {}".format(self.provenance, self.siglum)
