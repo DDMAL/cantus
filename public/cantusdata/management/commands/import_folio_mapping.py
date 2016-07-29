@@ -81,7 +81,6 @@ class Command(BaseCommand):
         # which is used when clicking on a search result
         if options['refresh']:
             self.stdout.write("Refreshing Solr chants after folio import")
-            self.stdout.write()
             call_command('refresh_solr', 'chants', ' '.join([ str(man['id']) for man in manuscripts ]))
         else:
             self.stdout.write("Import process completed. To refresh Solr,"\
