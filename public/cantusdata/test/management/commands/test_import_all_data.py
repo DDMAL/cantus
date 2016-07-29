@@ -9,7 +9,7 @@ class ImportAllDataTestCase(TestCase):
         pass
 
     def test_import_all_data(self):
-        call_command('import_data', 'test/test_chants.csv', all=True)
+        call_command('import_data', 'test/test_chants.csv', '1', all=True)
 
     def tearDown(self):
         Chant.objects.all().delete()
