@@ -33,7 +33,7 @@ class MapFoliosView(APIView):
         for canvas in manifest_data['sequences'][0]['canvases']:
             service = canvas['images'][0]['resource']['service']
             uri = service['@id']
-            path_tail = 'default.png' if service['@context'] == 'http://iiif.io/api/image/2/context.json' else 'native.png'
+            path_tail = 'default.jpg' if service['@context'] == 'http://iiif.io/api/image/2/context.json' else 'native.jpg'
             uris.append({'full': uri, 'thumbnail': uri + '/full/,160/0/' + path_tail, 'short': re.sub(r'^.*/(?!$)', '', uri)})
 
 
