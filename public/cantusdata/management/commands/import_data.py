@@ -31,11 +31,12 @@ class Command(BaseCommand):
     MANUSCRIPT_FILE = "sources-export.csv"
     CONCORDANCE_FILE = "concordances"
 
-    help = 'Usage: ./manage.py import_data {{{0}}} [chant_file ...]\n'\
+    help = 'Usage: ./manage.py import_data {{{0}}} [chant_file [manuscript_id] ...]\n'\
             '\tAdd everything you want to import as arguments. (or use --all)\n'\
             "\tSelect arguments from this list: {1}\n"\
             "\tTo import chants from a specific manuscript, add arguments from\n"\
-            "\tthis list: {2}"\
+            "\tthis list: {2}\n" \
+            "\tAlternatively, put a CSV file path as argument, followed by its manuscript ID"\
             .format('|'.join(TYPE_MAPPING.keys()), TYPE_MAPPING.keys(), CHANT_FILE_MAPPING.keys())
 
     option_list = BaseCommand.option_list + (
@@ -54,12 +55,14 @@ class Command(BaseCommand):
             args += tuple(self.TYPE_MAPPING.keys())
 
         # Go through the arguments to see if some files have been specified
-        for arg in args:
+        for index, arg in enumerate(args):
             if arg in self.CHANT_FILE_MAPPING.keys():
                 self.chants.append(self.CHANT_FILE_MAPPING[arg])
+            elif arg not in self.TYPE_MAPPING.keys() and arg.endswith('.csv') and index + 1 < len(args):
+                self.chants.append([arg, args[index + 1]])
 
         # If no files were specified, import all of them
-        if not self.chants:
+        if len(self.chants) == 0:
             self.chants = self.CHANT_FILE_MAPPING.values()
 
         with solr_synchronizer.get_session():
