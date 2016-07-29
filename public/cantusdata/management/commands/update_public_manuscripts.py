@@ -17,15 +17,17 @@ class Command(BaseCommand):
         except IOError:
             raise IOError("File '{0}' does not exist!".format(self.CSV_PATH))
 
-        # Load in the csv file.  This is a massive list of dictionaries.
+
         self.stdout.write("Starting update process.")
-        # Create a manuscript and save it
+
         for index, row in enumerate(csv_file):
             try:
                 manuscript = Manuscript.objects.get(id=row['id'])
             except Manuscript.DoesNotExist:
                 self.stdout.write("Manuscript {0} does not exist".format(row['id']))
                 continue
+
+            self.stdout.write("Updating manuscript {0}".format(row['id']))
 
             manuscript.public = True
             manuscript.cantus_url = row["cantus_url"].decode("utf-8").strip()
