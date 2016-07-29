@@ -28,6 +28,13 @@ class ManuscriptViewTestCase(APITransactionTestCase):
         response = self.client.get("/manuscript/2f63f986449349769d7a313e0fc6edb3/")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_get_private_detail(self):
+        manuscript = Manuscript.objects.get(name="NumberTwo")
+        if not manuscript:
+            self.fail("No manuscripts loading!")
+        response = self.client.get("/manuscript/{0}/".format(manuscript.id))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     def tearDown(self):
         Chant.objects.all().delete()
         Folio.objects.all().delete()
