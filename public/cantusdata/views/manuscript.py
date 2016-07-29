@@ -15,7 +15,7 @@ class ManuscriptList(generics.ListCreateAPIView):
 
 class ManuscriptDetail(generics.RetrieveUpdateDestroyAPIView):
     model = Manuscript
-    queryset = Manuscript.objects.all()
+    queryset = Manuscript.objects.filter(public=True)
     serializer_class = ManuscriptSerializer
     template_name = "require.html"
     renderer_classes = templated_view_renderers
