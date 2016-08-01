@@ -13,6 +13,7 @@ from cantusdata.views.chant_set import FolioChantSetView, ManuscriptChantSetView
 from cantusdata.views.folio_set import ManuscriptFolioSetView
 from cantusdata.views.manuscript_glyph_set import ManuscriptGlyphSetView
 from cantusdata.views.map_folios import MapFoliosView
+from cantusdata.views.manifest_proxy import ManifestProxyView
 from django.contrib.admin.views.decorators import staff_member_required
 
 
@@ -61,6 +62,10 @@ urlpatterns = format_suffix_patterns([
      # Search
      url(r'^search/$', SearchView.as_view(), name="search-view"),
      url(r'^suggest/$', SuggestionView.as_view(), name='suggestion-view'),
+
+     # Work around Mixed Content errors when loading manifests from other libraries
+     url(r'^manifest-proxy/(?P<manifest_url>([!#$&-;=?-[\]_a-zA-Z0-9~]|%[0-9a-fA-F]{2})+)/$',
+         ManifestProxyView.as_view(), name="retrieve-manifest"),
 
      # Admin pages
      url(r'^admin/map_folios/', staff_member_required(MapFoliosView.as_view()), name="map-folios-view"),
