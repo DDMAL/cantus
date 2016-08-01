@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.management import call_command
 from django.utils.text import slugify
+import threading
 
 from cantusdata.models.neume_exemplar import NeumeExemplar
 
@@ -41,7 +42,8 @@ class Manuscript(models.Model):
 
         if self.public != self._last_public_value:
             # The public property has changed, we need to refresh the Solr chants
-            call_command('refresh_solr', 'chants', str(self.id))
+            thread = threading.Thread(target=call_command, args=('refresh_solr', 'chants', str(self.id)), kwargs={})
+            thread.start()
             self._last_public_value = self.public
 
     def __unicode__(self):
