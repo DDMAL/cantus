@@ -25,7 +25,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         solr_conn = solr.SolrConnection(settings.SOLR_SERVER)
-        solr_records = []
 
         types = []
         manuscript_ids = None
@@ -58,7 +57,8 @@ class Command(BaseCommand):
                 delete_query = 'type:cantusdata_{0}'.format(type_singular)
 
             solr_conn.delete_query(delete_query)
-            self.stdout.write('Creating Solr {0} records...'.format(type_singular))
+
+            self.stdout.write('Re-adding {0} data... (may take a few minutes)'.format(type_singular))
 
             if not manuscript_ids:
                 objects = model.objects.all()
@@ -68,11 +68,17 @@ class Command(BaseCommand):
                 else:
                     objects = model.objects.filter(manuscript__id__in=manuscript_ids)
 
-            for object in objects:
+            solr_records = []
+            nb_obj = len(objects)
+            for index, object in enumerate(objects):
                 solr_records.append(object.create_solr_record())
 
-        self.stdout.write('Re-adding data... (may take a few minutes)')
-        solr_conn.add_many(solr_records)
+                # Adding by blocks prevents out of memory errors
+                if index > 0 and index % 500 == 0 or index == nb_obj - 1:
+                    self.stdout.write("{0} / {1}".format(index, nb_obj))
+                    solr_conn.add_many(solr_records)
+                    solr_records = []
+
         self.stdout.write('Committing changes...')
         solr_conn.commit()
         self.stdout.write('Done!')
