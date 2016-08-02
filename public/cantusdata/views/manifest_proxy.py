@@ -1,9 +1,7 @@
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
-from django.http import Http404, HttpResponse
-import urllib2
-import json
+from django.http import Http404, StreamingHttpResponse
+import requests
 
 
 class ManifestProxyView(APIView):
@@ -23,10 +21,6 @@ class ManifestProxyView(APIView):
         manifest_url = kwargs['manifest_url']
 
         try:
-            manifest_json = json.load(urllib2.urlopen(manifest_url))
-        except urllib2.URLError:
+            return StreamingHttpResponse(requests.get(manifest_url, stream=True), content_type='application/json')
+        except requests.exceptions.RequestException:
             raise Http404("Could not retrieve manifest from given url")
-        except ValueError: # Error while parsing the json
-            return HttpResponse("Invalid JSON file", status=500)
-
-        return Response(manifest_json)

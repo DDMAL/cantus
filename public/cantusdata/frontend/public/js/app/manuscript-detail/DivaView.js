@@ -95,7 +95,7 @@ export default Marionette.ItemView.extend({
             enableSpaceScroll: false,
             enableCanvas: true,
 
-            objectData: '/manifest-proxy/' + encodeURIComponent(manifestUrl),
+            objectData: '/manifest-proxy/' + manifestUrl,
 
             blockMobileMove: false
         };
