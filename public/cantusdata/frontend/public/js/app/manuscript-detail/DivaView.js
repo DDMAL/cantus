@@ -89,7 +89,7 @@ export default Marionette.ItemView.extend({
             enableHighlight: true,
             enableDownload: true,
 
-            fixedHeightGrid: false,
+            fixedHeightGrid: true,
 
             enableKeyScroll: false,
             enableSpaceScroll: false,
