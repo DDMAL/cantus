@@ -34,8 +34,12 @@ class MapFoliosView(APIView):
             service = canvas['images'][0]['resource']['service']
             uri = service['@id']
             path_tail = 'default.jpg' if service['@context'] == 'http://iiif.io/api/image/2/context.json' else 'native.jpg'
-            uris.append({'full': uri, 'thumbnail': uri + '/full/,160/0/' + path_tail, 'short': re.sub(r'^.*/(?!$)', '', uri)})
-
+            uris.append({
+                'full': uri,
+                'thumbnail': uri + '/full/,160/0/' + path_tail,
+                'large': uri + '/full/,1800/0/' + path_tail,
+                'short': re.sub(r'^.*/(?!$)', '', uri)
+            })
 
         folios = []
         with open('./data_dumps/' + data) as data_csv:

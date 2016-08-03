@@ -101,7 +101,7 @@
         <li><h4>Pages from the manifest:</h4></li>
         {% for uri in uris %}
         <li>
-            <img src={{ uri.thumbnail }} />
+            <a href={{ uri.large }} target="_blank"><img src={{ uri.thumbnail }} /></a>
             {{ uri.short }}
             <input type="text" class="folio-mapping" name={{ uri.full }} />
             <div class="button" onclick="onMoveUp({{ forloop.counter0 }})" tabindex="-1">Up</div>
