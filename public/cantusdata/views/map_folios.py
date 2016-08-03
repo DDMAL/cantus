@@ -52,44 +52,47 @@ class MapFoliosView(APIView):
         return Response({'uris': uris, 'folios': folios, 'manuscript_id': manuscript_id})
 
     def post(self, request):
-        # Add stuff in Solr if POST arguments
-        # A file dump should also be created so that Solr can be refreshed
-
-        manuscript_id = request.POST['manuscript_id']
-        manuscript = Manuscript.objects.get(id=manuscript_id)
-        data = [['folio', 'uri']] # CSV column headers
-
         try:
-            for index, value in request.POST.iteritems():
-                # 'index' should be the uri, and 'value' the folio name
-                if index == 'csrfmiddlewaretoken' or index == 'manuscript_id' or len(value) == 0:
-                    continue
-
-                # Save in the Django DB
-                try:
-                    folio_obj = Folio.objects.get(number=value, manuscript__id=manuscript_id)
-                except Folio.DoesNotExist:
-                    # If no folio is found, create one
-                    folio_obj = Folio()
-                    folio_obj.number = value
-                    folio_obj.manuscript = manuscript
-
-                folio_obj.image_uri = index
-                folio_obj.save()
-
-                # Data to be saved in a CSV file
-                data.append([value, index])
-
-            # Save in a data dump
-            with open('./data_dumps/folio_mapping/{0}.csv'.format(manuscript_id), 'w') as dump_csv:
-                csv_writer = csv.writer(dump_csv)
-                csv_writer.writerows(data)
-
-            # Refresh all chants in solr after the folios have been updated
-            thread = threading.Thread(target=call_command, args=('refresh_solr', 'chants', manuscript_id), kwargs={})
+            thread = threading.Thread(target=_save_mapping, args=(request, ), kwargs={})
             thread.start()
-
         except Exception as e:
-            return Response({'error': e})
+                return Response({'error': e})
 
         return Response({'posted': True})
+
+
+def _save_mapping(request):
+    # Add stuff in Solr if POST arguments
+    # A file dump should also be created so that Solr can be refreshed
+
+    manuscript_id = request.POST['manuscript_id']
+    manuscript = Manuscript.objects.get(id=manuscript_id)
+    data = [['folio', 'uri']] # CSV column headers
+
+    for index, value in request.POST.iteritems():
+        # 'index' should be the uri, and 'value' the folio name
+        if index == 'csrfmiddlewaretoken' or index == 'manuscript_id' or len(value) == 0:
+            continue
+
+        # Save in the Django DB
+        try:
+            folio_obj = Folio.objects.get(number=value, manuscript__id=manuscript_id)
+        except Folio.DoesNotExist:
+            # If no folio is found, create one
+            folio_obj = Folio()
+            folio_obj.number = value
+            folio_obj.manuscript = manuscript
+
+        folio_obj.image_uri = index
+        folio_obj.save()
+
+        # Data to be saved in a CSV file
+        data.append([value, index])
+
+    # Save in a data dump
+    with open('./data_dumps/folio_mapping/{0}.csv'.format(manuscript_id), 'w') as dump_csv:
+        csv_writer = csv.writer(dump_csv)
+        csv_writer.writerows(data)
+
+    # Refresh all chants in solr after the folios have been updated
+    call_command('refresh_solr', 'chants', str(manuscript_id))
