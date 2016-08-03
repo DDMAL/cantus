@@ -60,7 +60,7 @@ class MapFoliosView(APIView):
             thread = threading.Thread(target=_save_mapping, args=(request, ), kwargs={})
             thread.start()
         except Exception as e:
-                return Response({'error': e})
+            return Response({'error': e})
 
         return Response({'posted': True})
 
