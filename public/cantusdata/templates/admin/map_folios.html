@@ -49,10 +49,21 @@
         right: 25px;
     }
 
-    .final-submit > input {
+    .blue-button {
         background-color: #264cff;
         color: white;
         border: solid 1px #0b97c4;
+        padding: 7px;
+        text-align: center;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .backup-options {
+        position: fixed;
+        top: calc(50% + 75px);
+        right: 25px;
+        text-align: right;
     }
 
     .error-message {
@@ -99,10 +110,13 @@
         {% endfor %}
     </ul>
     <div class="final-submit">
-        <input type="submit" value="Submit this Mapping">
-        <h6><em>May take a while</em></h6>
+        <input class="blue-button" type="submit" value="Submit this Mapping">
     </div>
 </form>
+<div class="backup-options">
+    <div class="blue-button" onclick="onSaveBackup()">Save Backup</div>
+    <h6><em>Drag and drop a CSV file anywhere<br>on the page to import it.</em></h6>
+</div>
 <ul class="mapping-column">
     <li><h4>Folio names from the data:</h4></li>
     {% for folio in folios %}
@@ -116,6 +130,23 @@
 
     for (var i = 0; i < inputs.length && i < folios.length; i++) {
         inputs[i].value = folios[i].textContent;
+    }
+
+    document.body.addEventListener('dragover', handleDragOver, false);
+    document.body.addEventListener('drop', handleFileDrop, false);
+
+    function handleFileDrop(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+
+        var file = evt.dataTransfer.files[0];
+        loadBackup(file);
+    }
+
+    function handleDragOver(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+        evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
     }
 
     function onMoveUp(startIndex) {
@@ -136,6 +167,46 @@
             inputs[i].value = inputs[i - 1].value;
         }
         inputs[startIndex].value = temp;
+    }
+
+    function onSaveBackup() {
+        var data = 'folio,uri\n';
+        for (var i = 0, len = inputs.length; i < len; i++) {
+            data += inputs[i].value + ',' + inputs[i].name + '\n';
+        }
+        console.log(data);
+        download('backup.csv', data);
+    }
+
+    function loadBackup(file) {
+        var reader = new FileReader();
+        reader.readAsText(file, "UTF-8");
+        reader.onload = function (e) {
+            var lines = e.target.result.split('\n');
+            var inputIndex = 0;
+            for (var i = 1; i < lines.length; i++) {
+                var values = lines[i].split(',');
+
+                while (inputIndex < inputs.length && inputs[inputIndex].name !== values[1])
+                    inputIndex++;
+
+                if (inputIndex < inputs.length)
+                    inputs[inputIndex].value = values[0];
+            }
+        }
+    }
+
+    function download(filename, text) {
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:application/octet-stream,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
     }
 </script>
 {% endif %}
