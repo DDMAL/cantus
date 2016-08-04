@@ -253,7 +253,7 @@ pre.preformatted-text {
 
 // When applied to ancestors of a nested element, this class uses flexbox to set the height
 // of the element to the remaining height of the viewport.
-.propagate-height {
+.propagate-height, .modal-content, .modal-body {
     @include ua-support(flexbox) {
         display: flex;
         flex-direction: column;
@@ -265,7 +265,7 @@ pre.preformatted-text {
             flex-shrink: 0;
         }
 
-        > .propagate-height, > .result-table-wrapper {
+        > .propagate-height, > .result-table-wrapper, > .modal-body {
             flex-shrink: 1;
         }
     }
@@ -314,6 +314,18 @@ body.propagate-height {
             width: 40%;
         }
     }
+}
+
+.modal-dialog {
+    width: 50%;
+    height: 90%;
+}
+.modal-content {
+    height: 100%;
+}
+// Fix a bug in the modal content where the search drop-down would be hidden
+.modal-content > .modal-body > .propagate-height {
+    overflow: visible;
 }
 
 #manuscript-data-container {
