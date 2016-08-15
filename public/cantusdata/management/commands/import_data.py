@@ -87,7 +87,7 @@ class Command(BaseCommand):
                     self.stdout.write('Importing new {0} data...'.format(type_singular))
                     # Call the method corresponding with the current type
                     getattr(self, 'import_{0}_data'.format(type_singular))(**options)
-                    self.stdout.write("Waiting for Solr to finish...")
+            self.stdout.write("Waiting for Solr to finish...")
 
         self.stdout.write("Done.")
 
