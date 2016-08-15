@@ -146,7 +146,7 @@ class Command(BaseCommand):
             concordance.rism_code = line.split("]", 1)[0].strip()
 
             concordance.save()
-        self.stdout.write("Successfully imported {0} concordances into database.".format(index))
+        self.stdout.write("Successfully imported {0} concordances into database.".format(index + 1))
 
     def import_chant_data(self, **options):
         for chant in self.chants:

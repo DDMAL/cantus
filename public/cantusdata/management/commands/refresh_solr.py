@@ -75,7 +75,7 @@ class Command(BaseCommand):
 
                 # Adding by blocks prevents out of memory errors
                 if index > 0 and index % 500 == 0 or index == nb_obj - 1:
-                    self.stdout.write("{0} / {1}".format(index, nb_obj))
+                    self.stdout.write("{0} / {1}".format(index + 1, nb_obj))
                     solr_conn.add_many(solr_records)
                     solr_records = []
 
