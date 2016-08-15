@@ -1,5 +1,6 @@
 from django.utils.text import slugify
 from django.conf import settings
+from django.db import transaction
 from cantusdata.models.chant import Chant
 from cantusdata.models.folio import Folio
 from cantusdata.models.concordance import Concordance
@@ -120,6 +121,7 @@ class ChantImporter:
             manuscript = self._manuscript_cache[siglum] = Manuscript.objects.get(siglum=siglum)
             return manuscript
 
+    @transaction.atomic
     def save(self, delete_existing=False):
         # Do all the updates within a single Solr session
         with solr_synchronizer.get_session():

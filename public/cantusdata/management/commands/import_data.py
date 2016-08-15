@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.db import transaction
 from optparse import make_option
 from cantusdata.models.chant import Chant
 from cantusdata.models.folio import Folio
@@ -90,6 +91,7 @@ class Command(BaseCommand):
 
         self.stdout.write("Done.")
 
+    @transaction.atomic
     def import_manuscript_data(self, **options):
         try:
             csv_file = csv.DictReader(open("data_dumps/{0}".format(self.MANUSCRIPT_FILE), "rU"))
@@ -109,6 +111,7 @@ class Command(BaseCommand):
             manuscript.save()
         self.stdout.write("Successfully imported {0} manuscripts into database.".format(index))
 
+    @transaction.atomic
     def import_concordance_data(self, **options):
         try:
             file = open("data_dumps/{0}".format(self.CONCORDANCE_FILE))

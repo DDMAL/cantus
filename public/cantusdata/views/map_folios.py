@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
 from django.core.management import call_command
+from django.db import transaction
 from cantusdata.models.folio import Folio
 from cantusdata.models.manuscript import Manuscript
 import urllib
@@ -65,6 +66,7 @@ class MapFoliosView(APIView):
         return Response({'posted': True})
 
 
+@transaction.atomic
 def _save_mapping(request):
     # Add stuff in Solr if POST arguments
     # A file dump should also be created so that Solr can be refreshed
