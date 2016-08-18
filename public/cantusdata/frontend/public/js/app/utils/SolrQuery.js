@@ -171,11 +171,12 @@ var SolrQuery = Marionette.Object.extend({
         ['feast', 'genre', 'office'].forEach(function (field)
         {
             var term = self.fields[field] || self.fields[field + '_t_hidden'];
-            if (term && self.fields.manuscript)
+            if (term)
             {
+                var manuscript = self.fields.manuscript || '*';
                 suggestString = 'q=' + self.getSolrTerm(term, false) +
                     '&dictionary=' + field + 'Suggester' +
-                    '&manuscript=' + self.fields.manuscript;
+                    '&manuscript=' + manuscript;
             }
         });
 

@@ -14,7 +14,7 @@ class SuggestionView(APIView):
 
         q = u"{0}".format(request.GET['q'])
         dictionary = u"{0}".format(request.GET['dictionary'])  # The suggester to use
-        manuscript = u"{0}".format(request.GET['manuscript'])
+        manuscript = u"{0}".format(request.GET['manuscript'])  # Can be '*' when searching through all manuscripts
 
         connection = solr.Solr(settings.SOLR_SERVER)
         search_handler = solr.SearchHandler(connection, "/suggest")
