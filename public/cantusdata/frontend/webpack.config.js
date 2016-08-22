@@ -9,17 +9,6 @@ var APP_BASE_DIR = path.resolve(__dirname, 'public/js'),
     LIB_DIR = path.resolve(__dirname, 'public/node_modules'),
     TMP_DIR = path.resolve(__dirname, '.tmp');
 
-/**
- * Return the absolute path to a library file
- *
- * @param lib
- * @returns {string}
- */
-function libPath(lib)
-{
-    return path.resolve(LIB_DIR, lib);
-}
-
 function configureBuildMode(config)
 {
     if (yargs.release)
@@ -76,19 +65,6 @@ module.exports = configureBuildMode({
                 test: /\.template\.html$/,
                 include: [APP_BASE_DIR],
                 loader: 'underscore-template-loader?engine=underscore'
-            },
-
-            // Export the Diva global, which for mysterious
-            // reasons is defined in the utils file
-            {
-                include: [libPath('diva.js/source/js/utils.js')],
-                loader: 'exports?diva'
-            },
-
-            // Import and re-export the Diva global from the diva.js file
-            {
-                include: [libPath('diva.js/source/js/diva.js')],
-                loaders: ['imports?diva=./utils', 'exports?diva']
             }
         ]
     },

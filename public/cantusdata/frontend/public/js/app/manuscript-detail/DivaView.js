@@ -4,10 +4,6 @@ import $ from 'jquery';
 import _ from "underscore";
 
 import diva from "diva";
-import "diva/plugins/highlight";
-import "diva/plugins/download";
-import "diva/plugins/canvas";
-import "diva/plugins/pagealias";
 
 import GlobalVars from '../config/GlobalVars';
 
@@ -29,7 +25,7 @@ export default Marionette.ItemView.extend({
     initialize: function(options)
     {
         _.bindAll(this, 'propagateFolioChange', 'onViewerLoad', 'setImageURI',
-            'paintBoxes', 'zoomToLocation', 'updatePageAlias', 'gotoInputPage',
+            'paintBoxes', 'updatePageAlias', 'gotoInputPage',
             'getPageWhichMatchesAlias', 'onDocLoad');
 
         this.divaEventHandles = [];
@@ -283,21 +279,6 @@ export default Marionette.ItemView.extend({
 
         // Add a closing parenthesis (the opening is within the page alias)
         pageLabel.appendChild(document.createTextNode(')'));
-
-        // Hack: Make the go to page input a Bootstrap input group
-        var inputGroup = $('<div class="input-group input-group-sm">');
-        var inputGroupBtnContainer = $('<div class="input-group-btn">');
-
-        this.toolbarParentObject.find('.diva-goto-form input[type=submit]')
-            .addClass('btn btn-default')
-            .appendTo(inputGroupBtnContainer);
-
-        this.toolbarParentObject.find('.diva-goto-form .diva-input')
-            .addClass('form-control')
-            .replaceWith(inputGroup)
-            .appendTo(inputGroup);
-
-        inputGroup.append(inputGroupBtnContainer);
     },
 
     /**
@@ -380,46 +361,5 @@ export default Marionette.ItemView.extend({
                 highlightsByPageHash[pageList[j]] // List of boxes
             );
         }
-    },
-
-    /**
-     * Zoom Diva to a location.
-     *
-     * @param box
-     */
-    zoomToLocation: function(box)
-    {
-        // Grab the diva internals to work with
-        var divaData = this.divaInstance;
-
-        // Do nothing if there's no box or if Diva is not initialized
-        if (!box || !divaData)
-            return;
-
-        var divaSettings = divaData.getSettings();
-
-        // Now figure out the page that box is on
-        var divaOuter = divaSettings.outerObject;
-        var zoomLevel = divaData.getZoomLevel();
-
-        var pageFilename = box.p;
-        var desiredPage = this.divaFilenames.indexOf(pageFilename) + 1;
-
-        // Now jump to that page
-        divaData.gotoPageByNumber(desiredPage);
-        // Get the height above top for that box
-        var boxTop = divaData.translateFromMaxZoomLevel(box.y);
-        var currentScrollTop = parseInt(divaOuter.scrollTop(), 10);
-
-        var topMarginConsiderations = divaSettings.averageHeights[zoomLevel] * divaSettings.adaptivePadding;
-        var leftMarginConsiderations = divaSettings.averageWidths[zoomLevel] * divaSettings.adaptivePadding;
-
-        divaOuter.scrollTop(boxTop + currentScrollTop - (divaOuter.height() / 2) + (box.h / 2) +
-            topMarginConsiderations);
-
-        // Now get the horizontal scroll
-        var boxLeft = divaData.translateFromMaxZoomLevel(box.x);
-        divaOuter.scrollLeft(boxLeft - (divaOuter.width() / 2) + (box.w / 2) + leftMarginConsiderations);
-        // Will include the padding between pages for best results
     }
 });
