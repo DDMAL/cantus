@@ -49,7 +49,7 @@ export default Marionette.LayoutView.extend({
     },
 
     events: {
-        'mousedown @ui.resizer': 'startResizing',
+        'mousedown @ui.resizer': 'startResizing'
     },
 
     initialize: function ()
