@@ -43,8 +43,6 @@ export default Marionette.LayoutView.extend({
 
     ui: {
         toolbarRow: '#toolbar-row',
-        manuscriptInfo: '#manuscript-info-target',
-        manuscriptInfoButton: '#manuscript-info-target button',
         resizer: '#manuscript-data-container .resizer',
         divaColumn: "#diva-column",
         manuscriptDataColumn: '#manuscript-data-column'
@@ -52,7 +50,6 @@ export default Marionette.LayoutView.extend({
 
     events: {
         'mousedown @ui.resizer': 'startResizing',
-        'click @ui.manuscriptInfoButton': '_showInfoSidenav'
     },
 
     initialize: function ()
@@ -127,11 +124,15 @@ export default Marionette.LayoutView.extend({
             toolbarParentObject: this.ui.toolbarRow
         });
 
-        // Move the manuscript info button into the Diva toolbar
-        // FIXME: this is not a very good way to do this
+        // Create a "Manuscript Info" button in the Diva toolbar
         this.listenToOnce(divaView, 'loaded:viewer', function ()
         {
-            this.ui.manuscriptInfo.prependTo(this.ui.toolbarRow.find('.diva-tools-right'));
+            var manuscriptInfo = $('<div>').attr('id', 'manuscript-info-target');
+            var manuscriptInfoButton = $('<button>').addClass('btn btn-link btn-sm').text('Manuscript info');
+            manuscriptInfoButton.appendTo(manuscriptInfo);
+
+            $(manuscriptInfoButton).on('click', this._showInfoSidenav.bind(this));
+            manuscriptInfo.appendTo(this.ui.toolbarRow.find('.diva-tools-right'));
         });
 
         // Initialize the search view

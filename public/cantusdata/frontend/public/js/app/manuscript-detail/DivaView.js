@@ -327,6 +327,16 @@ export default Marionette.ItemView.extend({
         if (!this.divaInstance)
             return;
 
+        // Wait for the Diva instance to be ready
+        if (!this.divaInstance.isReady())
+        {
+            this.divaEventHandles.push(diva.Events.subscribe("ViewerDidLoad", function ()
+            {
+                this.paintBoxes(boxSet);
+            }.bind(this)));
+            return;
+        }
+
         this.divaInstance.resetHighlights();
 
         // Use the Diva highlight plugin to draw the boxes
@@ -361,5 +371,59 @@ export default Marionette.ItemView.extend({
                 highlightsByPageHash[pageList[j]] // List of boxes
             );
         }
+    },
+
+    /**
+      * Zoom Diva to a location.
+      *
+      * @param box
+      */
+    zoomToLocation: function(box)
+    {
+        if (!this.divaInstance)
+            return;
+
+        // Wait for the Diva instance to be ready
+        if (!this.divaInstance.isReady())
+        {
+            this.divaEventHandles.push(diva.Events.subscribe("ViewerDidLoad", function ()
+            {
+                this.zoomToLocation(box);
+            }.bind(this)));
+            return;
+        }
+
+        // Grab the diva internals to work with
+        var divaData = this.divaInstance;
+
+        // Do nothing if there's no box or if Diva is not initialized
+        if (!box || !divaData)
+        return;
+
+        var divaSettings = divaData.getSettings();
+        // Now figure out the page that box is on
+        var divaOuter = divaSettings.outerObject;
+
+        var pageFilename = box.p;
+        var desiredPage = this.divaFilenames.indexOf(pageFilename);
+
+        // Now jump to that page
+        divaData.gotoPageByIndex(desiredPage);
+        // Get the height above top for that box
+        var boxTop = divaData.translateFromMaxZoomLevel(box.y);
+        var currentScrollTop = parseInt(divaOuter.scrollTop(), 10);
+
+        // TODO, find workaround since Diva 5 dropped 'averageHeights' and 'averageWidths'
+        // var zoomLevel = divaData.getZoomLevel();
+        var topMarginConsiderations = 0; // = divaSettings.averageHeights[zoomLevel] * divaSettings.adaptivePadding;
+        var leftMarginConsiderations = 0; // = divaSettings.averageWidths[zoomLevel] * divaSettings.adaptivePadding;
+
+        divaOuter.scrollTop(boxTop + currentScrollTop - (divaOuter.height() / 2) + (box.h / 2) +
+               topMarginConsiderations);
+
+        // Now get the horizontal scroll
+        var boxLeft = divaData.translateFromMaxZoomLevel(box.x);
+        divaOuter.scrollLeft(boxLeft - (divaOuter.width() / 2) + (box.w / 2) + leftMarginConsiderations);
+        // Will include the padding between pages for best results
     }
 });
