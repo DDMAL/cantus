@@ -403,6 +403,10 @@ body.propagate-height {
             border-color: #BBB;
             background-color: #D3D3D3;
         }
+
+        &.diva-button-text {
+            line-height: 30px;
+        }
     }
 
     .diva-buttons-label, .diva-page-label {
@@ -411,17 +415,13 @@ body.propagate-height {
         margin: 0;
     }
 
-    .diva-goto-form {
+    .diva-goto-form, .diva-input {
         line-height: inherit;
     }
 
-    // Stopgap to stop the "Zoom level" control from falling below the row
-    // FIXME(wabain): Find something more reliable for this after updating if necessary
-    .diva-tools-left .diva-buttons-label {
-        clear: initial;
-    }
-    &.diva-fullscreen-tools .diva-tools-left .diva-buttons-label {
-        clear: both;
+    .diva-input {
+        height: 30px;
+        border-color: #c6c6c6;
     }
 }
 
@@ -442,32 +442,10 @@ body.propagate-height {
     }
 }
 
-#toolbar-row .diva-page-nav {
-    // Restore Bootstrap styling
-    // FIXME: edit the Diva CSS so this isn't necessary
-    line-height: 1.5;
-
-    .diva-input {
-        width: 100%;
-        padding-top: 5px;
-        line-height: 1.5;
-    }
-
-    .input-group {
-        width: 90px;
-    }
-}
-
 .diva-outer {
     border: none;
     border-right: 1px solid $border-color;
     min-width: 0;
-
-    @include ua-support(flexbox) {
-        height: 100%;
-        flex-grow: 1;
-        flex-shrink: 1;
-    }
 }
 
 // Integrate Diva z-index values with the Bootstrap z-index hierarchy
