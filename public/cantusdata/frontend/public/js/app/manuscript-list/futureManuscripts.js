@@ -35,16 +35,6 @@ export default new Backbone.Collection([
         chant_count: null
     },
     {
-        name: 'Bibliothèque nationale, Département des manuscrits, Latin 15181',
-        short_name: 'Paris 15181',
-        url: 'http://gallica.bnf.fr/ark:/12148/btv1b8447768b/f9.image.r=latin%2015181.langEN',
-        primary_url_is_external: true,
-        cantus_url: 'http://cantus.uwaterloo.ca/source/123631',
-        date: '14th C',
-        folio_count: null,
-        chant_count: null
-    },
-    {
         name: 'Einsiedeln, Stiftsbibliothek, Codex 611(89)',
         short_name: 'Einsiedeln 611',
         url: 'http://www.e-codices.unifr.ch/en/sbe/0611/1r',
