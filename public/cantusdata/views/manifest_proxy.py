@@ -21,6 +21,6 @@ class ManifestProxyView(APIView):
         manifest_url = kwargs['manifest_url']
 
         try:
-            return StreamingHttpResponse(requests.get(manifest_url, stream=True), content_type='application/json')
-        except requests.exceptions.RequestException:
+            return StreamingHttpResponse(requests.get(manifest_url, verify=False, stream=True), content_type='application/json')
+        except requests.exceptions.RequestException as e:
             raise Http404("Could not retrieve manifest from given url")
