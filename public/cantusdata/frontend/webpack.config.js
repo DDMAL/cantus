@@ -49,7 +49,7 @@ module.exports = configureBuildMode({
             marionette: 'backbone.marionette',
 
             // Alias the Diva path to make it easier to access the plugins, etc.
-            diva: "diva.js/source/js"
+            diva: "diva.js/js"
         }
     },
 
