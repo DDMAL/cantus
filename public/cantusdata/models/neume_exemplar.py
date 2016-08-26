@@ -3,8 +3,8 @@ from django.db import models
 from cantusdata.models.folio import Folio
 
 
-ADMIN_IMAGE_TEMPLATE = ('<img src="{iip_url}?IIIF=/srv/images/cantus/{siglum}/{siglum}_{folio}.jp2/'
-                        '{x},{y},{w},{h}/,{img_height}/0/native.jpg" alt="{name}" />')
+ADMIN_IMAGE_TEMPLATE = ('<img src="{base_url}/{siglum}_{folio}.jp2/'
+                        '{x},{y},{w},{h}/,{img_height}/0/default.jpg" alt="{name}" />')
 ADMIN_IMAGE_HEIGHT = 100
 
 
@@ -32,7 +32,7 @@ class NeumeExemplar(models.Model):
         NOTE: This is intended for use in the admin interface, not the client
         """
         return ADMIN_IMAGE_TEMPLATE.format(
-            iip_url='http://cantus.simssa.ca/fcgi-bin/iipsrv.fcgi',
+            base_url='https://images.simssa.ca/iiif/image/cdn-hsmu-m2149l4',
             siglum=self.folio.manuscript.siglum_slug,
             folio=self.folio.number,
             x=self.x_coord,
