@@ -11,7 +11,7 @@ class NeumeExemplarSerializer(serializers.ModelSerializer):
 
     # These short forms match the values given in the boxes
     # in Solr OMR results
-    p = serializers.CharField(source='folio.number')
+    p = serializers.CharField(source='folio.image_uri')
     x = serializers.IntegerField(source='x_coord')
     y = serializers.IntegerField(source='y_coord')
     w = serializers.IntegerField(source='width')
