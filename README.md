@@ -64,7 +64,6 @@ Cantus Ultimus using the npm package manager both for the front-end build depend
 ### Importing Data
 ```sh
 ./manage.py import_data --all
-./manage.py update_public_manuscripts
 
 #Import public manuscripts
 ./manage.py update_public_manuscripts
