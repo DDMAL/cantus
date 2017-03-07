@@ -41,7 +41,7 @@ if [ ! `which solr` ] || [[  `readlink -f $( which solr )` != *"solr-$solr_versi
 
         # sudo apt-get -y install solr-tomcat
 
-        url="https://www.apache.org/dist/lucene/solr/$solr_version/solr-$solr_version.tgz"
+        url="https://archive.apache.org/dist/lucene/solr/$solr_version/solr-$solr_version.tgz"
 
         echo "Downloading Solr from $url..."
         curl -sS -L "$url" -o "solr-$solr_version.tgz"
