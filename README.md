@@ -25,6 +25,9 @@ $ vagrant ssh
 [vagrant]$ cp cantusdata/settings-example.py cantusdata/settings.py
 # Activate the Python virtualenv
 [vagrant]$ source app_env/bin/activate
+# Build the models
+[vagrant](app_env)$ python manage.py makemigrations
+[vagrant](app_env)$ python manage.py migrate
 # We can now run the server tests
 [vagrant](app_env)$ ./runtests.py
 # We need to run the server on 0.0.0.0 to expose it outside of the VM
