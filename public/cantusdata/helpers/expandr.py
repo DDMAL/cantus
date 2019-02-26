@@ -63,8 +63,12 @@ def expand_genre(genre_code):
 
     # Skip the first line and every other line
     for line in expand_genre.response_lines[1::2]:
-        code, description = line.split(';')
-
+        duple = line.split(';')
+        if len(duple) != 2:
+            # Ignoring entries that do not conform
+            # to the ABBREVIATION;DESCRIPTION pattern
+            continue
+        code, description = duple
         # Some genre codes are of the form [G] but it is unclear if the
         # brackets are part of the code or if they are there to indicate
         # that those codes are from old versions of the cantus DB
