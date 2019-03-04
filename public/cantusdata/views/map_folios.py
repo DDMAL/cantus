@@ -10,7 +10,7 @@ import json
 import csv
 import re
 import threading
-
+import pdb
 
 class MapFoliosView(APIView):
 
@@ -26,10 +26,10 @@ class MapFoliosView(APIView):
         manifest = request.GET['manifest']
         data = request.GET['data']
 
-
         uris = []
         manifest_json = urllib.urlopen(manifest)
         manifest_data = json.load(manifest_json)
+        pdb.set_trace()
 
         for canvas in manifest_data['sequences'][0]['canvases']:
             service = canvas['images'][0]['resource']['service']
