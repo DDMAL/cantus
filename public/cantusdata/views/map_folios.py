@@ -28,8 +28,7 @@ class MapFoliosView(APIView):
 
         uris = []
         manifest_json = urllib.urlopen(manifest)
-        manifest_data = json.load(manifest_json)
-        pdb.set_trace()
+        manifest_data = json.load(manifest_json)    
 
         for canvas in manifest_data['sequences'][0]['canvases']:
             service = canvas['images'][0]['resource']['service']
@@ -44,7 +43,7 @@ class MapFoliosView(APIView):
 
         folios = []
         with open('./data_dumps/' + data) as data_csv:
-            data_contents = csv.DictReader(data_csv)
+            data_contents = csv.DictReader(data_csv)            
 
             for rownum, row in enumerate(data_contents):
                 folio = row['Folio']
@@ -57,6 +56,7 @@ class MapFoliosView(APIView):
         return Response({'uris': uris, 'folios': folios, 'manuscript_id': manuscript_id})
 
     def post(self, request):
+        pdb.set_trace()
         try:
             thread = threading.Thread(target=_save_mapping, args=(request, ), kwargs={})
             thread.start()
