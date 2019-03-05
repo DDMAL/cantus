@@ -10,7 +10,6 @@ import json
 import csv
 import re
 import threading
-import pdb
 
 class MapFoliosView(APIView):
 
@@ -62,7 +61,6 @@ class MapFoliosView(APIView):
         return Response({'uris': uris, 'folios': folios, 'manuscript_id': manuscript_id})
 
     def post(self, request):
-        pdb.set_trace()
         try:
             thread = threading.Thread(target=_save_mapping, args=(request, ), kwargs={})
             thread.start()
