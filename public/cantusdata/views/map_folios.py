@@ -28,7 +28,7 @@ class MapFoliosView(APIView):
 
         uris = []
         manifest_json = urllib.urlopen(manifest)
-        manifest_data = json.load(manifest_json)    
+        manifest_data = json.load(manifest_json)
 
         for canvas in manifest_data['sequences'][0]['canvases']:
             service = canvas['images'][0]['resource']['service']
@@ -40,18 +40,24 @@ class MapFoliosView(APIView):
                 'large': uri + '/full/,1800/0/' + path_tail,
                 'short': re.sub(r'^.*/(?!$)', '', uri)
             })
+        
+        uri_list = [uri['full'] for uri in uris]
+        uri_list_ids = _extract_ids(uri_list)
 
         folios = []
-        with open('./data_dumps/' + data) as data_csv:
-            data_contents = csv.DictReader(data_csv)            
-
-            for rownum, row in enumerate(data_contents):
+        folio_imagelink = {}
+        with open('./data_dumps/' + data, newline='') as data_csv:
+            data_contents = csv.DictReader(data_csv)
+            for row in data_contents:
                 folio = row['Folio']
-
-                if rownum > 0 and folios[len(folios) - 1] == folio:
-                    continue
-
-                folios.append(folio)
+                link = row['Image link']
+                if folio not in folios:
+                    folios.append(folio)
+                if link != '' and folio not in folio_imagelink:
+                    folio_imagelink[folio] = link
+        
+        imagelinks = list(folio_imagelink.values())
+        imagelinks_ids = _extract_ids(imagelinks)
 
         return Response({'uris': uris, 'folios': folios, 'manuscript_id': manuscript_id})
 
@@ -64,6 +70,34 @@ class MapFoliosView(APIView):
             return Response({'error': e})
 
         return Response({'posted': True})
+
+
+def _extract_ids(str_list):
+    tmp_str_list = remove_longest_common_string(str_list, 'left')
+    print(tmp_str_list)
+    tmp_str_list = remove_longest_common_string(tmp_str_list, 'right')
+    print(tmp_str_list)
+    return tmp_str_list
+
+
+def _remove_longest_common_string(str_list, align='left'):
+    longest_str = max(str_list, key=len)
+    max_length = len(longest_str)
+    if align == 'left':
+        norm_str_list = [s.ljust(max_length) for s in str_list]
+    elif align == 'right':
+        norm_str_list = [s.rjust(max_length) for s in str_list]    
+    s1 = norm_str_list[0]
+    diffs = []
+    for s2 in norm_str_list[1:]:
+        [diffs.append(i) for i in range(max_length) if s1[i] != s2[i]]
+    diffs_set = set(diffs)
+    print(diffs_set)
+    mismatch_start = min(diffs_set)
+    mismatch_end = max(diffs_set)
+    return [s[mismatch_start:mismatch_end+1].strip() for s in norm_str_list]
+
+
 
 
 @transaction.atomic
