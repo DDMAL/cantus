@@ -62,10 +62,10 @@ class MapFoliosView(APIView):
         
         for idx, uri in enumerate(uris):
             uri['id'] = uri_list_ids[idx]
-            uri['folio'] = ''
+            uri['folio'] = None
             if uri['id'] in imagelink_folio:
                 uri['folio'] = imagelink_folio[uri['id']]
-            print(uri)
+            print(uri['id'], uri['folio'])
         
 
         return Response({'uris': uris, 'folios': folios, 'manuscript_id': manuscript_id})
