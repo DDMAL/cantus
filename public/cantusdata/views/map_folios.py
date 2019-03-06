@@ -46,7 +46,7 @@ class MapFoliosView(APIView):
 
         folios = []
         folio_imagelink = {}
-        with open('./data_dumps/' + data, newline='') as data_csv:
+        with open('./data_dumps/' + data) as data_csv:
             data_contents = csv.DictReader(data_csv)
             for row in data_contents:
                 folio = row['Folio']
@@ -58,6 +58,8 @@ class MapFoliosView(APIView):
         
         imagelinks = list(folio_imagelink.values())
         imagelinks_ids = _extract_ids(imagelinks)
+        folio_imagelink = dict(zip(imagelinks_ids, folio_imagelink.keys())
+        print(folio_imagelink)
 
         return Response({'uris': uris, 'folios': folios, 'manuscript_id': manuscript_id})
 
