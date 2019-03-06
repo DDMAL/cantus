@@ -103,7 +103,11 @@
         <li>
             <a href={{ uri.large }} target="_blank"><img src={{ uri.thumbnail }} /></a>
             {{ uri.id }}
-            <input type="text" class="folio-mapping" name={{ uri.full }} value={{ uri.folio|default_if_none:""}} />
+            {% if uri.folio %}
+            <input type="text" class="folio-mapping" name={{ uri.full }} value={{ uri.folio }} />
+            {% else %}
+            <input type="text" class="folio-mapping" name={{ uri.full }} />
+            {% endif %}
             <div class="button" onclick="onMoveUp({{ forloop.counter0 }})" tabindex="-1">Up</div>
             <div class="button" onclick="onMoveDown({{ forloop.counter0 }})" tabindex="-1">Down</div>
         </li>
