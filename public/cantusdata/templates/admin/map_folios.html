@@ -128,9 +128,9 @@
     var folios = document.getElementsByClassName('folio-name');
     var inputs = document.getElementsByClassName('folio-mapping');
 
-    for (var i = 0; i < inputs.length && i < folios.length; i++) {
-        inputs[i].value = folios[i].textContent;
-    }
+    // for (var i = 0; i < inputs.length && i < folios.length; i++) {
+    //     inputs[i].value = folios[i].textContent;
+    // }
 
     document.body.addEventListener('dragover', handleDragOver, false);
     document.body.addEventListener('drop', handleFileDrop, false);
