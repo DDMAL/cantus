@@ -58,8 +58,15 @@ class MapFoliosView(APIView):
         
         imagelinks = list(folio_imagelink.values())
         imagelinks_ids = _extract_ids(imagelinks)
-        folio_imagelink = dict(zip(imagelinks_ids, folio_imagelink.keys()))
-        print(folio_imagelink)
+        imagelink_folio = dict(zip(imagelinks_ids, folio_imagelink.keys()))
+        
+        for idx, uri in enumerate(uris):
+            uri['id'] = uri_list_ids[idx]
+            uri['folio'] = ''
+            if uri['id'] in imagelink_folio:
+                uri['folio'] = imagelink_folio[uri['id']]
+            print(uri)
+        
 
         return Response({'uris': uris, 'folios': folios, 'manuscript_id': manuscript_id})
 
@@ -75,9 +82,9 @@ class MapFoliosView(APIView):
 
 def _extract_ids(str_list):
     tmp_str_list = _remove_longest_common_string(str_list, 'left')
-    print(tmp_str_list)
+    # print(tmp_str_list)
     tmp_str_list = _remove_longest_common_string(tmp_str_list, 'right')
-    print(tmp_str_list)
+    # print(tmp_str_list)
     return tmp_str_list
 
 
@@ -93,7 +100,7 @@ def _remove_longest_common_string(str_list, align='left'):
     for s2 in norm_str_list[1:]:
         [diffs.append(i) for i in range(max_length) if s1[i] != s2[i]]
     diffs_set = set(diffs)
-    print(diffs_set)
+    # print(diffs_set)
     mismatch_start = min(diffs_set)
     mismatch_end = max(diffs_set)
     return [s[mismatch_start:mismatch_end+1].strip() for s in norm_str_list]
