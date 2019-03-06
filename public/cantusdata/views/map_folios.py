@@ -84,7 +84,7 @@ def _extract_ids(str_list):
     left_sweep = _remove_longest_common_string(str_list, 'left')
     # string a: anid!!SOMEMOREIDENTICALSTUFF
     # string b: anotherid!!SOMEMOREIDENTICALSTUFF
-    right_sweep = _remove_longest_common_string(tmp_str_list, 'right')
+    right_sweep = _remove_longest_common_string(left_sweep, 'right')
     # string a: anid
     # string b: anotherid
     return right_sweep
@@ -99,7 +99,7 @@ def _remove_longest_common_string(str_list, align='left'):
     s1 = norm_str_list[0]
     diffs_set = set()
     for s2 in norm_str_list[1:]:
-        [diffs.add(i) for i in range(max_length) if s1[i] != s2[i]]
+        [diffs_set.add(i) for i in range(max_length) if s1[i] != s2[i]]
     mismatch_start = min(diffs_set)
     mismatch_end = max(diffs_set)
     return [s[mismatch_start:mismatch_end+1].strip() for s in norm_str_list]
