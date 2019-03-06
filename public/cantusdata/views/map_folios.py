@@ -10,6 +10,7 @@ import json
 import csv
 import re
 import threading
+import pdb
 
 class MapFoliosView(APIView):
 
@@ -71,9 +72,9 @@ class MapFoliosView(APIView):
 
 
 def _extract_ids(str_list):
-    tmp_str_list = remove_longest_common_string(str_list, 'left')
+    tmp_str_list = _remove_longest_common_string(str_list, 'left')
     print(tmp_str_list)
-    tmp_str_list = remove_longest_common_string(tmp_str_list, 'right')
+    tmp_str_list = _remove_longest_common_string(tmp_str_list, 'right')
     print(tmp_str_list)
     return tmp_str_list
 
