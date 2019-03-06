@@ -65,8 +65,6 @@ class MapFoliosView(APIView):
             uri['folio'] = None
             if uri['id'] in imagelink_folio:
                 uri['folio'] = imagelink_folio[uri['id']]
-            print(uri['id'], uri['folio'])
-        
 
         return Response({'uris': uris, 'folios': folios, 'manuscript_id': manuscript_id})
 
@@ -81,12 +79,15 @@ class MapFoliosView(APIView):
 
 
 def _extract_ids(str_list):
-    tmp_str_list = _remove_longest_common_string(str_list, 'left')
-    # print(tmp_str_list)
-    tmp_str_list = _remove_longest_common_string(tmp_str_list, 'right')
-    # print(tmp_str_list)
-    return tmp_str_list
-
+    # string a: $OME/EXAMPLE/CR4ZY/STRING/123anid!!SOMEMOREIDENTICALSTUFF
+    # string b: $OME/EXAMPLE/CR4ZY/STRING/123anotherid!!SOMEMOREIDENTICALSTUFF
+    left_sweep = _remove_longest_common_string(str_list, 'left')
+    # string a: anid!!SOMEMOREIDENTICALSTUFF
+    # string b: anotherid!!SOMEMOREIDENTICALSTUFF
+    right_sweep = _remove_longest_common_string(tmp_str_list, 'right')
+    # string a: anid
+    # string b: anotherid
+    return right_sweep
 
 def _remove_longest_common_string(str_list, align='left'):
     longest_str = max(str_list, key=len)
@@ -94,13 +95,11 @@ def _remove_longest_common_string(str_list, align='left'):
     if align == 'left':
         norm_str_list = [s.ljust(max_length) for s in str_list]
     elif align == 'right':
-        norm_str_list = [s.rjust(max_length) for s in str_list]    
+        norm_str_list = [s.rjust(max_length) for s in str_list]
     s1 = norm_str_list[0]
-    diffs = []
+    diffs_set = set()
     for s2 in norm_str_list[1:]:
-        [diffs.append(i) for i in range(max_length) if s1[i] != s2[i]]
-    diffs_set = set(diffs)
-    # print(diffs_set)
+        [diffs.add(i) for i in range(max_length) if s1[i] != s2[i]]
     mismatch_start = min(diffs_set)
     mismatch_end = max(diffs_set)
     return [s[mismatch_start:mismatch_end+1].strip() for s in norm_str_list]
