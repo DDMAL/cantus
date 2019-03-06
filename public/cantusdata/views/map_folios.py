@@ -58,7 +58,7 @@ class MapFoliosView(APIView):
         
         imagelinks = list(folio_imagelink.values())
         imagelinks_ids = _extract_ids(imagelinks)
-        folio_imagelink = dict(zip(imagelinks_ids, folio_imagelink.keys())
+        folio_imagelink = dict(zip(imagelinks_ids, folio_imagelink.keys()))
         print(folio_imagelink)
 
         return Response({'uris': uris, 'folios': folios, 'manuscript_id': manuscript_id})
@@ -97,9 +97,6 @@ def _remove_longest_common_string(str_list, align='left'):
     mismatch_start = min(diffs_set)
     mismatch_end = max(diffs_set)
     return [s[mismatch_start:mismatch_end+1].strip() for s in norm_str_list]
-
-
-
 
 @transaction.atomic
 def _save_mapping(request):
