@@ -13,10 +13,8 @@ import threading
 import pdb
 
 class MapFoliosView(APIView):
-
     template_name = "admin/map_folios.html"
     renderer_classes = (TemplateHTMLRenderer, )
-
     def get(self, request, *args, **kwargs):
         # Return the URIs and folio names
         if 'manifest' not in request.GET or 'data' not in request.GET or 'manuscript_id' not in request.GET:
@@ -26,13 +24,14 @@ class MapFoliosView(APIView):
         manifest = request.GET['manifest']
         data = request.GET['data']
 
-        uris = []
+        uris_objs = []
+        uris = [] 
         manifest_json = urllib.urlopen(manifest)
         manifest_data = json.load(manifest_json)
-
         for canvas in manifest_data['sequences'][0]['canvases']:
             service = canvas['images'][0]['resource']['service']
             uri = service['@id']
+            uris.append(uri)
             path_tail = 'default.jpg' if service['@context'] == 'http://iiif.io/api/image/2/context.json' else 'native.jpg'
             uris.append({
                 'full': uri,
@@ -41,8 +40,7 @@ class MapFoliosView(APIView):
                 'short': re.sub(r'^.*/(?!$)', '', uri)
             })
         
-        uri_list = [uri['full'] for uri in uris]
-        uri_list_ids = _extract_ids(uri_list)
+        uri_ids = _extract_ids(uris)
 
         folios = []
         folio_imagelink = {}
@@ -60,13 +58,13 @@ class MapFoliosView(APIView):
         imagelinks_ids = _extract_ids(imagelinks)
         imagelink_folio = dict(zip(imagelinks_ids, folio_imagelink.keys()))
         
-        for idx, uri in enumerate(uris):
+        for idx, uri in enumerate(uris_objs):
             uri['id'] = uri_list_ids[idx]
             uri['folio'] = None
             if uri['id'] in imagelink_folio:
                 uri['folio'] = imagelink_folio[uri['id']]
 
-        return Response({'uris': uris, 'folios': folios, 'manuscript_id': manuscript_id})
+        return Response({'uris': uris_objs, 'folios': folios, 'manuscript_id': manuscript_id})
 
     def post(self, request):
         try:
@@ -87,7 +85,8 @@ def _extract_ids(str_list):
     right_sweep = _remove_longest_common_string(left_sweep, 'right')
     # string a: anid
     # string b: anotherid
-    return right_sweep
+    ids = [_remove_number_padding(s) for s in right_sweep]
+    return ids
 
 def _remove_longest_common_string(str_list, align='left'):
     longest_str = max(str_list, key=len)
@@ -103,6 +102,21 @@ def _remove_longest_common_string(str_list, align='left'):
     mismatch_start = min(diffs_set)
     mismatch_end = max(diffs_set)
     return [s[mismatch_start:mismatch_end+1].strip() for s in norm_str_list]
+
+def _remove_number_padding(s):
+    number_str = ''
+    ret_str = ''
+    for c in s:
+        if c.isdigit():
+            number_str += c
+        else:
+            if number_str:
+                ret_str += '{}'.format(int(number_str))
+                number_str = ''
+            ret_str += c
+    if number_str:
+        ret_str += '{}'.format(int(number_str))
+    return ret_str
 
 @transaction.atomic
 def _save_mapping(request):
