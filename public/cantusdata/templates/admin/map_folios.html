@@ -104,9 +104,9 @@
             <a href={{ uri.large }} target="_blank"><img src={{ uri.thumbnail }} /></a>
             {{ uri.id }}
             {% if uri.folio %}
-            <input type="text" class="folio-mapping" name={{ uri.full }} onchange="onChangeFolioMapping(this)" value={{ uri.folio }} />
+            <input type="text" class="folio-mapping" name={{ uri.full }} oninput="checkMappedFolios()" value={{ uri.folio }} />
             {% else %}
-            <input type="text" class="folio-mapping" name={{ uri.full }} onchange="onChangeFolioMapping(this)" />
+            <input type="text" class="folio-mapping" name={{ uri.full }} oninput="checkMappedFolios()" />
             {% endif %}
             <div class="button" onclick="onMoveUp({{ forloop.counter0 }})" tabindex="-1">Up</div>
             <div class="button" onclick="onMoveDown({{ forloop.counter0 }})" tabindex="-1">Down</div>
@@ -131,10 +131,6 @@
 <script>
     var folios = document.getElementsByClassName('folio-name');
     var inputs = document.getElementsByClassName('folio-mapping');
-
-    // for (var i = 0; i < inputs.length && i < folios.length; i++) {
-        
-    // }
 
     document.body.addEventListener('dragover', handleDragOver, false);
     document.body.addEventListener('drop', handleFileDrop, false);
@@ -173,11 +169,13 @@
         inputs[startIndex].value = temp;
     }
 
-    function onChangeFolioMapping(inputElement) {
-        var content = inputElement.value;
-        var folio = document.getElementById(content);
-        if (folio) {
-            console.log('match')
+    function checkedMappedFolios() {
+        for (var i = 0; i < folios.length; i++) {
+            for (var j = 0; j < inputs.length; j++) {
+                if (folios[i].name == inputs[j].value) {
+                    console.log('found');
+                }
+            }
         }
     }
 
