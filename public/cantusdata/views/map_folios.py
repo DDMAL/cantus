@@ -59,7 +59,7 @@ class MapFoliosView(APIView):
         imagelink_folio = dict(zip(imagelinks_ids, folio_imagelink.keys()))
         
         for idx, uri in enumerate(uris_objs):
-            uri['id'] = uri_list_ids[idx]
+            uri['id'] = uri_ids[idx]
             uri['folio'] = None
             if uri['id'] in imagelink_folio:
                 uri['folio'] = imagelink_folio[uri['id']]
