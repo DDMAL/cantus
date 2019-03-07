@@ -66,6 +66,10 @@
         text-align: right;
     }
 
+    .folio-mapped {
+        background-color: green;
+    }
+
     .error-message {
         color: red;
     }
@@ -124,7 +128,7 @@
 <ul class="mapping-column">
     <li><h4>Folio names from the data:</h4></li>
     {% for folio in folios %}
-    <li class="folio-name" id={{ folio }} >{{ folio }}</li>
+    <li class="folio-name folio-unmapped" id={{ folio }} >{{ folio }}</li>
     {% endfor %}
 </ul>
 
@@ -170,15 +174,20 @@
     }
 
     function checkMappedFolios() {
-        var found = false;
         for (var i = 0; i < folios.length; i++) {
+            var isMapped = false;
             for (var j = 0; j < inputs.length; j++) {
                 if (folios[i].id == inputs[j].value) {
-                    found = true;
+                    isMapped = true;
                 }
             }
+            if (isMapped) {
+                folios[i].className = "folio-name folio-mapped";
+            }
+            else {
+                folios[i].className = "folio-name folio-unmapped";
+            }
         }
-        console.log(found);
     }
 
     function onSaveBackup() {
