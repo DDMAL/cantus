@@ -170,13 +170,15 @@
     }
 
     function checkMappedFolios() {
+        var found = false;
         for (var i = 0; i < folios.length; i++) {
             for (var j = 0; j < inputs.length; j++) {
-                if (folios[i].name == inputs[j].value) {
-                    console.log('found');
+                if (folios[i].id == inputs[j].value) {
+                    found = true;
                 }
             }
         }
+        console.log(found);
     }
 
     function onSaveBackup() {
