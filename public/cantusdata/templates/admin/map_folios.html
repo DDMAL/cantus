@@ -67,7 +67,7 @@
     }
 
     .folio-mapped {
-        background-color: green;
+        color: green;
     }
 
     .error-message {
@@ -108,9 +108,9 @@
             <a href={{ uri.large }} target="_blank"><img src={{ uri.thumbnail }} /></a>
             {{ uri.id }}
             {% if uri.folio %}
-            <input type="text" class="folio-mapping" name={{ uri.full }} oninput="checkMappedFolios()" value={{ uri.folio }} />
+            <input type="text" class="folio-mapping" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio }} />
             {% else %}
-            <input type="text" class="folio-mapping" name={{ uri.full }} oninput="checkMappedFolios()" />
+            <input type="text" class="folio-mapping" name={{ uri.full }} onchange="checkMappedFolios()" />
             {% endif %}
             <div class="button" onclick="onMoveUp({{ forloop.counter0 }})" tabindex="-1">Up</div>
             <div class="button" onclick="onMoveDown({{ forloop.counter0 }})" tabindex="-1">Down</div>
@@ -138,6 +138,8 @@
 
     document.body.addEventListener('dragover', handleDragOver, false);
     document.body.addEventListener('drop', handleFileDrop, false);
+
+    checkMappedFolios();
 
     function handleFileDrop(evt) {
         evt.stopPropagation();
