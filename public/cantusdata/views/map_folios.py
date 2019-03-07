@@ -33,7 +33,7 @@ class MapFoliosView(APIView):
             uri = service['@id']
             uris.append(uri)
             path_tail = 'default.jpg' if service['@context'] == 'http://iiif.io/api/image/2/context.json' else 'native.jpg'
-            uris.append({
+            uris_objs.append({
                 'full': uri,
                 'thumbnail': uri + '/full/,160/0/' + path_tail,
                 'large': uri + '/full/,1800/0/' + path_tail,
