@@ -104,9 +104,9 @@
             <a href={{ uri.large }} target="_blank"><img src={{ uri.thumbnail }} /></a>
             {{ uri.id }}
             {% if uri.folio %}
-            <input type="text" class="folio-mapping" name={{ uri.full }} value={{ uri.folio }} />
+            <input type="text" class="folio-mapping" name={{ uri.full }} onchange="onChangeFolioMapping(this)" value={{ uri.folio }} />
             {% else %}
-            <input type="text" class="folio-mapping" name={{ uri.full }} />
+            <input type="text" class="folio-mapping" name={{ uri.full }} onchange="onChangeFolioMapping(this)" />
             {% endif %}
             <div class="button" onclick="onMoveUp({{ forloop.counter0 }})" tabindex="-1">Up</div>
             <div class="button" onclick="onMoveDown({{ forloop.counter0 }})" tabindex="-1">Down</div>
@@ -124,7 +124,7 @@
 <ul class="mapping-column">
     <li><h4>Folio names from the data:</h4></li>
     {% for folio in folios %}
-    <li class="folio-name">{{ folio }}</li>
+    <li class="folio-name" id={{ "folio-" + folio }}>{{ folio }}</li>
     {% endfor %}
 </ul>
 
@@ -133,7 +133,7 @@
     var inputs = document.getElementsByClassName('folio-mapping');
 
     // for (var i = 0; i < inputs.length && i < folios.length; i++) {
-    //     inputs[i].value = folios[i].textContent;
+        
     // }
 
     document.body.addEventListener('dragover', handleDragOver, false);
@@ -171,6 +171,14 @@
             inputs[i].value = inputs[i - 1].value;
         }
         inputs[startIndex].value = temp;
+    }
+
+    function onChangeFolioMapping(inputElement) {
+        var content = inputElement.value;
+        var folio = document.getElementById("folio-" + content);
+        if (folio) {
+            console.log('match')
+        }
     }
 
     function onSaveBackup() {
