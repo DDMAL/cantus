@@ -45,16 +45,6 @@ export default new Backbone.Collection([
         chant_count: null
     },
     {
-        name: 'Einsiedeln, Stiftsbibliothek, Codex 611(89)',
-        short_name: 'Einsiedeln 611',
-        url: 'http://www.e-codices.unifr.ch/en/sbe/0611/1r',
-        primary_url_is_external: true,
-        cantus_url: 'http://cantus.uwaterloo.ca/source/123606',
-        date: '14th C',
-        folio_count: null,
-        chant_count: null
-    },
-    {
         name: 'Utrecht, Universiteitsbibliotheek, Ms. 406 (shelfmark 3 J 7)',
         short_name: 'NL-Uu 406 (3 J 7)',
         url: 'http://www.diamm.ac.uk/jsp/Descriptions?op=SOURCE&sourceKey=1355',
