@@ -33,17 +33,7 @@ export default new Backbone.Collection([
         date: '13th C',
         folio_count: null,
         chant_count: null
-    },
-    {
-        name: 'Bibliothèque nationale, Département des manuscrits, Latin 15181',
-        short_name: 'Paris 15181',
-        url: 'http://gallica.bnf.fr/ark:/12148/btv1b8447768b/f9.image.r=latin%2015181.langEN',
-        primary_url_is_external: true,
-        cantus_url: 'http://cantus.uwaterloo.ca/source/123631',
-        date: '14th C',
-        folio_count: null,
-        chant_count: null
-    },
+    },    
     {
         name: 'Utrecht, Universiteitsbibliotheek, Ms. 406 (shelfmark 3 J 7)',
         short_name: 'Utrecht 406',
