@@ -46,42 +46,12 @@ export default new Backbone.Collection([
     },
     {
         name: 'Utrecht, Universiteitsbibliotheek, Ms. 406 (shelfmark 3 J 7)',
-        short_name: 'NL-Uu 406 (3 J 7)',
+        short_name: 'Utrecht 406',
         url: 'http://www.diamm.ac.uk/jsp/Descriptions?op=SOURCE&sourceKey=1355',
         primary_url_is_external: true,
         cantus_url: 'http://cantus.uwaterloo.ca/source/123641',
         date: 'ca. 12th-15th century',
         folio_count: 256,
         chant_count: 6265
-    },
-    {
-        name: 'Wien, Österreichische Nationalbibliothek - Handschriftensammlung, 1799**',
-        short_name: 'A-Wn 1799**',
-        url: 'http://manuscripta.at/m1/hs_detail.php?ID=24831',
-        primary_url_is_external: true,
-        cantus_url: 'http://cantus.uwaterloo.ca/source/123667',
-        date: 'Thirteenth century (1225-1249)',
-        folio_count: 250,
-        chant_count: 4585
-    },
-    {
-        name: 'Assisi, Biblioteca Comunale, 693',
-        short_name: 'I-Ac 693',
-        url: 'http://www.internetculturale.it/jmms/iccuviewer/iccu.jsp?id=oai%3Awww.internetculturale.sbn.it%2FTeca%3A20%3ANT0000%3APG0213_ms.693&mode=all&teca=MagTeca+-+ICCU',
-        primary_url_is_external: true,
-        cantus_url: 'http://cantus.uwaterloo.ca/source/123670',
-        date: 'First half of the thirteenth century',
-        folio_count: 249,
-        chant_count: 2561
-    },
-    {
-        name: 'Città del Vaticano, Biblioteca Apostolica Vaticana, San Pietro B. 79',
-        short_name: 'I-Rvat SP B.79',
-        url: 'http://digi.vatlib.it/view/MSS_Arch.Cap.S.Pietro.B.79/15',
-        primary_url_is_external: true,
-        cantus_url: 'http://cantus.uwaterloo.ca/source/123661',
-        date: '12th century',
-        folio_count: 197,
-        chant_count: 3108
-    }    
+    }
 ]);
