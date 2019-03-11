@@ -4,10 +4,6 @@ import $ from 'jquery';
 import _ from "underscore";
 
 import diva from "diva";
-import "diva/plugins/highlight";
-import "diva/plugins/download";
-import "diva/plugins/canvas";
-import "diva/plugins/pagealias";
 
 import GlobalVars from '../config/GlobalVars';
 
@@ -29,7 +25,7 @@ export default Marionette.ItemView.extend({
     initialize: function(options)
     {
         _.bindAll(this, 'propagateFolioChange', 'onViewerLoad', 'setImageURI',
-            'paintBoxes', 'zoomToLocation', 'updatePageAlias', 'gotoInputPage',
+            'paintBoxes', 'updatePageAlias', 'gotoInputPage',
             'getPageWhichMatchesAlias', 'onDocLoad');
 
         this.divaEventHandles = [];
@@ -283,21 +279,6 @@ export default Marionette.ItemView.extend({
 
         // Add a closing parenthesis (the opening is within the page alias)
         pageLabel.appendChild(document.createTextNode(')'));
-
-        // Hack: Make the go to page input a Bootstrap input group
-        var inputGroup = $('<div class="input-group input-group-sm">');
-        var inputGroupBtnContainer = $('<div class="input-group-btn">');
-
-        this.toolbarParentObject.find('.diva-goto-form input[type=submit]')
-            .addClass('btn btn-default')
-            .appendTo(inputGroupBtnContainer);
-
-        this.toolbarParentObject.find('.diva-goto-form .diva-input')
-            .addClass('form-control')
-            .replaceWith(inputGroup)
-            .appendTo(inputGroup);
-
-        inputGroup.append(inputGroupBtnContainer);
     },
 
     /**
@@ -346,6 +327,16 @@ export default Marionette.ItemView.extend({
         if (!this.divaInstance)
             return;
 
+        // Wait for the Diva instance to be ready
+        if (!this.divaInstance.isReady())
+        {
+            this.divaEventHandles.push(diva.Events.subscribe("ViewerDidLoad", function ()
+            {
+                this.paintBoxes(boxSet);
+            }.bind(this)));
+            return;
+        }
+
         this.divaInstance.resetHighlights();
 
         // Use the Diva highlight plugin to draw the boxes
@@ -383,39 +374,52 @@ export default Marionette.ItemView.extend({
     },
 
     /**
-     * Zoom Diva to a location.
-     *
-     * @param box
-     */
+      * Zoom Diva to a location.
+      *
+      * @param box
+      */
     zoomToLocation: function(box)
     {
+        if (!this.divaInstance)
+            return;
+
+        // Wait for the Diva instance to be ready
+        if (!this.divaInstance.isReady())
+        {
+            this.divaEventHandles.push(diva.Events.subscribe("ViewerDidLoad", function ()
+            {
+                this.zoomToLocation(box);
+            }.bind(this)));
+            return;
+        }
+
         // Grab the diva internals to work with
         var divaData = this.divaInstance;
 
         // Do nothing if there's no box or if Diva is not initialized
         if (!box || !divaData)
-            return;
+        return;
 
         var divaSettings = divaData.getSettings();
-
         // Now figure out the page that box is on
         var divaOuter = divaSettings.outerObject;
-        var zoomLevel = divaData.getZoomLevel();
 
         var pageFilename = box.p;
-        var desiredPage = this.divaFilenames.indexOf(pageFilename) + 1;
+        var desiredPage = this.divaFilenames.indexOf(pageFilename);
 
         // Now jump to that page
-        divaData.gotoPageByNumber(desiredPage);
+        divaData.gotoPageByIndex(desiredPage);
         // Get the height above top for that box
         var boxTop = divaData.translateFromMaxZoomLevel(box.y);
         var currentScrollTop = parseInt(divaOuter.scrollTop(), 10);
 
-        var topMarginConsiderations = divaSettings.averageHeights[zoomLevel] * divaSettings.adaptivePadding;
-        var leftMarginConsiderations = divaSettings.averageWidths[zoomLevel] * divaSettings.adaptivePadding;
+        // TODO, find workaround since Diva 5 dropped 'averageHeights' and 'averageWidths'
+        // var zoomLevel = divaData.getZoomLevel();
+        var topMarginConsiderations = 0; // = divaSettings.averageHeights[zoomLevel] * divaSettings.adaptivePadding;
+        var leftMarginConsiderations = 0; // = divaSettings.averageWidths[zoomLevel] * divaSettings.adaptivePadding;
 
         divaOuter.scrollTop(boxTop + currentScrollTop - (divaOuter.height() / 2) + (box.h / 2) +
-            topMarginConsiderations);
+               topMarginConsiderations);
 
         // Now get the horizontal scroll
         var boxLeft = divaData.translateFromMaxZoomLevel(box.x);

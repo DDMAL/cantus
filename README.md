@@ -25,6 +25,9 @@ $ vagrant ssh
 [vagrant]$ cp cantusdata/settings-example.py cantusdata/settings.py
 # Activate the Python virtualenv
 [vagrant]$ source app_env/bin/activate
+# Build the models
+[vagrant](app_env)$ python manage.py makemigrations
+[vagrant](app_env)$ python manage.py migrate
 # We can now run the server tests
 [vagrant](app_env)$ ./runtests.py
 # We need to run the server on 0.0.0.0 to expose it outside of the VM
@@ -60,3 +63,23 @@ Output is generated directly in the directories `public/cantusdata/static/js` an
 ### Managing client-side dependencies
 
 Cantus Ultimus using the npm package manager both for the front-end build dependencies and for client-side dependencies. It does this using two separate npm packages: one at `public/cantusdata/frontend` for the build process and one at `public/cantusdata/frontend/public` for the client-side dependencies. Dependencies installed for the latter package are checked into version control, the rationale being that it's important to maintain precise versioning for client-side files, but not for the build dependencies, which are also considerably larger.
+
+### Importing Data
+```sh
+./manage.py import_data --all
+
+#Import public manuscripts
+./manage.py update_public_manuscripts
+
+#Import all folio mappings with:
+./manage.py import_folio_mapping 133 133.csv 127 127.csv # … with all IDs listed in data_dumps/public-manuscripts.csv
+
+#If for any reason Solr doesn't seem to have the latest changes, use
+./manage.py refresh_solr --all
+```
+
+**Import OMR Data**
+```sh
+./manage.py import_mei_data mei_to_solr salzinnes
+# Repeat the above with 'st_gallen_390' and then 'st_gallen_391' instead of 'salzinnes'
+```

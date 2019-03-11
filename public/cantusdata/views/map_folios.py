@@ -10,13 +10,11 @@ import json
 import csv
 import re
 import threading
-
+import pdb
 
 class MapFoliosView(APIView):
-
     template_name = "admin/map_folios.html"
     renderer_classes = (TemplateHTMLRenderer, )
-
     def get(self, request, *args, **kwargs):
         # Return the URIs and folio names
         if 'manifest' not in request.GET or 'data' not in request.GET or 'manuscript_id' not in request.GET:
@@ -26,35 +24,47 @@ class MapFoliosView(APIView):
         manifest = request.GET['manifest']
         data = request.GET['data']
 
-
-        uris = []
+        uris_objs = []
+        uris = [] 
         manifest_json = urllib.urlopen(manifest)
         manifest_data = json.load(manifest_json)
-
         for canvas in manifest_data['sequences'][0]['canvases']:
             service = canvas['images'][0]['resource']['service']
             uri = service['@id']
+            uris.append(uri)
             path_tail = 'default.jpg' if service['@context'] == 'http://iiif.io/api/image/2/context.json' else 'native.jpg'
-            uris.append({
+            uris_objs.append({
                 'full': uri,
                 'thumbnail': uri + '/full/,160/0/' + path_tail,
                 'large': uri + '/full/,1800/0/' + path_tail,
                 'short': re.sub(r'^.*/(?!$)', '', uri)
             })
+        
+        uri_ids = _extract_ids(uris)
 
         folios = []
+        folio_imagelink = {}
         with open('./data_dumps/' + data) as data_csv:
             data_contents = csv.DictReader(data_csv)
-
-            for rownum, row in enumerate(data_contents):
+            for row in data_contents:
                 folio = row['Folio']
+                link = row['Image link']
+                if folio not in folios:
+                    folios.append(folio)
+                if link != '' and folio not in folio_imagelink:
+                    folio_imagelink[folio] = link
+        
+        imagelinks = list(folio_imagelink.values())
+        imagelinks_ids = _extract_ids(imagelinks)
+        imagelink_folio = dict(zip(imagelinks_ids, folio_imagelink.keys()))
+        
+        for idx, uri in enumerate(uris_objs):
+            uri['id'] = uri_ids[idx]
+            uri['folio'] = None
+            if uri['id'] in imagelink_folio:
+                uri['folio'] = imagelink_folio[uri['id']]
 
-                if rownum > 0 and folios[len(folios) - 1] == folio:
-                    continue
-
-                folios.append(folio)
-
-        return Response({'uris': uris, 'folios': folios, 'manuscript_id': manuscript_id})
+        return Response({'uris': uris_objs, 'folios': folios, 'manuscript_id': manuscript_id})
 
     def post(self, request):
         try:
@@ -65,6 +75,48 @@ class MapFoliosView(APIView):
 
         return Response({'posted': True})
 
+
+def _extract_ids(str_list):
+    # string a: $OME/EXAMPLE/CR4ZY/STRING/123anid!!SOMEMOREIDENTICALSTUFF
+    # string b: $OME/EXAMPLE/CR4ZY/STRING/123anotherid!!SOMEMOREIDENTICALSTUFF
+    left_sweep = _remove_longest_common_string(str_list, 'left')
+    # string a: anid!!SOMEMOREIDENTICALSTUFF
+    # string b: anotherid!!SOMEMOREIDENTICALSTUFF
+    right_sweep = _remove_longest_common_string(left_sweep, 'right')
+    # string a: anid
+    # string b: anotherid
+    ids = [_remove_number_padding(s) for s in right_sweep]
+    return ids
+
+def _remove_longest_common_string(str_list, align='left'):
+    longest_str = max(str_list, key=len)
+    max_length = len(longest_str)
+    if align == 'left':
+        norm_str_list = [s.ljust(max_length) for s in str_list]
+    elif align == 'right':
+        norm_str_list = [s.rjust(max_length) for s in str_list]
+    s1 = norm_str_list[0]
+    diffs_set = set()
+    for s2 in norm_str_list[1:]:
+        [diffs_set.add(i) for i in range(max_length) if s1[i] != s2[i]]
+    mismatch_start = min(diffs_set)
+    mismatch_end = max(diffs_set)
+    return [s[mismatch_start:mismatch_end+1].strip() for s in norm_str_list]
+
+def _remove_number_padding(s):
+    number_str = ''
+    ret_str = ''
+    for c in s:
+        if c.isdigit():
+            number_str += c
+        else:
+            if number_str:
+                ret_str += '{}'.format(int(number_str))
+                number_str = ''
+            ret_str += c
+    if number_str:
+        ret_str += '{}'.format(int(number_str))
+    return ret_str
 
 @transaction.atomic
 def _save_mapping(request):

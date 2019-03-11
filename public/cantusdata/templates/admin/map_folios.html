@@ -66,6 +66,14 @@
         text-align: right;
     }
 
+    .folio-mapped {
+        color: green;
+    }
+
+    .folio-unmapped {
+        color: red;
+    }
+
     .error-message {
         color: red;
     }
@@ -102,8 +110,12 @@
         {% for uri in uris %}
         <li>
             <a href={{ uri.large }} target="_blank"><img src={{ uri.thumbnail }} /></a>
-            {{ uri.short }}
-            <input type="text" class="folio-mapping" name={{ uri.full }} />
+            {{ uri.id }}
+            {% if uri.folio %}
+            <input type="text" class="folio-mapping" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio }} />
+            {% else %}
+            <input type="text" class="folio-mapping" name={{ uri.full }} onchange="checkMappedFolios()" />
+            {% endif %}
             <div class="button" onclick="onMoveUp({{ forloop.counter0 }})" tabindex="-1">Up</div>
             <div class="button" onclick="onMoveDown({{ forloop.counter0 }})" tabindex="-1">Down</div>
         </li>
@@ -120,7 +132,7 @@
 <ul class="mapping-column">
     <li><h4>Folio names from the data:</h4></li>
     {% for folio in folios %}
-    <li class="folio-name">{{ folio }}</li>
+    <li class="folio-name folio-unmapped" id={{ folio }} >{{ folio }}</li>
     {% endfor %}
 </ul>
 
@@ -128,12 +140,10 @@
     var folios = document.getElementsByClassName('folio-name');
     var inputs = document.getElementsByClassName('folio-mapping');
 
-    for (var i = 0; i < inputs.length && i < folios.length; i++) {
-        inputs[i].value = folios[i].textContent;
-    }
-
     document.body.addEventListener('dragover', handleDragOver, false);
     document.body.addEventListener('drop', handleFileDrop, false);
+
+    checkMappedFolios();
 
     function handleFileDrop(evt) {
         evt.stopPropagation();
@@ -167,6 +177,23 @@
             inputs[i].value = inputs[i - 1].value;
         }
         inputs[startIndex].value = temp;
+    }
+
+    function checkMappedFolios() {
+        for (var i = 0; i < folios.length; i++) {
+            var isMapped = false;
+            for (var j = 0; j < inputs.length; j++) {
+                if (folios[i].id == inputs[j].value) {
+                    isMapped = true;
+                }
+            }
+            if (isMapped) {
+                folios[i].className = "folio-name folio-mapped";
+            }
+            else {
+                folios[i].className = "folio-name folio-unmapped";
+            }
+        }
     }
 
     function onSaveBackup() {
