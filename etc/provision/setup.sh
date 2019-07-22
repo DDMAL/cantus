@@ -66,3 +66,10 @@ chown solr:solr /var/db/solr -R
 
 # Restart solr
 service solr restart
+
+echo "===== Installing nodejs/npm ====="
+# Cannot use the default node package from apt because it is obsolete
+# The last version of node compatible with Ubuntu 14.04 is 8.x, using that 
+curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+apt-get install -y nodejs
+npm install -g gulp

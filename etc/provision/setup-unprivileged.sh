@@ -10,3 +10,7 @@ pip install -r requirements-dev.txt
 python manage.py makemigrations
 python manage.py migrate
 
+echo "===== Build the static files ====="
+cd cantusdata/frontend
+npm install
+gulp build --release
