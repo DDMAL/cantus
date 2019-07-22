@@ -102,8 +102,8 @@ MEDIA_URL = '/media/'
 MEDIA_URL_NEUMEEDITOR = "/neumeeditor/media/"
 
 # This needs to be an absolute path to the file system location
-STATIC_ROOT = '/srv/webapps/cantus/public/cantusdata-static/'
-MEDIA_ROOT = '/srv/webapps/cantus/public/media/'
+STATIC_ROOT = '/home/vagrant/public/cantusdata-static/'
+MEDIA_ROOT = '/home/vagrant/public/media/'
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
