@@ -31,7 +31,7 @@ sudo echo "cantus ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 echo "===== Setup postgres ====="
 sudo apt-get install -y postgresql postgresql-contrib
-sudo -u postgres psql -c "create user cantus_admin with encrypted password '${CANTUS_ADMIN_PASSWORD}';"
+sudo -u postgres psql -c "create user cantus_admin with encrypted password 'Pl4c3H0ld3r';"
 sudo -u postgres psql -c "alter user cantus_admin with SUPERUSER;"
 sudo -u postgres psql -c "create database cantus_db with owner cantus_admin;"
 
