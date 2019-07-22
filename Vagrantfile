@@ -10,7 +10,9 @@ Vagrant.configure(2) do |config|
   # Solr Port, needed to access admin page
   config.vm.network :forwarded_port, guest: 8983, host: 8080
 
-  config.vm.provision "shell", path: "etc/provision/setup.sh", args: ["/vagrant"]
+  config.vm.provision "shell", path: "etc/provision/setup.sh"
+
+  config.vm.provision "shell", privileged: false, path: "etc/provision/setup-unprivileged.sh"
 
   config.vm.provider "virtualbox" do |vb|
     vb.customize ["modifyvm", :id, "--ioapic", "on"]
