@@ -21,7 +21,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 urlpatterns = format_suffix_patterns([
      # Static Pages
      url(r'^$', staticpages.homepage, name='homepage'),
-     url(r'^(?P<static_page>/$', staticpages.general, name='staticpage'),
+     url(r'^(?P<static_page>)/$', staticpages.general, name='staticpage'),
      # API Root
      url(r'^browse/$', browse_view, name="api-root"),
      # Manuscripts
