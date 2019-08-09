@@ -16,6 +16,6 @@ def general(request, static_page):
         markdown_file = '../cantus-staticpages/content/{}.md'.format(static_page)
         content = codecs.open(os.path.join(settings.BASE_DIR, markdown_file), 
             encoding='utf-8').read()
-        title = re.match(r"^#([A-Za-z0-9 _-]+)", content)
+        title = re.match(r"^#([A-Za-z0-9 _-]+)", content).groups()
         content_html = markdown.markdown(content)
         return render(request, 'flatpages/default.html', {'content': content_html, 'title': title})
