@@ -96,14 +96,13 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
-
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_URL_NEUMEEDITOR = "/neumeeditor/media/"
 
 # This needs to be an absolute path to the file system location
-STATIC_ROOT = '/home/vagrant/public/cantusdata-static/'
-MEDIA_ROOT = '/home/vagrant/public/media/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'cantusdata/static')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
