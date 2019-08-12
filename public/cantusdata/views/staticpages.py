@@ -14,8 +14,11 @@ def homepage(request):
 
 def general(request, static_page):
         markdown_file = '../cantus-staticpages/content/{}.md'.format(static_page)
-        content = codecs.open(os.path.join(settings.BASE_DIR, markdown_file), 
-            encoding='utf-8').read()
-        title = re.match(r"^#([A-Za-z0-9 _-]+)", content).groups()
-        content_html = markdown.markdown(content)
+        content = codecs.open(
+            os.path.join(settings.BASE_DIR, markdown_file), 
+            encoding='utf-8').readlines()
+        title_line = content[0]
+        the_rest = '\n'.join(content[1:])
+        title = re.match(r"^#([A-Za-z0-9 _-]+)$", title_line).group(1)
+        content_html = markdown.markdown(the_rest)
         return render(request, 'flatpages/default.html', {'content': content_html, 'title': title})
