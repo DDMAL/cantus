@@ -36,10 +36,6 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Flat pages
-    'django.contrib.sites',
-    'django.contrib.flatpages',
-    'django_markdown',
     # Auth tokens
     'rest_framework',
     'rest_framework.authtoken',
@@ -57,7 +53,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
 )
 
 ROOT_URLCONF = 'urls'
@@ -118,6 +113,3 @@ LOGGING_CONFIG = None
 
 # AUTHENTICATION
 MAX_TOKEN_AGE_DAYS = 3
-
-# Sites Plugin
-SITE_ID = 1
