@@ -78,7 +78,7 @@ class Command(BaseCommand):
                     self.stdout.write('Deleting old {0} data...'.format(type_singular))
                     # Special case for chants, do not delete everything and we need to delete the folios
                     if type == 'chants':
-                        self.TYPE_MAPPING[type].objects.filter(manuscript__id__in=manuscript_ids).delete()
+                        Chant.objects.filter(manuscript__id__in=manuscript_ids).delete()
                         self.stdout.write('Deleting old folio data...')
                         Folio.objects.filter(manuscript__id__in=manuscript_ids).delete()
                     else:
