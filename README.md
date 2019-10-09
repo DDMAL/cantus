@@ -7,7 +7,7 @@ Serving images on a website using [Apache Solr](http://lucene.apache.org/solr/),
 
 ## Development environment setup
 
-The easiest way to set up a development environment is to run a virtual machine using [Vagrant](https://www.vagrantup.com/). It should also be possible (with some work) to set up the development server directly in a Unix-like environment; see the [provisioning script](https://github.com/DDMAL/cantus/blob/develop/etc/provision/setup.sh) for inspiration.
+The easiest way to set up a development environment is to run a virtual machine using [Vagrant](https://www.vagrantup.com/). It should also be possible (with some work) to set up the development server directly in a Unix-like environment.
 
 With Vagrant, execute the following commands from the root directory of the repo:
 
@@ -17,20 +17,14 @@ $ vagrant up
 
 # SSH into the VM
 $ vagrant ssh
-# Start the Solr server
-[vagrant]$ solr start -p 8080
-# Now run the Django development server
-[vagrant]$ cd /vagrant/public
-# Set up site-specific Django settings
-[vagrant]$ cp cantusdata/settings-example.py cantusdata/settings.py
+
+# Go to the public folder in the VM
+[vagrant]$ cd public
+
 # Activate the Python virtualenv
 [vagrant]$ source app_env/bin/activate
-# Build the models
-[vagrant](app_env)$ python manage.py makemigrations
-[vagrant](app_env)$ python manage.py migrate
-# We can now run the server tests
-[vagrant](app_env)$ ./runtests.py
-# We need to run the server on 0.0.0.0 to expose it outside of the VM
+
+# Run the server on 0.0.0.0 to expose it outside of the VM
 [vagrant](app_env)$ python manage.py runserver 0.0.0.0:8000
 ```
 
