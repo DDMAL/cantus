@@ -37,8 +37,8 @@ sudo -u postgres psql -c "create database cantus_db with owner cantus_admin;"
 
 echo "===== Copy the repository ====="
 # sudo mkdir -p /srv/webapps/cantus/
-cp -R /vagrant/* .
-sudo chown -R vagrant .
+cp -R /vagrant/* /home/vagrant/
+sudo chown -R vagrant /home/vagrant/
 
 echo "===== Installing Java 8 ====="
 add-apt-repository ppa:openjdk-r/ppa
