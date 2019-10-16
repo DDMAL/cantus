@@ -4,6 +4,21 @@
 
 Serving images on a website using [Apache Solr](http://lucene.apache.org/solr/), [Diva.js](https://ddmal.github.io/diva.js/) and the [CANTUS](http://cantusdatabase.org/) collection.
 
+## Cloning the repository
+
+The repository of the Cantus Ultimus website has a submodule `cantus-staticpages` with the static pages of the website.
+
+Therefore, when cloning the repository, please add the `--recursive` flag:
+
+```
+git clone https://github.com/DDMAL/cantus.git --recursive
+```
+
+An alternative option is to clone the repository as you normally would, and then get the submodule:
+
+```
+git submodule update --init
+```
 
 ## Development environment setup
 
@@ -29,51 +44,3 @@ $ vagrant ssh
 ```
 
 The site should now be running on localhost:8000.
-
-## Building the client code
-
-The global dependencies to build the client-side code are Node.js and the Gulp task runner. Install Node.js using Homebrew or a similar package manager, then install Gulp with `npm install -g gulp`.
-
-The build system implements the following high-level commands:
-
-```sh
-$ cd public/cantusdata/frontend
-
-# Run the lint, build, and watch tasks:
-$ gulp
-
-# These can also be run independently:
-$ gulp lint:js build watch
-
-# Run the front-end tests:
-$ npm test
-
-# Watch and run tests on source changes:
-$ npm test -- --no-single-run
-```
-
-Output is generated directly in the directories `public/cantusdata/static/js` and `public/cantusdata/static/css`.
-
-### Managing client-side dependencies
-
-Cantus Ultimus using the npm package manager both for the front-end build dependencies and for client-side dependencies. It does this using two separate npm packages: one at `public/cantusdata/frontend` for the build process and one at `public/cantusdata/frontend/public` for the client-side dependencies. Dependencies installed for the latter package are checked into version control, the rationale being that it's important to maintain precise versioning for client-side files, but not for the build dependencies, which are also considerably larger.
-
-### Importing Data
-```sh
-./manage.py import_data --all
-
-#Import public manuscripts
-./manage.py update_public_manuscripts
-
-#Import all folio mappings with:
-./manage.py import_folio_mapping 133 133.csv 127 127.csv # … with all IDs listed in data_dumps/public-manuscripts.csv
-
-#If for any reason Solr doesn't seem to have the latest changes, use
-./manage.py refresh_solr --all
-```
-
-**Import OMR Data**
-```sh
-./manage.py import_mei_data mei_to_solr salzinnes
-# Repeat the above with 'st_gallen_390' and then 'st_gallen_391' instead of 'salzinnes'
-```
