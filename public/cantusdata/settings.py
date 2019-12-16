@@ -55,6 +55,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
+
+
 ROOT_URLCONF = 'urls'
 
 WSGI_APPLICATION = 'cantusdata.wsgi.application'
