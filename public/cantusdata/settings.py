@@ -36,10 +36,6 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Flat pages
-    'django.contrib.sites',
-    'django.contrib.flatpages',
-    'django_markdown',
     # Auth tokens
     'rest_framework',
     'rest_framework.authtoken',
@@ -57,9 +53,9 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
-    'livereload.middleware.LiveReloadScript'
 )
+
+
 
 ROOT_URLCONF = 'urls'
 
@@ -71,8 +67,12 @@ WSGI_APPLICATION = 'cantusdata.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'cantusdata.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'cantus_db',
+        'USER': 'cantus_admin',
+        'PASSWORD': 'Pl4c3H0ld3r',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -92,13 +92,12 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
-
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_URL_NEUMEEDITOR = "/neumeeditor/media/"
 
 # This needs to be an absolute path to the file system location
-STATIC_ROOT = os.path.join(BASE_DIR, 'cantusdata/static/')
+STATIC_ROOT = os.path.join(BASE_DIR, 'cantusdata/static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 REST_FRAMEWORK = {
@@ -108,14 +107,11 @@ REST_FRAMEWORK = {
     ),
 }
 
-SOLR_SERVER = "http://localhost:8080/solr/collection1"
-SOLR_ADMIN = "http://localhost:8080/solr/admin"
-SOLR_TEST_SERVER = "http://localhost:8080/solr/cantus-test"
+SOLR_SERVER = "http://localhost:8983/solr/collection1"
+SOLR_ADMIN = "http://localhost:8983/solr/admin"
+SOLR_TEST_SERVER = "http://localhost:8983/solr/cantus-test"
 
 LOGGING_CONFIG = None
 
 # AUTHENTICATION
 MAX_TOKEN_AGE_DAYS = 3
-
-# Sites Plugin
-SITE_ID = 1

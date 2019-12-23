@@ -14,10 +14,15 @@ from cantusdata.views.folio_set import ManuscriptFolioSetView
 from cantusdata.views.manuscript_glyph_set import ManuscriptGlyphSetView
 from cantusdata.views.map_folios import MapFoliosView
 from cantusdata.views.manifest_proxy import ManifestProxyView
+from cantusdata.views import staticpages
 from django.contrib.admin.views.decorators import staff_member_required
 
 
 urlpatterns = format_suffix_patterns([
+     # Static Pages
+     url(r'^$', staticpages.homepage, name='homepage'),
+     url(r'^(?P<static_page>about|team|activities)/$', staticpages.general, name='staticpage'),
+     # API Root
      url(r'^browse/$', browse_view, name="api-root"),
      # Manuscripts
      url(r'^manuscripts/$', ManuscriptList.as_view(), name="manuscript-list"),
