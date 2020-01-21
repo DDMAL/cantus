@@ -22,7 +22,7 @@ from cantusdata import settings as base_settings
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('tests', nargs='*', default=['cantusdata', 'neumeeditor'])
+    parser.add_argument('tests', nargs='*', default=['cantusdata'])
     args = parser.parse_args()
 
     failures = run_tests(args.tests)

@@ -40,7 +40,6 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
     'cantusdata',
-    'neumeeditor',
     'django_extensions',
     'coverage'
 )
