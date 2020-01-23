@@ -77,6 +77,5 @@ urlpatterns = format_suffix_patterns([
      url(r'^admin/', include(admin.site.urls)),
 
      # Notation search
-     url(r'^notation-search/$', SearchNotationView.as_view(),
-         name="search-notation-view"),
+     url(r'^notation-search/$', SearchNotationView.as_view(), name="search-notation-view"),
 ])
