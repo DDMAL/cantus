@@ -22,10 +22,33 @@ class CantusHTML(HTMLParser):
     def flush(self):
         self.is_field_label = False
         self.is_field_item = False
+        # Getting the right hand of the website is more difficult.
+        # There is no clear structure. Getting all the text
+        # within the "view-content" class div seems the best option.
+        self.view_content_div = 0
         self.key = ''
         self.value = ''
+        self.unparsed_view_content = []
         self.dictionary = {}
-    
+
+    def parse_view_content(self):
+        keys = ['Provenance', 'Date', 'Cursus', 
+            'Indexed by', 'Proofreader/s']
+        # if self.unparsed_view_content[0] != 'CANTUS Database':
+        #     raise Exception("This html content differs from what we expected.")
+        searching_key = True
+        key = ''
+        value = ''
+        for entry in self.unparsed_view_content[1:]:
+            possible_key = entry.split(":")[0]
+            if possible_key in keys:
+                if key and value:
+                    self.dictionary[key] = value
+                key = possible_key
+                value = ''
+            else:
+                value += possible_key
+
     def retrieve_metadata(self):
         ret = self.dictionary.copy()
         self.flush()
@@ -34,23 +57,35 @@ class CantusHTML(HTMLParser):
     def handle_starttag(self, tag, attrs):
         field_label = ('class', 'field-label')
         field_item = ('class', 'field-item even')
+        view_content = ('class', 'view-content')
         if tag == 'div':
             if field_label in attrs:
                 self.is_field_label = True
             elif field_item in attrs:
                 self.is_field_item = True
+            elif view_content in attrs or self.view_content_div > 0:
+                self.view_content_div += 1
 
     def handle_endtag(self, tag):
-        if self.is_field_label and tag == 'div':
-            self.is_field_label = False
-        if self.is_field_item and tag == 'div':
-            if self.key and self.value:
-                self.key = self.key.split(':')[0]
-                self.value = ' '.join(self.value.split())
-                self.dictionary[self.key] = self.value
-                self.key = ''
-                self.value = ''
-            self.is_field_item = False
+        if tag == 'div':
+            if self.is_field_label:
+                self.is_field_label = False
+            if self.is_field_item:
+                if self.key and self.value:
+                    self.key = self.key.split(':')[0]
+                    self.value = ' '.join(self.value.split())
+                    self.dictionary[self.key] = self.value
+                    self.key = ''
+                    self.value = ''
+                self.is_field_item = False
+            if self.view_content_div > 0:
+                if self.view_content_div == 1:
+                    # self.parse_view_content()
+                    self.dictionary['unparsed_view_content'] = self.unparsed_view_content
+                    self.view_content_div = 0
+                else:
+                    self.view_content_div -= 1
+            
 
     def handle_data(self, data):
         if self.is_field_label:
@@ -58,6 +93,10 @@ class CantusHTML(HTMLParser):
         if self.is_field_item:
             # descriptions and other sections have embedded html tags that require several passes through the handle_data() function hence the '+=' to concatenate all the content spread within several html tags
             self.value += data
+        if self.view_content_div > 0:
+            # A lot of empty data between divs. Filtering that out.
+            # if not data.isspace():
+            self.unparsed_view_content.append(data)
 
 
 
@@ -97,6 +136,7 @@ if __name__ == '__main__':
     if len(sys.argv) == 2:
         url = sys.argv[1]
         metadata = parse_cantus_manuscript(url)
+        pprint(metadata)
     else:
         sources_url = 'http://cantus.uwaterloo.ca/sources'
         root_url = 'http://cantus.uwaterloo.ca'
