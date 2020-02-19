@@ -12,13 +12,21 @@ class CantusHTML(HTMLParser):
 
     Notes
     -----
-    If you know a better way of doing this, please replace this code. 
+    If you know a better way of doing this, please replace this code.
     It is not ideal but we had no success using the Cantus Web API.
     """
     def __init__(self):
         super(CantusHTML, self).__init__()
         self.flush()
-    
+        self.view_content_keys = [
+            'Provenance',
+            'Date',
+            'Cursus',
+            'Indexed by',
+            'Proofreader/s',
+            'Contributor'
+        ]
+
     def flush(self):
         self.is_field_label = False
         self.is_field_item = False
@@ -32,22 +40,33 @@ class CantusHTML(HTMLParser):
         self.dictionary = {}
 
     def parse_view_content(self):
-        keys = ['Provenance', 'Date', 'Cursus', 
-            'Indexed by', 'Proofreader/s']
-        # if self.unparsed_view_content[0] != 'CANTUS Database':
-        #     raise Exception("This html content differs from what we expected.")
-        searching_key = True
         key = ''
-        value = ''
-        for entry in self.unparsed_view_content[1:]:
-            possible_key = entry.split(":")[0]
-            if possible_key in keys:
+        value = []
+        for entry in self.unparsed_view_content:
+            possible_key = entry.split(":")[0].strip()
+            if possible_key in self.view_content_keys:
                 if key and value:
                     self.dictionary[key] = value
                 key = possible_key
-                value = ''
+                value = []
             else:
-                value += possible_key
+                value.append(entry)
+
+    def format_view_content(self):
+        for key in self.view_content_keys:
+            if key in self.dictionary:
+                string_values = self.dictionary[key]
+                final_string = ''
+                if key == 'Indexed by':
+                    pairs = []
+                    for name, affiliation in zip(string_values[::2], string_values[1::2]):
+                        pairs.append('{}, {}.'.format(name, affiliation))
+                    final_string = ' '.join(pairs)
+                elif key == 'Proofreader/s':
+                    final_string = '. '.join(string_values)
+                else:
+                    final_string = ''.join(string_values)
+                self.dictionary[key] = final_string
 
     def retrieve_metadata(self):
         ret = self.dictionary.copy()
@@ -59,12 +78,12 @@ class CantusHTML(HTMLParser):
         field_item = ('class', 'field-item even')
         view_content = ('class', 'view-content')
         if tag == 'div':
-            if field_label in attrs:
+            if view_content in attrs or self.view_content_div > 0:
+                self.view_content_div += 1
+            elif field_label in attrs:
                 self.is_field_label = True
             elif field_item in attrs:
                 self.is_field_item = True
-            elif view_content in attrs or self.view_content_div > 0:
-                self.view_content_div += 1
 
     def handle_endtag(self, tag):
         if tag == 'div':
@@ -80,12 +99,15 @@ class CantusHTML(HTMLParser):
                 self.is_field_item = False
             if self.view_content_div > 0:
                 if self.view_content_div == 1:
-                    # self.parse_view_content()
-                    self.dictionary['unparsed_view_content'] = self.unparsed_view_content
-                    self.view_content_div = 0
-                else:
-                    self.view_content_div -= 1
-            
+                    # This gets all the text within the "view-content" tag in the corresponding
+                    # entry of the output dictionary
+                    self.parse_view_content()
+                    # This formats the final string representation of those "view-content" key,value pairs
+                    self.format_view_content()
+                    # self.dictionary['unparsed_view_content'] = self.unparsed_view_content
+                    # self.view_content_div = 0
+                self.view_content_div -= 1
+
 
     def handle_data(self, data):
         if self.is_field_label:
@@ -95,8 +117,8 @@ class CantusHTML(HTMLParser):
             self.value += data
         if self.view_content_div > 0:
             # A lot of empty data between divs. Filtering that out.
-            # if not data.isspace():
-            self.unparsed_view_content.append(data)
+            if not data.isspace():
+                self.unparsed_view_content.append(data)
 
 
 
@@ -108,10 +130,10 @@ class CantusAllSourcesHTML(HTMLParser):
     def __init__(self):
         super(CantusAllSourcesHTML, self).__init__()
         self.flush()
-    
+
     def flush(self):
         self.dictionary = {}
-    
+
     def retrieve_sources(self):
         ret = self.dictionary.copy()
         self.flush()
@@ -120,7 +142,7 @@ class CantusAllSourcesHTML(HTMLParser):
     def handle_starttag(self, tag, attrs):
         if tag == 'a' and len(attrs) == 2:
             attr1, link = attrs[0]
-            attr2, title = attrs[1] 
+            attr2, title = attrs[1]
             if attr1 == 'href' and attr2 == 'title' and link.startswith('/source/'):
                 self.dictionary[link] = title
 
