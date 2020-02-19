@@ -12,6 +12,10 @@
 #     echo "Usage: $0 [root_path]"
 #     exit 1
 # fi
+echo "==== Enable python3.5 on rusty64 ===="
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt-get update
+sudo apt-get install python3.5
 
 echo "===== Updating package listings ====="
 apt-get update
@@ -21,9 +25,9 @@ apt-get update
 # "$ROOT/etc/provision/setup-pymei.sh" "$ROOT"
 
 echo "===== Initial dependencies ====="
-apt-get install -y build-essential libxml2-dev libxslt-dev libxslt1-dev zlib1g-dev libjpeg8-dev libpq-dev python-dev python-virtualenv
+apt-get install -y build-essential libxml2-dev libxslt-dev libxslt1-dev zlib1g-dev libjpeg8-dev libpq-dev python-dev python-virtualenv python3.5 python3.5-dev python3.5-venv
 ln -s /usr/lib/x86_64-linux-gnu/libjpeg.so /usr/lib
- 
+
 # echo "===== Create the cantus user ====="
 # groupadd --system webapps
 # useradd --system --gid webapps --shell /bin/bash --home /srv/webapps/cantus cantus
@@ -69,7 +73,7 @@ service solr restart
 
 echo "===== Installing nodejs/npm ====="
 # Cannot use the default node package from apt because it is obsolete
-# The last version of node compatible with Ubuntu 14.04 is 8.x, using that 
+# The last version of node compatible with Ubuntu 14.04 is 8.x, using that
 curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 apt-get install -y nodejs
 npm install -g gulp
