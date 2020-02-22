@@ -15,9 +15,9 @@ class FolioModelTestCase(TransactionTestCase):
 
     def test_unicode(self):
         self.assertEqual(self.first_plugin.__unicode__(),
-                         "A very nice plugin!")
+                         u"A very nice plugin!")
         self.assertEqual(self.second_plugin.__unicode__(),
-                         "Another great plugin.")
+                         u"Another great plugin.")
 
     def test_slug(self):
         self.assertEqual(self.first_plugin.slug,
