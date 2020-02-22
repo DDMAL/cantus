@@ -1,17 +1,5 @@
 #!/bin/bash
 
-# # Exit whenever a command throws a return value != 0
-# set -e
-
-# # None or one arguments allowed. If one, the argument is the root directory. If none, this is the root directory
-# if [ "$#" -eq 1 ]; then
-#     ROOT=$1
-# elif [ "$#" -eq 0 ]; then
-#     ROOT=`pwd`
-# else
-#     echo "Usage: $0 [root_path]"
-#     exit 1
-# fi
 echo "==== Enable python3.5 on rusty64 ===="
 sudo add-apt-repository ppa:deadsnakes/ppa
 sudo apt-get update
@@ -19,10 +7,6 @@ sudo apt-get install python3.5
 
 echo "===== Updating package listings ====="
 apt-get update
-
-# "$ROOT/etc/provision/setup-django.sh" "$ROOT"
-# "$ROOT/etc/provision/setup-solr.sh" "$ROOT"
-# "$ROOT/etc/provision/setup-pymei.sh" "$ROOT"
 
 echo "===== Initial dependencies ====="
 apt-get install -y build-essential libxml2-dev libxslt-dev libxslt1-dev zlib1g-dev libjpeg8-dev libpq-dev python-dev python-virtualenv python3.5 python3.5-dev python3.5-venv
@@ -40,7 +24,6 @@ sudo -u postgres psql -c "alter user cantus_admin with SUPERUSER;"
 sudo -u postgres psql -c "create database cantus_db with owner cantus_admin;"
 
 echo "===== Copy the repository ====="
-# sudo mkdir -p /srv/webapps/cantus/
 cp -R /vagrant/* /home/vagrant/
 sudo chown -R vagrant /home/vagrant/
 

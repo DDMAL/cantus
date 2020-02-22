@@ -3,8 +3,9 @@
 echo "===== Setting up django ====="
 cd public
 virtualenv app_env
-source app_env/bin/activate
-pip install -r requirements.txt
+python3.5 -m venv app_env3
+source app_env3/bin/activate
+pip install -r requirements3.txt
 
 python manage.py makemigrations
 python manage.py migrate
