@@ -23,7 +23,7 @@ class Command(BaseCommand):
         # We use this log file to keep track of what happens
         # log = open("logs/mei_changes/changelog.txt", 'wa')
         logging.info("########### Begin session ################")
-        for manuscript in list(self.mei_data_locations.keys()):
+        for manuscript in self.mei_data_locations.keys():
             # Open the log file
             try:
                 manuscript_log_file = open("logs/mei_changes/{0}.txt".format(manuscript),
@@ -34,7 +34,7 @@ class Command(BaseCommand):
                 manuscript_log_file = open("logs/mei_changes/{0}.txt".format(manuscript),
                                 'w+')
             # Grab the console output
-            console_output = slugify("{0}".format(subprocess.check_output(
+            console_output = slugify(u"{0}".format(subprocess.check_output(
                 ["ls", "-l", self.mei_data_locations[manuscript]])))
             if console_output != manuscript_log_file.read():
                 manuscript_log_file.write(console_output)
