@@ -99,7 +99,7 @@ def dump_to_csv(mei_location, siglum, id, path):
                     #
                     #   If the assumption breaks we'll get a ValueError: dict contains fields
                     #   not in fieldname.
-                    headings = list(sorted(list(row.keys()), key=lambda h: heading_order.get(h, -1)))
+                    headings = list(sorted(row.keys(), key=lambda h: heading_order.get(h, -1)))
 
                     writer = csv.DictWriter(csv_file, headings)
                     writer.writeheader()
@@ -163,7 +163,7 @@ def upload_to_solr(filename):
             failure_message = None
 
     if failure_message is not None:
-        print('Upload failed ({}). See the Solr logs for details.'.format(failure_message))
+        print 'Upload failed ({}). See the Solr logs for details.'.format(failure_message)
     else:
-        print('Upload successful.')
+        print 'Upload successful.'
 
