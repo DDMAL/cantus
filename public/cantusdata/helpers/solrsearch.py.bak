@@ -1,4 +1,4 @@
-import urllib.parse
+import urlparse
 from django.conf import settings
 import solr
 
@@ -30,7 +30,7 @@ class SolrSearch(object):
         self.request = request
         self.additional_query_params = additional_query_params
         self.parsed_request = {}
-        self.prepared_query = ""
+        self.prepared_query = u""
         self.solr_params = {}
         self._parse_request()
         self._prepare_query()
@@ -75,15 +75,15 @@ class SolrSearch(object):
     def _prepare_query(self):
         arr = []
         if self.additional_query_params:
-            for k, v in self.additional_query_params.items():
-                arr.append("{0}:({1})".format(k, v))
+            for k, v in self.additional_query_params.iteritems():
+                arr.append(u"{0}:({1})".format(k, v))
         if self.parsed_request:
-            for k, v in self.parsed_request.items():
+            for k, v in self.parsed_request.iteritems():
                 if not v:
                     continue
                 if k == 'q':
-                    if v[0] != "":
-                        arr.insert(0, "{0}".format(v[0]))
+                    if v[0] != u"":
+                        arr.insert(0, u"{0}".format(v[0]))
                 elif k in ('start', 'rows'):
                     # Start and row parameters are single integers
                     self.solr_params[k] = int(v[0])
@@ -91,14 +91,14 @@ class SolrSearch(object):
                     # Treat sort as a string, not a one-element tuple
                     self.solr_params['sort'] = str(v[0])
                 else:
-                    arr.append("{0}:({1})".format(k, " OR ".join(["\"{0}\"".format(s) for s in v if v is not None])))
+                    arr.append(u"{0}:({1})".format(k, " OR ".join(["\"{0}\"".format(s) for s in v if v is not None])))
 
         if arr:
-            self.prepared_query = " AND ".join(arr)
+            self.prepared_query = u" AND ".join(arr)
         else:
-            self.prepared_query = "*:*"
+            self.prepared_query = u"*:*"
 
 
 class SolrSearchQueryless(SolrSearch):
     def _parse_request(self):
-        self.parsed_request = urllib.parse.parse_qs(self.request)
+        self.parsed_request = urlparse.parse_qs(self.request)
