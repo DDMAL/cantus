@@ -13,14 +13,14 @@ class Command(BaseCommand):
 
     help = 'Usage: ./manage.py refresh_solr {{{0}}} [manuscript_id ...]'\
            '\n\tSpecify manuscript ID(s) to only refresh selected items in that/those manuscript(s)'\
-           '\n\tUse --all to refresh all {1} types.'.format('|'.join(list(TYPE_MAPPING.keys())), len(TYPE_MAPPING))
+           '\n\tUse --all to refresh all {1} types.'.format('|'.join(TYPE_MAPPING.keys()), len(TYPE_MAPPING))
 
     option_list = BaseCommand.option_list + (
         make_option('--all',
                     action='store_true',
                     dest='all',
                     default=False,
-                    help='Refresh all types: {0}'.format(list(TYPE_MAPPING.keys()))),
+                    help='Refresh all types: {0}'.format(TYPE_MAPPING.keys())),
     )
 
     def handle(self, *args, **options):
@@ -30,7 +30,7 @@ class Command(BaseCommand):
         manuscript_ids = None
 
         if options['all']:
-            types += list(self.TYPE_MAPPING.keys())
+            types += self.TYPE_MAPPING.keys()
         elif len(args) == 0:
             self.stdout.write(self.help)
             return
