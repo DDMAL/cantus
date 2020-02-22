@@ -18,7 +18,7 @@ class ChantModelTestCase(TransactionTestCase):
 
     def test_unicode(self):
         chant = Chant.objects.get(cantus_id="1234")
-        self.assertEqual(chant.__unicode__(), "1234 - 5678")
+        self.assertEqual(chant.__unicode__(), u"1234 - 5678")
 
     def test_solr_update(self):
         self.chant.sequence = 59
