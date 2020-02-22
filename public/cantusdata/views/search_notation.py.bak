@@ -67,12 +67,12 @@ class SearchNotationView(APIView):
             raise NotationException("Invalid query type provided")
 
         if qtype == "pnames-invariant":
-            print(query_stmt + manuscript_query)
+            print query_stmt + manuscript_query
             response = solrconn.query(query_stmt + manuscript_query,
                                       score=False, sort="folio asc", q_op="OR",
                                       rows=1000000)
         else:
-            print(query_stmt + manuscript_query)
+            print query_stmt + manuscript_query
             response = solrconn.query(query_stmt + manuscript_query,
                                       score=False, sort="folio asc",
                                       rows=1000000)
@@ -95,7 +95,7 @@ class SearchNotationView(APIView):
             folio = d['folio']
             locations = json.loads(d['location'].replace("'", '"'))
 
-            if isinstance(locations, dict):
+            if isinstance(locations, types.DictType):
                 box_w = locations['width']
                 box_h = locations['height']
                 box_x = locations['ulx']
