@@ -38,14 +38,14 @@ class Command(BaseCommand):
             "\tTo import chants from a specific manuscript, add arguments from\n"\
             "\tthis list: {2}\n" \
             "\tAlternatively, put a CSV file path as argument, followed by its manuscript ID"\
-            .format('|'.join(list(TYPE_MAPPING.keys())), list(TYPE_MAPPING.keys()), list(CHANT_FILE_MAPPING.keys()))
+            .format('|'.join(TYPE_MAPPING.keys()), TYPE_MAPPING.keys(), CHANT_FILE_MAPPING.keys())
 
     option_list = BaseCommand.option_list + (
         make_option('--all',
                     action='store_true',
                     dest='all',
                     default=False,
-                    help='Import all types: {0}'.format(list(TYPE_MAPPING.keys()))),
+                    help='Import all types: {0}'.format(TYPE_MAPPING.keys())),
     )
 
     # Used to specify which chant files to import
@@ -57,17 +57,17 @@ class Command(BaseCommand):
 
         # Go through the arguments to see if some files have been specified
         for index, arg in enumerate(args):
-            if arg in list(self.CHANT_FILE_MAPPING.keys()):
+            if arg in self.CHANT_FILE_MAPPING.keys():
                 self.chants.append(self.CHANT_FILE_MAPPING[arg])
-            elif arg not in list(self.TYPE_MAPPING.keys()) and arg.endswith('.csv') and index + 1 < len(args):
+            elif arg not in self.TYPE_MAPPING.keys() and arg.endswith('.csv') and index + 1 < len(args):
                 self.chants.append([arg, args[index + 1]])
 
         # If no files were specified, import all of them
         if len(self.chants) == 0:
-            self.chants = list(self.CHANT_FILE_MAPPING.values())
+            self.chants = self.CHANT_FILE_MAPPING.values()
 
         with solr_synchronizer.get_session():
-            for type in list(self.TYPE_MAPPING.keys()):
+            for type in self.TYPE_MAPPING.keys():
                 if type in args:
                     # Remove the trailing 's' to make the type singular
                     type_singular = type.rstrip('s')
