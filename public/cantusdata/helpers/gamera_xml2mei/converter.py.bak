@@ -159,7 +159,7 @@ class GameraXMLConverter:
         # Get the total distance between the center points of every adjacent pair of zones
         totalCenterGaps = 0
 
-        for i in range(len(zones) - 2, -1, -2):
+        for i in xrange(len(zones) - 2, -1, -2):
             totalCenterGaps += zones[i + 1].centerY - zones[i].centerY
 
         averageGap = float(totalCenterGaps) / (len(zones) - 1)
@@ -193,14 +193,14 @@ class GameraXMLConverter:
                 initialClusters.update((zone, i+1) for zone in clusters[i].zones)
 
         # Consolidate overlapping clusters
-        for i in range(len(clusters) - 1):
+        for i in xrange(len(clusters) - 1):
             clusterA = clusters[i]
 
             # If we've removed this cluster, skip it
             if not clusterA:
                 continue
 
-            for j in range(i + 1, len(clusters)):
+            for j in xrange(i + 1, len(clusters)):
                 clusterB = clusters[j]
 
                 # If we haven't already removed cluster B and it overlaps cluster A,
@@ -245,16 +245,16 @@ class GameraXMLConverter:
             width = int(curGlyph.get('ncols'))
             height = int(curGlyph.get('nrows'))
 
-            for xPix in range(startX, startX+width):
+            for xPix in xrange(startX, startX+width):
                 imageOut.putpixel((xPix, startY), redPixel)
 
-            for xPix in range(startX, startX+width):
+            for xPix in xrange(startX, startX+width):
                 imageOut.putpixel((xPix, startY + height), redPixel)
 
-            for yPix in range(startY, startY+height):
+            for yPix in xrange(startY, startY+height):
                 imageOut.putpixel((startX, yPix), redPixel)
 
-            for yPix in range(startY, startY+height):
+            for yPix in xrange(startY, startY+height):
                 imageOut.putpixel((startX + width, yPix), redPixel)
 
         imageOut.save(outputTiff)
