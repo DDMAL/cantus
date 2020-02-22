@@ -10,7 +10,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         # Get the manuscript
         try:
-            input_id = input("Please enter a manuscript id: ")
+            input_id = raw_input("Please enter a manuscript id: ")
             id = int(input_id)
         except ValueError:
             self.stdout.write("Error: {0} is not an integer!".format(input_id))
