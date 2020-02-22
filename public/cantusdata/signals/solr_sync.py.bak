@@ -90,7 +90,7 @@ class SolrSynchronizer (object):
     # so that it gets run when the config is changed for tests
     def db_refresh(self, verbosity=0, **kwargs):
         if verbosity > 0:
-            print('Updating Solr index after database flush or migration...')
+            print 'Updating Solr index after database flush or migration...'
 
         with self.get_session() as sess:
             sess.schedule_full_refresh()
