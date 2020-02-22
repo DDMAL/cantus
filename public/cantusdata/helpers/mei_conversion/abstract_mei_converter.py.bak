@@ -11,7 +11,9 @@ DEFAULT_MIN_GRAM = 2
 DEFAULT_MAX_GRAM = 10
 
 
-class AbstractMEIConverter(metaclass=ABCMeta):
+class AbstractMEIConverter:
+    __metaclass__ = ABCMeta
+
     TYPE = "cantusdata_music_notation"
 
     def __init__(self, file_name, siglum_slug, manuscript_id, min_gram=DEFAULT_MIN_GRAM, max_gram=DEFAULT_MAX_GRAM):
@@ -120,7 +122,7 @@ def getImageURI(ffile, manuscript_id, solrconn):
 
     # Send the value of the folio name to Solr and get the corresponding URI
     folio_name = getPageNumber(ffile)
-    composed_request = 'type:"cantusdata_folio" AND manuscript_id:{0} AND number:{1}' \
+    composed_request = u'type:"cantusdata_folio" AND manuscript_id:{0} AND number:{1}' \
         .format(manuscript_id, folio_name)
 
     result = solrconn.query(composed_request, rows=1, fields=['image_uri'])
