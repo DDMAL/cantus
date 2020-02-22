@@ -43,4 +43,4 @@ class Folio(models.Model):
         return "(type:cantusdata_folio AND item_id:{0})".format(self.id)
 
     def __unicode__(self):
-        return "{0} - {1}".format(self.number, self.manuscript)
+        return u"{0} - {1}".format(self.number, self.manuscript)
