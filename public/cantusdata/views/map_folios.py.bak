@@ -5,7 +5,7 @@ from django.core.management import call_command
 from django.db import transaction
 from cantusdata.models.folio import Folio
 from cantusdata.models.manuscript import Manuscript
-import urllib.request, urllib.parse, urllib.error
+import urllib
 import json
 import csv
 import re
@@ -26,7 +26,7 @@ class MapFoliosView(APIView):
 
         uris_objs = []
         uris = [] 
-        manifest_json = urllib.request.urlopen(manifest)
+        manifest_json = urllib.urlopen(manifest)
         manifest_data = json.load(manifest_json)
         for canvas in manifest_data['sequences'][0]['canvases']:
             service = canvas['images'][0]['resource']['service']
@@ -56,7 +56,7 @@ class MapFoliosView(APIView):
         
         imagelinks = list(folio_imagelink.values())
         imagelinks_ids = _extract_ids(imagelinks)
-        imagelink_folio = dict(list(zip(imagelinks_ids, list(folio_imagelink.keys()))))
+        imagelink_folio = dict(zip(imagelinks_ids, folio_imagelink.keys()))
         
         for idx, uri in enumerate(uris_objs):
             uri['id'] = uri_ids[idx]
@@ -127,7 +127,7 @@ def _save_mapping(request):
     manuscript = Manuscript.objects.get(id=manuscript_id)
     data = [['folio', 'uri']] # CSV column headers
 
-    for index, value in request.POST.items():
+    for index, value in request.POST.iteritems():
         # 'index' should be the uri, and 'value' the folio name
         if index == 'csrfmiddlewaretoken' or index == 'manuscript_id' or len(value) == 0:
             continue
