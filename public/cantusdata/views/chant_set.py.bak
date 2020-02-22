@@ -41,7 +41,7 @@ class FolioChantSetView(APIView):
         # manuscript.  It is fastest to pull these from Solr!
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
 
-        composed_request = 'type:"cantusdata_chant" AND folio_id:{0}'.format(folio_id)
+        composed_request = u'type:"cantusdata_chant" AND folio_id:{0}'.format(folio_id)
         results = solrconn.query(
             composed_request,
             sort="sequence asc",
@@ -66,7 +66,7 @@ class ManuscriptChantSetView(APIView):
 
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
 
-        composed_request = 'type:"cantusdata_chant" AND manuscript_id:{0}'.format(manuscript_id)
+        composed_request = u'type:"cantusdata_chant" AND manuscript_id:{0}'.format(manuscript_id)
         results = solrconn.query(
             composed_request,
             sort="sequence asc",
