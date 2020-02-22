@@ -21,7 +21,7 @@ class Concordance(models.Model):
                                  verbose_name="RISM code")
 
     def __unicode__(self):
-        return "{0} - {1}".format(self.letter_code, self.institution_name)
+        return u"{0} - {1}".format(self.letter_code, self.institution_name)
 
     @property
     def citation(self):
@@ -37,7 +37,7 @@ class Concordance(models.Model):
 
     @property
     def unicode_citation(self):
-        return "{0}  {1}, {2}, {3} ({4}, from {5}) [RISM: {6}]".format(
+        return u"{0}  {1}, {2}, {3} ({4}, from {5}) [RISM: {6}]".format(
             self.letter_code,
             self.institution_city,
             self.institution_name,
