@@ -33,7 +33,7 @@ class Chant(models.Model):
     manuscript = models.ForeignKey('Manuscript')
 
     def __unicode__(self):
-        return "{0} - {1}".format(self.cantus_id, self.incipit)
+        return u"{0} - {1}".format(self.cantus_id, self.incipit)
 
     @property
     def concordance_citation_list(self):
