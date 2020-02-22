@@ -47,7 +47,7 @@ class Manuscript(models.Model):
             self._last_public_value = self.public
 
     def __unicode__(self):
-        return "{}, {}".format(self.provenance, self.siglum)
+        return u"{}, {}".format(self.provenance, self.siglum)
 
     @property
     def folio_count(self):
