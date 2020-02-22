@@ -16,7 +16,7 @@ class FolioModelTestCase(TransactionTestCase):
         self.folio = Folio.objects.get(number="123")
 
     def test_unicode(self):
-        self.assertEqual(self.folio.__unicode__(), "123 - , ABC - 456")
+        self.assertEqual(self.folio.__unicode__(), u"123 - , ABC - 456")
 
     def test_chant_count(self):
         # Folio has one chant from fixture
