@@ -53,7 +53,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if options['all']:
-            args += tuple(self.TYPE_MAPPING.keys())
+            args += tuple(sorted(self.TYPE_MAPPING.keys()))
 
         # Go through the arguments to see if some files have been specified
         for index, arg in enumerate(args):
@@ -103,11 +103,11 @@ class Command(BaseCommand):
         # Create a manuscript and save it
         for index, row in enumerate(csv_file):
             manuscript = Manuscript()
-            manuscript.name = row["Title"].decode("utf-8").strip()
-            manuscript.siglum = row["Siglum"].decode("utf-8").strip()
-            manuscript.date = row["Date"].decode("utf-8").strip()
-            manuscript.provenance = row["Provenance"].decode("utf-8").strip()
-            manuscript.description = row["Description"].decode("utf-8").strip()
+            manuscript.name = row["Title"].strip()
+            manuscript.siglum = row["Siglum"].strip()
+            manuscript.date = row["Date"].strip()
+            manuscript.provenance = row["Provenance"].strip()
+            manuscript.description = row["Description"].strip()
             manuscript.save()
         self.stdout.write("Successfully imported {0} manuscripts into database.".format(index))
 
