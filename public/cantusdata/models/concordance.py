@@ -20,7 +20,7 @@ class Concordance(models.Model):
     rism_code = models.CharField(max_length=255, blank=True, null=True,
                                  verbose_name="RISM code")
 
-    def __unicode__(self):
+    def __str__(self):
         return "{0} - {1}".format(self.letter_code, self.institution_name)
 
     @property

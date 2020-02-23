@@ -9,7 +9,7 @@ class ConcordanceModelTestCase(TransactionTestCase):
         self.concordance = Concordance.objects.get(letter_code="A")
 
     def test_unicode(self):
-        self.assertEqual(self.concordance.__unicode__(), "A - DDMAL")
+        self.assertEqual(self.concordance.__str__(), "A - DDMAL")
 
     def test_citation(self):
         self.assertEqual(self.concordance.citation,

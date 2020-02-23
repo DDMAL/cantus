@@ -14,9 +14,9 @@ class FolioModelTestCase(TransactionTestCase):
         self.manuscript = Manuscript.objects.get(name="geoff")
 
     def test_unicode(self):
-        self.assertEqual(self.first_plugin.__unicode__(),
+        self.assertEqual(self.first_plugin.__str__(),
                          "A very nice plugin!")
-        self.assertEqual(self.second_plugin.__unicode__(),
+        self.assertEqual(self.second_plugin.__str__(),
                          "Another great plugin.")
 
     def test_slug(self):

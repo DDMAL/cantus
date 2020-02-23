@@ -45,6 +45,6 @@ class NeumeExemplar(models.Model):
 
     admin_image.allow_tags = True
 
-    def __unicode__(self):
+    def __str__(self):
         return "{} - {}, {} at ({}, {}), {}x{}".format(self.name, self.folio.manuscript.siglum, self.folio.number,
                                                         self.x_coord, self.y_coord, self.width, self.height)

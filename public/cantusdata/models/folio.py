@@ -42,5 +42,5 @@ class Folio(models.Model):
     def _get_solr_query(self):
         return "(type:cantusdata_folio AND item_id:{0})".format(self.id)
 
-    def __unicode__(self):
+    def __str__(self):
         return "{0} - {1}".format(self.number, self.manuscript)

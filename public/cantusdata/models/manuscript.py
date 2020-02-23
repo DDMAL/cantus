@@ -46,7 +46,7 @@ class Manuscript(models.Model):
             thread.start()
             self._last_public_value = self.public
 
-    def __unicode__(self):
+    def __str__(self):
         return "{}, {}".format(self.provenance, self.siglum)
 
     @property

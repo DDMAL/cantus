@@ -32,7 +32,7 @@ class Chant(models.Model):
     volpiano = models.TextField(blank=True, null=True)
     manuscript = models.ForeignKey('Manuscript')
 
-    def __unicode__(self):
+    def __str__(self):
         return "{0} - {1}".format(self.cantus_id, self.incipit)
 
     @property
