@@ -25,9 +25,9 @@ class MapFoliosView(APIView):
         data = request.GET['data']
 
         uris_objs = []
-        uris = [] 
+        uris = []
         manifest_json = urllib.request.urlopen(manifest)
-        manifest_data = json.load(manifest_json)
+        manifest_data = json.loads(manifest_json.read().decode('utf-8'))
         for canvas in manifest_data['sequences'][0]['canvases']:
             service = canvas['images'][0]['resource']['service']
             uri = service['@id']
@@ -39,7 +39,7 @@ class MapFoliosView(APIView):
                 'large': uri + '/full/,1800/0/' + path_tail,
                 'short': re.sub(r'^.*/(?!$)', '', uri)
             })
-        
+
         uri_ids = _extract_ids(uris)
 
         folios = []
@@ -53,11 +53,11 @@ class MapFoliosView(APIView):
                     folios.append(folio)
                 if link != '' and folio not in folio_imagelink:
                     folio_imagelink[folio] = link
-        
+
         imagelinks = list(folio_imagelink.values())
         imagelinks_ids = _extract_ids(imagelinks)
         imagelink_folio = dict(list(zip(imagelinks_ids, list(folio_imagelink.keys()))))
-        
+
         for idx, uri in enumerate(uris_objs):
             uri['id'] = uri_ids[idx]
             uri['folio'] = None
