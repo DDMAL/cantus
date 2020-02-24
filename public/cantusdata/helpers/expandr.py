@@ -1,7 +1,8 @@
+from cantusdata.helpers.scrapers.genre import genres
+
 import csv
 import urllib.request, urllib.error, urllib.parse
 import re
-
 
 def expand_mode(mode_code):
     input_list = mode_code.strip()
@@ -35,50 +36,10 @@ def expand_mode(mode_code):
     outstring = " ".join(mode_output)
     return outstring
 
-
 def expand_genre(genre_code):
-    """
-    Get the text file listing all genres directly from
-    the cantus DB website. What it looks like:
-
-    Genre;Description;MassOffice;tid
-    A;Antiphon
-    ;Office;122
-    Ag;Agnus dei
-    ;Mass;124
-    Ig;Ingressa (for the Beneventan liturgy)
-    ;Office;142
-    [...]
-
-    We care only about the even lines since we only need the Genre
-    and Description fields.
-    Anything between parentheses is irrelevant and too long, it is
-    thus removed.
-    """
-
-    # Cache the data so that it doesn't get downloaded multiple times per import
-    if not hasattr(expand_genre, 'response_lines'):
-        response = urllib.request.urlopen('http://cantus.uwaterloo.ca/genre-export.txt')
-        expand_genre.response_lines = response.readlines()
-
-    # Skip the first line and every other line
-    for line in expand_genre.response_lines[1::2]:
-        duple = line.split(';')
-        if len(duple) != 2:
-            # Ignoring entries that do not conform
-            # to the ABBREVIATION;DESCRIPTION pattern
-            continue
-        code, description = duple
-        # Some genre codes are of the form [G] but it is unclear if the
-        # brackets are part of the code or if they are there to indicate
-        # that those codes are from old versions of the cantus DB
-        if genre_code == code or genre_code == code.strip('[]'):
-            # Remove anything between parentheses and any space before
-            description = re.sub(r'\s*\(.*\)', '', description)
-            # Take only the first term when there is a list (separated by commas)
-            description = re.sub(r',.*', '', description)
-            description = description.rstrip('\n')
-            return description
+    if genre_code in genres:
+        description = genres[genre_code]
+        return description
 
     # If nothing was found, return the original
     return genre_code

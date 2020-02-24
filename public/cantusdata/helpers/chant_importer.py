@@ -61,24 +61,24 @@ class ChantImporter:
                              .format(slugify(str(row["Siglum"]))))
 
         chant = Chant()
-        chant.marginalia = row["Marginalia"].strip().decode('utf-8')
-        chant.sequence = row["Sequence"].strip().decode('utf-8')
-        chant.cantus_id = row["Cantus ID"].strip().rstrip(' _').decode('utf-8')
-        chant.feast = row["Feast"].strip().decode('utf-8')
-        chant.office = expandr.expand_office(row["Office"].strip()).decode('utf-8')
-        chant.genre = expandr.expand_genre(row["Genre"].strip()).decode('utf-8')
-        chant.mode = expandr.expand_mode(row["Mode"].strip()).decode('utf-8')
-        chant.differentia = expandr.expand_differentia(row["Differentia"].strip()).decode('utf-8')
-        chant.finalis = row["Finalis"].strip().decode('utf-8')
-        chant.incipit = row["Incipit"].strip().decode('utf-8')
-        chant.full_text = row["Full text (standardized)"].strip().decode('utf-8')
-        chant.volpiano = row["Volpiano"].strip().decode('utf-8')
+        chant.marginalia = row["Marginalia"].strip()
+        chant.sequence = row["Sequence"].strip()
+        chant.cantus_id = row["Cantus ID"].strip().rstrip(' _')
+        chant.feast = row["Feast"].strip()
+        chant.office = expandr.expand_office(row["Office"].strip())
+        chant.genre = expandr.expand_genre(row["Genre"].strip())
+        chant.mode = expandr.expand_mode(row["Mode"].strip())
+        chant.differentia = expandr.expand_differentia(row["Differentia"].strip())
+        chant.finalis = row["Finalis"].strip()
+        chant.incipit = row["Incipit"].strip()
+        chant.full_text = row["Full text (standardized)"].strip()
+        chant.volpiano = row["Volpiano"].strip()
         chant.lit_position = self.position_expander.get_text(
             row["Office"].strip(), row["Genre"].strip(),
-            row["Position"].strip()).decode('utf-8')
+            row["Position"].strip())
         chant.manuscript = manuscript
 
-        folio_code = row["Folio"].decode("utf-8")
+        folio_code = row["Folio"]
 
         # See if this folio already exists or is set to be created
         if (folio_code, manuscript.pk) not in self.folio_registry:
