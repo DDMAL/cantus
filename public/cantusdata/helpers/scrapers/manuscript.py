@@ -26,6 +26,7 @@ class ManuscriptScraper(HTMLParser):
         ]
 
     def flush(self):
+        self.is_title = False
         self.is_field_label = False
         self.is_field_item = False
         # Getting the right hand of the website is more difficult.
@@ -72,6 +73,7 @@ class ManuscriptScraper(HTMLParser):
         return ret
 
     def handle_starttag(self, tag, attrs):
+        title = ('class', 'title')
         field_label = ('class', 'field-label')
         field_item = ('class', 'field-item even')
         view_content = ('class', 'view-content')
@@ -82,6 +84,9 @@ class ManuscriptScraper(HTMLParser):
                 self.is_field_label = True
             elif field_item in attrs:
                 self.is_field_item = True
+        elif tag == 'h1':
+            if title in attrs:
+                self.is_title = True
 
     def handle_endtag(self, tag):
         if tag == 'div':
@@ -105,8 +110,13 @@ class ManuscriptScraper(HTMLParser):
                     # self.dictionary['unparsed_view_content'] = self.unparsed_view_content
                     # self.view_content_div = 0
                 self.view_content_div -= 1
+        elif tag == 'h1':
+            if self.is_title:
+                self.is_title = False
 
     def handle_data(self, data):
+        if self.is_title:
+            self.dictionary['Title'] = data
         if self.is_field_label:
             self.key = data
         if self.is_field_item:
@@ -117,9 +127,13 @@ class ManuscriptScraper(HTMLParser):
             if not data.isspace():
                 self.unparsed_view_content.append(data)
 
-def parse(url):
+def parse(url, relative_url=False):
+    if relative_url:
+        source = url
+        url = 'http://cantus.uwaterloo.ca' + source
     contents = urllib.request.urlopen(url).read().decode('utf-8')
     cantusparser = ManuscriptScraper()
     cantusparser.feed(contents)
     metadata = cantusparser.retrieve_metadata()
+    metadata['CantusURL'] = url
     return metadata
