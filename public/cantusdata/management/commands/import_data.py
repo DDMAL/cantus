@@ -7,6 +7,8 @@ from cantusdata.models.concordance import Concordance
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.signals.solr_sync import solr_synchronizer
 from cantusdata.helpers.chant_importer import ChantImporter
+from cantusdata.helpers.scrapers.sources import sources
+from cantusdata.helpers.scrapers.manuscript import parse as parse_manuscript
 import csv
 
 
@@ -93,23 +95,22 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def import_manuscript_data(self, **options):
-        try:
-            csv_file = csv.DictReader(open("data_dumps/{0}".format(self.MANUSCRIPT_FILE), "rU"))
-        except IOError:
-            raise IOError("File 'data_dumps/{0}' does not exist!".format(self.MANUSCRIPT_FILE))
 
-        # Load in the csv file.  This is a massive list of dictionaries.
         self.stdout.write("Starting manuscript import process.")
-        # Create a manuscript and save it
-        for index, row in enumerate(csv_file):
+        i = 0
+        for source, name in sources.items():
+            self.stdout.write(source + ' ' + name)
+            metadata = parse_manuscript(source, relative_url=True)
             manuscript = Manuscript()
-            manuscript.name = row["Title"].strip()
-            manuscript.siglum = row["Siglum"].strip()
-            manuscript.date = row["Date"].strip()
-            manuscript.provenance = row["Provenance"].strip()
-            manuscript.description = row["Description"].strip()
+            manuscript.name = metadata['Title']
+            manuscript.cantus_url = metadata['CantusURL']
+            manuscript.siglum = metadata["Siglum"] if 'Siglum' in metadata else ''
+            manuscript.date = metadata["Date"] if 'Date' in metadata else ''
+            manuscript.provenance = metadata["Provenance"] if 'Provenance' in metadata else ''
+            manuscript.description = metadata["Summary"] if 'Summary' in metadata else ''
             manuscript.save()
-        self.stdout.write("Successfully imported {0} manuscripts into database.".format(index))
+            i += 1
+        self.stdout.write("Successfully imported {0} manuscripts into database.".format(i))
 
     @transaction.atomic
     def import_concordance_data(self, **options):
