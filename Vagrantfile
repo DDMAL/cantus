@@ -9,6 +9,8 @@ Vagrant.configure(2) do |config|
   # Solr Port, needed to access admin page
   config.vm.network :forwarded_port, guest: 8983, host: 8080
 
+  config.vm.synced_folder ".", "/vagrant"
+
   config.vm.provision "shell", path: "etc/provision/setup-privileged.sh"
 
   config.vm.provision "shell", privileged: false, path: "etc/provision/setup-unprivileged.sh"
