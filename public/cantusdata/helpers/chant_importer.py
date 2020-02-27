@@ -65,13 +65,14 @@ class ChantImporter:
             row["position"].strip())
         chant.manuscript = manuscript
         folio_code = row["folio"]
+        image_link = row['image_link']
         # See if this folio already exists or is set to be created
         if (folio_code, manuscript.pk) not in self.folio_registry:
             try:
                 folio = Folio.objects.get(number=folio_code, manuscript=manuscript)
             except Folio.DoesNotExist:
                 # If the folio doesn't exist, prepare to create it
-                self.add_folio(folio_code, manuscript)
+                self.add_folio(folio_code, manuscript, image_link)
                 folio = None
         else:
             folio = None
@@ -87,10 +88,11 @@ class ChantImporter:
         # folio to add if it still needs to be created
         self.new_chant_info.append((chant, concordances, None if folio else folio_code))
 
-    def add_folio(self, folio_code, manuscript):
+    def add_folio(self, folio_code, manuscript, image_link):
         folio = Folio()
         folio.number = folio_code
         folio.manuscript = manuscript
+        folio.image_link = image_link
         self.new_folios.append(folio)
         self.folio_registry.add((folio_code, manuscript.pk))
 
