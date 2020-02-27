@@ -10,6 +10,8 @@ from cantusdata.helpers.chant_importer import ChantImporter
 from cantusdata.helpers.scrapers.sources import sources
 from cantusdata.helpers.scrapers.manuscript import parse as parse_manuscript
 from cantusdata.helpers.scrapers.concordances import concordances
+import urllib.request
+from io import StringIO
 import csv
 import re
 
@@ -105,6 +107,7 @@ class Command(BaseCommand):
             manuscript = Manuscript()
             manuscript.name = metadata['Title']
             manuscript.cantus_url = metadata['CantusURL']
+            manuscript.csv_export_url = metadata['CSVExport']
             manuscript.siglum = metadata["Siglum"] if 'Siglum' in metadata else ''
             manuscript.date = metadata["Date"] if 'Date' in metadata else ''
             manuscript.provenance = metadata["Provenance"] if 'Provenance' in metadata else ''
@@ -128,13 +131,14 @@ class Command(BaseCommand):
         self.stdout.write("Successfully imported {0} concordances into database.".format(idx + 1))
 
     def import_chant_data(self, **options):
-        for chant in self.chants:
-            chant_file = chant[0]
+        for manuscript in self.chants:
+            manuscript_id = manuscript[1]
+            mobj = Manuscript.objects.get(id=manuscript_id)
+            scsv = urllib.request.urlopen(mobj.csv_export_url).read().decode('utf-8')
+            # csv module can't handle csv as strings, so making it a file
+            fcsv = StringIO(scsv)
             importer = ChantImporter(self.stdout)
-
-            chant_count = importer.import_csv("data_dumps/{0}".format(chant_file))
-
+            chant_count = importer.import_csv(fcsv)
             # Save the new chants
             importer.save()
-
             self.stdout.write("Successfully imported {0} chants into database.".format(chant_count))
