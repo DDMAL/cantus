@@ -14,6 +14,7 @@ import urllib.request
 from io import StringIO
 import csv
 import re
+import pdb
 
 
 class Command(BaseCommand):
@@ -22,79 +23,41 @@ class Command(BaseCommand):
         Importing concordances will import from 'concordances'
         It will import all manuscripts mentioned above
     """
+    help = 'Populates Manuscript, Concordance, and Chant django models'
 
-    # List all possible types and their model
-    TYPE_MAPPING = {'manuscripts': Manuscript, 'concordances': Concordance, 'chants': Chant}
-
-    # All files must be in data-dumps/
-    # The second item is the manuscript ID the chants are attached to
-    CHANT_FILE_MAPPING = {
-        'salzinnes': ['salzinnes-chants.csv', 133],
-        'st-gallen-390': ['st-gallen-390-chants.csv', 127],
-        'st-gallen-391': ['st-gallen-391-chants.csv', 128],
-        'utrecht-406': ['utrecht-406-chants.csv', 51],
-        'paris-12044': ['paris-12044.csv', 38]
-    }
-    MANUSCRIPT_FILE = "sources-export.csv"
-    CONCORDANCE_FILE = "concordances"
-
-    help = 'Usage: ./manage.py import_data {{{0}}} [chant_file [manuscript_id] ...]\n'\
-            '\tAdd everything you want to import as arguments. (or use --all)\n'\
-            "\tSelect arguments from this list: {1}\n"\
-            "\tTo import chants from a specific manuscript, add arguments from\n"\
-            "\tthis list: {2}\n" \
-            "\tAlternatively, put a CSV file path as argument, followed by its manuscript ID"\
-            .format('|'.join(list(TYPE_MAPPING.keys())), list(TYPE_MAPPING.keys()), list(CHANT_FILE_MAPPING.keys()))
-
-    option_list = BaseCommand.option_list + (
-        make_option('--all',
-                    action='store_true',
-                    dest='all',
-                    default=False,
-                    help='Import all types: {0}'.format(list(TYPE_MAPPING.keys()))),
-    )
-
-    # Used to specify which chant files to import
-    chants = []
+    def add_arguments(self, parser):
+        parser.add_argument('type',
+            choices=[
+                'chants',
+                'concordances',
+                'manuscripts',]
+        )
+        
+        parser.add_argument('--manuscript-id',
+            type=int,
+            dest='manuscript_id',
+            help='Manuscript id (used only when importing chants)'
+        )
 
     def handle(self, *args, **options):
-        if options['all']:
-            args += tuple(sorted(self.TYPE_MAPPING.keys()))
-
-        # Go through the arguments to see if some files have been specified
-        for index, arg in enumerate(args):
-            if arg in list(self.CHANT_FILE_MAPPING.keys()):
-                self.chants.append(self.CHANT_FILE_MAPPING[arg])
-            elif arg not in list(self.TYPE_MAPPING.keys()) and arg.endswith('.csv') and index + 1 < len(args):
-                self.chants.append([arg, args[index + 1]])
-
-        # If no files were specified, import all of them
-        if len(self.chants) == 0:
-            self.chants = list(self.CHANT_FILE_MAPPING.values())
-
         with solr_synchronizer.get_session():
-            for type in list(self.TYPE_MAPPING.keys()):
-                if type in args:
-                    # Remove the trailing 's' to make the type singular
-                    type_singular = type.rstrip('s')
-
-                    # Make an array of all the manuscript IDs
-                    manuscript_ids = [ chant[1] for chant in self.chants ]
-
-                    self.stdout.write('Deleting old {0} data...'.format(type_singular))
-                    # Special case for chants, do not delete everything and we need to delete the folios
-                    if type == 'chants':
-                        Chant.objects.filter(manuscript__id__in=manuscript_ids).delete()
-                        self.stdout.write('Deleting old folio data...')
-                        Folio.objects.filter(manuscript__id__in=manuscript_ids).delete()
-                    else:
-                        self.TYPE_MAPPING[type].objects.all().delete()
-
-                    self.stdout.write('Importing new {0} data...'.format(type_singular))
-                    # Call the method corresponding with the current type
-                    getattr(self, 'import_{0}_data'.format(type_singular))(**options)
+            self.stdout.write('Deleting old {0} data...'.format(options['type']))
+            if options['type'] == 'chants':
+                # manuscript-id is not optional for chants
+                if 'manuscript_id' not in options:
+                    self.stdout.write('Please provide a manuscript-id. Doing nothing.')
+                else:
+                    Chant.objects.filter(manuscript__id=options['manuscript_id']).delete()
+                    self.stdout.write('Deleting old folio data...')
+                    Folio.objects.filter(manuscript__id=options['manuscript_id']).delete()
+                    self.import_chant_data(**options)
+            elif options['type'] == 'concordances':
+                Concordance.objects.all().delete()
+                self.import_concordance_data(**options)
+            elif options['type'] == 'manuscripts':
+                Manuscript.objects.all().delete()
+                self.import_manuscript_data(**options)
             self.stdout.write("Waiting for Solr to finish...")
-
         self.stdout.write("Done.")
 
     @transaction.atomic
@@ -131,14 +94,12 @@ class Command(BaseCommand):
         self.stdout.write("Successfully imported {0} concordances into database.".format(idx + 1))
 
     def import_chant_data(self, **options):
-        for manuscript in self.chants:
-            manuscript_id = manuscript[1]
-            mobj = Manuscript.objects.get(id=manuscript_id)
-            scsv = urllib.request.urlopen(mobj.csv_export_url).read().decode('utf-8')
-            # csv module can't handle csv as strings, so making it a file
-            fcsv = StringIO(scsv)
-            importer = ChantImporter(self.stdout)
-            chant_count = importer.import_csv(fcsv)
-            # Save the new chants
-            importer.save()
-            self.stdout.write("Successfully imported {0} chants into database.".format(chant_count))
+        mobj = Manuscript.objects.get(id=options['manuscript_id'])
+        scsv = urllib.request.urlopen(mobj.csv_export_url).read().decode('utf-8')
+        # csv module can't handle csv as strings, so making it a file
+        fcsv = StringIO(scsv)
+        importer = ChantImporter(self.stdout)
+        chant_count = importer.import_csv(fcsv)
+        # Save the new chants
+        importer.save()
+        self.stdout.write("Successfully imported {0} chants into database.".format(chant_count))
