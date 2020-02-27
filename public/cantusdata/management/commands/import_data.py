@@ -9,7 +9,9 @@ from cantusdata.signals.solr_sync import solr_synchronizer
 from cantusdata.helpers.chant_importer import ChantImporter
 from cantusdata.helpers.scrapers.sources import sources
 from cantusdata.helpers.scrapers.manuscript import parse as parse_manuscript
+from cantusdata.helpers.scrapers.concordances import concordances
 import csv
+import re
 
 
 class Command(BaseCommand):
@@ -95,7 +97,6 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def import_manuscript_data(self, **options):
-
         self.stdout.write("Starting manuscript import process.")
         i = 0
         for source, name in sources.items():
@@ -114,40 +115,18 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def import_concordance_data(self, **options):
-        try:
-            file = open("data_dumps/{0}".format(self.CONCORDANCE_FILE))
-        except IOError:
-            raise IOError("File 'data_dumps/{0}' does not exist!".format(self.CONCORDANCE_FILE))
-
-        # Every line is a new concordance
-        for index, line in enumerate(file.readlines()):
-            # This method is pretty hacky, but it seems to work
+        for idx, c in enumerate(concordances):
+            self.stdout.write(str(c))
             concordance = Concordance()
-
-            concordance.letter_code = line.split(" ", 1)[0].strip()
-            line = line.split(" ", 1)[1]
-
-            concordance.institution_city = line.split(",", 1)[0].strip()
-            line = line.split(",", 1)[1]
-
-            concordance.institution_name = line.split(",", 1)[0].strip()
-            line = line.split(",", 1)[1]
-
-            concordance.library_manuscript_name = line.split(" (", 1)[0].strip()
-            line = line.split(" (", 1)[1]
-
-            concordance.date = line.split(", from", 1)[0].strip()
-            line = line.split(", from", 1)[1]
-
-            concordance.location = line.split(")", 1)[0].strip()
-            line = line.split(")", 1)[1]
-
-            line = line.split(": ", 1)[1]
-
-            concordance.rism_code = line.split("]", 1)[0].strip()
-
+            concordance.letter_code = c['letter_code']
+            concordance.institution_city = c['institution_city']
+            concordance.institution_name = c['institution_name']
+            concordance.library_manuscript_name = c['library_manuscript_name']
+            concordance.date = c['date']
+            concordance.location = c['location']
+            concordance.rism_code = c['rism_code']
             concordance.save()
-        self.stdout.write("Successfully imported {0} concordances into database.".format(index + 1))
+        self.stdout.write("Successfully imported {0} concordances into database.".format(idx + 1))
 
     def import_chant_data(self, **options):
         for chant in self.chants:
