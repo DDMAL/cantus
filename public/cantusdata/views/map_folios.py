@@ -16,12 +16,12 @@ class MapFoliosView(APIView):
     renderer_classes = (TemplateHTMLRenderer, )
     def get(self, request, *args, **kwargs):
         # Return the URIs and folio names
-        if 'manifest' not in request.GET or 'data' not in request.GET or 'manuscript_id' not in request.GET:
+        if 'manuscript_id' not in request.GET:
             return Response()
 
-        manuscript_id = request.GET['manuscript_id']
-        manifest = request.GET['manifest']
-        data = request.GET['data']
+        manuscript_id = int(request.GET['manuscript_id'])
+        manuscript_obj = Manuscript.objects.get(id=manuscript_id)
+        manifest = manuscript_obj.manifest_url
 
         uris_objs = []
         uris = []
@@ -43,15 +43,19 @@ class MapFoliosView(APIView):
 
         folios = []
         folio_imagelink = {}
-        with open('./data_dumps/' + data) as data_csv:
-            data_contents = csv.DictReader(data_csv)
-            for row in data_contents:
-                folio = row['Folio']
-                link = row['Image link']
-                if folio not in folios:
-                    folios.append(folio)
-                if link != '' and folio not in folio_imagelink:
-                    folio_imagelink[folio] = link
+        # with open('./data_dumps/' + data) as data_csv:
+        #     data_contents = csv.DictReader(data_csv)
+        #     for row in data_contents:
+        #         folio = row['Folio']
+        #         link = row['Image link']
+        #         if folio not in folios:
+        #             folios.append(folio)
+        #         if link != '' and folio not in folio_imagelink:
+        #             folio_imagelink[folio] = link
+        folios_query = Folio.objects.filter(manuscript__id=manuscript_id)
+        for folio in folios_query:
+            folios.append(folio.number)
+            folio_imagelink[folio.number] = folio.image_link
 
         imagelinks = list(folio_imagelink.values())
         imagelinks_ids = _extract_ids(imagelinks)

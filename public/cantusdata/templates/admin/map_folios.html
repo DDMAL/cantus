@@ -92,8 +92,6 @@
 {% elif uris == None or folios == None or manuscript_id == None %}
 <h5><br>The data dump file has to be in <em>public/data_dumps/</em></h5>
 <form class="paths" action="/admin/map_folios/" method="get">
-    <input type="text" name="manifest" placeholder="Manifest file URL" />
-    <input type="text" name="data" placeholder="Data dump file name" />
     <input type="text" name="manuscript_id" placeholder="Manuscript ID" />
     <input type="submit" />
 </form>
