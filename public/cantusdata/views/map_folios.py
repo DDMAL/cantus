@@ -10,7 +10,6 @@ import json
 import csv
 import re
 import threading
-import pdb
 
 class MapFoliosView(APIView):
     template_name = "admin/map_folios.html"
