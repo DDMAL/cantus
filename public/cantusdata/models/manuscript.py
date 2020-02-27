@@ -30,6 +30,7 @@ class Manuscript(models.Model):
                                      blank=True, null=True)
 
     cantus_url = models.CharField(max_length=255, blank=True, null=True)
+    csv_export_url = models.CharField(max_length=255, blank=True, null=True)
     manifest_url = models.CharField(max_length=255, blank=True, null=True)
 
     # Store the initial value of public in order to detect any changes.
