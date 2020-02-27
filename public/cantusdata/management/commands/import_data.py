@@ -116,7 +116,6 @@ class Command(BaseCommand):
     @transaction.atomic
     def import_concordance_data(self, **options):
         for idx, c in enumerate(concordances):
-            self.stdout.write(str(c))
             concordance = Concordance()
             concordance.letter_code = c['letter_code']
             concordance.institution_city = c['institution_city']
