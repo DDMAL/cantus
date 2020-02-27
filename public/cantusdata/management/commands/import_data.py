@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from optparse import make_option
 from cantusdata.models.chant import Chant
 from cantusdata.models.folio import Folio
 from cantusdata.models.concordance import Concordance
@@ -14,12 +13,10 @@ import urllib.request
 from io import StringIO
 import csv
 import re
-import pdb
-
 
 class Command(BaseCommand):
     """Imports Manuscripts, Concordances, and Chants from Cantus Database."""
-    
+
     help = 'Populates Manuscript, Concordance, and Chant django models'
 
     def add_arguments(self, parser):
