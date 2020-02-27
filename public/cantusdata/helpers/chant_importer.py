@@ -21,10 +21,10 @@ class ChantImporter:
         # Use position expander object to get correct positions
         self.position_expander = expandr.PositionExpander()
 
-    def import_csv(self, file_name):
+    def import_csv(self, file_csv):
         index = 0
         try:
-            csv_file = csv.DictReader(open(file_name, "rU"))
+            csv_file = csv.DictReader(file_csv)
         except IOError:
             raise IOError("File '{0}' does not exist!".format(file_name))
         # Load in the csv file.  This is a massive list of dictionaries.
@@ -42,29 +42,29 @@ class ChantImporter:
         Prepare a folio object to add if necessary.
         """
         # Get the corresponding manuscript
-        manuscript = self.get_manuscript(row['Siglum'])
+        manuscript = self.get_manuscript(row['siglum'])
         # Throw exception if no corresponding manuscript
         if not manuscript:
-            raise ValueError("Manuscript with Siglum={0} does not exist!"
-                             .format(slugify(str(row["Siglum"]))))
+            raise ValueError("Manuscript with siglum={0} does not exist!"
+                             .format(slugify(str(row["siglum"]))))
         chant = Chant()
-        chant.marginalia = row["Marginalia"].strip()
-        chant.sequence = row["Sequence"].strip()
-        chant.cantus_id = row["Cantus ID"].strip().rstrip(' _')
-        chant.feast = row["Feast"].strip()
-        chant.office = expandr.expand_office(row["Office"].strip())
-        chant.genre = expandr.expand_genre(row["Genre"].strip())
-        chant.mode = expandr.expand_mode(row["Mode"].strip())
-        chant.differentia = expandr.expand_differentia(row["Differentia"].strip())
-        chant.finalis = row["Finalis"].strip()
-        chant.incipit = row["Incipit"].strip()
-        chant.full_text = row["Full text (standardized)"].strip()
-        chant.volpiano = row["Volpiano"].strip()
+        chant.marginalia = row["marginalia"].strip()
+        chant.sequence = row["sequence"].strip()
+        chant.cantus_id = row["cantus_id"].strip().rstrip(' _')
+        chant.feast = row["feast"].strip()
+        chant.office = expandr.expand_office(row["office"].strip())
+        chant.genre = expandr.expand_genre(row["genre"].strip())
+        chant.mode = expandr.expand_mode(row["mode"].strip())
+        chant.differentia = expandr.expand_differentia(row["differentia"].strip())
+        chant.finalis = row["finalis"].strip()
+        chant.incipit = row["incipit"].strip()
+        chant.full_text = row["fulltext_standardized"].strip()
+        chant.volpiano = row["volpiano"].strip()
         chant.lit_position = self.position_expander.get_text(
-            row["Office"].strip(), row["Genre"].strip(),
-            row["Position"].strip())
+            row["office"].strip(), row["genre"].strip(),
+            row["position"].strip())
         chant.manuscript = manuscript
-        folio_code = row["Folio"]
+        folio_code = row["folio"]
         # See if this folio already exists or is set to be created
         if (folio_code, manuscript.pk) not in self.folio_registry:
             try:
@@ -79,7 +79,7 @@ class ChantImporter:
             chant.folio = folio
         # Concordances
         concordances = []
-        for c in list(row["CAO Concordances"]):
+        for c in list(row["cao_concordances"]):
             matching_concordance = Concordance.objects.filter(letter_code=c)
             if matching_concordance:
                 concordances.append(matching_concordance[0])
