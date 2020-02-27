@@ -13,53 +13,40 @@ import csv
 class ChantImporter:
     def __init__(self, stdout):
         self.stdout = stdout
-
         # Map siglum to manuscript model
         self._manuscript_cache = {}
-
         self.new_chant_info = []
         self.new_folios = []
-
         self.folio_registry = set()
-
         # Use position expander object to get correct positions
         self.position_expander = expandr.PositionExpander()
 
     def import_csv(self, file_name):
         index = 0
-
         try:
             csv_file = csv.DictReader(open(file_name, "rU"))
         except IOError:
             raise IOError("File '{0}' does not exist!".format(file_name))
-
         # Load in the csv file.  This is a massive list of dictionaries.
         self.stdout.write("Starting chant import process.")
-
         # Create chants and save them
         for index, row in enumerate(csv_file):
             self.add_chant(row)
-
             # Tracking
             if (index % 100) == 0:
                 self.stdout.write("{0} chants processed for import.".format(index))
-
         return index
 
     def add_chant(self, row):
         """Get a chant object to save to the database.
-
         Prepare a folio object to add if necessary.
         """
-
         # Get the corresponding manuscript
         manuscript = self.get_manuscript(row['Siglum'])
-
         # Throw exception if no corresponding manuscript
         if not manuscript:
             raise ValueError("Manuscript with Siglum={0} does not exist!"
                              .format(slugify(str(row["Siglum"]))))
-
         chant = Chant()
         chant.marginalia = row["Marginalia"].strip()
         chant.sequence = row["Sequence"].strip()
@@ -77,9 +64,7 @@ class ChantImporter:
             row["Office"].strip(), row["Genre"].strip(),
             row["Position"].strip())
         chant.manuscript = manuscript
-
         folio_code = row["Folio"]
-
         # See if this folio already exists or is set to be created
         if (folio_code, manuscript.pk) not in self.folio_registry:
             try:
@@ -88,20 +73,16 @@ class ChantImporter:
                 # If the folio doesn't exist, prepare to create it
                 self.add_folio(folio_code, manuscript)
                 folio = None
-
         else:
             folio = None
-
         if folio:
             chant.folio = folio
-
         # Concordances
         concordances = []
         for c in list(row["CAO Concordances"]):
             matching_concordance = Concordance.objects.filter(letter_code=c)
             if matching_concordance:
                 concordances.append(matching_concordance[0])
-
         # Along with the unsaved chant, store the concordances to add to it, and the
         # folio to add if it still needs to be created
         self.new_chant_info.append((chant, concordances, None if folio else folio_code))
@@ -110,7 +91,6 @@ class ChantImporter:
         folio = Folio()
         folio.number = folio_code
         folio.manuscript = manuscript
-
         self.new_folios.append(folio)
         self.folio_registry.add((folio_code, manuscript.pk))
 
@@ -127,41 +107,31 @@ class ChantImporter:
         with solr_synchronizer.get_session():
             if delete_existing:
                 self._delete_existing_chants()
-
             new_folio_map = {}
-
             for folio in self.new_folios:
                 folio.save()
-
                 # Keep track of the new folios so that we can add them to the chant field
                 new_folio_map[folio.number] = folio
-
             for index, (chant, concordances, folio_code) in enumerate(self.new_chant_info):
                 # We can now safely reference newly created folios
                 if folio_code is not None:
                     chant.folio = new_folio_map[folio_code]
-
                 chant.save()
-
                 # Now that the chant is saved, add the concordances
                 if concordances:
                     chant.concordances.add(*concordances)
-
                 # Tracking
                 if (index % 100) == 0:
                     self.stdout.write("{0} chants saved in the Django database.".format(index))
 
     def _delete_existing_chants(self):
         manuscript_pks = set(chant.manuscript.pk for (chant, _, _) in self.new_chant_info)
-
         if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
             # sqlite has trouble with bulk deletion so we need to delete in increments
             increment = 100
             chants = [chant.pk for chant in Chant.objects.filter(manuscript__pk__in=manuscript_pks)]
-
             for i in range(0, len(chants), increment):
                 # Can't delete a slice so we need to query again
                 Chant.objects.filter(pk__in=chants[i:i + increment]).delete()
-
         else:
             Chant.objects.filter(manuscript__pk__in=manuscript_pks).delete()
