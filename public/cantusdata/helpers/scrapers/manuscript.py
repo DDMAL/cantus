@@ -29,7 +29,7 @@ class ManuscriptScraper(HTMLParser):
         self.is_title = False
         self.is_field_label = False
         self.is_field_item = False
-        # Getting the right hand of the website is more difficult.
+        # Getting the right side of the website is more difficult.
         # There is no clear structure. Getting all the text
         # within the "view-content" class div seems the best option.
         self.view_content_div = 0
@@ -87,6 +87,12 @@ class ManuscriptScraper(HTMLParser):
         elif tag == 'h1':
             if title in attrs:
                 self.is_title = True
+        elif tag == 'a':
+            # Getting the link to the CSV Export
+            first_attr = attrs[0]
+            href, url = first_attr
+            if href == 'href' and url.endswith('.csv'):
+                self.dictionary['CSVExport'] = url
 
     def handle_endtag(self, tag):
         if tag == 'div':
