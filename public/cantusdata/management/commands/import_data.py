@@ -18,11 +18,8 @@ import pdb
 
 
 class Command(BaseCommand):
-    """
-        Importing manuscripts will import from 'sources_export.csv'
-        Importing concordances will import from 'concordances'
-        It will import all manuscripts mentioned above
-    """
+    """Imports Manuscripts, Concordances, and Chants from Cantus Database."""
+    
     help = 'Populates Manuscript, Concordance, and Chant django models'
 
     def add_arguments(self, parser):
@@ -32,7 +29,6 @@ class Command(BaseCommand):
                 'concordances',
                 'manuscripts',]
         )
-        
         parser.add_argument('--manuscript-id',
             type=int,
             dest='manuscript_id',
