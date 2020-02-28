@@ -26,7 +26,7 @@ class ChantImporter:
         try:
             csv_file = csv.DictReader(file_csv)
         except IOError:
-            raise IOError("File '{0}' does not exist!".format(file_name))
+            raise IOError("Could not read csv file")
         # Load in the csv file.  This is a massive list of dictionaries.
         self.stdout.write("Starting chant import process.")
         # Create chants and save them
