@@ -55,7 +55,8 @@ class MapFoliosView(APIView):
         folios_query = Folio.objects.filter(manuscript__id=manuscript_id)
         for folio in folios_query:
             folios.append(folio.number)
-            folio_imagelink[folio.number] = folio.image_link
+            if folio.image_link:
+                folio_imagelink[folio.number] = folio.image_link
 
         imagelinks = list(folio_imagelink.values())
         imagelinks_ids = _extract_ids(imagelinks)
