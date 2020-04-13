@@ -17,7 +17,9 @@ class MapFoliosView(APIView):
     def get(self, request, *args, **kwargs):
         # Return the URIs and folio names
         if 'manuscript_id' not in request.GET:
-            return Response()
+            manuscripts = Manuscript.objects.filter(manifest_url__isnull=False, public=True)
+            manuscript_ids = [(m.id, str(m)) for m in manuscripts]
+            return Response({'manuscript_ids': manuscript_ids})
 
         manuscript_id = int(request.GET['manuscript_id'])
         manuscript_obj = Manuscript.objects.get(id=manuscript_id)
@@ -43,15 +45,6 @@ class MapFoliosView(APIView):
 
         folios = []
         folio_imagelink = {}
-        # with open('./data_dumps/' + data) as data_csv:
-        #     data_contents = csv.DictReader(data_csv)
-        #     for row in data_contents:
-        #         folio = row['Folio']
-        #         link = row['Image link']
-        #         if folio not in folios:
-        #             folios.append(folio)
-        #         if link != '' and folio not in folio_imagelink:
-        #             folio_imagelink[folio] = link
         folios_query = Folio.objects.filter(manuscript__id=manuscript_id)
         for folio in folios_query:
             folios.append(folio.number)

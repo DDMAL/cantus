@@ -89,14 +89,14 @@
 {% elif error %}
 <h2 class="error-message">{{ error }}</h2>
 
-{% elif uris == None or folios == None or manuscript_id == None %}
-<h5><br>The data dump file has to be in <em>public/data_dumps/</em></h5>
-<form class="paths" action="/admin/map_folios/" method="get">
-    <input type="text" name="manuscript_id" placeholder="Manuscript ID" />
-    <input type="submit" />
-</form>
+{% elif manuscript_ids %}
+<ul>
+    {% for mid, mstring in manuscript_ids %}
+    <li><a href="/admin/map_folios?manuscript_id={{ mid }}">{{ mstring }}</a></li>
+    {% endfor %}
+</ul>
 
-{% else %}
+{% elif manuscript_id and uris and folios %}
 
 <h5><br><em>Tip: Use 'Tab' and 'Shift+Tab' to navigate the input fields.</em></h5>
 
