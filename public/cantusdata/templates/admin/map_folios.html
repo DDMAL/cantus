@@ -90,11 +90,24 @@
 <h2 class="error-message">{{ error }}</h2>
 
 {% elif manuscript_ids %}
-<ul>
-    {% for mid, mstring in manuscript_ids %}
-    <li><a href="/admin/map_folios?manuscript_id={{ mid }}">{{ mstring }}</a></li>
+<table>
+    <tr>
+      <th>Manuscript</th>
+      <th>Mapping</th>
+    </tr>
+    {% for m_id, m_str, is_mapped in manuscript_ids %}
+    <tr>
+        <td>{{ m_str }}<td>
+        <td>
+            {% if is_mapped %}
+            Already mapped
+            {% else %}
+            <a href="/admin/map_folios?manuscript_id={{ m_id }}">Map now</a>
+            {% endif %}
+        </td>
+    </tr>
     {% endfor %}
-</ul>
+</table>
 
 {% elif manuscript_id and uris and folios %}
 

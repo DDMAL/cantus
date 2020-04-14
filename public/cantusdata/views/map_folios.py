@@ -18,7 +18,7 @@ class MapFoliosView(APIView):
         # Return the URIs and folio names
         if 'manuscript_id' not in request.GET:
             manuscripts = Manuscript.objects.filter(manifest_url__isnull=False, public=True)
-            manuscript_ids = [(m.id, str(m)) for m in manuscripts]
+            manuscript_ids = [(m.id, str(m), m.is_mapped) for m in manuscripts]
             return Response({'manuscript_ids': manuscript_ids})
 
         manuscript_id = int(request.GET['manuscript_id'])
@@ -150,4 +150,6 @@ def _save_mapping(request):
         csv_writer.writerows(data)
 
     # Refresh all chants in solr after the folios have been updated
+    manuscript.is_mapped = True
+    manuscript.save()
     call_command('refresh_solr', 'chants', str(manuscript_id))
