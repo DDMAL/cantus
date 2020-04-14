@@ -26,6 +26,7 @@ class Manuscript(models.Model):
     description = models.TextField(blank=True, null=True)
     public = models.BooleanField(default=False)
     is_mapped = models.BooleanField(default=False)
+    chants_loaded = models.BooleanField(default=False)
     plugins = models.ManyToManyField("cantusdata.Plugin",
                                      related_name="plugins",
                                      blank=True, null=True)
