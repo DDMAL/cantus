@@ -153,3 +153,4 @@ def _save_mapping(request):
     manuscript.is_mapped = True
     manuscript.save()
     call_command('refresh_solr', 'chants', str(manuscript_id))
+    call_command('import_folio_mapping', manuscript_id, '{}.csv'.format(manuscript_id))
