@@ -24,8 +24,8 @@ sudo -u postgres psql -c "alter user cantus_admin with SUPERUSER;"
 sudo -u postgres psql -c "create database cantus_db with owner cantus_admin;"
 
 echo "===== Copy the repository ====="
-cp -R /vagrant/* /home/vagrant/
-sudo chown -R vagrant /home/vagrant/
+cp -R /vagrant/* /home/$HOMEUSER/
+sudo chown -R $HOMEUSER /home/$HOMEUSER/
 
 echo "===== Installing Java 8 ====="
 add-apt-repository ppa:openjdk-r/ppa
@@ -41,10 +41,10 @@ rm solr-6.1.0.tgz
 rm install_solr_service.sh
 
 # Make a symbolic link to the cantus core and solr.xml in the home folder of solr
-ln -s /home/vagrant/public/solr/solr/collection1 /var/solr/data/collection1
-ln -s /home/vagrant/public/solr/solr/cantus-test /var/solr/data/cantus-test
+ln -s /home/ubuntu/public/solr/solr/collection1 /var/solr/data/collection1
+ln -s /home/ubuntu/public/solr/solr/cantus-test /var/solr/data/cantus-test
 rm /var/solr/data/solr.xml
-ln -s /home/vagrant/public/solr/solr/solr.xml /var/solr/data/solr.xml
+ln -s /home/ubuntu/public/solr/solr/solr.xml /var/solr/data/solr.xml
 
 # Create the folders where the solr data is going to be written
 mkdir -p /var/db/solr/
