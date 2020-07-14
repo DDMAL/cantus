@@ -5,13 +5,11 @@ require 'vagrant-openstack-provider'
 
 Vagrant.configure(2) do |config|
 
-  config.vm.network :forwarded_port, guest: 8000, host: 8000
-
-  # Solr Port, needed to access admin page
-  config.vm.network :forwarded_port, guest: 8983, host: 8080
-  config.vm.synced_folder ".", "/vagrant"
-
+  # Virtualbox provider settings
   config.vm.provider "virtualbox" do |vb, override|
+    override.vm.network :forwarded_port, guest: 8000, host: 8000
+    override.vm.network :forwarded_port, guest: 8983, host: 8080
+    override.vm.synced_folder ".", "/vagrant"
     override.vm.box = "ubuntu/trusty64"
     vb.customize ["modifyvm", :id, "--ioapic", "on"]
     vb.customize ["modifyvm", :id, "--cpus", "4"]
@@ -27,7 +25,11 @@ Vagrant.configure(2) do |config|
     end
   end
 
+  # Openstack (ComputeCanada) provider settings
   config.vm.provider "openstack" do |os, override|
+    override.vm.network :forwarded_port, guest: 8000, host: 8000
+    override.vm.network :forwarded_port, guest: 8983, host: 8080
+    override.vm.synced_folder ".", "/vagrant"
     override.ssh.username   = "ubuntu"
     os.openstack_auth_url   = 'https://arbutus.cloud.computecanada.ca:5000/v3'
     os.project_name         = 'rpp-ichiro'
