@@ -39,7 +39,7 @@ class Command(BaseCommand):
                 'Deleting old {0} data...'.format(options['type']))
             if options['type'] == 'chants':
                 # manuscript-id is not optional for chants
-                if 'manuscript_id' not in options:
+                if options['manuscript_id'] is None:
                     self.stdout.write(
                         'Please provide a manuscript-id. Doing nothing.')
                 else:
