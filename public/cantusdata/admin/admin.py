@@ -12,26 +12,68 @@ def reindex_in_solr(modeladmin, request, queryset):
     for item in queryset:
         item.save()
 
+
 reindex_in_solr.short_description = "ReIndex in Solr"
 
 
 class ManuscriptAdmin(admin.ModelAdmin):
     actions = [reindex_in_solr, 'load_chants']
+    list_per_page = 200
     fieldsets = [
-        ('Metadata', {'fields': ['name', 'siglum', 'siglum_slug', 'date', 'provenance', 'description', 'folio_count', 'chant_count']}),
-        ('Sources', {'fields': ['cantus_url', 'csv_export_url', 'manifest_url']}),
-        ('Status', {'fields': ['public', 'chants_loaded', 'is_mapped']})
+        (
+            'Metadata', {
+                'fields': [
+                    'name',
+                    'siglum',
+                    'siglum_slug',
+                    'date',
+                    'provenance',
+                    'description',
+                    'folio_count',
+                    'chant_count'
+                ]
+            }
+        ),
+        (
+            'Sources', {
+                'fields': [
+                    'cantus_url',
+                    'csv_export_url',
+                    'manifest_url'
+                ]
+            }
+        ),
+        (
+            'Status', {
+                'fields': [
+                    'public',
+                    'chants_loaded',
+                    'is_mapped'
+                ]
+            }
+        )
     ]
-    readonly_fields = ('folio_count', 'chant_count', 'siglum_slug', 'chants_loaded', 'is_mapped')
-    list_display = ('name', 'siglum', 'public', 'chants_loaded', 'is_mapped')
+    readonly_fields = (
+        'folio_count',
+        'chant_count',
+        'siglum_slug',
+        'chants_loaded',
+        'is_mapped'
+    )
+    list_display = (
+        'name',
+        'siglum',
+        'public',
+        'chants_loaded',
+        'is_mapped'
+    )
 
     def load_chants(self, request, queryset):
         for manuscript in queryset:
             call_command('import_data', 'chants', manuscript_id=manuscript.pk)
-            manuscript.chants_loaded = True
-            manuscript.save()
         self.message_user(request, "Loaded chants for manuscript")
-    load_chants.short_description = "Imports the chants associated with the selected manuscript(s)"
+    load_chants.short_description = "Imports the chants associated \
+        with the selected manuscript(s)"
 
 
 class ChantAdmin(admin.ModelAdmin):
