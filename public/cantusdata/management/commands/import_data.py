@@ -11,8 +11,7 @@ from cantusdata.helpers.scrapers.manuscript import parse as parse_manuscript
 from cantusdata.helpers.scrapers.concordances import concordances
 import urllib.request
 from io import StringIO
-import csv
-import re
+
 
 class Command(BaseCommand):
     """Imports Manuscripts, Concordances, and Chants from Cantus Database."""
@@ -20,13 +19,15 @@ class Command(BaseCommand):
     help = 'Populates Manuscript, Concordance, and Chant django models'
 
     def add_arguments(self, parser):
-        parser.add_argument('type',
+        parser.add_argument(
+            'type',
             choices=[
                 'chants',
                 'concordances',
-                'manuscripts',]
+                'manuscripts']
         )
-        parser.add_argument('--manuscript-id',
+        parser.add_argument(
+            '--manuscript-id',
             type=int,
             dest='manuscript_id',
             help='Manuscript id (used only when importing chants)'
@@ -34,15 +35,20 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         with solr_synchronizer.get_session():
-            self.stdout.write('Deleting old {0} data...'.format(options['type']))
+            self.stdout.write(
+                'Deleting old {0} data...'.format(options['type']))
             if options['type'] == 'chants':
                 # manuscript-id is not optional for chants
                 if 'manuscript_id' not in options:
-                    self.stdout.write('Please provide a manuscript-id. Doing nothing.')
+                    self.stdout.write(
+                        'Please provide a manuscript-id. Doing nothing.')
                 else:
-                    Chant.objects.filter(manuscript__id=options['manuscript_id']).delete()
-                    self.stdout.write('Deleting old folio data...')
-                    Folio.objects.filter(manuscript__id=options['manuscript_id']).delete()
+                    Chant.objects.filter(
+                        manuscript__id=options['manuscript_id']).delete()
+                    self.stdout.write(
+                        'Deleting old folio data...')
+                    Folio.objects.filter(
+                        manuscript__id=options['manuscript_id']).delete()
                     self.import_chant_data(**options)
             elif options['type'] == 'concordances':
                 Concordance.objects.all().delete()
@@ -59,18 +65,28 @@ class Command(BaseCommand):
         i = 0
         for source, name in sources.items():
             self.stdout.write(source + ' ' + name)
+            # Getting the fields from the scraper
             metadata = parse_manuscript(source, relative_url=True)
+            name = metadata.get('Title', '')
+            cantus_url = metadata.get('CantusURL', '')
+            csv_export_url = metadata.get('CSVExport', '')
+            siglum = metadata.get('Siglum', '')
+            date = metadata.get('Date', '')
+            provenance = metadata.get('Provenance', '')
+            description = metadata.get('Summary', '')
+            # Populating the Manuscript model
             manuscript = Manuscript()
-            manuscript.name = metadata['Title']
-            manuscript.cantus_url = metadata['CantusURL']
-            manuscript.csv_export_url = metadata['CSVExport']
-            manuscript.siglum = metadata["Siglum"] if 'Siglum' in metadata else ''
-            manuscript.date = metadata["Date"] if 'Date' in metadata else ''
-            manuscript.provenance = metadata["Provenance"] if 'Provenance' in metadata else ''
-            manuscript.description = metadata["Summary"] if 'Summary' in metadata else ''
+            manuscript.name = name
+            manuscript.cantus_url = cantus_url
+            manuscript.csv_export_url = csv_export_url
+            manuscript.siglum = siglum
+            manuscript.date = date
+            manuscript.provenance = provenance
+            manuscript.description = description
             manuscript.save()
             i += 1
-        self.stdout.write("Successfully imported {0} manuscripts into database.".format(i))
+        self.stdout.write(
+            f"Successfully imported {i} manuscripts into database.")
 
     @transaction.atomic
     def import_concordance_data(self, **options):
@@ -84,15 +100,18 @@ class Command(BaseCommand):
             concordance.location = c['location']
             concordance.rism_code = c['rism_code']
             concordance.save()
-        self.stdout.write("Successfully imported {0} concordances into database.".format(idx + 1))
+        self.stdout.write(
+            f"Successfully imported {idx + 1} concordances into database.")
 
     def import_chant_data(self, **options):
         mobj = Manuscript.objects.get(id=options['manuscript_id'])
-        scsv = urllib.request.urlopen(mobj.csv_export_url).read().decode('utf-8')
+        scsv = urllib.request.urlopen(
+            mobj.csv_export_url).read().decode('utf-8')
         # csv module can't handle csv as strings, so making it a file
         fcsv = StringIO(scsv)
         importer = ChantImporter(self.stdout)
         chant_count = importer.import_csv(fcsv)
         # Save the new chants
         importer.save()
-        self.stdout.write("Successfully imported {0} chants into database.".format(chant_count))
+        self.stdout.write(
+            f"Successfully imported {chant_count} chants into database.")
