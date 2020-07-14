@@ -86,7 +86,9 @@ class Command(BaseCommand):
             manuscript.save()
             i += 1
         self.stdout.write(
-            f"Successfully imported {i} manuscripts into database.")
+            "Successfully imported {} manuscripts into database."
+            .format(i)
+        )
 
     @transaction.atomic
     def import_concordance_data(self, **options):
@@ -101,7 +103,9 @@ class Command(BaseCommand):
             concordance.rism_code = c['rism_code']
             concordance.save()
         self.stdout.write(
-            f"Successfully imported {idx + 1} concordances into database.")
+            "Successfully imported {} concordances into database."
+            .format(idx + 1)
+        )
 
     def import_chant_data(self, **options):
         mobj = Manuscript.objects.get(id=options['manuscript_id'])
@@ -113,5 +117,10 @@ class Command(BaseCommand):
         chant_count = importer.import_csv(fcsv)
         # Save the new chants
         importer.save()
+        # Register that chants are loaded for this manuscript
+        mobj.chants_loaded = True
+        mobj.save()
         self.stdout.write(
-            f"Successfully imported {chant_count} chants into database.")
+            "Successfully imported {} chants into database."
+            .format(chant_count)
+        )
