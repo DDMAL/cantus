@@ -100,7 +100,7 @@ Password (again):
 Superuser created successfully.
 ```
 
-Using your admin credentials, verify that you are able to log into the admin django site, which is located in http://localhost:8000/admin/
+Using your admin credentials, verify that you are able to log into the admin django site, which should be located in http://localhost:8000/admin/
 
 When navigating through any of the tables in the admin interface (e.g., Manuscripts, Concordances, and Chants), they will appear to be empty.
 
@@ -135,4 +135,30 @@ An additional command is included to import chants associated with a specific ma
 ```
 however, this process can already be done using the user interface. We recommend using the user interface from this point onward.
 
+## Adding manuscripts and chants using the admin user interface
+
+Once the manuscript information has been fetched from the Cantus Database,
+the following fields of a manuscript should become available:
+
+- The cantus URL
+- The cantus CSV export URL, which contains all chant/folio associations for this manuscript
+
+The process for turning any Manuscript in the initialized database into a searchable Manuscript
+in the Cantus Ultimus interface involves the following steps:
+
+1. Importing all the chant information of the manuscript
+2. Defining the source images of the Manuscript through a IIIF Manifest file
+3. Setting the Manuscript as a `public` Manuscript in the Cantus Ultimus interface
+
+### Importing chant information
+
+In the admin interface (located in http://localhost:8000/admin), navigate the list of Manuscripts and select the one you wish to enable in Cantus Ultimus.
+
+Select the manuscript by ticking its corresponding check box.
+
+In the `Actions` menu located at the top, trigger the action called `Import the chants associated with the selected manuscript(s)`.
+
+This will trigger a series of queries in the backend. Wait until you see the notification `Loaded chants for manuscript` above the `Actions` menu. It may take a few minutes for this process to complete.
+
+After refreshing the admin page and looking at the Manuscript in the list, it should appear with the flag `Chants loaded` enabled. This indicates that the chant information has been added to the database and solr index. 
 
