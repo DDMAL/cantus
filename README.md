@@ -149,6 +149,7 @@ in the Cantus Ultimus interface involves the following steps:
 1. Importing all the chant information of the manuscript
 2. Defining the source images of the Manuscript through a IIIF Manifest file
 3. Setting the Manuscript as a `public` Manuscript in the Cantus Ultimus interface
+4. Map the folio information from Cantus Database to the images obtained from the IIIF Manifest
 
 ### Importing chant information
 
@@ -161,4 +162,56 @@ In the `Actions` menu located at the top, trigger the action called `Import the 
 This will trigger a series of queries in the backend. Wait until you see the notification `Loaded chants for manuscript` above the `Actions` menu. It may take a few minutes for this process to complete.
 
 After refreshing the admin page and looking at the Manuscript in the list, it should appear with the flag `Chants loaded` enabled. This indicates that the chant information has been added to the database and solr index. 
+
+### Defining the source images of the Manuscript through a IIIF Manifest file
+
+Of all the manuscripts in the list displayed in the admin interface, only a handful have a public IIIF Manifest with source images.
+
+IIIF Manifest files can be found within libraries such as [Gallica](https://gallica.bnf.fr/accueil/en/content/accueil-en?mode=desktop), [e-codices](https://www.e-codices.unifr.ch/en), and others.
+
+When a IIIF Manifest is located for a specific manuscript, the URL can be included in the manuscript's metadata.
+
+Click on the Manuscript's entry.
+
+Introduce the IIIF Manifest URL under the `Manifest url` field.
+
+Save the changes.
+
+### Setting the Manuscript as a `public` Manuscript in the Cantus Ultimus interface
+
+Making a manuscript a `public` manuscript indicates to the Cantus Ultimus website that the manuscript should show up under the `Manuscript` tab of the final user's web interface.
+
+Click on the Manuscript's entry.
+
+Tick the `public` value.
+
+Save the changes.
+
+### Map the folio information from Cantus Database to the images obtained from the IIIF Manifest
+
+Once the chant information and IIIF manifest url have been added to a Manuscript, and the manuscript has been marked as `public`, the mapping tool becomes available to map the images with the folio metadata.
+
+The mapping tool is located in the following address: http://localhost:8000/admin/map_folios
+
+Within the mapping tool, the new manuscript should appear with an option to `Map now`.
+
+Click on `Map now`.
+
+The mapping tool triggers a heuristic search on the background, which tries to map the images in the IIIF Manifest to the folios described in the Cantus Database.
+
+The result of that automatic process will be displayed in the mapping interface.
+
+At this point, the user might want to verify that the information provided by the automatic mapping is accurate, and correct it when it is not.
+
+In the mapping interface, green folio pages indicate a folio has been mapped to an image manifest, whereas a red folio page indicates that a folio has not been mapped to an image from the manifest.
+
+Once the mapping process has been manually revised, conclude the mapping process by clicking on `Submit this Mapping`.
+
+It may take several minutes for the backend of the website to deploy the changes across the database and solr index.
+
+The user will be able to know when that process has concluded by revisiting the admin interface. A complete mapping process will activate the `Is mapped` flag in the corresponding manuscript.
+
+At this point, the manuscript should be searchable within the main website.
+
+
 
