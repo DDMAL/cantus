@@ -102,6 +102,8 @@ Superuser created successfully.
 
 Using your admin credentials, verify that you are able to log into the admin django site, which should be located in http://localhost:8000/admin/
 
+![image](https://user-images.githubusercontent.com/7258463/101060564-8be1e500-355d-11eb-887f-5af65b50ba13.png)
+
 When navigating through any of the tables in the admin interface (e.g., Manuscripts, Concordances, and Chants), they will appear to be empty.
 
 We can pre-populate the Concordances, Manuscripts, and Chants from the information available in the [Cantus Database](http://cantus.uwaterloo.ca/).
@@ -138,7 +140,10 @@ however, this process can already be done using the user interface. We recommend
 ## Adding manuscripts and chants using the admin user interface
 
 Once the manuscript information has been fetched from the Cantus Database,
-the following fields of a manuscript should become available:
+additionally to the Manuscript's metadata, the following fields become available:
+
+![image](https://user-images.githubusercontent.com/7258463/101062582-cf3d5300-355f-11eb-93ca-01be71ea04cd.png)
+(Paris, F-Pnm lat. 15181)
 
 - The cantus URL
 - The cantus CSV export URL, which contains all chant/folio associations for this manuscript
@@ -159,9 +164,13 @@ Select the manuscript by ticking its corresponding check box.
 
 In the `Actions` menu located at the top, trigger the action called `Import the chants associated with the selected manuscript(s)`.
 
+![image](https://user-images.githubusercontent.com/7258463/101063136-79b57600-3560-11eb-97ca-286f1faa06c3.png)
+
 This will trigger a series of queries in the backend. Wait until you see the notification `Loaded chants for manuscript` above the `Actions` menu. It may take a few minutes for this process to complete.
 
 After refreshing the admin page and looking at the Manuscript in the list, it should appear with the flag `Chants loaded` enabled. This indicates that the chant information has been added to the database and solr index. 
+
+![image](https://user-images.githubusercontent.com/7258463/101063628-019b8000-3561-11eb-8609-e986e5002c96.png)
 
 ### Defining the source images of the Manuscript through a IIIF Manifest file
 
@@ -175,6 +184,8 @@ Click on the Manuscript's entry.
 
 Introduce the IIIF Manifest URL under the `Manifest url` field.
 
+![image](https://user-images.githubusercontent.com/7258463/101063810-41fafe00-3561-11eb-9146-6b4ae1d80b51.png)
+
 Save the changes.
 
 ### Setting the Manuscript as a `public` Manuscript in the Cantus Ultimus interface
@@ -184,6 +195,8 @@ Making a manuscript a `public` manuscript indicates to the Cantus Ultimus websit
 Click on the Manuscript's entry.
 
 Tick the `public` value.
+
+![image](https://user-images.githubusercontent.com/7258463/101064119-a3bb6800-3561-11eb-9fc0-577d7288c692.png)
 
 Save the changes.
 
@@ -195,6 +208,8 @@ The mapping tool is located in the following address: http://localhost:8000/admi
 
 Within the mapping tool, the new manuscript should appear with an option to `Map now`.
 
+![image](https://user-images.githubusercontent.com/7258463/101064257-c8174480-3561-11eb-9765-f5207f549ff2.png)
+
 Click on `Map now`.
 
 The mapping tool triggers a heuristic search on the background, which tries to map the images in the IIIF Manifest to the folios described in the Cantus Database.
@@ -205,6 +220,8 @@ At this point, the user might want to verify that the information provided by th
 
 In the mapping interface, green folio pages indicate a folio has been mapped to an image manifest, whereas a red folio page indicates that a folio has not been mapped to an image from the manifest.
 
+![image](https://user-images.githubusercontent.com/7258463/101064384-f1d06b80-3561-11eb-8515-570bc99a0b0f.png)
+
 Once the mapping process has been manually revised, conclude the mapping process by clicking on `Submit this Mapping`.
 
 It may take several minutes for the backend of the website to deploy the changes across the database and solr index.
@@ -212,6 +229,3 @@ It may take several minutes for the backend of the website to deploy the changes
 The user will be able to know when that process has concluded by revisiting the admin interface. A complete mapping process will activate the `Is mapped` flag in the corresponding manuscript.
 
 At this point, the manuscript should be searchable within the main website.
-
-
-
