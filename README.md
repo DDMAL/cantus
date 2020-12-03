@@ -143,6 +143,7 @@ Once the manuscript information has been fetched from the Cantus Database,
 additionally to the Manuscript's metadata, the following fields become available:
 
 ![image](https://user-images.githubusercontent.com/7258463/101062582-cf3d5300-355f-11eb-93ca-01be71ea04cd.png)
+
 (Paris, F-Pnm lat. 15181)
 
 - The cantus URL
