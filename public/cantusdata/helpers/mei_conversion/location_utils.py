@@ -13,17 +13,14 @@ def getLocation(tokens):
     locs = []
 
     for group in getTokensBySystem(tokens):
-        ulx = min(tok.location['ulx'] for tok in group)
-        uly = min(tok.location['uly'] for tok in group)
-        lrx = max(tok.location['lrx'] for tok in group)
-        lry = max(tok.location['lry'] for tok in group)
+        ulx = min(tok.location["ulx"] for tok in group)
+        uly = min(tok.location["uly"] for tok in group)
+        lrx = max(tok.location["lrx"] for tok in group)
+        lry = max(tok.location["lry"] for tok in group)
 
-        locs.append({
-            'ulx': ulx,
-            'uly': uly,
-            'height': lry - uly,
-            'width': lrx - ulx
-        })
+        locs.append(
+            {"ulx": ulx, "uly": uly, "height": lry - uly, "width": lrx - ulx}
+        )
 
     return locs
 

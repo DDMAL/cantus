@@ -18,7 +18,9 @@ class Command(BaseCommand):
         try:
             manuscript = Manuscript.objects.get(id=id)
         except:
-            self.stdout.write("Error: Manuscript with id={0} does not exist.".format(id))
+            self.stdout.write(
+                "Error: Manuscript with id={0} does not exist.".format(id)
+            )
             return
         # Reindex the folios
         index = 0

@@ -1,12 +1,4 @@
-STEPREF = {
-    'C': 0,
-    'D': 2,  # 2
-    'E': 4,
-    'F': 5,
-    'G': 7,
-    'A': 9,  # 9
-    'B': 11
-}
+STEPREF = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}  # 2  # 9
 
 
 def getIntervals(semitones, pnames):
@@ -24,19 +16,19 @@ def getIntervals(semitones, pnames):
     intervals = []
     for (interval, pname) in zip(semitones, pnames):
         if interval == 0:
-            intervals.append('r')
+            intervals.append("r")
         else:
             if interval > 0:
-                direction = 'u'
+                direction = "u"
             else:
-                direction = 'd'
+                direction = "d"
             if interval == 6:
-                if pname == 'b':
+                if pname == "b":
                     size = 5
                 else:
                     size = 4
             elif interval == -6:
-                if pname == 'b':
+                if pname == "b":
                     size = 4
                 else:
                     size = 5
@@ -58,13 +50,13 @@ def getContour(semitones):
     contour = []
     for p in semitones:
         if p == 0:
-            contour.append('r')  # repeated
+            contour.append("r")  # repeated
         elif p > 0:
-            contour.append('u')  # up
+            contour.append("u")  # up
         elif p < 0:
-            contour.append('d')  # down
+            contour.append("d")  # down
 
-    return ''.join(contour)
+    return "".join(contour)
 
 
 def getPitches(seq):
@@ -179,40 +171,40 @@ def convertSemitoneToSpecifierGenericMicrotone(count):
     octave = abs(count) // 12  # let floor to int
 
     if size == 0:
-        spec = 'P'
+        spec = "P"
         generic = 1
     elif size == 1:
-        spec = 'm'
+        spec = "m"
         generic = 2
     elif size == 2:
-        spec = 'M'
+        spec = "M"
         generic = 2
     elif size == 3:
-        spec = 'm'
+        spec = "m"
         generic = 3
     elif size == 4:
-        spec = 'M'
+        spec = "M"
         generic = 3
     elif size == 5:
-        spec = 'P'
+        spec = "P"
         generic = 4
     elif size == 6:
-        spec = 'd'
+        spec = "d"
         generic = 5
     elif size == 7:
-        spec = 'P'
+        spec = "P"
         generic = 5
     elif size == 8:
-        spec = 'm'
+        spec = "m"
         generic = 6
     elif size == 9:
-        spec = 'M'
+        spec = "M"
         generic = 6
     elif size == 10:
-        spec = 'm'
+        spec = "m"
         generic = 7
     elif size == 11:
-        spec = 'M'
+        spec = "M"
         generic = 7
 
-    return spec, (generic+(octave*7)) * dirScale, cents
+    return spec, (generic + (octave * 7)) * dirScale, cents

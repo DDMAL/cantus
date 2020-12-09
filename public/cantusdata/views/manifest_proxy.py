@@ -14,13 +14,16 @@ class ManifestProxyView(APIView):
     the retrieval of JSON files from them, if serving from https.
     """
 
-    renderer_classes = (JSONRenderer, )
+    renderer_classes = (JSONRenderer,)
 
     def get(self, request, *args, **kwargs):
 
-        manifest_url = kwargs['manifest_url']
+        manifest_url = kwargs["manifest_url"]
 
         try:
-            return StreamingHttpResponse(requests.get(manifest_url, verify=False, stream=True), content_type='application/json')
+            return StreamingHttpResponse(
+                requests.get(manifest_url, verify=False, stream=True),
+                content_type="application/json",
+            )
         except requests.exceptions.RequestException as e:
             raise Http404("Could not retrieve manifest from given url")

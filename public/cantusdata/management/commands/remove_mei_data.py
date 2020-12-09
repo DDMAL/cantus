@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 import solr
 
+
 class Command(BaseCommand):
     args = ""
 
@@ -18,8 +19,12 @@ class Command(BaseCommand):
         else:
             raise Exception("Please provide manuscript name!")
 
-        self.stdout.write("Removing {0} music notation data from Solr...".format(manuscript))
+        self.stdout.write(
+            "Removing {0} music notation data from Solr...".format(manuscript)
+        )
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
-        solrconn.delete_query("type:cantusdata_music_notation AND siglum_slug:{0}".format(siglum))
+        solrconn.delete_query(
+            "type:cantusdata_music_notation AND siglum_slug:{0}".format(siglum)
+        )
         solrconn.commit()
         self.stdout.write("Success.")

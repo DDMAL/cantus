@@ -17,61 +17,44 @@ reindex_in_solr.short_description = "ReIndex in Solr"
 
 
 class ManuscriptAdmin(admin.ModelAdmin):
-    actions = [reindex_in_solr, 'load_chants']
+    actions = [reindex_in_solr, "load_chants"]
     list_per_page = 200
     fieldsets = [
         (
-            'Metadata', {
-                'fields': [
-                    'name',
-                    'siglum',
-                    'siglum_slug',
-                    'date',
-                    'provenance',
-                    'description',
-                    'folio_count',
-                    'chant_count'
+            "Metadata",
+            {
+                "fields": [
+                    "name",
+                    "siglum",
+                    "siglum_slug",
+                    "date",
+                    "provenance",
+                    "description",
+                    "folio_count",
+                    "chant_count",
                 ]
-            }
+            },
         ),
         (
-            'Sources', {
-                'fields': [
-                    'cantus_url',
-                    'csv_export_url',
-                    'manifest_url'
-                ]
-            }
+            "Sources",
+            {"fields": ["cantus_url", "csv_export_url", "manifest_url"]},
         ),
-        (
-            'Status', {
-                'fields': [
-                    'public',
-                    'chants_loaded',
-                    'is_mapped'
-                ]
-            }
-        )
+        ("Status", {"fields": ["public", "chants_loaded", "is_mapped"]}),
     ]
     readonly_fields = (
-        'folio_count',
-        'chant_count',
-        'siglum_slug',
-        'chants_loaded',
-        'is_mapped'
+        "folio_count",
+        "chant_count",
+        "siglum_slug",
+        "chants_loaded",
+        "is_mapped",
     )
-    list_display = (
-        'name',
-        'siglum',
-        'public',
-        'chants_loaded',
-        'is_mapped'
-    )
+    list_display = ("name", "siglum", "public", "chants_loaded", "is_mapped")
 
     def load_chants(self, request, queryset):
         for manuscript in queryset:
-            call_command('import_data', 'chants', manuscript_id=manuscript.pk)
+            call_command("import_data", "chants", manuscript_id=manuscript.pk)
         self.message_user(request, "Loaded chants for manuscript")
+
     load_chants.short_description = "Imports the chants associated \
         with the selected manuscript(s)"
 
@@ -82,21 +65,21 @@ class ChantAdmin(admin.ModelAdmin):
 
 class FolioAdmin(admin.ModelAdmin):
     actions = [reindex_in_solr]
-    readonly_fields = ('chant_count',)
+    readonly_fields = ("chant_count",)
 
 
 class ConcordanceAdmin(admin.ModelAdmin):
     actions = [reindex_in_solr]
-    readonly_fields = ('citation',)
+    readonly_fields = ("citation",)
 
 
 class PluginAdmin(admin.ModelAdmin):
-    readonly_fields = ('slug',)
+    readonly_fields = ("slug",)
 
 
 class NeumeExemplarAdmin(admin.ModelAdmin):
-    list_display = ('admin_image', '__str__')
-    readonly_fields = ('admin_image',)
+    list_display = ("admin_image", "__str__")
+    readonly_fields = ("admin_image",)
 
 
 admin.site.register(Manuscript, ManuscriptAdmin)

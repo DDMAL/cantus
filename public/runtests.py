@@ -22,7 +22,7 @@ from cantusdata import settings as base_settings
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('tests', nargs='*', default=['cantusdata'])
+    parser.add_argument("tests", nargs="*", default=["cantusdata"])
     args = parser.parse_args()
 
     failures = run_tests(args.tests)
@@ -31,7 +31,7 @@ def main():
 
 def run_tests(tests):
     with create_test_solr_core():
-        os.environ['DJANGO_SETTINGS_MODULE'] = 'cantusdata.test.test_settings'
+        os.environ["DJANGO_SETTINGS_MODULE"] = "cantusdata.test.test_settings"
         django.setup()
         TestRunner = get_runner(settings)
         test_runner = TestRunner()
@@ -43,8 +43,9 @@ def create_test_solr_core():
     # It's important to specify dataDir here, because the solrconfig.xml gives the dataDir
     # for the production core and the two can't be the same
     run_solr_admin_cmd(
-            'Creating temporary Solr core...',
-            'action=CREATE&name=cantus-test&instanceDir=cantus-test&dataDir=data')
+        "Creating temporary Solr core...",
+        "action=CREATE&name=cantus-test&instanceDir=cantus-test&dataDir=data",
+    )
 
     err = None
 
@@ -54,8 +55,9 @@ def create_test_solr_core():
         err = e
 
     run_solr_admin_cmd(
-            'Unloading temporary Solr core',
-            'action=UNLOAD&core=cantus-test&deleteDataDir=true')
+        "Unloading temporary Solr core",
+        "action=UNLOAD&core=cantus-test&deleteDataDir=true",
+    )
 
     if err is not None:
         raise err
@@ -64,7 +66,7 @@ def create_test_solr_core():
 def run_solr_admin_cmd(msg, args):
     print(msg, file=sys.stderr)
 
-    cmd = base_settings.SOLR_ADMIN + '/cores?' + args
+    cmd = base_settings.SOLR_ADMIN + "/cores?" + args
     resp = requests.get(cmd)
     resp.raise_for_status()
     return resp

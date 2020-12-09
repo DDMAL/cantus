@@ -38,45 +38,53 @@ class GameraXMLConverter:
         neumeElements = []
         zones = []
 
-        for elem in etree.parse(self.xmlFile).xpath('/gamera-database/glyphs/glyph'):
+        for elem in etree.parse(self.xmlFile).xpath(
+            "/gamera-database/glyphs/glyph"
+        ):
             # Get the relevant attributes from the glyph element
-            startX = int(elem.get('ulx'))
-            endX = startX + int(elem.get('ncols'))
+            startX = int(elem.get("ulx"))
+            endX = startX + int(elem.get("ncols"))
 
-            startY = int(elem.get('uly'))
-            endY = startY + int(elem.get('nrows'))
+            startY = int(elem.get("uly"))
+            endY = startY + int(elem.get("nrows"))
 
-            curNeumeName = elem.xpath('string(./ids/id/@name)')
+            curNeumeName = elem.xpath("string(./ids/id/@name)")
 
             # Create the MEI neume element
-            newNeumeElement = MeiElement('neume')
+            newNeumeElement = MeiElement("neume")
             neumeElements.append(newNeumeElement)
 
             newNeumeElement.id = generate_MEI_ID()
 
-            splitName = curNeumeName[curNeumeName.find(".") + 1:]
-            if(splitName in self.neumeNames):
-                newNeumeElement.addAttribute(MeiAttribute('name', self.neumeNames[splitName]))
+            splitName = curNeumeName[curNeumeName.find(".") + 1 :]
+            if splitName in self.neumeNames:
+                newNeumeElement.addAttribute(
+                    MeiAttribute("name", self.neumeNames[splitName])
+                )
             elif len(splitName) < 3:
-                newNeumeElement.addAttribute(MeiAttribute('name', "Letter " + splitName.upper()))
+                newNeumeElement.addAttribute(
+                    MeiAttribute("name", "Letter " + splitName.upper())
+                )
             else:
-                newNeumeElement.addAttribute(MeiAttribute('name', splitName))
+                newNeumeElement.addAttribute(MeiAttribute("name", splitName))
 
             zoneID = generate_MEI_ID()
-            newNeumeElement.addAttribute(MeiAttribute('facs', zoneID))
+            newNeumeElement.addAttribute(MeiAttribute("facs", zoneID))
             zones.append(Zone(zoneID, startX, startY, endX, endY))
 
         zoneElements = []
 
-        for zone in self._sortZones(zones, dumpVisualization=dumpVisualization):
-            newZoneElement = MeiElement('zone')
+        for zone in self._sortZones(
+            zones, dumpVisualization=dumpVisualization
+        ):
+            newZoneElement = MeiElement("zone")
             zoneElements.append(newZoneElement)
 
             newZoneElement.id = zone.id
-            newZoneElement.addAttribute(MeiAttribute('ulx', str(zone.startX)))
-            newZoneElement.addAttribute(MeiAttribute('uly', str(zone.startY)))
-            newZoneElement.addAttribute(MeiAttribute('lrx', str(zone.endX)))
-            newZoneElement.addAttribute(MeiAttribute('lry', str(zone.endY)))
+            newZoneElement.addAttribute(MeiAttribute("ulx", str(zone.startX)))
+            newZoneElement.addAttribute(MeiAttribute("uly", str(zone.startY)))
+            newZoneElement.addAttribute(MeiAttribute("lrx", str(zone.endX)))
+            newZoneElement.addAttribute(MeiAttribute("lry", str(zone.endY)))
 
         return zoneElements, neumeElements
 
@@ -92,43 +100,43 @@ class GameraXMLConverter:
         root.id = generate_MEI_ID()
         self.meiDoc.root = root
 
-        #needs meiHead here
-        meiHead = MeiElement('meiHead')
-        fileDesc = MeiElement('fileDesc')
-        titleStmt = MeiElement('titleStmt')
-        title = MeiElement('title')
-        pubStmt = MeiElement('pubStmt')
-        date = MeiElement('date')
-        encodingDesc = MeiElement('encodingDesc')
-        projectDesc = MeiElement('projectDesc')
-        p = MeiElement('p')
+        # needs meiHead here
+        meiHead = MeiElement("meiHead")
+        fileDesc = MeiElement("fileDesc")
+        titleStmt = MeiElement("titleStmt")
+        title = MeiElement("title")
+        pubStmt = MeiElement("pubStmt")
+        date = MeiElement("date")
+        encodingDesc = MeiElement("encodingDesc")
+        projectDesc = MeiElement("projectDesc")
+        p = MeiElement("p")
 
-        music = MeiElement('music')
-        facsimile = MeiElement('facsimile')
+        music = MeiElement("music")
+        facsimile = MeiElement("facsimile")
 
-        self.surface = MeiElement('surface')
+        self.surface = MeiElement("surface")
 
         # Label the surface with the name of the input file, which could help
         # identify the original image
         label = os.path.basename(os.path.splitext(self.xmlFile)[0])
-        self.surface.addAttribute(MeiAttribute('label', label))
+        self.surface.addAttribute(MeiAttribute("label", label))
 
-        #systems get added to page
-        #neumes get added to systems
+        # systems get added to page
+        # neumes get added to systems
 
-        body = MeiElement('body')
-        mdiv = MeiElement('mdiv')
-        pages = MeiElement('pages')
-        page = MeiElement('page')
+        body = MeiElement("body")
+        mdiv = MeiElement("mdiv")
+        pages = MeiElement("pages")
+        page = MeiElement("page")
         page.id = generate_MEI_ID()
 
-        initSystem = MeiElement('system')
+        initSystem = MeiElement("system")
         initSystem.id = generate_MEI_ID()
 
-        initStaff = MeiElement('staff')
+        initStaff = MeiElement("staff")
         initStaff.id = generate_MEI_ID()
 
-        self.initLayer = MeiElement('layer')
+        self.initLayer = MeiElement("layer")
         self.initLayer.id = generate_MEI_ID()
 
         root.addChild(meiHead)
@@ -163,7 +171,7 @@ class GameraXMLConverter:
             totalCenterGaps += zones[i + 1].centerY - zones[i].centerY
 
         averageGap = float(totalCenterGaps) / (len(zones) - 1)
-        logging.debug('average gap is %s', averageGap)
+        logging.debug("average gap is %s", averageGap)
 
         clusters = []
 
@@ -184,13 +192,17 @@ class GameraXMLConverter:
             else:
                 clusters.append(ZoneCluster([zone]))
 
-        logging.debug('initially found %s clusters. consolidating...', len(clusters))
-        self.conversionInfo['initialClusters'] = len(clusters)
+        logging.debug(
+            "initially found %s clusters. consolidating...", len(clusters)
+        )
+        self.conversionInfo["initialClusters"] = len(clusters)
 
         if dumpVisualization:
             initialClusters = dict()
             for i in range(len(clusters)):
-                initialClusters.update((zone, i+1) for zone in clusters[i].zones)
+                initialClusters.update(
+                    (zone, i + 1) for zone in clusters[i].zones
+                )
 
         # Consolidate overlapping clusters
         for i in range(len(clusters) - 1):
@@ -212,11 +224,16 @@ class GameraXMLConverter:
 
         # Sort clusters by their upper y value and sort the zones in each cluster
         # by their upper left points
-        clusters = sorted((cluster for cluster in clusters if cluster), key=lambda c: c.startY)
+        clusters = sorted(
+            (cluster for cluster in clusters if cluster),
+            key=lambda c: c.startY,
+        )
 
-        logging.info('found %s zones which form %s clusters', len(zones), len(clusters))
-        self.conversionInfo['zones'] = len(zones)
-        self.conversionInfo['clusters'] = len(clusters)
+        logging.info(
+            "found %s zones which form %s clusters", len(zones), len(clusters)
+        )
+        self.conversionInfo["zones"] = len(zones)
+        self.conversionInfo["clusters"] = len(clusters)
 
         for cluster in clusters:
             cluster.zones = cluster.sortedZones()
@@ -237,68 +254,91 @@ class GameraXMLConverter:
         imageIn = Image.open(inputTiff)
         imageOut = imageIn
 
-        for curGlyph in etree.parse(self.xmlFile).xpath('/gamera-database/glyphs/glyph'):
-            redPixel = (255,0,0)
-            startX = int(curGlyph.get('ulx'))
-            startY = int(curGlyph.get('uly'))
+        for curGlyph in etree.parse(self.xmlFile).xpath(
+            "/gamera-database/glyphs/glyph"
+        ):
+            redPixel = (255, 0, 0)
+            startX = int(curGlyph.get("ulx"))
+            startY = int(curGlyph.get("uly"))
 
-            width = int(curGlyph.get('ncols'))
-            height = int(curGlyph.get('nrows'))
+            width = int(curGlyph.get("ncols"))
+            height = int(curGlyph.get("nrows"))
 
-            for xPix in range(startX, startX+width):
+            for xPix in range(startX, startX + width):
                 imageOut.putpixel((xPix, startY), redPixel)
 
-            for xPix in range(startX, startX+width):
+            for xPix in range(startX, startX + width):
                 imageOut.putpixel((xPix, startY + height), redPixel)
 
-            for yPix in range(startY, startY+height):
+            for yPix in range(startY, startY + height):
                 imageOut.putpixel((startX, yPix), redPixel)
 
-            for yPix in range(startY, startY+height):
+            for yPix in range(startY, startY + height):
                 imageOut.putpixel((startX + width, yPix), redPixel)
 
         imageOut.save(outputTiff)
 
     def dumpZoneVisualization(self, clusters, averageGap, initialClusters):
-        """Output an (ugly) SVG file showing the relation between zones and clusters
-        """
+        """Output an (ugly) SVG file showing the relation between zones and clusters"""
 
         outPath, filename = os.path.split(self.meiFile)
-        dumpFile = os.path.join(outPath, os.path.splitext(filename)[0] + '_clusters.svg')
+        dumpFile = os.path.join(
+            outPath, os.path.splitext(filename)[0] + "_clusters.svg"
+        )
 
         height = max(cluster.endY for cluster in clusters)
-        width = max(max(zone.endX for zone in cluster.zones) for cluster in clusters)
+        width = max(
+            max(zone.endX for zone in cluster.zones) for cluster in clusters
+        )
 
-        with open(dumpFile, 'w') as f:
-            f.write('''\
+        with open(dumpFile, "w") as f:
+            f.write(
+                """\
 <?xml version="1.0" standalone="yes"?>
 <svg viewBox="0 0 {width} {height}" version="1.1"
-     xmlns="http://www.w3.org/2000/svg">'''.format(height=height, width=width))
+     xmlns="http://www.w3.org/2000/svg">""".format(
+                    height=height, width=width
+                )
+            )
 
-            f.write('<!-- Clusters -->\n')
+            f.write("<!-- Clusters -->\n")
 
             clusterIndex = 1
             for cluster in clusters:
-                f.write('  <rect x="0" y="{startY}" height="{yDelta}" width="{width}" '
-                        'stroke-width="5" stroke="blue" fill="gainsboro" title="Cluster {idx}"/>\n'
-                        .format(startY=cluster.startY, yDelta=cluster.endY - cluster.startY, width=width, idx=clusterIndex))
+                f.write(
+                    '  <rect x="0" y="{startY}" height="{yDelta}" width="{width}" '
+                    'stroke-width="5" stroke="blue" fill="gainsboro" title="Cluster {idx}"/>\n'.format(
+                        startY=cluster.startY,
+                        yDelta=cluster.endY - cluster.startY,
+                        width=width,
+                        idx=clusterIndex,
+                    )
+                )
 
                 clusterIndex += 1
 
-            f.write('<!-- Zones -->\n')
+            f.write("<!-- Zones -->\n")
 
             clusterIndex = zoneIndex = 1
             for cluster in clusters:
                 for zone in cluster.zones:
                     # Draw the actual zone
-                    zoneHeight = zone.endY-zone.startY
-                    zoneWidth = zone.endX-zone.startX
+                    zoneHeight = zone.endY - zone.startY
+                    zoneWidth = zone.endX - zone.startX
 
-                    f.write('  <rect x="{startX}" y="{startY}" width="{width}" '
-                            'height="{height}" stroke-width="3" stroke="black" '
-                            'fill="yellow" title="Zone {idx}, initial cluster {initialCluster}, ID {id}"/>\n'
-                            .format(idx=zoneIndex, initialCluster=initialClusters[zone], id=zone.id, startX=zone.startX, startY=zone.startY,
-                                    width=zoneWidth, height=zoneHeight))
+                    f.write(
+                        '  <rect x="{startX}" y="{startY}" width="{width}" '
+                        'height="{height}" stroke-width="3" stroke="black" '
+                        'fill="yellow" title="Zone {idx}, initial cluster {initialCluster}, ID {id}"/>\n'.format(
+                            idx=zoneIndex,
+                            initialCluster=initialClusters[zone],
+                            id=zone.id,
+                            startX=zone.startX,
+                            startY=zone.startY,
+                            width=zoneWidth,
+                            height=zoneHeight,
+                        )
+                    )
 
                     # Draw the midpoint and bars representing the average gap
                     centerX = zone.startX + (zone.endX - zone.startX) / 2
@@ -307,23 +347,40 @@ class GameraXMLConverter:
                     # Find a tolerable radius for the midpoint
                     radius = max(min(zoneHeight, zoneWidth) / 5, 3)
 
-                    f.write('  <circle cx="{centerX}" cy="{centerY}" r="{radius}" fill="black" />\n'
-                            .format(centerX=centerX, centerY=centerY, radius=radius))
+                    f.write(
+                        '  <circle cx="{centerX}" cy="{centerY}" r="{radius}" fill="black" />\n'.format(
+                            centerX=centerX, centerY=centerY, radius=radius
+                        )
+                    )
 
-                    f.write('  <path d="M {centerX}, {startY} v -{averageGap} '
-                            'h {barLen} h -{barLenTimes2}" stroke-width="3" '
-                            'stroke="black" fill="none" />\n'
-                            .format(centerX=centerX, startY=zone.startY, averageGap=averageGap, barLen=zoneWidth/2, barLenTimes2=zoneWidth))
-                    f.write('  <path d="M {centerX}, {endY} v {averageGap} '
-                            'h {barLen} h -{barLenTimes2}" stroke-width="3" '
-                            'stroke="black" fill="none" />\n'
-                            .format(centerX=centerX, endY=zone.endY, averageGap=averageGap, barLen=zoneWidth/2, barLenTimes2=zoneWidth))
+                    f.write(
+                        '  <path d="M {centerX}, {startY} v -{averageGap} '
+                        'h {barLen} h -{barLenTimes2}" stroke-width="3" '
+                        'stroke="black" fill="none" />\n'.format(
+                            centerX=centerX,
+                            startY=zone.startY,
+                            averageGap=averageGap,
+                            barLen=zoneWidth / 2,
+                            barLenTimes2=zoneWidth,
+                        )
+                    )
+                    f.write(
+                        '  <path d="M {centerX}, {endY} v {averageGap} '
+                        'h {barLen} h -{barLenTimes2}" stroke-width="3" '
+                        'stroke="black" fill="none" />\n'.format(
+                            centerX=centerX,
+                            endY=zone.endY,
+                            averageGap=averageGap,
+                            barLen=zoneWidth / 2,
+                            barLenTimes2=zoneWidth,
+                        )
+                    )
 
                     zoneIndex += 1
 
                 clusterIndex += 1
 
-            f.write('\n</svg>')
+            f.write("\n</svg>")
 
 
 class Zone:
@@ -367,7 +424,9 @@ def overlaps(regionA, regionB, tolerance=0):
     # Check cases where one of the endpoints of region A are contained
     # within region B
     for point in (regionA.startY, regionA.endY):
-        if isWithin(point, regionB.startY - tolerance, regionB.endY + tolerance):
+        if isWithin(
+            point, regionB.startY - tolerance, regionB.endY + tolerance
+        ):
             return True
 
     # If neither of regions A's endpoints fall within region B, then
@@ -385,40 +444,52 @@ def isWithin(point, start, end):
 
 
 def generate_MEI_ID():
-    return 'm-' + str(uuid4())
+    return "m-" + str(uuid4())
 
 
 def loadNeumeNames(csvFile):
     """Load neume names from a CSV file"""
-    with open(csvFile, mode='rU') as infile:
+    with open(csvFile, mode="rU") as infile:
         reader = csv.reader(infile)
         return {rows[1]: rows[0] for rows in reader}
 
 
 def main(args):
-    logging.getLogger().setLevel(logging.DEBUG if args.verbose else logging.INFO)
+    logging.getLogger().setLevel(
+        logging.DEBUG if args.verbose else logging.INFO
+    )
 
-    neumeNames = loadNeumeNames(os.path.join(os.path.dirname(__file__), 'ccnames.csv'))
+    neumeNames = loadNeumeNames(
+        os.path.join(os.path.dirname(__file__), "ccnames.csv")
+    )
 
-    fileList = [f for f in os.listdir(args.input_directory)
-                if os.path.isfile(os.path.join(args.input_directory, f)) and f.endswith('.xml')]
+    fileList = [
+        f
+        for f in os.listdir(args.input_directory)
+        if os.path.isfile(os.path.join(args.input_directory, f))
+        and f.endswith(".xml")
+    ]
 
     if not fileList:
-        logging.warn('Did not find any files in %s', args.input_directory)
+        logging.warn("Did not find any files in %s", args.input_directory)
         return
 
-    logging.debug('Found files: %s', fileList)
+    logging.debug("Found files: %s", fileList)
 
     for relativeFile in fileList:
-        logging.info('processing file %s', relativeFile)
+        logging.info("processing file %s", relativeFile)
 
         inFile = os.path.join(args.input_directory, relativeFile)
-        outFile = os.path.join(args.output_directory, os.path.splitext(relativeFile)[0] + '.mei')
+        outFile = os.path.join(
+            args.output_directory, os.path.splitext(relativeFile)[0] + ".mei"
+        )
 
         converter = GameraXMLConverter(inFile, outFile, neumeNames)
 
         if args.dump_zone_overlay:
-            converter.generateOverlaidImage(args.dump_zone_overlay[0], args.dump_zone_overlay[1])
+            converter.generateOverlaidImage(
+                args.dump_zone_overlay[0], args.dump_zone_overlay[1]
+            )
 
         converter.processGamera(dumpVisualization=args.dump_zone_clusters)
 
@@ -426,22 +497,39 @@ def main(args):
 
 
 def initializeArgumentParser(parser):
-    parser.add_argument('input_directory', nargs='?', help='directory with the input (defaults to working directory)',
-                        default='.')
+    parser.add_argument(
+        "input_directory",
+        nargs="?",
+        help="directory with the input (defaults to working directory)",
+        default=".",
+    )
 
-    parser.add_argument('output_directory', nargs='?', help='directory for the output (defaults to working directory)',
-                        default='.')
+    parser.add_argument(
+        "output_directory",
+        nargs="?",
+        help="directory for the output (defaults to working directory)",
+        default=".",
+    )
 
-    parser.add_argument('-v', '--verbose', action='store_true', help='increase the verbosity')
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="increase the verbosity"
+    )
 
-    parser.add_argument('--dump-zone-clusters', action='store_true',
-                        help='write a visualization of the zone clusters to file')
+    parser.add_argument(
+        "--dump-zone-clusters",
+        action="store_true",
+        help="write a visualization of the zone clusters to file",
+    )
 
-    parser.add_argument('--dump-zone-overlay', nargs=2, metavar='TIFF',
-                        help='create a copy of the TIFF image with the zones overlaid')
+    parser.add_argument(
+        "--dump-zone-overlay",
+        nargs=2,
+        metavar="TIFF",
+        help="create a copy of the TIFF image with the zones overlaid",
+    )
 
     return parser
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(args=initializeArgumentParser(argparse.ArgumentParser()).parse_args())

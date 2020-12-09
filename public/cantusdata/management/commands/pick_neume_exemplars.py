@@ -12,25 +12,27 @@ from cantusdata.models.folio import Folio
 
 
 # It's pretty awful that we need to use tricks like this to work out what folio is what
-FOLIO_REGEX = re.compile(r'_([a-z0-9]+)\.\w+$', re.IGNORECASE)
+FOLIO_REGEX = re.compile(r"_([a-z0-9]+)\.\w+$", re.IGNORECASE)
 
 
-class DocumentManipulationException (Exception):
+class DocumentManipulationException(Exception):
     pass
 
 
-class Command (BaseCommand):
+class Command(BaseCommand):
     """Automatically select exemplars for all neumes found in a manuscript"""
 
     option_list = BaseCommand.option_list + (
-        make_option('--use-specific',
-                    nargs=2,
-                    metavar='NEUME_NAME INDEX',
-                    help='Use the ith instance of the neume in the specified file as an exemplar (only works when '
-                         'given an MEI file, not a directory; index begins at 0)'),
+        make_option(
+            "--use-specific",
+            nargs=2,
+            metavar="NEUME_NAME INDEX",
+            help="Use the ith instance of the neume in the specified file as an exemplar (only works when "
+            "given an MEI file, not a directory; index begins at 0)",
+        ),
     )
 
-    args = 'manuscript_id file_or_directory'
+    args = "manuscript_id file_or_directory"
 
     def handle(self, *args, **options):
         (ms_id, target) = args
@@ -38,34 +40,46 @@ class Command (BaseCommand):
         try:
             ms_id = int(ms_id)
         except (ValueError, TypeError):
-            raise ValueError('expected a manuscript id but got {!r}'.format(ms_id))
+            raise ValueError(
+                "expected a manuscript id but got {!r}".format(ms_id)
+            )
 
         # Get the manuscript object, primarily to ensure that it actually exists
         self.manuscript = Manuscript.objects.get(id=ms_id)
 
         # Exemplar
         self.exemplars = {
-            exemplar.name: exemplar for exemplar in NeumeExemplar.objects.filter(folio__manuscript=self.manuscript)
+            exemplar.name: exemplar
+            for exemplar in NeumeExemplar.objects.filter(
+                folio__manuscript=self.manuscript
+            )
         }
 
-        if options['use_specific']:
+        if options["use_specific"]:
             if not os.path.isfile(target):
-                self.stderr.write('--use-specific only works when given a specific MEI file')
+                self.stderr.write(
+                    "--use-specific only works when given a specific MEI file"
+                )
                 return
 
-            name, index = options['use_specific']
+            name, index = options["use_specific"]
 
             try:
                 index = int(index)
             except (TypeError, ValueError):
-                self.stderr.write('expected an integer but got {}'.format(index))
+                self.stderr.write(
+                    "expected an integer but got {}".format(index)
+                )
                 return
 
             self.use_specific_exemplar(target, name, index)
             return
 
         if os.path.isdir(target):
-            files = chain.from_iterable((os.path.join(p, f) for f in fs) for (p, _, fs) in os.walk(target))
+            files = chain.from_iterable(
+                (os.path.join(p, f) for f in fs)
+                for (p, _, fs) in os.walk(target)
+            )
             for file_path in files:
                 self.find_exemplars(file_path)
         else:
@@ -78,8 +92,8 @@ class Command (BaseCommand):
             self.stderr.write(e.message)
             return
 
-        for neume in doc.getElementsByName('neume'):
-            name_attr = neume.getAttribute('name')
+        for neume in doc.getElementsByName("neume"):
+            name_attr = neume.getAttribute("name")
 
             if not name_attr:
                 continue
@@ -94,7 +108,11 @@ class Command (BaseCommand):
             except DocumentManipulationException as e:
                 self.stderr.write(e.message)
             else:
-                self.stdout.write('using the first instance on folio {} for "{}"'.format(folio_number, name))
+                self.stdout.write(
+                    'using the first instance on folio {} for "{}"'.format(
+                        folio_number, name
+                    )
+                )
 
     def use_specific_exemplar(self, file_path, desired_name, index):
         try:
@@ -105,8 +123,8 @@ class Command (BaseCommand):
 
         instances_found = 0
 
-        for neume in doc.getElementsByName('neume'):
-            name_attr = neume.getAttribute('name')
+        for neume in doc.getElementsByName("neume"):
+            name_attr = neume.getAttribute("name")
 
             if not name_attr:
                 continue
@@ -131,23 +149,35 @@ class Command (BaseCommand):
             else:
                 instances_found += 1
 
-        self.stderr.write('could not get instance {} of neume {}: only {} instances found'.format(index,
-                                                                                                  desired_name,
-                                                                                                  instances_found))
+        self.stderr.write(
+            "could not get instance {} of neume {}: only {} instances found".format(
+                index, desired_name, instances_found
+            )
+        )
 
     def save_exemplar(self, neume, name, folio_number, folio, doc):
         try:
-            zone = get_zone(doc, neume.getAttribute('facs').value)
+            zone = get_zone(doc, neume.getAttribute("facs").value)
         except DocumentManipulationException as e:
-            raise DocumentManipulationException('failed to get zone for neume {}, folio {}: {}'.format(name,
-                                                                                                       folio_number, e))
+            raise DocumentManipulationException(
+                "failed to get zone for neume {}, folio {}: {}".format(
+                    name, folio_number, e
+                )
+            )
 
-        x = zone['ulx']
-        y = zone['uly']
-        width = zone['lrx'] - zone['ulx']
-        height = zone['lry'] - zone['uly']
+        x = zone["ulx"]
+        y = zone["uly"]
+        width = zone["lrx"] - zone["ulx"]
+        height = zone["lry"] - zone["uly"]
 
-        exemplar = NeumeExemplar(name=name, folio=folio, x_coord=x, y_coord=y, width=width, height=height)
+        exemplar = NeumeExemplar(
+            name=name,
+            folio=folio,
+            x_coord=x,
+            y_coord=y,
+            width=width,
+            height=height,
+        )
         exemplar.save()
 
         self.exemplars[name] = exemplar
@@ -156,14 +186,24 @@ class Command (BaseCommand):
         folio_number = get_folio(file_path)
 
         if folio_number is None:
-            raise DocumentManipulationException('could not identify folio for file {}'.format(file_path))
+            raise DocumentManipulationException(
+                "could not identify folio for file {}".format(file_path)
+            )
 
         try:
-            folio = Folio.objects.get(number=folio_number, manuscript=self.manuscript)
+            folio = Folio.objects.get(
+                number=folio_number, manuscript=self.manuscript
+            )
         except Folio.DoesNotExist:
-            raise DocumentManipulationException('no folio with number {} in manuscript'.format(folio_number))
+            raise DocumentManipulationException(
+                "no folio with number {} in manuscript".format(folio_number)
+            )
         except Folio.MultipleObjectsReturned:
-            raise DocumentManipulationException('multiple folios with number {} in manuscript...'.format(folio_number))
+            raise DocumentManipulationException(
+                "multiple folios with number {} in manuscript...".format(
+                    folio_number
+                )
+            )
 
         doc = pymei.documentFromFile(file_path, False).getMeiDocument()
 
@@ -183,25 +223,33 @@ def get_zone(doc, zone_id):
     zone = doc.getElementById(zone_id)
 
     if zone is None:
-        raise DocumentManipulationException('no element with id {} (expected a zone)'.format(zone_id))
+        raise DocumentManipulationException(
+            "no element with id {} (expected a zone)".format(zone_id)
+        )
 
-    if zone.name != 'zone':
-        raise DocumentManipulationException('expected #{} to be a zone but got {}'.format(zone_id, zone.name))
+    if zone.name != "zone":
+        raise DocumentManipulationException(
+            "expected #{} to be a zone but got {}".format(zone_id, zone.name)
+        )
 
     attrs = {}
 
-    for attr_name in ('ulx', 'uly', 'lrx', 'lry'):
+    for attr_name in ("ulx", "uly", "lrx", "lry"):
         attr = zone.getAttribute(attr_name)
 
         if attr is None:
-            raise DocumentManipulationException('no attr {} found for zone #{}'.format(attr_name, zone))
+            raise DocumentManipulationException(
+                "no attr {} found for zone #{}".format(attr_name, zone)
+            )
 
         try:
             value = int(attr.value)
         except (TypeError, ValueError):
-            raise DocumentManipulationException('non-integer value {!r} for attribute {}, zone #{}'.format(attr.value,
-                                                                                                           attr_name,
-                                                                                                           zone))
+            raise DocumentManipulationException(
+                "non-integer value {!r} for attribute {}, zone #{}".format(
+                    attr.value, attr_name, zone
+                )
+            )
 
         attrs[attr_name] = value
 

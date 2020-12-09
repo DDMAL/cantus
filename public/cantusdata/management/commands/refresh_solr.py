@@ -9,18 +9,28 @@ import solr
 
 class Command(BaseCommand):
 
-    TYPE_MAPPING = {'manuscripts': Manuscript, 'chants': Chant, 'folios': Folio}
+    TYPE_MAPPING = {
+        "manuscripts": Manuscript,
+        "chants": Chant,
+        "folios": Folio,
+    }
 
-    help = 'Usage: ./manage.py refresh_solr {{{0}}} [manuscript_id ...]'\
-           '\n\tSpecify manuscript ID(s) to only refresh selected items in that/those manuscript(s)'\
-           '\n\tUse --all to refresh all {1} types.'.format('|'.join(list(TYPE_MAPPING.keys())), len(TYPE_MAPPING))
+    help = (
+        "Usage: ./manage.py refresh_solr {{{0}}} [manuscript_id ...]"
+        "\n\tSpecify manuscript ID(s) to only refresh selected items in that/those manuscript(s)"
+        "\n\tUse --all to refresh all {1} types.".format(
+            "|".join(list(TYPE_MAPPING.keys())), len(TYPE_MAPPING)
+        )
+    )
 
     option_list = BaseCommand.option_list + (
-        make_option('--all',
-                    action='store_true',
-                    dest='all',
-                    default=False,
-                    help='Refresh all types: {0}'.format(list(TYPE_MAPPING.keys()))),
+        make_option(
+            "--all",
+            action="store_true",
+            dest="all",
+            default=False,
+            help="Refresh all types: {0}".format(list(TYPE_MAPPING.keys())),
+        ),
     )
 
     def handle(self, *args, **options):
@@ -29,7 +39,7 @@ class Command(BaseCommand):
         types = []
         manuscript_ids = None
 
-        if options['all']:
+        if options["all"]:
             types += list(self.TYPE_MAPPING.keys())
         elif len(args) == 0:
             self.stdout.write(self.help)
@@ -42,23 +52,35 @@ class Command(BaseCommand):
 
         for type in types:
             # Remove the trailing 's' to make the type singular
-            type_singular = type.rstrip('s')
+            type_singular = type.rstrip("s")
             model = self.TYPE_MAPPING[type]
 
-            self.stdout.write('Flushing {0} data...'.format(type_singular))
+            self.stdout.write("Flushing {0} data...".format(type_singular))
 
             if manuscript_ids:
-                formatted_ids = '(' + ' OR '.join(manuscript_ids) + ')'
+                formatted_ids = "(" + " OR ".join(manuscript_ids) + ")"
                 if model == Manuscript:
-                    delete_query = 'type:cantusdata_{0} AND item_id:{1}'.format(type_singular, formatted_ids)
+                    delete_query = (
+                        "type:cantusdata_{0} AND item_id:{1}".format(
+                            type_singular, formatted_ids
+                        )
+                    )
                 else:
-                    delete_query = 'type:cantusdata_{0} AND manuscript_id:{1}'.format(type_singular, formatted_ids)
+                    delete_query = (
+                        "type:cantusdata_{0} AND manuscript_id:{1}".format(
+                            type_singular, formatted_ids
+                        )
+                    )
             else:
-                delete_query = 'type:cantusdata_{0}'.format(type_singular)
+                delete_query = "type:cantusdata_{0}".format(type_singular)
 
             solr_conn.delete_query(delete_query)
 
-            self.stdout.write('Re-adding {0} data... (may take a few minutes)'.format(type_singular))
+            self.stdout.write(
+                "Re-adding {0} data... (may take a few minutes)".format(
+                    type_singular
+                )
+            )
 
             if not manuscript_ids:
                 objects = model.objects.all()
@@ -66,7 +88,9 @@ class Command(BaseCommand):
                 if model == Manuscript:
                     objects = model.objects.filter(id__in=manuscript_ids)
                 else:
-                    objects = model.objects.filter(manuscript__id__in=manuscript_ids)
+                    objects = model.objects.filter(
+                        manuscript__id__in=manuscript_ids
+                    )
 
             solr_records = []
             nb_obj = len(objects)
@@ -79,6 +103,6 @@ class Command(BaseCommand):
                     solr_conn.add_many(solr_records)
                     solr_records = []
 
-        self.stdout.write('Committing changes...')
+        self.stdout.write("Committing changes...")
         solr_conn.commit()
-        self.stdout.write('Done!')
+        self.stdout.write("Done!")

@@ -6,9 +6,10 @@ class Folio(models.Model):
     A folio is a manuscript page.
     A manuscript has many folios.  A folio has many chants.
     """
+
     class Meta:
         app_label = "cantusdata"
-        ordering = ['number']
+        ordering = ["number"]
 
     number = models.CharField(max_length=50, blank=True, null=True)
     image_uri = models.CharField(max_length=255, blank=True, null=True)
@@ -24,12 +25,12 @@ class Folio(models.Model):
         import uuid
 
         return {
-            'type': 'cantusdata_folio',
-            'id': str(uuid.uuid4()),
-            'number': self.number,
-            'item_id': self.id,
-            'image_uri': self.image_uri,
-            'manuscript_id': self.manuscript.id,
+            "type": "cantusdata_folio",
+            "id": str(uuid.uuid4()),
+            "number": self.number,
+            "item_id": self.id,
+            "image_uri": self.image_uri,
+            "manuscript_id": self.manuscript.id,
         }
 
     def fetch_solr_records(self, solrconn):

@@ -1,7 +1,10 @@
 from rest_framework import generics
 
 from cantusdata.models.manuscript import Manuscript
-from cantusdata.serializers.manuscript import ManuscriptSerializer, ManuscriptListSerializer
+from cantusdata.serializers.manuscript import (
+    ManuscriptSerializer,
+    ManuscriptListSerializer,
+)
 from cantusdata.renderers import templated_view_renderers
 
 

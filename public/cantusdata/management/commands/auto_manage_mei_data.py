@@ -12,30 +12,40 @@ class Command(BaseCommand):
     mei_data_locations = {
         # 'st_gallen_390': "data_dumps/mei/csg-390",
         # 'st_gallen_391': None,
-        'salzinnes': "data_dumps/mei/salz"
+        "salzinnes": "data_dumps/mei/salz"
     }
 
-
     def handle(self, *args, **kwargs):
-        logging.basicConfig(filename="logs/mei_changes/changelog.log",
-                            level=logging.INFO,
-                            format='%(asctime)s %(message)s')
+        logging.basicConfig(
+            filename="logs/mei_changes/changelog.log",
+            level=logging.INFO,
+            format="%(asctime)s %(message)s",
+        )
         # We use this log file to keep track of what happens
         # log = open("logs/mei_changes/changelog.txt", 'wa')
         logging.info("########### Begin session ################")
         for manuscript in list(self.mei_data_locations.keys()):
             # Open the log file
             try:
-                manuscript_log_file = open("logs/mei_changes/{0}.txt".format(manuscript),
-                                'r+')
+                manuscript_log_file = open(
+                    "logs/mei_changes/{0}.txt".format(manuscript), "r+"
+                )
             except IOError:
                 # If the file didn't already exist...
-                open("logs/mei_changes/{0}.txt".format(manuscript), 'w').close()
-                manuscript_log_file = open("logs/mei_changes/{0}.txt".format(manuscript),
-                                'w+')
+                open(
+                    "logs/mei_changes/{0}.txt".format(manuscript), "w"
+                ).close()
+                manuscript_log_file = open(
+                    "logs/mei_changes/{0}.txt".format(manuscript), "w+"
+                )
             # Grab the console output
-            console_output = slugify("{0}".format(subprocess.check_output(
-                ["ls", "-l", self.mei_data_locations[manuscript]])))
+            console_output = slugify(
+                "{0}".format(
+                    subprocess.check_output(
+                        ["ls", "-l", self.mei_data_locations[manuscript]]
+                    )
+                )
+            )
             if console_output != manuscript_log_file.read():
                 manuscript_log_file.write(console_output)
                 logging.info("{0} has changed!".format(manuscript))

@@ -12,19 +12,21 @@ class FolioList(generics.ListCreateAPIView):
     def get_queryset(self):
         queryset = Folio.objects.all()
 
-        number = self.request.query_params.get('number', None)
-        manuscript = self.request.query_params.get('manuscript', None)
+        number = self.request.query_params.get("number", None)
+        manuscript = self.request.query_params.get("manuscript", None)
 
         if number is None or manuscript is None:
             return queryset
 
         # Use a regex to ignore leading zeros
-        queryset = queryset.filter(number__iregex=r'^0*{}$'.format(number), manuscript__id=manuscript)
+        queryset = queryset.filter(
+            number__iregex=r"^0*{}$".format(number), manuscript__id=manuscript
+        )
 
         if len(queryset) == 0:
             raise Http404("No data for a folio with that number")
         else:
-            return queryset[:1] # Make sure we return only one element
+            return queryset[:1]  # Make sure we return only one element
 
 
 class FolioDetail(generics.RetrieveUpdateDestroyAPIView):

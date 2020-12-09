@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
@@ -17,7 +18,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '+lf0*we_nuqy(y5gxx4g@v^#&um83gh0*g6_ro)1l_6#k72j^^'
+SECRET_KEY = "+lf0*we_nuqy(y5gxx4g@v^#&um83gh0*g6_ro)1l_6#k72j^^"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -30,57 +31,56 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = (
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
     # Auth tokens
-    'rest_framework',
-    'rest_framework.authtoken',
-    'cantusdata',
-    'django_extensions',
-    'coverage'
+    "rest_framework",
+    "rest_framework.authtoken",
+    "cantusdata",
+    "django_extensions",
+    "coverage",
 )
 
 MIDDLEWARE_CLASSES = (
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.auth.middleware.SessionAuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 )
 
 
+ROOT_URLCONF = "urls"
 
-ROOT_URLCONF = 'urls'
-
-WSGI_APPLICATION = 'cantusdata.wsgi.application'
+WSGI_APPLICATION = "cantusdata.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'cantus_db',
-        'USER': 'cantus_admin',
-        'PASSWORD': 'Pl4c3H0ld3r',
-        'HOST': 'localhost',
-        'PORT': '5432',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "cantus_db",
+        "USER": "cantus_admin",
+        "PASSWORD": "Pl4c3H0ld3r",
+        "HOST": "localhost",
+        "PORT": "5432",
     }
 }
 
 # Internationalization
 # https://docs.djangoproject.com/en/dev/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -91,18 +91,18 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
-STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
+STATIC_URL = "/static/"
+MEDIA_URL = "/media/"
 MEDIA_URL_NEUMEEDITOR = "/neumeeditor/media/"
 
 # This needs to be an absolute path to the file system location
-STATIC_ROOT = os.path.join(BASE_DIR, 'cantusdata/static')
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+STATIC_ROOT = os.path.join(BASE_DIR, "cantusdata/static")
+MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
 
 REST_FRAMEWORK = {
-    'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',
+    "DEFAULT_RENDERER_CLASSES": (
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
     ),
 }
 

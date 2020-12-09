@@ -3,8 +3,10 @@ from django.db import models
 from cantusdata.models.folio import Folio
 
 
-ADMIN_IMAGE_TEMPLATE = ('<img src="{base_url}/{siglum}_{folio}.jp2/'
-                        '{x},{y},{w},{h}/,{img_height}/0/default.jpg" alt="{name}" />')
+ADMIN_IMAGE_TEMPLATE = (
+    '<img src="{base_url}/{siglum}_{folio}.jp2/'
+    '{x},{y},{w},{h}/,{img_height}/0/default.jpg" alt="{name}" />'
+)
 ADMIN_IMAGE_HEIGHT = 100
 
 
@@ -14,9 +16,10 @@ class NeumeExemplar(models.Model):
     These are used in OMR search to give examples of the neumes available for some
     manuscript
     """
+
     class Meta:
         app_label = "cantusdata"
-        ordering = ['name']
+        ordering = ["name"]
 
     name = models.CharField(max_length=255, blank=False, null=False)
     folio = models.ForeignKey(Folio)
@@ -32,7 +35,7 @@ class NeumeExemplar(models.Model):
         NOTE: This is intended for use in the admin interface, not the client
         """
         return ADMIN_IMAGE_TEMPLATE.format(
-            base_url='https://images.simssa.ca/iiif/image/cdn-hsmu-m2149l4',
+            base_url="https://images.simssa.ca/iiif/image/cdn-hsmu-m2149l4",
             siglum=self.folio.manuscript.siglum_slug,
             folio=self.folio.number,
             x=self.x_coord,
@@ -40,11 +43,18 @@ class NeumeExemplar(models.Model):
             w=self.width,
             h=self.height,
             img_height=ADMIN_IMAGE_HEIGHT,
-            name=self.name
+            name=self.name,
         )
 
     admin_image.allow_tags = True
 
     def __str__(self):
-        return "{} - {}, {} at ({}, {}), {}x{}".format(self.name, self.folio.manuscript.siglum, self.folio.number,
-                                                        self.x_coord, self.y_coord, self.width, self.height)
+        return "{} - {}, {} at ({}, {}), {}x{}".format(
+            self.name,
+            self.folio.manuscript.siglum,
+            self.folio.number,
+            self.x_coord,
+            self.y_coord,
+            self.width,
+            self.height,
+        )

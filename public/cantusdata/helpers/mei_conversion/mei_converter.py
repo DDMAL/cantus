@@ -8,7 +8,7 @@ from .location_utils import getLocation
 from .pitch_utils import getPitches, getContour, getIntervals
 
 
-class MEIConverter (AbstractMEIConverter):
+class MEIConverter(AbstractMEIConverter):
     def process(self):
         notes = []
 
@@ -33,18 +33,17 @@ class MEIConverter (AbstractMEIConverter):
 
         for i in range(self.min_gram, self.max_gram + 1):
             for j in range(0, note_count - i):
-                yield self._get_note_ngram(notes[j:j + i])
+                yield self._get_note_ngram(notes[j : j + i])
 
     def _get_note_ngram(self, seq):
         neumes = _get_distinct_neumes(seq)
-        neume_names = '_'.join(neume.name for neume in neumes)
+        neume_names = "_".join(neume.name for neume in neumes)
 
         pnames, midipitch = getPitches(seq)
 
-        semitones = [m - n for n, m in
-                     zip(midipitch[:-1], midipitch[1:])]
+        semitones = [m - n for n, m in zip(midipitch[:-1], midipitch[1:])]
 
-        str_semitones = '_'.join(str(s) for s in semitones)
+        str_semitones = "_".join(str(s) for s in semitones)
 
         intervals = getIntervals(semitones, pnames)
         contour = getContour(semitones)
@@ -52,17 +51,17 @@ class MEIConverter (AbstractMEIConverter):
         location = getLocation(neumes)
 
         return {
-            'id': str(uuid.uuid4()),
-            'type': self.TYPE,
-            'siglum_slug': self.siglum_slug,
-            'folio': self.page_number,
-            'image_uri': self.image_uri,
-            'pnames': pnames,
-            'neumes': neume_names,
-            'contour': contour,
-            'semitones': str_semitones,
-            'intervals': intervals,
-            'location': str(location)
+            "id": str(uuid.uuid4()),
+            "type": self.TYPE,
+            "siglum_slug": self.siglum_slug,
+            "folio": self.page_number,
+            "image_uri": self.image_uri,
+            "pnames": pnames,
+            "neumes": neume_names,
+            "contour": contour,
+            "semitones": str_semitones,
+            "intervals": intervals,
+            "location": str(location),
         }
 
     def _get_neume_ngram(self, neume):
@@ -76,13 +75,13 @@ class MEIConverter (AbstractMEIConverter):
         location = getLocation([neume])
 
         return {
-            'id': str(uuid.uuid4()),
-            'type': self.TYPE,
-            'siglum_slug': self.siglum_slug,
-            'folio': self.page_number,
-            'image_uri': self.image_uri,
-            'neumes': neume.name,
-            'location': str(location)
+            "id": str(uuid.uuid4()),
+            "type": self.TYPE,
+            "siglum_slug": self.siglum_slug,
+            "folio": self.page_number,
+            "image_uri": self.image_uri,
+            "neumes": neume.name,
+            "location": str(location),
         }
 
 

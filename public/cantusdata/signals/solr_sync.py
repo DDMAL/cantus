@@ -18,7 +18,7 @@ from django.conf import settings
 from ..models import Manuscript, Chant, Folio
 
 
-class SolrSynchronizer (object):
+class SolrSynchronizer(object):
     def __init__(self, solr_server_url):
         self.solr_server_url = solr_server_url
 
@@ -28,12 +28,12 @@ class SolrSynchronizer (object):
 
     def _instantiate_handlers(self):
         handlers = [
-            (Manuscript, post_save,   self.folio_or_manuscript_saved),
+            (Manuscript, post_save, self.folio_or_manuscript_saved),
             (Manuscript, post_delete, self.folio_or_manuscript_deleted),
-            (Folio,      post_save,   self.folio_or_manuscript_saved),
-            (Folio,      post_delete, self.folio_or_manuscript_deleted),
-            (Chant,      post_save,   self.chant_saved),
-            (Chant,      post_delete, self.chant_deleted),
+            (Folio, post_save, self.folio_or_manuscript_saved),
+            (Folio, post_delete, self.folio_or_manuscript_deleted),
+            (Chant, post_save, self.chant_saved),
+            (Chant, post_delete, self.chant_deleted),
         ]
 
         for (model, signal, receiver) in handlers:
@@ -90,13 +90,13 @@ class SolrSynchronizer (object):
     # so that it gets run when the config is changed for tests
     def db_refresh(self, verbosity=0, **kwargs):
         if verbosity > 0:
-            print('Updating Solr index after database flush or migration...')
+            print("Updating Solr index after database flush or migration...")
 
         with self.get_session() as sess:
             sess.schedule_full_refresh()
 
 
-class SynchronizationSession (object):
+class SynchronizationSession(object):
     def __init__(self, solr_server_url):
         self.solr_server_url = solr_server_url
 
@@ -109,7 +109,9 @@ class SynchronizationSession (object):
         for deleted in self._deletions:
             deleted.delete_from_solr(conn)
 
-        conn.add_many([added.create_solr_record() for added in self._additions])
+        conn.add_many(
+            [added.create_solr_record() for added in self._additions]
+        )
         conn.commit()
 
     def schedule_update(self, model, is_new=False):
@@ -138,9 +140,11 @@ class SynchronizationSession (object):
         self._additions.update(Chant.objects.all())
 
 
-class DbFlusher (object):
+class DbFlusher(object):
     def delete_from_solr(self, conn):
-        conn.delete_query('type:cantusdata_chant OR type:cantusdata_folio OR type:cantusdata_manuscript')
+        conn.delete_query(
+            "type:cantusdata_chant OR type:cantusdata_folio OR type:cantusdata_manuscript"
+        )
 
 
 solr_synchronizer = SolrSynchronizer(settings.SOLR_SERVER)

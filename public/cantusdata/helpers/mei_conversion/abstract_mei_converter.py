@@ -14,7 +14,14 @@ DEFAULT_MAX_GRAM = 10
 class AbstractMEIConverter(metaclass=ABCMeta):
     TYPE = "cantusdata_music_notation"
 
-    def __init__(self, file_name, siglum_slug, manuscript_id, min_gram=DEFAULT_MIN_GRAM, max_gram=DEFAULT_MAX_GRAM):
+    def __init__(
+        self,
+        file_name,
+        siglum_slug,
+        manuscript_id,
+        min_gram=DEFAULT_MIN_GRAM,
+        max_gram=DEFAULT_MAX_GRAM,
+    ):
         self.file_name = file_name
         self.siglum_slug = siglum_slug
         self.manuscript_id = manuscript_id
@@ -22,7 +29,9 @@ class AbstractMEIConverter(metaclass=ABCMeta):
         self.min_gram = min_gram
         self.max_gram = max_gram
 
-        self.doc = pymei.documentFromFile(str(file_name), False).getMeiDocument()
+        self.doc = pymei.documentFromFile(
+            str(file_name), False
+        ).getMeiDocument()
         self.page_number = getPageNumber(file_name)
 
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
@@ -33,9 +42,13 @@ class AbstractMEIConverter(metaclass=ABCMeta):
         mei_files = cls._get_file_list(directory)
 
         if processes == 0:
-            processed = cls._process_in_sequence(mei_files, siglum_slug, id, **options)
+            processed = cls._process_in_sequence(
+                mei_files, siglum_slug, id, **options
+            )
         else:
-            processed = cls._process_in_parallel(mei_files, siglum_slug, id, processes=processes, **options)
+            processed = cls._process_in_parallel(
+                mei_files, siglum_slug, id, processes=processes, **options
+            )
 
         return mei_files, processed
 
@@ -47,7 +60,7 @@ class AbstractMEIConverter(metaclass=ABCMeta):
         for root, dirs, files in os.walk(directory):
             # Skip .git directories
             try:
-                git_index = dirs.index('.git')
+                git_index = dirs.index(".git")
             except ValueError:
                 pass
             else:
@@ -57,7 +70,7 @@ class AbstractMEIConverter(metaclass=ABCMeta):
                 if f.startswith("."):
                     continue
 
-                if os.path.splitext(f)[1] == '.mei':
+                if os.path.splitext(f)[1] == ".mei":
                     mei_files.append(os.path.join(root, f))
 
         mei_files.sort()
@@ -70,9 +83,14 @@ class AbstractMEIConverter(metaclass=ABCMeta):
             yield file_name, ngrams
 
     @classmethod
-    def _process_in_parallel(cls, mei_files, siglum_slug, id, processes, **options):
+    def _process_in_parallel(
+        cls, mei_files, siglum_slug, id, processes, **options
+    ):
         pool = Pool(initializer=init_worker, processes=processes)
-        args = ((cls, file_name, siglum_slug, id, options) for file_name in mei_files)
+        args = (
+            (cls, file_name, siglum_slug, id, options)
+            for file_name in mei_files
+        )
 
         return pool.imap(process_file_in_worker, args)
 
@@ -83,7 +101,7 @@ class AbstractMEIConverter(metaclass=ABCMeta):
 
     @abstractmethod
     def process(self):
-        raise NotImplementedError('process()')
+        raise NotImplementedError("process()")
 
 
 def init_worker():
@@ -98,6 +116,7 @@ def process_file_in_worker(params):
 
     return file_name, ngrams
 
+
 def getPageNumber(ffile):
     """
     Extract the page number from the file name
@@ -105,7 +124,8 @@ def getPageNumber(ffile):
     :param ffile:
     :return: image URI as a string
     """
-    return str(ffile).split('_')[-1].split('.')[0]
+    return str(ffile).split("_")[-1].split(".")[0]
+
 
 def getImageURI(ffile, manuscript_id, solrconn):
     """
@@ -120,8 +140,11 @@ def getImageURI(ffile, manuscript_id, solrconn):
 
     # Send the value of the folio name to Solr and get the corresponding URI
     folio_name = getPageNumber(ffile)
-    composed_request = 'type:"cantusdata_folio" AND manuscript_id:{0} AND number:{1}' \
-        .format(manuscript_id, folio_name)
+    composed_request = (
+        'type:"cantusdata_folio" AND manuscript_id:{0} AND number:{1}'.format(
+            manuscript_id, folio_name
+        )
+    )
 
-    result = solrconn.query(composed_request, rows=1, fields=['image_uri'])
-    return result.results[0]['image_uri']
+    result = solrconn.query(composed_request, rows=1, fields=["image_uri"])
+    return result.results[0]["image_uri"]

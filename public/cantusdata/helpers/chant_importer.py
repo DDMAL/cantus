@@ -34,7 +34,9 @@ class ChantImporter:
             self.add_chant(row)
             # Tracking
             if (index % 100) == 0:
-                self.stdout.write("{0} chants processed for import.".format(index))
+                self.stdout.write(
+                    "{0} chants processed for import.".format(index)
+                )
         return index
 
     def add_chant(self, row):
@@ -42,34 +44,43 @@ class ChantImporter:
         Prepare a folio object to add if necessary.
         """
         # Get the corresponding manuscript
-        manuscript = self.get_manuscript(row['siglum'])
+        manuscript = self.get_manuscript(row["siglum"])
         # Throw exception if no corresponding manuscript
         if not manuscript:
-            raise ValueError("Manuscript with siglum={0} does not exist!"
-                             .format(slugify(str(row["siglum"]))))
+            raise ValueError(
+                "Manuscript with siglum={0} does not exist!".format(
+                    slugify(str(row["siglum"]))
+                )
+            )
         chant = Chant()
         chant.marginalia = row["marginalia"].strip()
         chant.sequence = row["sequence"].strip()
-        chant.cantus_id = row["cantus_id"].strip().rstrip(' _')
+        chant.cantus_id = row["cantus_id"].strip().rstrip(" _")
         chant.feast = row["feast"].strip()
         chant.office = expandr.expand_office(row["office"].strip())
         chant.genre = expandr.expand_genre(row["genre"].strip())
         chant.mode = expandr.expand_mode(row["mode"].strip())
-        chant.differentia = expandr.expand_differentia(row["differentia"].strip())
+        chant.differentia = expandr.expand_differentia(
+            row["differentia"].strip()
+        )
         chant.finalis = row["finalis"].strip()
         chant.incipit = row["incipit"].strip()
         chant.full_text = row["fulltext_standardized"].strip()
         chant.volpiano = row["volpiano"].strip()
         chant.lit_position = self.position_expander.get_text(
-            row["office"].strip(), row["genre"].strip(),
-            row["position"].strip())
+            row["office"].strip(),
+            row["genre"].strip(),
+            row["position"].strip(),
+        )
         chant.manuscript = manuscript
         folio_code = row["folio"]
-        image_link = row['image_link']
+        image_link = row["image_link"]
         # See if this folio already exists or is set to be created
         if (folio_code, manuscript.pk) not in self.folio_registry:
             try:
-                folio = Folio.objects.get(number=folio_code, manuscript=manuscript)
+                folio = Folio.objects.get(
+                    number=folio_code, manuscript=manuscript
+                )
             except Folio.DoesNotExist:
                 # If the folio doesn't exist, prepare to create it
                 self.add_folio(folio_code, manuscript, image_link)
@@ -86,7 +97,9 @@ class ChantImporter:
                 concordances.append(matching_concordance[0])
         # Along with the unsaved chant, store the concordances to add to it, and the
         # folio to add if it still needs to be created
-        self.new_chant_info.append((chant, concordances, None if folio else folio_code))
+        self.new_chant_info.append(
+            (chant, concordances, None if folio else folio_code)
+        )
 
     def add_folio(self, folio_code, manuscript, image_link):
         folio = Folio()
@@ -100,7 +113,9 @@ class ChantImporter:
         try:
             return self._manuscript_cache[siglum]
         except KeyError:
-            manuscript = self._manuscript_cache[siglum] = Manuscript.objects.get(siglum=siglum)
+            manuscript = self._manuscript_cache[
+                siglum
+            ] = Manuscript.objects.get(siglum=siglum)
             return manuscript
 
     @transaction.atomic
@@ -114,7 +129,9 @@ class ChantImporter:
                 folio.save()
                 # Keep track of the new folios so that we can add them to the chant field
                 new_folio_map[folio.number] = folio
-            for index, (chant, concordances, folio_code) in enumerate(self.new_chant_info):
+            for index, (chant, concordances, folio_code) in enumerate(
+                self.new_chant_info
+            ):
                 # We can now safely reference newly created folios
                 if folio_code is not None:
                     chant.folio = new_folio_map[folio_code]
@@ -124,16 +141,30 @@ class ChantImporter:
                     chant.concordances.add(*concordances)
                 # Tracking
                 if (index % 100) == 0:
-                    self.stdout.write("{0} chants saved in the Django database.".format(index))
+                    self.stdout.write(
+                        "{0} chants saved in the Django database.".format(
+                            index
+                        )
+                    )
 
     def _delete_existing_chants(self):
-        manuscript_pks = set(chant.manuscript.pk for (chant, _, _) in self.new_chant_info)
-        if settings.DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+        manuscript_pks = set(
+            chant.manuscript.pk for (chant, _, _) in self.new_chant_info
+        )
+        if (
+            settings.DATABASES["default"]["ENGINE"]
+            == "django.db.backends.sqlite3"
+        ):
             # sqlite has trouble with bulk deletion so we need to delete in increments
             increment = 100
-            chants = [chant.pk for chant in Chant.objects.filter(manuscript__pk__in=manuscript_pks)]
+            chants = [
+                chant.pk
+                for chant in Chant.objects.filter(
+                    manuscript__pk__in=manuscript_pks
+                )
+            ]
             for i in range(0, len(chants), increment):
                 # Can't delete a slice so we need to query again
-                Chant.objects.filter(pk__in=chants[i:i + increment]).delete()
+                Chant.objects.filter(pk__in=chants[i : i + increment]).delete()
         else:
             Chant.objects.filter(manuscript__pk__in=manuscript_pks).delete()

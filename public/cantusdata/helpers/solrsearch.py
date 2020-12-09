@@ -5,25 +5,26 @@ import solr
 
 class SolrSearch(object):
     """
-        This class is a helper class for translating between query parameters
-        in a GET request and the format needed to search in Solr.
+    This class is a helper class for translating between query parameters
+    in a GET request and the format needed to search in Solr.
 
-        It has three main methods: search, facets, and group_search.
+    It has three main methods: search, facets, and group_search.
 
-        The search method performs a search. The `parse_request` and
-        `prepare_query` methods are automatically called with the request object
-        when the class is initialized. This filters all the query keys and
-        translates them to Solr.
+    The search method performs a search. The `parse_request` and
+    `prepare_query` methods are automatically called with the request object
+    when the class is initialized. This filters all the query keys and
+    translates them to Solr.
 
-        The facets method requests facets from the Solr search server.
+    The facets method requests facets from the Solr search server.
 
-        The group_search method performs a search, but can be used to group
-        results on any given field.
+    The group_search method performs a search, but can be used to group
+    results on any given field.
 
-        The private methods in this class (ones beginning in underscores) are
-        helpers that do all the work.
+    The private methods in this class (ones beginning in underscores) are
+    helpers that do all the work.
 
     """
+
     def __init__(self, request, additional_query_params=None):
         self.server = solr.Solr(settings.SOLR_SERVER)
         # self.query_dict = query_dict
@@ -42,9 +43,9 @@ class SolrSearch(object):
 
     def facets(self, facet_fields, **kwargs):
         facet_params = {
-            'facet': 'true',
-            'facet_field': facet_fields,
-            'facet_mincount': 1
+            "facet": "true",
+            "facet_field": facet_fields,
+            "facet_mincount": 1,
         }
         self.solr_params.update(facet_params)
         self.solr_params.update(kwargs)
@@ -54,9 +55,9 @@ class SolrSearch(object):
 
     def group_search(self, group_fields, **kwargs):
         group_params = {
-            'group': 'true',
-            'group_ngroups': 'true',
-            'group_field': group_fields
+            "group": "true",
+            "group_ngroups": "true",
+            "group_field": group_fields,
         }
         self.solr_params.update(group_params)
         self.solr_params.update(kwargs)
@@ -81,17 +82,24 @@ class SolrSearch(object):
             for k, v in self.parsed_request.items():
                 if not v:
                     continue
-                if k == 'q':
+                if k == "q":
                     if v[0] != "":
                         arr.insert(0, "{0}".format(v[0]))
-                elif k in ('start', 'rows'):
+                elif k in ("start", "rows"):
                     # Start and row parameters are single integers
                     self.solr_params[k] = int(v[0])
-                elif k == 'sort':
+                elif k == "sort":
                     # Treat sort as a string, not a one-element tuple
-                    self.solr_params['sort'] = str(v[0])
+                    self.solr_params["sort"] = str(v[0])
                 else:
-                    arr.append("{0}:({1})".format(k, " OR ".join(["\"{0}\"".format(s) for s in v if v is not None])))
+                    arr.append(
+                        "{0}:({1})".format(
+                            k,
+                            " OR ".join(
+                                ['"{0}"'.format(s) for s in v if v is not None]
+                            ),
+                        )
+                    )
 
         if arr:
             self.prepared_query = " AND ".join(arr)

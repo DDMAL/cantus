@@ -7,27 +7,27 @@ import solr
 
 
 CHANT_FIELDS = [
-    'type',
-    'item_id',
-    'marginalia',
-    'manuscript',
-    'manuscript_id',
-    'manuscript_name_hidden',
-    'folio',
-    'folio_id',
-    'sequence',
-    'cantus_id',
-    'feast',
-    'office',
-    'genre',
-    'position',
-    'mode',
-    'differentia',
-    'finalis',
-    'incipit',
-    'full_text',
-    'volpiano',
-    'concordances',
+    "type",
+    "item_id",
+    "marginalia",
+    "manuscript",
+    "manuscript_id",
+    "manuscript_name_hidden",
+    "folio",
+    "folio_id",
+    "sequence",
+    "cantus_id",
+    "feast",
+    "office",
+    "genre",
+    "position",
+    "mode",
+    "differentia",
+    "finalis",
+    "incipit",
+    "full_text",
+    "volpiano",
+    "concordances",
 ]
 
 
@@ -36,18 +36,21 @@ class FolioChantSetView(APIView):
     renderer_classes = (JSONRenderer, JSONPRenderer)
 
     def get(self, request, *args, **kwargs):
-        folio_id = kwargs['pk']
+        folio_id = kwargs["pk"]
         # We want to get all chants of a particular folio of a particular
         # manuscript.  It is fastest to pull these from Solr!
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
 
-        composed_request = 'type:"cantusdata_chant" AND folio_id:{0}'.format(folio_id)
+        composed_request = 'type:"cantusdata_chant" AND folio_id:{0}'.format(
+            folio_id
+        )
         results = solrconn.query(
             composed_request,
             sort="sequence asc",
             rows=100,
             fields=CHANT_FIELDS,
-            score=False)
+            score=False,
+        )
 
         return Response(results)
 
@@ -57,22 +60,27 @@ class ManuscriptChantSetView(APIView):
     renderer_classes = (JSONRenderer, JSONPRenderer)
 
     def get(self, request, *args, **kwargs):
-        manuscript_id = kwargs['pk']
+        manuscript_id = kwargs["pk"]
 
-        if 'start' in kwargs:
-            start = kwargs['start']
+        if "start" in kwargs:
+            start = kwargs["start"]
         else:
             start = 0
 
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
 
-        composed_request = 'type:"cantusdata_chant" AND manuscript_id:{0}'.format(manuscript_id)
+        composed_request = (
+            'type:"cantusdata_chant" AND manuscript_id:{0}'.format(
+                manuscript_id
+            )
+        )
         results = solrconn.query(
             composed_request,
             sort="sequence asc",
             start=start,
             rows=100,
             fields=CHANT_FIELDS,
-            score=False)
+            score=False,
+        )
 
         return Response(results)

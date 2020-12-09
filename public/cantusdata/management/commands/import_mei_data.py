@@ -21,8 +21,10 @@ class Command(BaseCommand):
             mode = args[0]
             manuscript = args[1]
         else:
-            raise Exception("Please provide arguments for processing"
-                            " mode and manuscript name.")
+            raise Exception(
+                "Please provide arguments for processing"
+                " mode and manuscript name."
+            )
 
         # Make sure we're working with the right manuscript
         if manuscript == "salzinnes":
@@ -74,19 +76,41 @@ def dump_to_csv(mei_location, siglum, id, path):
     # Maintain a stable heading order for Salzinnes-style CSV so that it's possible to run word-by-word
     # diffs on the output
     heading_order = {
-        h: i for (i, h) in enumerate((
-            'folio', 'image_uri', 'pnames', 'neumes', 'siglum_slug', 'intervals', 'id',
-            'semitones', 'contour', 'project', 'location', 'type'
-        ))
+        h: i
+        for (i, h) in enumerate(
+            (
+                "folio",
+                "image_uri",
+                "pnames",
+                "neumes",
+                "siglum_slug",
+                "intervals",
+                "id",
+                "semitones",
+                "contour",
+                "project",
+                "location",
+                "type",
+            )
+        )
     }
 
-    with open(path, 'wb') as csv_file:
+    with open(path, "wb") as csv_file:
         writer = None
 
         files, pages = convert_mei(mei_location, siglum, id)
 
-        prog_widgets = ['Parsing: ', progressbar.Percentage(), ' ', progressbar.Bar(), ' ', progressbar.ETA()]
-        prog_bar = progressbar.ProgressBar(widgets=prog_widgets, maxval=len(files))
+        prog_widgets = [
+            "Parsing: ",
+            progressbar.Percentage(),
+            " ",
+            progressbar.Bar(),
+            " ",
+            progressbar.ETA(),
+        ]
+        prog_bar = progressbar.ProgressBar(
+            widgets=prog_widgets, maxval=len(files)
+        )
         prog_bar.start()
 
         for page_idx, (file_name, page) in enumerate(pages):
@@ -99,7 +123,12 @@ def dump_to_csv(mei_location, siglum, id, path):
                     #
                     #   If the assumption breaks we'll get a ValueError: dict contains fields
                     #   not in fieldname.
-                    headings = list(sorted(list(row.keys()), key=lambda h: heading_order.get(h, -1)))
+                    headings = list(
+                        sorted(
+                            list(row.keys()),
+                            key=lambda h: heading_order.get(h, -1),
+                        )
+                    )
 
                     writer = csv.DictWriter(csv_file, headings)
                     writer.writeheader()
@@ -116,7 +145,10 @@ def convert_mei(mei_location, siglum, id):
 
 
 def get_converter(siglum):
-    from cantusdata.helpers.mei_conversion import MEIConverter, StGallenMEIConverter
+    from cantusdata.helpers.mei_conversion import (
+        MEIConverter,
+        StGallenMEIConverter,
+    )
 
     if siglum == "ch-sgs-390" or siglum == "ch-sgs-391":
         return StGallenMEIConverter
@@ -127,13 +159,19 @@ def get_converter(siglum):
 def upload_to_solr(filename):
     """Commit a CSV file to Solr using a stream"""
 
-    prog_widgets = ['Uploading... ', progressbar.BouncingBar(), ' ', progressbar.Timer(format='Time: %s')]
+    prog_widgets = [
+        "Uploading... ",
+        progressbar.BouncingBar(),
+        " ",
+        progressbar.Timer(format="Time: %s"),
+    ]
     prog_bar = progressbar.ProgressBar(widgets=prog_widgets)
     prog_bar.start()
 
     # Build the Solr upload URL
-    url = ('"{server}/update?stream.file={path}&stream.contentType=text/csv;charset=utf-8&commit=true"'
-            .format(server=settings.SOLR_SERVER, path=os.path.abspath(filename)))
+    url = '"{server}/update?stream.file={path}&stream.contentType=text/csv;charset=utf-8&commit=true"'.format(
+        server=settings.SOLR_SERVER, path=os.path.abspath(filename)
+    )
 
     command = 'curl -s -o /dev/null -w "%{http_code}" ' + url
 
@@ -152,18 +190,21 @@ def upload_to_solr(filename):
     prog_bar.finish()
 
     if proc.returncode != 0:
-        failure_message = 'process returned {}'.format(proc.returncode)
+        failure_message = "process returned {}".format(proc.returncode)
     else:
         status = proc.communicate()[0]
 
-        if status[0] != '2':
-            failure_message = 'status {}'.format(status)
+        if status[0] != "2":
+            failure_message = "status {}".format(status)
 
         else:
             failure_message = None
 
     if failure_message is not None:
-        print('Upload failed ({}). See the Solr logs for details.'.format(failure_message))
+        print(
+            "Upload failed ({}). See the Solr logs for details.".format(
+                failure_message
+            )
+        )
     else:
-        print('Upload successful.')
-
+        print("Upload successful.")

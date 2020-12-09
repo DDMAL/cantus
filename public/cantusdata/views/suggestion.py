@@ -6,15 +6,18 @@ import solr
 
 
 class SuggestionView(APIView):
-
     def get(self, request, *args, **kwargs):
 
-        if not ('q' in request.GET and 'dictionary' in request.GET):
+        if not ("q" in request.GET and "dictionary" in request.GET):
             return Response()
 
-        q = "{0}".format(request.GET['q'])
-        dictionary = "{0}".format(request.GET['dictionary'])  # The suggester to use
-        manuscript = "{0}".format(request.GET['manuscript'])  # Can be '*' when searching through all manuscripts
+        q = "{0}".format(request.GET["q"])
+        dictionary = "{0}".format(
+            request.GET["dictionary"]
+        )  # The suggester to use
+        manuscript = "{0}".format(
+            request.GET["manuscript"]
+        )  # Can be '*' when searching through all manuscripts
 
         connection = solr.Solr(settings.SOLR_SERVER)
         search_handler = solr.SearchHandler(connection, "/suggest")
@@ -26,7 +29,9 @@ class SuggestionView(APIView):
         results = search_results.suggest[dictionary][q]
 
         # Remove duplicates from the suggestions and limits the return number to 10
-        results['suggestions'] = self._get_filtered_results(results['suggestions'])
+        results["suggestions"] = self._get_filtered_results(
+            results["suggestions"]
+        )
 
         response = Response(results)
         return response
@@ -38,7 +43,7 @@ class SuggestionView(APIView):
             unique = True
 
             for result in results:
-                if suggestion['term'] == result['term']:
+                if suggestion["term"] == result["term"]:
                     unique = False
                     break
 

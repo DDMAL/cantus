@@ -7,6 +7,7 @@ class Plugin(models.Model):
     Plugins describe added functionality that may be attached to a Manuscript.
     Plugins
     """
+
     name = models.CharField(max_length=255, blank=False, null=False)
 
     @property

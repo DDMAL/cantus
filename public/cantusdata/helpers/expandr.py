@@ -4,6 +4,7 @@ import csv
 import urllib.request, urllib.error, urllib.parse
 import re
 
+
 def expand_mode(mode_code):
     input_list = mode_code.strip()
     mode_output = []
@@ -36,6 +37,7 @@ def expand_mode(mode_code):
     outstring = " ".join(mode_output)
     return outstring
 
+
 def expand_genre(genre_code):
     if genre_code in genres:
         description = genres[genre_code]
@@ -52,7 +54,7 @@ def expand_differentia(differentia_code):
     :param differentia_code:
     :return:
     """
-    return 'No differentia' if '*' in differentia_code else differentia_code
+    return "No differentia" if "*" in differentia_code else differentia_code
 
 
 def expand_office(office_code):
@@ -75,7 +77,7 @@ def expand_office(office_code):
         "E": "Antiphons for the Magnificat or Benedictus",
         "H": "Antiphons based on texts from the Historia",
         "CA": "Chapter",
-        "X": "Supplementary"
+        "X": "Supplementary",
     }.get(office_code, "Error")
 
 
@@ -89,7 +91,12 @@ class PositionExpander(object):
         for row in self.csv_file:
             office_code = self.remove_double_dash(row["Office"]).strip()
             genre_code = self.remove_double_dash(row["Genre"]).strip()
-            position_code = self.remove_double_dash(row["Position"]).strip().lstrip("0").rstrip("._ ")
+            position_code = (
+                self.remove_double_dash(row["Position"])
+                .strip()
+                .lstrip("0")
+                .rstrip("._ ")
+            )
             text = self.remove_double_dash(row["Text Phrase"]).strip()
 
             # We are creating a 3-dimensional dictionary for fast lookup of names
@@ -97,8 +104,9 @@ class PositionExpander(object):
 
     def get_text(self, office_code, genre_code, position_code):
         try:
-            return self.position_data_base[office_code.strip()][genre_code.strip()]\
-                [position_code.strip().lstrip("0").rstrip("._ ")]
+            return self.position_data_base[office_code.strip()][
+                genre_code.strip()
+            ][position_code.strip().lstrip("0").rstrip("._ ")]
         except KeyError:
             # If it's not in the dictionary then we just use an empty string
             return ""
@@ -112,17 +120,24 @@ class PositionExpander(object):
             if genre in self.position_data_base[office]:
                 if position in self.position_data_base[office][genre]:
                     raise KeyError(
-                        "Position record {0} {1} {2} already set to {3}!"
-                        .format(office, genre, position,
-                            self.position_data_base[office][genre][position])
+                        "Position record {0} {1} {2} already set to {3}!".format(
+                            office,
+                            genre,
+                            position,
+                            self.position_data_base[office][genre][position],
+                        )
                     )
                 else:
                     # Position doesn't exist, so we create it
-                    self.position_data_base[office][genre].update({position: text})
+                    self.position_data_base[office][genre].update(
+                        {position: text}
+                    )
             else:
                 # Genre doesn't exist, so we create it and position
-                self.position_data_base[office].update({genre: {position: text}})
-        else :
+                self.position_data_base[office].update(
+                    {genre: {position: text}}
+                )
+        else:
             # Office doesn't exist, so we create office, genre, and position
             self.position_data_base.update({office: {genre: {position: text}}})
 

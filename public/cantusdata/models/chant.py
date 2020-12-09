@@ -3,15 +3,16 @@ from django.db import models
 
 class Chant(models.Model):
     """
-        A Chant belongs to a image page (or a chant can appear
-        on multiple pages?)
-        Feast and Concordances belong to a Chant
-        (assuming a chant corresponds to exactly one feast(many-to-one)
-        and many-to-many relationship between chants and concordances)
+    A Chant belongs to a image page (or a chant can appear
+    on multiple pages?)
+    Feast and Concordances belong to a Chant
+    (assuming a chant corresponds to exactly one feast(many-to-one)
+    and many-to-many relationship between chants and concordances)
     """
+
     class Meta:
         app_label = "cantusdata"
-        ordering = ['sequence']
+        ordering = ["sequence"]
 
     marginalia = models.CharField(max_length=255, blank=True, null=True)
     folio = models.ForeignKey("cantusdata.Folio", blank=True, null=True)
@@ -26,11 +27,11 @@ class Chant(models.Model):
     finalis = models.CharField(max_length=255, blank=True, null=True)
     incipit = models.TextField(blank=True, null=True)
     full_text = models.TextField(blank=True, null=True)
-    concordances = models.ManyToManyField("cantusdata.Concordance",
-                                          related_name="concordances",
-                                          blank=True)
+    concordances = models.ManyToManyField(
+        "cantusdata.Concordance", related_name="concordances", blank=True
+    )
     volpiano = models.TextField(blank=True, null=True)
-    manuscript = models.ForeignKey('Manuscript')
+    manuscript = models.ForeignKey("Manuscript")
 
     def __str__(self):
         return "{0} - {1}".format(self.cantus_id, self.incipit)
@@ -48,30 +49,30 @@ class Chant(models.Model):
         import uuid
 
         return {
-            'type': 'cantusdata_chant',
-            'id': str(uuid.uuid4()),
-            'item_id': self.id,
-            'marginalia': self.marginalia,
-            'manuscript': self.manuscript.siglum,
-            'manuscript_id': self.manuscript.id,
-            'manuscript_name_hidden': self.manuscript.name,
-            'public': self.manuscript.public,
-            'folio': self.folio.number,
-            'folio_id': self.folio.id,
-            'image_uri': self.folio.image_uri,
-            'sequence': self.sequence,
-            'cantus_id': self.cantus_id,
-            'feast': self.feast,
-            'office': self.office,
-            'genre': self.genre,
-            'position': self.lit_position,
-            'mode': self.mode,
-            'differentia': self.differentia,
-            'finalis': self.finalis,
-            'incipit': self.incipit,
-            'full_text': self.full_text,
-            'volpiano': self.volpiano,
-            'concordances': self.concordance_citation_list
+            "type": "cantusdata_chant",
+            "id": str(uuid.uuid4()),
+            "item_id": self.id,
+            "marginalia": self.marginalia,
+            "manuscript": self.manuscript.siglum,
+            "manuscript_id": self.manuscript.id,
+            "manuscript_name_hidden": self.manuscript.name,
+            "public": self.manuscript.public,
+            "folio": self.folio.number,
+            "folio_id": self.folio.id,
+            "image_uri": self.folio.image_uri,
+            "sequence": self.sequence,
+            "cantus_id": self.cantus_id,
+            "feast": self.feast,
+            "office": self.office,
+            "genre": self.genre,
+            "position": self.lit_position,
+            "mode": self.mode,
+            "differentia": self.differentia,
+            "finalis": self.finalis,
+            "incipit": self.incipit,
+            "full_text": self.full_text,
+            "volpiano": self.volpiano,
+            "concordances": self.concordance_citation_list,
         }
 
     def fetch_solr_records(self, solrconn):
