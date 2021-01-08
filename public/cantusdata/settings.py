@@ -57,7 +57,7 @@ MIDDLEWARE = MIDDLEWARE_CLASSES = (
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 )
 
-ROOT_URLCONF = "urls"
+ROOT_URLCONF = "cantusdata.urls"
 
 # Migration: TEMPLATES + django 3.1
 # TEMPLATES = [
