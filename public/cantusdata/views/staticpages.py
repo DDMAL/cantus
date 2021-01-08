@@ -9,10 +9,11 @@ import codecs
 def homepage(request):
     """The view of the homepage, generated from a Markdown file.
 
-    The content is taken from a Markdown file, which is always located at `home.md` of the `cantus-staticpages` repository.
+    The content is taken from a Markdown file,
+    which is always located at `home.md` of the `cantus-staticpages` repository.
     """
-    markdown_file = "../cantus-staticpages/content/home.md"
-    markdown_fullpath = os.path.join(settings.BASE_DIR, markdown_file)
+    markdown_file = "cantus-staticpages/content/home.md"
+    markdown_fullpath = settings.BASE_DIR.parent / markdown_file
     content = codecs.open(markdown_fullpath, encoding="utf-8").read()
     content_as_html = markdown.markdown(content)
     context = {"content": content_as_html}
@@ -28,11 +29,11 @@ def general(request, static_page):
     Parameters
     ----------
     static_page : str
-        Name of the markdown file where the content is to be found, which is extracted from the url of the staticpage in `urls.py`
+        Name of the markdown file where the content is to be found,
+        which is extracted from the url of the staticpage in `urls.py`
     """
-    formatstr = "../cantus-staticpages/content/{}.md"
-    markdown_file = formatstr.format(static_page)
-    mrkdwn_fullpath = os.path.join(settings.BASE_DIR, markdown_file)
+    markdown_file = f"cantus-staticpages/content/{static_page}.md"
+    mrkdwn_fullpath = settings.BASE_DIR.parent / markdown_file
     titlecont = codecs.open(mrkdwn_fullpath, encoding="utf-8").readlines()
     title_line = titlecont[0]
     content = "\n".join(titlecont[1:])

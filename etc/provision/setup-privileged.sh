@@ -1,15 +1,15 @@
 #!/bin/bash
 
-echo "==== Enable python3.5 on rusty64 ===="
+echo "==== Enable python3.6 on rusty64 ===="
 sudo add-apt-repository ppa:deadsnakes/ppa
 sudo apt-get update
-sudo apt-get install python3.5
+sudo apt-get install -y python3.6 python3.6-dev python3.6-venv
 
 echo "===== Updating package listings ====="
 apt-get update
 
 echo "===== Initial dependencies ====="
-apt-get install -y build-essential libxml2-dev libxslt-dev libxslt1-dev zlib1g-dev libjpeg8-dev libpq-dev python-dev python-virtualenv python3.5 python3.5-dev python3.5-venv
+apt-get install -y build-essential libxml2-dev libxslt-dev libxslt1-dev zlib1g-dev libjpeg8-dev libpq-dev
 ln -s /usr/lib/x86_64-linux-gnu/libjpeg.so /usr/lib
 
 # echo "===== Create the cantus user ====="

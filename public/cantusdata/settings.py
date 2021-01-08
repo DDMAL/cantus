@@ -8,10 +8,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/dev/ref/settings/
 """
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import os
+from pathlib import Path
 
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
@@ -133,8 +133,8 @@ MEDIA_URL = "/media/"
 MEDIA_URL_NEUMEEDITOR = "/neumeeditor/media/"
 
 # This needs to be an absolute path to the file system location
-STATIC_ROOT = os.path.join(BASE_DIR, "cantusdata/static")
-MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
+STATIC_ROOT = BASE_DIR / "cantusdata/static"
+MEDIA_ROOT = BASE_DIR / "media/"
 
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": (
