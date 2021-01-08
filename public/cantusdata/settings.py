@@ -21,9 +21,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = "+lf0*we_nuqy(y5gxx4g@v^#&um83gh0*g6_ro)1l_6#k72j^^"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-TEMPLATE_DEBUG = True
+DEBUG = TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -31,13 +29,14 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = (
+    # Template apps
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # Auth tokens
+    # Additional apps
     "rest_framework",
     "rest_framework.authtoken",
     "cantusdata",
@@ -45,7 +44,10 @@ INSTALLED_APPS = (
     "coverage",
 )
 
-MIDDLEWARE_CLASSES = (
+# Migration: In django 3.1 "MIDDLEWARE_CLASSES" -> "MIDDLEWARE"
+# Migration: Preserving both for now. Remove "MIDDLEWARE_CLASSES" when migration is complete
+MIDDLEWARE = MIDDLEWARE_CLASSES = (
+    # "django.middleware.security.SecurityMiddleware" # Migration: + django 3.1
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -55,8 +57,24 @@ MIDDLEWARE_CLASSES = (
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 )
 
-
 ROOT_URLCONF = "urls"
+
+# Migration: TEMPLATES + django 3.1
+# TEMPLATES = [
+#     {
+#         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+#         'DIRS': [],
+#         'APP_DIRS': True,
+#         'OPTIONS': {
+#             'context_processors': [
+#                 'django.template.context_processors.debug',
+#                 'django.template.context_processors.request',
+#                 'django.contrib.auth.context_processors.auth',
+#                 'django.contrib.messages.context_processors.messages',
+#             ],
+#         },
+#     },
+# ]
 
 WSGI_APPLICATION = "cantusdata.wsgi.application"
 
@@ -74,6 +92,25 @@ DATABASES = {
         "PORT": "5432",
     }
 }
+
+# Migration: + django 3.1
+# Password validation
+# https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
+#
+# AUTH_PASSWORD_VALIDATORS = [
+#     {
+#         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+#     },
+#     {
+#         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+#     },
+#     {
+#         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+#     },
+#     {
+#         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+#     },
+# ]
 
 # Internationalization
 # https://docs.djangoproject.com/en/dev/topics/i18n/
