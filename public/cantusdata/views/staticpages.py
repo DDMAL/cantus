@@ -41,3 +41,12 @@ def general(request, static_page):
     content_as_html = markdown.markdown(content)
     context = {"title": title, "content": content_as_html}
     return render(request, "staticpages/general.html", context)
+
+def about(request):
+    return general(request, "about")
+
+def team(request):
+    return general(request, "team")
+
+def activities(request):
+    return general(request, "activities")

@@ -15,6 +15,7 @@ class ManuscriptSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Manuscript
+        fields = "__all__"
 
 
 class ManuscriptListSerializer(serializers.HyperlinkedModelSerializer):

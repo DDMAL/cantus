@@ -1,7 +1,8 @@
 from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.renderers import JSONRenderer, JSONPRenderer
+from rest_framework.renderers import JSONRenderer
+# from rest_framework_jsonp.renderers import JSONPRenderer
 from cantusdata.serializers.search import SearchSerializer
 import solr
 
@@ -33,7 +34,7 @@ CHANT_FIELDS = [
 
 class FolioChantSetView(APIView):
     serializer_class = SearchSerializer
-    renderer_classes = (JSONRenderer, JSONPRenderer)
+    renderer_classes = (JSONRenderer,)
 
     def get(self, request, *args, **kwargs):
         folio_id = kwargs["pk"]
@@ -57,7 +58,7 @@ class FolioChantSetView(APIView):
 
 class ManuscriptChantSetView(APIView):
     serializer_class = SearchSerializer
-    renderer_classes = (JSONRenderer, JSONPRenderer)
+    renderer_classes = (JSONRenderer,)
 
     def get(self, request, *args, **kwargs):
         manuscript_id = kwargs["pk"]

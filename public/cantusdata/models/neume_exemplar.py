@@ -22,7 +22,7 @@ class NeumeExemplar(models.Model):
         ordering = ["name"]
 
     name = models.CharField(max_length=255, blank=False, null=False)
-    folio = models.ForeignKey(Folio)
+    folio = models.ForeignKey(Folio, on_delete=models.CASCADE)
 
     x_coord = models.IntegerField()
     y_coord = models.IntegerField()

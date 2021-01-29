@@ -15,7 +15,9 @@ class Chant(models.Model):
         ordering = ["sequence"]
 
     marginalia = models.CharField(max_length=255, blank=True, null=True)
-    folio = models.ForeignKey("cantusdata.Folio", blank=True, null=True)
+    folio = models.ForeignKey(
+        "cantusdata.Folio", blank=True, null=True, on_delete=models.CASCADE
+    )
     sequence = models.PositiveSmallIntegerField()
     cantus_id = models.CharField(max_length=50, blank=True, null=True)
     feast = models.CharField(max_length=255, blank=True, null=True)
@@ -31,7 +33,7 @@ class Chant(models.Model):
         "cantusdata.Concordance", related_name="concordances", blank=True
     )
     volpiano = models.TextField(blank=True, null=True)
-    manuscript = models.ForeignKey("Manuscript")
+    manuscript = models.ForeignKey("Manuscript", on_delete=models.CASCADE)
 
     def __str__(self):
         return "{0} - {1}".format(self.cantus_id, self.incipit)

@@ -1,4 +1,6 @@
 from rest_framework import generics
+from django.views import generic
+from rest_framework.renderers import TemplateHTMLRenderer
 
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.serializers.manuscript import (

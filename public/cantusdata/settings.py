@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "+lf0*we_nuqy(y5gxx4g@v^#&um83gh0*g6_ro)1l_6#k72j^^"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = TEMPLATE_DEBUG = True
+DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -46,13 +46,13 @@ INSTALLED_APPS = (
 
 # Migration: In django 3.1 "MIDDLEWARE_CLASSES" -> "MIDDLEWARE"
 # Migration: Preserving both for now. Remove "MIDDLEWARE_CLASSES" when migration is complete
-MIDDLEWARE = MIDDLEWARE_CLASSES = (
-    # "django.middleware.security.SecurityMiddleware" # Migration: + django 3.1
+MIDDLEWARE_CLASSES = MIDDLEWARE = (
+    "django.middleware.security.SecurityMiddleware", # Migration: + django 3.1
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.auth.middleware.SessionAuthenticationMiddleware",
+    # "django.contrib.auth.middleware.SessionAuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 )
@@ -60,21 +60,22 @@ MIDDLEWARE = MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = "cantusdata.urls"
 
 # Migration: TEMPLATES + django 3.1
-# TEMPLATES = [
-#     {
-#         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-#         'DIRS': [],
-#         'APP_DIRS': True,
-#         'OPTIONS': {
-#             'context_processors': [
-#                 'django.template.context_processors.debug',
-#                 'django.template.context_processors.request',
-#                 'django.contrib.auth.context_processors.auth',
-#                 'django.contrib.messages.context_processors.messages',
-#             ],
-#         },
-#     },
-# ]
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'debug': DEBUG,
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
 
 WSGI_APPLICATION = "cantusdata.wsgi.application"
 
@@ -139,8 +140,12 @@ MEDIA_ROOT = BASE_DIR / "media/"
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": (
         "rest_framework.renderers.JSONRenderer",
+        # "rest_framework_jsonp.renderers.JSONPRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
     ),
+    # 'DEFAULT_PERMISSION_CLASSES': [
+    #     'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    # ]
 }
 
 SOLR_SERVER = "http://localhost:8983/solr/collection1"

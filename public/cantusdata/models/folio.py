@@ -14,7 +14,7 @@ class Folio(models.Model):
     number = models.CharField(max_length=50, blank=True, null=True)
     image_uri = models.CharField(max_length=255, blank=True, null=True)
     image_link = models.CharField(max_length=255, blank=True, null=True)
-    manuscript = models.ForeignKey("Manuscript")
+    manuscript = models.ForeignKey("Manuscript", on_delete=models.CASCADE)
 
     @property
     def chant_count(self):

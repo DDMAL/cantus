@@ -7,3 +7,4 @@ class ChantSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Chant
+        fields = "__all__"
