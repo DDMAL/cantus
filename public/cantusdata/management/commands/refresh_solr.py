@@ -23,15 +23,17 @@ class Command(BaseCommand):
         )
     )
 
-    option_list = BaseCommand.option_list + (
-        make_option(
+    def add_arguments(self, parser):
+        # "args" means "compatibility mode" to process arbitrary args
+        parser.add_argument("args", nargs=2)
+
+        parser.add_argument(
             "--all",
             action="store_true",
             dest="all",
             default=False,
-            help="Refresh all types: {0}".format(list(TYPE_MAPPING.keys())),
-        ),
-    )
+            help=f"Refresh all types: {list(self.TYPE_MAPPING.keys())}",
+        )
 
     def handle(self, *args, **options):
         solr_conn = solr.SolrConnection(settings.SOLR_SERVER)

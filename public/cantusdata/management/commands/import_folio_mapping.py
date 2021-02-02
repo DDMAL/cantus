@@ -14,15 +14,15 @@ class Command(BaseCommand):
     Usage: See 'help' below
     """
 
-    option_list = BaseCommand.option_list + (
-        make_option(
+    def add_arguments(self, parser):
+        parser.add_argument("args", nargs=2)
+        parser.add_argument(
             "--no-refresh",
             action="store_false",
             dest="refresh",
             default=True,
             help="Do not refresh Solr after the import",
-        ),
-    )
+        )
 
     help = (
         "Usage: ./manage.py import_folio_mapping <manuscript_id> <mapping_csv_file> [<manuscript2_id> <mapping_csv_file2> ...]"
