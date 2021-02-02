@@ -17,9 +17,10 @@ class ManifestProxyView(APIView):
     renderer_classes = (JSONRenderer,)
 
     def get(self, request, *args, **kwargs):
-
         manifest_url = kwargs["manifest_url"]
-
+        format_ = kwargs.get("format", None)
+        if format_:
+            manifest_url += f".{format_}"
         try:
             return StreamingHttpResponse(
                 requests.get(manifest_url, verify=False, stream=True),
