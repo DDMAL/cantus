@@ -1,4 +1,5 @@
 # from django.conf.urls import patterns, include, url
+from django.urls import path, include # django >= 2.0
 from django.contrib import admin
 from rest_framework.urlpatterns import format_suffix_patterns
 from cantusdata.views.browse import browse_view
@@ -19,8 +20,6 @@ from cantusdata.views.map_folios import MapFoliosView
 from cantusdata.views.manifest_proxy import ManifestProxyView
 from cantusdata.views import staticpages
 from django.contrib.admin.views.decorators import staff_member_required
-
-from django.urls import path, re_path, include
 
 urlpatterns = [
     # Admin pages
