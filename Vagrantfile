@@ -39,9 +39,9 @@ Vagrant.configure(2) do |config|
     os.password             = ENV['CCPASSWORD']
     os.region               = 'RegionOne'
     os.flavor               = 'p1-1.5gb'
-    os.image                = 'Ubuntu-14.04-trusty-server-cloudimg-amd64'
+    os.image                = 'Ubuntu-18.04-Bionic-x64-2020-12'
     os.identity_api_version = '3'
-    os.security_groups      = ['Insecure-Group']
+    os.security_groups      = ['Staging-Builds']
     os.floating_ip_pool     = 'Public-Network'
 
     override.vm.provision "shell" do |s|
