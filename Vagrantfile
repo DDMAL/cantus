@@ -10,7 +10,7 @@ Vagrant.configure(2) do |config|
     override.vm.network :forwarded_port, guest: 8000, host: 8000
     override.vm.network :forwarded_port, guest: 8983, host: 8080
     override.vm.synced_folder ".", "/vagrant"
-    override.vm.box = "bento/ubuntu-16.04"
+    override.vm.box = "bento/ubuntu-18.04"
     vb.customize ["modifyvm", :id, "--ioapic", "on"]
     vb.customize ["modifyvm", :id, "--cpus", "4"]
     vb.customize ["modifyvm", :id, "--memory", "2048"]
