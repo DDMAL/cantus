@@ -44,22 +44,18 @@ INSTALLED_APPS = (
     "coverage",
 )
 
-# Migration: In django 3.1 "MIDDLEWARE_CLASSES" -> "MIDDLEWARE"
-# Migration: Preserving both for now. Remove "MIDDLEWARE_CLASSES" when migration is complete
-MIDDLEWARE_CLASSES = MIDDLEWARE = (
+MIDDLEWARE = (
     "django.middleware.security.SecurityMiddleware", # Migration: + django 3.1
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    # "django.contrib.auth.middleware.SessionAuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 )
 
 ROOT_URLCONF = "cantusdata.urls"
 
-# Migration: TEMPLATES + django 3.1
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -94,24 +90,23 @@ DATABASES = {
     }
 }
 
-# Migration: + django 3.1
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
-#
-# AUTH_PASSWORD_VALIDATORS = [
-#     {
-#         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-#     },
-#     {
-#         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-#     },
-#     {
-#         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-#     },
-#     {
-#         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-#     },
-# ]
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/dev/topics/i18n/
@@ -129,6 +124,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
+
 STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
 MEDIA_URL_NEUMEEDITOR = "/neumeeditor/media/"

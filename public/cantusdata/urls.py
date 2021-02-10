@@ -1,6 +1,6 @@
 # from django.conf.urls import patterns, include, url
-from django.urls import path, include # django >= 2.0
 from django.contrib import admin
+from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
 from cantusdata.views.browse import browse_view
 from cantusdata.views.manuscript import ManuscriptList, ManuscriptDetail
