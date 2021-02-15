@@ -2,7 +2,7 @@
 
 echo "===== Setting up django ====="
 cd public
-python3.6 -m venv app_env
+python3 -m venv app_env
 source app_env/bin/activate
 pip install -r requirements.txt
 

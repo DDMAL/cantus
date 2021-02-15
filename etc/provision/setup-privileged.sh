@@ -1,21 +1,12 @@
 #!/bin/bash
 
-echo "==== Enable python3.6 on rusty64 ===="
-sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt-get update
-sudo apt-get install -y python3.6 python3.6-dev python3.6-venv
-
-echo "===== Updating package listings ====="
+echo "==== Enable python dev, venv, and pip ===="
 apt-get update
+apt-get install -y python3-dev python3-venv python3-pip
 
 echo "===== Initial dependencies ====="
 apt-get install -y build-essential libxml2-dev libxslt-dev libxslt1-dev zlib1g-dev libjpeg8-dev libpq-dev
 ln -s /usr/lib/x86_64-linux-gnu/libjpeg.so /usr/lib
-
-# echo "===== Create the cantus user ====="
-# groupadd --system webapps
-# useradd --system --gid webapps --shell /bin/bash --home /srv/webapps/cantus cantus
-# echo "cantus ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 echo "===== Setup postgres ====="
 apt-get install -y postgresql postgresql-contrib
@@ -57,6 +48,6 @@ service solr restart
 echo "===== Installing nodejs/npm ====="
 # Cannot use the default node package from apt because it is obsolete
 # The last version of node compatible with Ubuntu 14.04 is 8.x, using that
-curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
 apt-get install -y nodejs
 npm install -g gulp
