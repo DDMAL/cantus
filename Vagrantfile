@@ -46,7 +46,7 @@ Vagrant.configure(2) do |config|
 
     override.vm.provision "shell" do |s|
       s.path = "etc/provision/setup-privileged.sh"
-      s.env = {"HOMEUSER" => "ubuntu"}
+      s.env = {"HOMEUSER" => "ubuntu", "IS_PRODUCTION" => "TRUE"}
     end
     override.vm.provision "shell" do |s|
       s.privileged = false
