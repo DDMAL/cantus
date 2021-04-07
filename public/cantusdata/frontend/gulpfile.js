@@ -198,7 +198,7 @@ gulp.task('bundle:css', function ()
     return gulp.src(sources, {base: './public/css/'})
         .pipe(gulpif(isDevBuild, sourcemaps.init()))
         .pipe(gulpif(isScssFile, compileScss()))
-        .pipe(concat('cantus.min.css'))
+        .pipe(concat('cantus-min.css'))
         .pipe(gulpif(isDevBuild, sourcemaps.write('.')))
         .pipe(gulp.dest('../static/css'))
         .pipe(gulpif(isCssFile, livereload())); // Don't reload for sourcemaps

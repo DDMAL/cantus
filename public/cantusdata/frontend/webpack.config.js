@@ -36,7 +36,7 @@ module.exports = configureBuildMode({
     },
 
     output: {
-        filename: '[name].min.js',
+        filename: '[name]-min.js',
         chunkFilename: 'cantus.chunk.[id].min.js',
         path: path.resolve(__dirname, '../static/js/app'),
         publicPath: '/static/js/app/'
