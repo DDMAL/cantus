@@ -45,6 +45,14 @@ chown solr:solr /var/db/solr -R
 # Restart solr
 service solr restart
 
+echo "===== Installing nginx ====="
+apt-get install -y nginx
+# The user is different depending on the provider/vm
+# Replacing the user once, and writing the resulting conf file
+sed -i "s/HOMEUSER/$HOMEUSER/" /home/$HOMEUSER/nginx.conf
+cp /home/$HOMEUSER/nginx.conf /etc/nginx/nginx.conf
+nginx -s reload
+
 echo "===== Installing nodejs/npm ====="
 # Cannot use the default node package from apt because it is obsolete
 # The last version of node compatible with Ubuntu 14.04 is 8.x, using that
