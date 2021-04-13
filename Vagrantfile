@@ -23,6 +23,10 @@ Vagrant.configure(2) do |config|
       s.privileged = false
       s.path = "etc/provision/setup-unprivileged.sh"
     end
+    override.vm.provision "shell" do |s|
+      s.path = "etc/provision/setup-systemd.sh"
+      s.env = {"HOMEUSER" => "vagrant"}
+    end
   end
 
   # Openstack (ComputeCanada) provider settings
@@ -51,6 +55,10 @@ Vagrant.configure(2) do |config|
     override.vm.provision "shell" do |s|
       s.privileged = false
       s.path = "etc/provision/setup-unprivileged.sh"
+    end
+    override.vm.provision "shell" do |s|
+      s.path = "etc/provision/setup-systemd.sh"
+      s.env = {"HOMEUSER" => "vagrant"}
     end
   end
 
