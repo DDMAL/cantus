@@ -1,24 +1,20 @@
-
-echo "==== Collect the exported environment variables ===="
-source /home/$HOMEUSER/.bashrc
-
+#!/bin/bash
 echo "==== Writing the service file ===="
+cat <<EOF > /etc/systemd/system/gunicorn.service
+[Unit]
+Description=gunicorn service for the Cantus Ultimus app
+After=network.target
 
-GUNICORNSERVICE="[Unit] \
-Description=gunicorn daemon \
-After=network.target \
-\
-[Service] \
-User=$HOMEUSER \
-WorkingDirectory=/home/$HOMEUSER/public \
-Environment=SECRET_KEY=$SECRET_KEY \
-ExecStart=/home/$HOMEUSER/public/app_env/bin/gunicorn -b localhost:8001 cantusdata.wsgi \
-Restart=always \
-\
-[Install] \
-WantedBy=multi-user.target"
+[Service]
+User=$HOMEUSER
+WorkingDirectory=/home/$HOMEUSER/public
+Environment=SECRET_KEY=$SECRET_KEY
+ExecStart=/home/$HOMEUSER/public/app_env/bin/gunicorn -b localhost:8001 cantusdata.wsgi
+Restart=always
 
-echo $GUNICORNSERVICE > /etc/systemd/system/gunicorn.service
+[Install]
+WantedBy=multi-user.target
+EOF
 
 echo "==== Initializing the new service ===="
 systemctl daemon-reload

@@ -16,8 +16,11 @@ Vagrant.configure(2) do |config|
     vb.customize ["modifyvm", :id, "--memory", "2048"]
 
     override.vm.provision "shell" do |s|
-      s.path = "etc/provision/setup-privileged.sh"
+      s.path = "etc/provision/setup-variables.sh"
       s.env = {"HOMEUSER" => "vagrant"}
+    end
+    override.vm.provision "shell" do |s|
+      s.path = "etc/provision/setup-privileged.sh"
     end
     override.vm.provision "shell" do |s|
       s.privileged = false
@@ -25,7 +28,6 @@ Vagrant.configure(2) do |config|
     end
     override.vm.provision "shell" do |s|
       s.path = "etc/provision/setup-systemd.sh"
-      s.env = {"HOMEUSER" => "vagrant"}
     end
   end
 
@@ -49,8 +51,11 @@ Vagrant.configure(2) do |config|
     os.floating_ip_pool     = 'Public-Network'
 
     override.vm.provision "shell" do |s|
-      s.path = "etc/provision/setup-privileged.sh"
+      s.path = "etc/provision/setup-variables.sh"
       s.env = {"HOMEUSER" => "ubuntu", "IS_PRODUCTION" => "TRUE"}
+    end
+    override.vm.provision "shell" do |s|
+      s.path = "etc/provision/setup-privileged.sh"
     end
     override.vm.provision "shell" do |s|
       s.privileged = false
@@ -58,7 +63,6 @@ Vagrant.configure(2) do |config|
     end
     override.vm.provision "shell" do |s|
       s.path = "etc/provision/setup-systemd.sh"
-      s.env = {"HOMEUSER" => "vagrant"}
     end
   end
 
