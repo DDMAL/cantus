@@ -37,16 +37,16 @@ Vagrant.configure(2) do |config|
     override.vm.network :forwarded_port, guest: 8983, host: 8080
     override.vm.synced_folder ".", "/vagrant"
     override.ssh.username   = "ubuntu"
-    os.openstack_auth_url   = 'https://arbutus.cloud.computecanada.ca:5000/v3'
-    os.project_name         = 'rpp-ichiro'
-    os.user_domain_name     = "CCDB"
-    os.project_domain_name  = 'CCDB'
-    os.username             = ENV['CCUSER']
-    os.password             = ENV['CCPASSWORD']
-    os.region               = 'RegionOne'
+    os.openstack_auth_url   = ENV['OS_AUTH_URL'] + "/v3"
+    os.project_name         = ENV['OS_PROJECT_NAME']
+    os.user_domain_name     = ENV['OS_USER_DOMAIN_NAME']
+    os.project_domain_name  = ENV['OS_USER_DOMAIN_NAME']
+    os.username             = ENV['OS_USERNAME']
+    os.password             = ENV['OS_PASSWORD']
+    os.region               = ENV['RegionOne']
     os.flavor               = 'p1-1.5gb'
     os.image                = 'Ubuntu-18.04-Bionic-x64-2020-12'
-    os.identity_api_version = '3'
+    os.identity_api_version = ENV['OS_IDENTITY_API_VERSION']
     os.security_groups      = ['Cantus-Ultimus-Vagrant']
     os.floating_ip_pool     = 'Public-Network'
 
