@@ -37,7 +37,7 @@ Vagrant.configure(2) do |config|
     override.vm.network :forwarded_port, guest: 8983, host: 8080
     override.vm.synced_folder ".", "/vagrant"
     override.ssh.username   = "ubuntu"
-    os.openstack_auth_url   = ENV['OS_AUTH_URL'] + "/v3"
+    os.openstack_auth_url   = "#{ENV['OS_AUTH_URL']}/v3"
     os.project_name         = ENV['OS_PROJECT_NAME']
     os.user_domain_name     = ENV['OS_USER_DOMAIN_NAME']
     os.project_domain_name  = ENV['OS_USER_DOMAIN_NAME']
