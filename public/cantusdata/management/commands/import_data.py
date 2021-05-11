@@ -65,7 +65,7 @@ class Command(BaseCommand):
         for source, name in sources.items():
             self.stdout.write(source + " " + name)
             # Getting the fields from the scraper
-            metadata = parse_manuscript(source, relative_url=True)
+            metadata = parse_manuscript(source)
             name = metadata.get("Title", "")
             cantus_url = metadata.get("CantusURL", "")
             csv_export_url = metadata.get("CSVExport", "")

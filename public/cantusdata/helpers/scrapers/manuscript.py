@@ -1,5 +1,6 @@
 from html.parser import HTMLParser
 import urllib.request
+from urllib.parse import urljoin
 import sys
 
 
@@ -16,9 +17,10 @@ class ManuscriptScraper(HTMLParser):
     It is not ideal but we had no success using the Cantus Web API.
     """
 
-    def __init__(self):
+    def __init__(self, baseurl=""):
         super(ManuscriptScraper, self).__init__()
         self.flush()
+        self.baseurl = baseurl
         self.view_content_keys = [
             "Provenance",
             "Date",
@@ -97,7 +99,9 @@ class ManuscriptScraper(HTMLParser):
             first_attr = attrs[0]
             href, url = first_attr
             if href == "href" and url.endswith(".csv"):
-                self.dictionary["CSVExport"] = url
+                # This is a relative path now, join to baseurl
+                csvexport = urljoin(self.baseurl, url)
+                self.dictionary["CSVExport"] = csvexport
 
     def handle_endtag(self, tag):
         if tag == "div":
@@ -143,12 +147,12 @@ class ManuscriptScraper(HTMLParser):
                 self.unparsed_view_content.append(data)
 
 
-def parse(url, relative_url=False):
-    if relative_url:
-        source = url
-        url = "http://cantus.uwaterloo.ca" + source
+def parse(url):
+    baseurl = "https://cantus.uwaterloo.ca"
+    # url is relative? -> join, url is absolute? -> nothing should change
+    url = urljoin(baseurl, url)
     contents = urllib.request.urlopen(url).read().decode("utf-8")
-    cantusparser = ManuscriptScraper()
+    cantusparser = ManuscriptScraper(baseurl=baseurl)
     cantusparser.feed(contents)
     metadata = cantusparser.retrieve_metadata()
     metadata["CantusURL"] = url
