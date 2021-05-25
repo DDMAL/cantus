@@ -23,7 +23,7 @@ IS_PRODUCTION = "IS_PRODUCTION" in os.environ
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False if IS_PRODUCTION else True
 
-ALLOWED_HOSTS = ["cantus.simssa.ca", "dev-cantus.simssa.ca"]
+ALLOWED_HOSTS = ["cantus.simssa.ca", "dev-cantus.simssa.ca", "localhost"]
 
 # Application definition
 
