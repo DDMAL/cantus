@@ -7,10 +7,11 @@ Vagrant.configure(2) do |config|
 
   # Virtualbox provider settings
   config.vm.provider "virtualbox" do |vb, override|
-    override.vm.network :forwarded_port, guest: 8000, host: 8000
+    override.vm.network :forwarded_port, guest: 8000, host: 80
     override.vm.network :forwarded_port, guest: 8983, host: 8080
     override.vm.synced_folder ".", "/vagrant"
     override.vm.box = "bento/ubuntu-18.04"
+    vb.name = "DEVELOPMENT-CantusUltimus"
     vb.customize ["modifyvm", :id, "--ioapic", "on"]
     vb.customize ["modifyvm", :id, "--cpus", "4"]
     vb.customize ["modifyvm", :id, "--memory", "2048"]
@@ -33,10 +34,11 @@ Vagrant.configure(2) do |config|
 
   # Openstack (ComputeCanada) provider settings
   config.vm.provider "openstack" do |os, override|
-    override.vm.network :forwarded_port, guest: 8000, host: 8000
+    override.vm.network :forwarded_port, guest: 8000, host: 80
     override.vm.network :forwarded_port, guest: 8983, host: 8080
     override.vm.synced_folder ".", "/vagrant"
     override.ssh.username   = "ubuntu"
+    os.tenant_name = "STAGING-CantusUltimus"
     os.openstack_auth_url   = "#{ENV['OS_AUTH_URL']}/v3"
     os.project_name         = ENV['OS_PROJECT_NAME']
     os.user_domain_name     = ENV['OS_USER_DOMAIN_NAME']
