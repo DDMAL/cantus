@@ -95,6 +95,8 @@ class MapFoliosView(APIView):
 
 
 def _extract_ids(str_list):
+    if not str_list:
+        return []
     # string a: $OME/EXAMPLE/CR4ZY/STRING/123anid!!SOMEMOREIDENTICALSTUFF
     # string b: $OME/EXAMPLE/CR4ZY/STRING/123anotherid!!SOMEMOREIDENTICALSTUFF
     left_sweep = _remove_longest_common_string(str_list, "left")
