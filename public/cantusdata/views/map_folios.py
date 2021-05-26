@@ -135,11 +135,11 @@ def _remove_number_padding(s):
             number_str += c
         else:
             if number_str:
-                ret_str += "{}".format(int(number_str))
+                ret_str += f"{int(number_str)}"
                 number_str = ""
             ret_str += c
     if number_str:
-        ret_str += "{}".format(int(number_str))
+        ret_str += f"{int(number_str)}"
     return ret_str
 
 
