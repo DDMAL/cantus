@@ -34,8 +34,8 @@ Vagrant.configure(2) do |config|
 
   # Openstack (ComputeCanada) provider settings
   config.vm.provider "openstack" do |os, override|
-    override.vm.network :forwarded_port, guest: 80, host: 8000
-    override.vm.network :forwarded_port, guest: 8983, host: 8080
+    override.vm.network :forwarded_port, guest: 80, host: 8001
+    override.vm.network :forwarded_port, guest: 8983, host: 8081
     override.vm.synced_folder ".", "/vagrant"
     override.ssh.username   = "ubuntu"
     os.tenant_name = "STAGING-CantusUltimus"
