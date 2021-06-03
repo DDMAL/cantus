@@ -47,7 +47,7 @@ Vagrant.configure(2) do |config|
     os.password             = ENV['OS_PASSWORD']
     os.region               = ENV['RegionOne']
     os.flavor               = 'p1-1.5gb'
-    os.image                = 'Ubuntu-18.04-Bionic-x64-2020-12'
+    os.image                = 'Ubuntu-18.04.5-Bionic-x64-2021-05'
     os.identity_api_version = ENV['OS_IDENTITY_API_VERSION']
     os.security_groups      = ['Cantus-Ultimus-Vagrant']
     os.floating_ip_pool     = 'Public-Network'
