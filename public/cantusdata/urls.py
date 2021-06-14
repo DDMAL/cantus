@@ -34,6 +34,7 @@ urlpatterns = [
     path("about/", staticpages.about, name="about"),
     path("team/", staticpages.team, name="team"),
     path("activities/", staticpages.activities, name="activities"),
+    path("manifests/", staticpages.manifests, name="manifests"),
     path("browse/", browse_view, name="api-root"),
     # Main pages
     path("manuscripts/", ManuscriptList.as_view(), name="manuscript-list"),

@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from django.conf import settings
 import markdown
-import os.path
 import re
 import codecs
 
@@ -36,9 +35,9 @@ def general(request, static_page):
     mrkdwn_fullpath = settings.BASE_DIR.parent / markdown_file
     titlecont = codecs.open(mrkdwn_fullpath, encoding="utf-8").readlines()
     title_line = titlecont[0]
-    content = "\n".join(titlecont[1:])
+    content = "".join(titlecont[1:])
     title = re.match(r"^#([A-Za-z0-9 _-]+)$", title_line).group(1)
-    content_as_html = markdown.markdown(content)
+    content_as_html = markdown.markdown(content, extensions=["tables"])
     context = {"title": title, "content": content_as_html}
     return render(request, "staticpages/general.html", context)
 
@@ -50,3 +49,6 @@ def team(request):
 
 def activities(request):
     return general(request, "activities")
+
+def manifests(request):
+    return general(request, "manifests")
