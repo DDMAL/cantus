@@ -55,11 +55,25 @@ The site should now be accessible on http://localhost:8000/ in your host machine
 
 ### Launch in production (Vagrant + OpenStack)
 
-The OpenStack provider we are using is on a remote cloud. The credentials for accessing that cloud must be set before launching the instance:
+If using OpenStack as a provider in a remote cloud, the following environment variables (credentials) must be set:
+
+- `OS_AUTH_URL`
+- `OS_PROJECT_NAME`
+- `OS_USER_DOMAIN_NAME`
+- `OS_USER_DOMAIN_NAME`
+- `OS_USERNAME`
+- `OS_PASSWORD`
+- `RegionOne`
+- `OS_IDENTITY_API_VERSION`
+
+If you are deploying on ComputeCanada, an OpenStack RC file is provided to you, which sets all of those environments variables for you. To obtain your OpenStack RC file, go to the dashboard of the cloud (e.g., Arbutus) -> API Access -> Download the OpenStack RC file.
+
+Additional instructions can be found here: https://docs.computecanada.ca/wiki/OpenStack_Command_Line_Clients#Connecting_CLI_to_OpenStack
+
+After you have the OpenStack RC file, `source` it and run the container.
 
 ```sh
-$ export CCUSER YOUR_USERNAME
-$ export CCPASSWORD YOUR_PASSWORD
+$ source rxx-xxxxxx-openrc.sh
 
 $ vagrant up --provider openstack
 ```
