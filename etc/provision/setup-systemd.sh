@@ -9,7 +9,7 @@ After=network.target
 User=$HOMEUSER
 WorkingDirectory=/home/$HOMEUSER/public
 Environment=SECRET_KEY=$SECRET_KEY
-ExecStart=/home/$HOMEUSER/public/app_env/bin/gunicorn -b localhost:8001 cantusdata.wsgi --timeout 600
+ExecStart=/home/$HOMEUSER/public/app_env/bin/gunicorn -b localhost:8001 cantusdata.wsgi --timeout 600 --workers 4
 Restart=always
 
 [Install]
