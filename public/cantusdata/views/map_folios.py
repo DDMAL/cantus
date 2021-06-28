@@ -64,15 +64,21 @@ class MapFoliosView(APIView):
 
         imagelinks = list(folio_imagelink.values())
         imagelinks_ids = _extract_ids(imagelinks)
-        imagelink_folio = dict(
-            list(zip(imagelinks_ids, list(folio_imagelink.keys())))
-        )
+        imagelink_folio = {
+            k: v for k, v in zip(imagelinks_ids, folio_imagelink.keys())
+        }
 
+        mapped_folios = 0
         for idx, uri in enumerate(uris_objs):
             uri["id"] = uri_ids[idx]
             uri["folio"] = None
             if uri["id"] in imagelink_folio:
                 uri["folio"] = imagelink_folio[uri["id"]]
+                mapped_folios += 1
+
+        if mapped_folios == 0:
+            for idx, folio in enumerate(folios):
+                uris_objs[idx]["folio"] = folio
 
         return Response(
             {
