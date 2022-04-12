@@ -1,32 +1,24 @@
 #!/bin/bash
 
-echo "==== Enable python dev, venv, and pip ===="
-apt-get update
-apt-get install -y python3-dev python3-venv python3-pip
-
-echo "===== Initial dependencies ====="
-apt-get install -y build-essential libxml2-dev libxslt-dev libxslt1-dev zlib1g-dev libjpeg8-dev libpq-dev
-ln -s /usr/lib/x86_64-linux-gnu/libjpeg.so /usr/lib
-
 echo "===== Setup postgres ====="
-apt-get install -y postgresql postgresql-contrib
-sudo -u postgres psql -c "create user cantus_admin with encrypted password 'Pl4c3H0ld3r';"
-sudo -u postgres psql -c "alter user cantus_admin with SUPERUSER;"
-sudo -u postgres psql -c "create database cantus_db with owner cantus_admin;"
+# apt-get install -y postgresql postgresql-contrib
+# sudo -u postgres psql -c "create user cantus_admin with encrypted password 'Pl4c3H0ld3r';"
+# sudo -u postgres psql -c "alter user cantus_admin with SUPERUSER;"
+# sudo -u postgres psql -c "create database cantus_db with owner cantus_admin;"
 
 echo "===== Copy the repository ====="
-cp -R /vagrant/* /home/$HOMEUSER/
-sudo chown -R $HOMEUSER /home/$HOMEUSER/
+# cp -R /vagrant/* /home/$HOMEUSER/
+# sudo chown -R $HOMEUSER /home/$HOMEUSER/
 
 echo "===== Installing Java 8 ====="
-add-apt-repository ppa:openjdk-r/ppa
-apt-get update
-apt-get install -y openjdk-8-jdk
+# add-apt-repository ppa:openjdk-r/ppa
+# apt-get update
+# apt-get install -y openjdk-8-jdk
 
 echo "===== Installing solr ====="
 curl -sS -L "http://archive.apache.org/dist/lucene/solr/6.1.0/solr-6.1.0.tgz" -o "solr-6.1.0.tgz"
 tar xzf solr-6.1.0.tgz solr-6.1.0/bin/install_solr_service.sh --strip-components=2
-sudo bash ./install_solr_service.sh solr-6.1.0.tgz
+bash ./install_solr_service.sh solr-6.1.0.tgz
 # Remove the solr installer
 rm solr-6.1.0.tgz
 rm install_solr_service.sh
