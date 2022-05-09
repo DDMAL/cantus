@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#fix hanging for windows environments
+sudo apt-get remove -y --purge man-db
+
 echo "==== Enable python dev, venv, and pip ===="
 apt-get update
 apt-get install -y python3-dev python3-venv python3-pip
