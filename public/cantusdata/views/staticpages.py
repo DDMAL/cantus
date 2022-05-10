@@ -36,7 +36,7 @@ def general(request, static_page):
     titlecont = codecs.open(mrkdwn_fullpath, encoding="utf-8").readlines()
     title_line = titlecont[0]
     content = "".join(titlecont[1:])
-    title = re.match(r"^#([A-Za-z0-9 _-]+)", title_line).group(1)
+    title = re.match(r"^#([\w _-]+)\r?$", title_line).group(1)
     content_as_html = markdown.markdown(content, extensions=["tables"])
     context = {"title": title, "content": content_as_html}
     return render(request, "staticpages/general.html", context)
