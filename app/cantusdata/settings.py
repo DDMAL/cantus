@@ -84,7 +84,7 @@ DATABASES = {
         "NAME": "cantus_db",
         "USER": "cantus_admin",
         "PASSWORD": "Pl4c3H0ld3r",
-        "HOST": "localhost",
+        "HOST": "postgres",
         "PORT": "5432",
     }
 }
