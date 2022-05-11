@@ -2,7 +2,7 @@ version: '3.7'
 services:
   app:
     build: ./app
-    command: python /code/public/manage.py runserver 0:8000
+    command: /code/django-config.sh
     ports:
       - "8000:8000"
     depends_on:
