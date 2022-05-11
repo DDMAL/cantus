@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 FROM python:3.6.9
 COPY . ./code/
-SHELL ["/bin/bash", "-c"]
+EXPOSE 8001
 
 
 # RUN npm install -g gulp

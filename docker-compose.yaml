@@ -3,8 +3,6 @@ services:
   app:
     build: ./app
     command: /code/django-config.sh
-    ports:
-      - "8000:8000"
     depends_on:
       - postgres
       - nginx
