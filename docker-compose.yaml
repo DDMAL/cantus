@@ -1,0 +1,23 @@
+version: '3.7'
+services:
+  app:
+    build: ./app    
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+
+  postgres:
+    build: ./postgres
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=cantus_db
+      - POSTGRES_USER=cantus_admin
+      - POSTGRES_PASSWORD=Pl4c3H0ld3r
+
+  # nginx:
+  #   build: ./nginx
+  #   command: bash -c "/code/config.sh"
+  #   ports:
+  #     - "80:80"
