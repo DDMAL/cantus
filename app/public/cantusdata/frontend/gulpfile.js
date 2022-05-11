@@ -14,7 +14,7 @@ var livereload = require('gulp-livereload');
 var lazypipe = require('lazypipe');
 var yargs = require('yargs').argv;
 var webpack = require('webpack');
-var modernizr = require('modernizr');
+//var modernizr = require('modernizr');
 var del = require('del');
 var path = require('path');
 var fs = require('fs');
@@ -22,7 +22,7 @@ var mkdirp = require('mkdirp');
 
 // Set path variables
 var sources = {
-    appJS: ['public/js/app/**/*.js', '!public/js/app/**/*.spec.js', 'public/modernizr-config.json'],
+    appJS: ['public/js/app/**/*.js', '!public/js/app/**/*.spec.js'],//, 'public/modernizr-config.json'],
     buildJS: ['./*.js'],
     templates: ['public/js/app/**/*.template.html'],
     css: ['public/css/**/*{.css,.scss}']
@@ -85,7 +85,7 @@ gulp.task('build:js', function (cb)
 
 gulp.task('rebuild:js', ['bundle:js']);
 
-gulp.task('bundle:js', ['build:modernizr'], function (cb)
+gulp.task('bundle:js', /*['build:modernizr'],*/ function (cb)
 {
     var onBundleComplete = function (err, stats)
     {
@@ -133,6 +133,7 @@ gulp.task('clean:js', function (done)
     });
 });
 
+/*
 gulp.task('build:modernizr', function (cb)
 {
     //if (!modifiedAfter('.tmp/modernizr.js', ))
@@ -160,6 +161,7 @@ gulp.task('build:modernizr', function (cb)
         });
     });
 });
+*/
 
 /*
  * CSS build tasks
