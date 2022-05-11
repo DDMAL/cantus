@@ -8,7 +8,7 @@ SHELL ["/bin/bash", "-c"]
 
 ENV SECRET_KEY foo
 
-WORKDIR /code/
+WORKDIR /code/public
 # RUN python -m venv app_env
 # RUN source app_env/bin/activate
 RUN pip install -r requirements.txt
