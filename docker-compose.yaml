@@ -7,6 +7,7 @@ services:
       - "8000:8000"
     depends_on:
       - postgres
+      - nginx
 
   postgres:
     build: ./postgres
@@ -17,8 +18,7 @@ services:
       - POSTGRES_USER=cantus_admin
       - POSTGRES_PASSWORD=Pl4c3H0ld3r
 
-  # nginx:
-  #   build: ./nginx
-  #   command: bash -c "/code/config.sh"
-  #   ports:
-  #     - "80:80"
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
