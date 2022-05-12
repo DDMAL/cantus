@@ -6,6 +6,7 @@ services:
     depends_on:
       - postgres
       - nginx
+      - solr
 
   postgres:
     build: ./postgres
@@ -20,3 +21,9 @@ services:
     build: ./nginx
     ports:
       - "80:80"
+  
+  solr:
+    build: ./solr
+    command: solr-precreate collection1 /code/solr/collection1
+    ports:
+      - "8983:8983"
