@@ -1,6 +1,7 @@
 #!/bin/bash
 
+cd /code/public
 python manage.py makemigrations
 python manage.py migrate
 python manage.py collectstatic --noinput
-python /code/public/manage.py runserver 0:8001
+python manage.py runserver 0:8001
