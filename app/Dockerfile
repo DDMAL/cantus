@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 FROM python:3.6.9
-COPY . ./code/
+COPY . /code/
 EXPOSE 8001
 
 ENV SECRET_KEY foo
