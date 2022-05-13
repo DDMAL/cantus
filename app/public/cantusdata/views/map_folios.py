@@ -11,24 +11,33 @@ import csv
 import re
 import threading
 
+import pdb
 
 class MapFoliosView(APIView):
     template_name = "admin/map_folios.html"
     renderer_classes = (TemplateHTMLRenderer,)
-
+    
     def get(self, request, *args, **kwargs):
         # Return the URIs and folio names
+        
+        # If no manuscript specified, 
+        # display list of manuscripts and mapping status.
         if "manuscript_id" not in request.GET:
             manuscripts = Manuscript.objects.filter(
                 manifest_url__isnull=False, public=True
             )
             manuscript_ids = [(m.id, str(m), m.is_mapped) for m in manuscripts]
+            
             return Response({"manuscript_ids": manuscript_ids})
-
+    
+        # If manuscript is specified, retrieve manuscript object
+        # from db.
         manuscript_id = int(request.GET["manuscript_id"])
         manuscript_obj = Manuscript.objects.get(id=manuscript_id)
         manifest = manuscript_obj.manifest_url
-
+        
+        # Get IIIF manifest from manifest link.
+        # Get individual URIs of manuscript.
         uris_objs = []
         uris = []
         manifest_json = urllib.request.urlopen(manifest)
@@ -51,17 +60,24 @@ class MapFoliosView(APIView):
                     "short": re.sub(r"^.*/(?!$)", "", uri),
                 }
             )
-
+        # Get unique ids in uri strings
         uri_ids = _extract_ids(uris)
-
+        # Query db for folios associated with manuscript
         folios = []
         folio_imagelink = {}
+        uri_folio_map = {}
         folios_query = Folio.objects.filter(manuscript__id=manuscript_id)
+        man_is_mapped = manuscript_obj.is_mapped
+        
+        # Create list of folios.
+        # Map folios to previously-linked image and/or uri.
         for folio in folios_query:
             folios.append(folio.number)
             if folio.image_link:
                 folio_imagelink[folio.number] = folio.image_link
-
+            if man_is_mapped:
+                uri_folio_map[folio.image_uri] = folio.number
+        
         imagelinks = list(folio_imagelink.values())
         imagelinks_ids = _extract_ids(imagelinks)
         imagelink_folio = {
@@ -72,14 +88,21 @@ class MapFoliosView(APIView):
         for idx, uri in enumerate(uris_objs):
             uri["id"] = uri_ids[idx]
             uri["folio"] = None
-            if uri["id"] in imagelink_folio:
-                uri["folio"] = imagelink_folio[uri["id"]]
+            if man_is_mapped:
+                uri["folio"] = uri_folio_map.get(uri["full"], '')
                 mapped_folios += 1
-
+            else:
+                if uri["id"] in imagelink_folio:
+                    uri["folio"] = imagelink_folio[uri["id"]]
+                    mapped_folios += 1
+        
+        # If previously-linked uris do not exist,
+        # or previously-linked images do not contain folio id's,
+        # map images to folios naively (nth image to nth folio).
         if mapped_folios == 0:
             for idx, folio in enumerate(folios):
                 uris_objs[idx]["folio"] = folio
-
+        
         return Response(
             {
                 "uris": uris_objs,
