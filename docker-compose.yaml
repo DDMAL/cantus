@@ -11,7 +11,7 @@ services:
   postgres:
     build: ./postgres
     volumes:
-      - ./data/db:/var/lib/postgresql/data
+      - ./data/postgres:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=cantus_db
       - POSTGRES_USER=cantus_admin
@@ -25,5 +25,3 @@ services:
   solr:
     build: ./solr
     command: solr-precreate collection1 /code/solr/collection1
-    ports:
-      - "8983:8983"
