@@ -6,7 +6,7 @@
 import "bootstrap";
 
 // Ensure Modernizr runs
-import "modernizr";
+//import "modernizr";
 
 import _ from 'underscore';
 import Backbone from 'backbone';
