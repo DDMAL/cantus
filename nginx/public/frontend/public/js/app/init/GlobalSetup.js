@@ -5,9 +5,6 @@
 // Ensure Bootstrap JS runs
 import "bootstrap";
 
-// Ensure Modernizr runs
-//import "modernizr";
-
 import _ from 'underscore';
 import Backbone from 'backbone';
 import Marionette from 'marionette';

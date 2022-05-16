@@ -43,12 +43,6 @@ $zindex-diva-canvas:       $zindex-diva-fullscreen + 5;
 
 @import "sidenav";
 
-// @mixin ua-support($modernizr-feature) {
-//     @at-root html.supports-#{$modernizr-feature} #{&} {
-//         @content;
-//     }
-// }
-
 // Volpiano font
 @font-face {
   font-family: 'Volpiano';
@@ -235,13 +229,6 @@ pre.preformatted-text {
 .result-table-wrapper {
     overflow: auto;
     min-height: 200px;
-
-    // Quick and dirty compat value for when flexbox isn't supported.
-    // This is really not very good (it's hard to make this one-size-
-    // fits all), but it probably isn't worth spending too much time on.
-    // @include ua-support(no-flexbox) {
-    //     max-height: 500px;
-    // }
 }
 
 // Support reversible (i.e. upwards-pointing) carets without setting classes on ancestors
@@ -254,31 +241,27 @@ pre.preformatted-text {
 // When applied to ancestors of a nested element, this class uses flexbox to set the height
 // of the element to the remaining height of the viewport.
 .propagate-height, .modal-content, .modal-body {
-    //@include ua-support(flexbox) {
-        display: flex;
-        flex-direction: column;
-        flex-grow: 1;
-        overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
 
-        // Workaround for Safari, where elements would shrink if the chant list was too big
-        > * {
-            flex-shrink: 0;
-        }
+    // Workaround for Safari, where elements would shrink if the chant list was too big
+    > * {
+        flex-shrink: 0;
+    }
 
-        > .propagate-height, > .result-table-wrapper, > .modal-body {
-            flex-shrink: 1;
-        }
-    //}
+    > .propagate-height, > .result-table-wrapper, > .modal-body {
+        flex-shrink: 1;
+    }
 
     // Workaround for Bootstrap tabs
     .tab-content > &.tab-pane {
-        //@include ua-support(flexbox) {
             display: none;
 
             &.active {
                 display: flex;
             }
-       // }
     }
 }
 
@@ -287,17 +270,9 @@ body.propagate-height {
 }
 
 .manuscript-columns {
-   // @include ua-support(flexbox) {
-        &.propagate-height {
-            flex-direction: row;
-        }
-    //}
-
-    // @include ua-support(no-flexbox) {
-    //     > * {
-    //         float: left;
-    //     }
-    // }
+    &.propagate-height {
+        flex-direction: row;
+    }
 
     // Distribute width to the columns equally by default,
     // allocating more for the Diva column on large screens
@@ -331,12 +306,6 @@ body.propagate-height {
 #manuscript-data-container {
     // Relative-position the container so that percentage-based dimensions are calculated relative to it
     position: relative;
-
-    // Fallback height for when we don't have flexbox
-    // @include ua-support(no-flexbox) {
-    //     // Magic number to approximate Diva's value
-    //     height: 650px;
-    // }
 
     .resizer {
         position: absolute;
@@ -498,28 +467,14 @@ body.propagate-height {
     border-color: $bootstrap-blue;
 }
 
+.search-input-group {
+    display: flex;
+    flex-direction: row;
+}
 
-//@include ua-support(flexbox) {
-    .search-input-group {
-        display: flex;
-        flex-direction: row;
-    }
-
-    .search-field {
-        flex-grow: 1;
-    }
-//}
-
-// @include ua-support(no-flexbox) {
-//     .search-input-group > * {
-//         float: left;
-//     }
-
-//     .search-field {
-//         min-width: 100px;
-//         max-width: 300px;
-//     }
-// }
+.search-field {
+    flex-grow: 1;
+}
 
 .search-input-group {
     margin-bottom: 15px;
