@@ -2,5 +2,5 @@
 
 python manage.py makemigrations
 python manage.py migrate
-python manage.py collectstatic --noinput
-python manage.py runserver 0:8001
+
+gunicorn -b 0:8001 cantusdata.wsgi --timeout 600 --workers 4

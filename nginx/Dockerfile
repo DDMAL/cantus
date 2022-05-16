@@ -1,5 +1,12 @@
-FROM nginx
-COPY . /code/
+FROM node:10 AS frontend
+COPY ./public /code/public
+RUN npm install -g gulp
 
-RUN sed -i "s/HOMEUSER/$HOMEUSER/" /code/nginx.conf
-RUN cp /code/nginx.conf /etc/nginx/nginx.conf
+WORKDIR /code/public/frontend
+RUN npm install
+RUN gulp build --release
+
+FROM nginx
+COPY ./nginx.conf /etc/nginx/nginx.conf
+COPY --from=frontend /code/public/static /code/static
+COPY --from=cantus-docker_app /code/public/cantusdata/static /code/static
