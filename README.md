@@ -37,9 +37,32 @@ $ vagrant plugin install vagrant-openstack-provider
 
 # Set up the VM (this will take a while)
 $ vagrant up
+```
 
+After all the provisioning completes (10 to 30 minutes), the site should now be accessible on http://localhost:8000/ in your host machine.
+
+By default, Cantus Ultimus works in the following way:
+
+```mermaid
+stateDiagram-v2
+[*] --> nginx: Any HTTP request
+nginx --> StaticFile: Serve static files directly
+nginx --> gunicorn: Forward webapp requests to port 8001
+gunicorn --> django: Serve content from webapp
+django --> postgres: Use as default database backend
+django --> solr: Bind django database "signals" to solr
+```
+
+#### Enabling live changes with django's `runserver`
+
+During development, it is often useful to replace `gunicorn` with the default `django` web server, so that modifying the source code results in live changes in the website. This can be done running the following:
+
+```bash
 # SSH into the VM
 $ vagrant ssh
+
+# Turn off gunicorn, and free port 8001
+$ sudo systemctl stop gunicorn
 
 # Go to the public folder in the VM
 [vagrant]$ cd public
@@ -48,10 +71,8 @@ $ vagrant ssh
 [vagrant]$ source app_env/bin/activate
 
 # Run the server on 0.0.0.0 to expose it outside of the VM
-[vagrant](app_env)$ python manage.py runserver 0.0.0.0:8000
+[vagrant](app_env)$ python manage.py runserver 0.0.0.0:8001
 ```
-
-The site should now be accessible on http://localhost:8000/ in your host machine.
 
 ### Launch in production (Vagrant + OpenStack)
 
