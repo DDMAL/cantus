@@ -16,6 +16,16 @@
         vertical-align:top;
     }
 
+    th {
+        text-align:center;
+        padding: 10px;
+    }
+
+    td {
+        text-align:center;
+        padding:10px;
+    }
+
     ul {
         list-style: none;
     }
@@ -77,6 +87,11 @@
     .error-message {
         color: red;
     }
+
+    .table-link{
+        text-decoration: underline;
+        color: #0b97c4;
+    }
 </style>
 {% endblock %}
 
@@ -93,16 +108,22 @@
 <table>
     <tr>
       <th>Manuscript</th>
+      <th>Status</th>
       <th>Mapping</th>
     </tr>
     {% for m_id, m_str, is_mapped in manuscript_ids %}
     <tr>
-        <td>{{ m_str }}<td>
+        <td>{{ m_str }}</td>
+            {% if is_mapped %}
+            <td class="folio-mapped">Already mapped</td>
+            {% else %}
+            <td class="folio-unmapped">Not mapped</td>
+            {% endif %}
         <td>
             {% if is_mapped %}
-            Already mapped
+            <a href="/admin/map_folios?manuscript_id={{ m_id }}" class="table-link">Edit map</a>
             {% else %}
-            <a href="/admin/map_folios?manuscript_id={{ m_id }}">Map now</a>
+            <a href="/admin/map_folios?manuscript_id={{ m_id }}" class="table-link">Map now</a>
             {% endif %}
         </td>
     </tr>
