@@ -15,7 +15,8 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
-SECRET_KEY = os.environ["SECRET_KEY"]
+with open("/etc/key.txt", "r") as f:
+    SECRET_KEY = f.read().strip()
 
 # Retrieving the staging/production context from the environment
 IS_PRODUCTION = "IS_PRODUCTION" in os.environ

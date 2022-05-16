@@ -5,7 +5,6 @@ services:
     command: /code/django-config.sh
     depends_on:
       - postgres
-      - nginx
       - solr
 
   postgres:
