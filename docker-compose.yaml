@@ -24,3 +24,5 @@ services:
   solr:
     build: ./solr
     command: solr-precreate collection1 /code/solr/collection1
+    ports:
+      - "8983:8983"
