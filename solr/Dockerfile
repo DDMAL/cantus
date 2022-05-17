@@ -1,7 +1,3 @@
 FROM solr:6.1.0
-COPY . /code/
+COPY ./solr /code/solr
 EXPOSE 8983
-
-###
-###solrconfig.xml dataDir is important
-###
