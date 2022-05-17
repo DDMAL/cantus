@@ -1,0 +1,83 @@
+[
+    {
+      "fields": {
+        "siglum": "    67  a# _ 1*",
+        "name": "MyName",
+        "provenance": "provigo",
+        "date": "tomorrow",
+        "description": "A very nice manuscript...",
+        "public": true
+      },
+      "model": "cantusdata.manuscript",
+      "pk": 1
+    },
+    {
+      "fields": {
+        "siglum": "abcde",
+        "name": "NumberTwo",
+        "provenance": "",
+        "date": "",
+        "description": "",
+        "public": false
+      },
+      "model": "cantusdata.manuscript",
+      "pk": 2
+    },
+    {
+      "fields": {
+        "siglum": "ABC - 456",
+        "name": "geoff",
+        "provenance": "",
+        "date": "",
+        "description": ""
+      },
+      "model": "cantusdata.manuscript",
+      "pk": 3
+    },
+    {
+      "fields": {
+        "institution_city": "Montreal",
+        "institution_name": "DDMAL",
+        "letter_code": "A",
+        "rism_code": "QUE - 982",
+        "location": "Saturn",
+        "date": "Today",
+        "library_manuscript_name": "ABC123"
+      },
+      "model": "cantusdata.concordance",
+      "pk": 1
+    },
+    {
+      "fields": {
+        "number": "123",
+        "image_uri": "http://test.com",
+        "manuscript": 3
+      },
+      "model": "cantusdata.folio",
+      "pk": 1
+    },
+    {
+      "fields": {
+        "manuscript": 3,
+        "folio": 1,
+        "concordances": [
+          1
+        ],
+        "full_text": "",
+        "office": "",
+        "sequence": 72,
+        "finalis": "",
+        "feast": "",
+        "volpiano": "",
+        "differentia": "",
+        "lit_position": "",
+        "marginalia": "",
+        "cantus_id": "1234",
+        "genre": "",
+        "incipit": "5678",
+        "mode": ""
+      },
+      "model": "cantusdata.chant",
+      "pk": 1
+    }
+  ]
