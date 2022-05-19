@@ -44,7 +44,7 @@ def create_test_solr_core():
     # for the production core and the two can't be the same
     run_solr_admin_cmd(
         "Creating temporary Solr core...",
-        "action=CREATE&name=cantus-test&dataDir=data&configSet=/code/solr/collection1",
+        "action=CREATE&name=cantus-test&instanceDir=cantus-test&dataDir=/var/solr/cantus-test/data&configSet=/home/vagrant/solr/solr/collection1",
     )
 
     err = None
