@@ -2,7 +2,7 @@ version: '3.7'
 services:
   app:
     build: ./app
-    command: /code/django-config.sh
+    command: ["/code/wait-for-it.sh", "postgres:5432", "--", "/code/django-config.sh"]
     depends_on:
       - postgres
       - solr
