@@ -17,7 +17,7 @@ class Command(BaseCommand):
             action="store",
             nargs="+",
             dest="manuscript_ids",
-            help="Identifies manuscripts being mapped. Provided in same order as --mapping_csvs",
+            help="Identifies manuscripts being mapped. Provided in same order as --mapping_data",
         )
         parser.add_argument(
             "--mapping_data",
@@ -42,7 +42,7 @@ class Command(BaseCommand):
             action="store",
             dest="csvs_path",
             default="data_dumps/folio_mapping",
-            help="Directory where mapping_csvs are found. Defaults to ./data_dumps/folio_mapping",
+            help="Directory where mapping_data csvs are found. Defaults to ./data_dumps/folio_mapping",
         )
 
     def handle(self, *args, **options):
@@ -65,7 +65,7 @@ class Command(BaseCommand):
             if isinstance(input_data, str):
                 try:
                     mapping_data = csv.DictReader(
-                        open(f"{options['csvs_path']}/{input_data}", "rU")
+                        open(f"{options['csvs_path']}/{input_data}", "r")
                     )
                 except IOError:
                     raise IOError(
