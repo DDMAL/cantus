@@ -14,27 +14,27 @@ class Command(BaseCommand):
         "folios": Folio,
     }
 
-    help = (
-        f"""Refreshes solr index associated with a specific manuscript for a specific type.
+    help = f"""Refreshes solr index associated with a specific manuscript for a specific type.
         \n\t Usage: ./manage.py refresh_solr --record_type {"|".join(list(TYPE_MAPPING.keys()))} [--manuscript_ids manuscript_id ...]
         \n\t Specify manuscript ID(s) to only refresh selected items in that/those manuscript(s)
         \n\t Use --all_types to refresh all {len(TYPE_MAPPING)} types."""
-    )
 
     def add_arguments(self, parser):
-        parser.add_argument("--record_type",
-        action = "store",
-        nargs=1,
-        choices = ["manuscripts", "chants", "folios"],
-        dest = "record_type",
-        help=f"Type of records to refresh. Choose from {list(self.TYPE_MAPPING.keys())}"
+        parser.add_argument(
+            "--record_type",
+            action="store",
+            nargs=1,
+            choices=["manuscripts", "chants", "folios"],
+            dest="record_type",
+            help=f"Type of records to refresh. Choose from {list(self.TYPE_MAPPING.keys())}",
         )
-        parser.add_argument("--manuscript_ids",
-        action = "store",
-        nargs = "*",
-        default = "all_manuscripts", 
-        dest = "manuscript_ids",
-        help = "Manuscripts for which solr should be refreshed."
+        parser.add_argument(
+            "--manuscript_ids",
+            action="store",
+            nargs="*",
+            default="all_manuscripts",
+            dest="manuscript_ids",
+            help="Manuscripts for which solr should be refreshed.",
         )
         parser.add_argument(
             "--all_types",
@@ -47,13 +47,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         solr_conn = solr.SolrConnection(settings.SOLR_SERVER)
         # Parse arguments
-        manuscript_ids = options['manuscript_ids']
+        manuscript_ids = options["manuscript_ids"]
         types = []
         if options["all"]:
             record_types += list(self.TYPE_MAPPING.keys())
         else:
-            record_types = [options['record_type']]
-            
+            record_types = [options["record_type"]]
+
         for record_type in record_types:
             # Remove the trailing 's' to make the type singular
             type_singular = record_type.rstrip("s")
@@ -69,13 +69,17 @@ class Command(BaseCommand):
                 # Create string of the form: "( MAN_ID1 OR MAN_ID2 OR ... )"
                 formatted_ids = "(" + " OR ".join(manuscript_ids) + ")"
                 if model == Manuscript:
-                    delete_query = f"type:cantusdata_{type_singualar} AND item_id:{formatted_ids}"
+                    delete_query = (
+                        f"type:cantusdata_{type_singular} AND item_id:{formatted_ids}"
+                    )
                 else:
                     delete_query = f"type:cantusdata_{type_singular} AND manuscript_id:{formatted_ids}"
 
             solr_conn.delete_query(delete_query)
 
-            self.stdout.write(f"Re-adding {type_singular} data... (may take a few minutes)")
+            self.stdout.write(
+                f"Re-adding {type_singular} data... (may take a few minutes)"
+            )
 
             if manuscript_ids == "all_manuscripts":
                 objects = model.objects.all()

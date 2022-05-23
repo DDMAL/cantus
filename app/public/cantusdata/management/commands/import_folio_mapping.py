@@ -4,6 +4,7 @@ from cantusdata.models.manuscript import Manuscript
 from django.core.management import call_command
 import csv
 
+
 class Command(BaseCommand):
     """
     Import a folio mapping (CSV file)
@@ -13,21 +14,21 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "--manuscripts",
-            action = "store",
-            nargs = "+",
-            dest = "manuscript_ids",
-            help = "Identifies manuscripts being mapped. Provided in same order as --mapping_csvs"
+            action="store",
+            nargs="+",
+            dest="manuscript_ids",
+            help="Identifies manuscripts being mapped. Provided in same order as --mapping_csvs",
         )
         parser.add_argument(
             "--mapping_data",
-            action = "store",
-            nargs = "+",
-            dest = "mapping_data",
-            help = """Two possibilities can be passed in this argument. First, a list of file names of csvs 
+            action="store",
+            nargs="+",
+            dest="mapping_data",
+            help="""Two possibilities can be passed in this argument. First, a list of file names of csvs 
             that contain mapping data in same order as the --manuscripts argument. Second, a list
             containing mapping data in the same order as the --manuscripts argument. Each item in the list
             is a list of dictionaries with keys "folio" and "uri." The latter option is most 
-            useful when calling from the call_command function, rather than the command line."""
+            useful when calling from the call_command function, rather than the command line.""",
         )
         parser.add_argument(
             "--no-refresh",
@@ -38,16 +39,16 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--path",
-            action = "store",
-            dest = "csvs_path",
-            default = "data_dumps/folio_mapping",
-            help = "Directory where mapping_csvs are found. Defaults to ./data_dumps/folio_mapping"
+            action="store",
+            dest="csvs_path",
+            default="data_dumps/folio_mapping",
+            help="Directory where mapping_csvs are found. Defaults to ./data_dumps/folio_mapping",
         )
 
     def handle(self, *args, **options):
-        
-        manuscript_ids = options['manuscript_ids']
-        manuscript_mapping_dict = dict(zip(manuscript_ids, options['mapping_data']))
+
+        manuscript_ids = options["manuscript_ids"]
+        manuscript_mapping_dict = dict(zip(manuscript_ids, options["mapping_data"]))
 
         for manuscript_id in manuscript_ids:
             input_data = manuscript_mapping_dict[manuscript_id]
@@ -56,19 +57,15 @@ class Command(BaseCommand):
             try:
                 manuscript = Manuscript.objects.get(id=manuscript_id)
             except IOError:
-                raise IOError(
-                    f"Manuscript {manuscript_id} does not exist"
-                )
-            
+                raise IOError(f"Manuscript {manuscript_id} does not exist")
+
             # If input_data is a string, it should be a csv file name
             # where mapping data is persisted. Attempt to read it.
             # If input_data is a list, it should be the mapping data itself.
             if isinstance(input_data, str):
                 try:
                     mapping_data = csv.DictReader(
-                        open(
-                            f"{options['csvs_path']}/{input_data}", "rU"
-                        )
+                        open(f"{options['csvs_path']}/{input_data}", "rU")
                     )
                 except IOError:
                     raise IOError(
@@ -111,14 +108,12 @@ class Command(BaseCommand):
         # Refreshing Solr chants is necessary since chants have a field image_uri
         # which is used when clicking on a search result. Folio records in solr
         # are already updated during the database saving process through the solr_sync
-        # signal, but chant records are not because no interaction occurs with the chant 
+        # signal, but chant records are not because no interaction occurs with the chant
         # object in the database.
         if options["refresh"]:
             self.stdout.write("Refreshing Solr chants after folio import")
             call_command(
-                "refresh_solr",
-                record_type = "chants",
-                manuscript_ids = manuscript_ids
+                "refresh_solr", record_type="chants", manuscript_ids=manuscript_ids
             )
         else:
             self.stdout.write(

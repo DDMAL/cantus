@@ -166,7 +166,7 @@ def _remove_number_padding(s):
 
 @transaction.atomic
 def _save_mapping(request):
-    """ Called in case of a POST request to map_folios.
+    """Called in case of a POST request to map_folios.
     Contents of post request should have:
     - a csrfmiddlewaretoken key-value pair
     - a manuscript_id key with the id of mapped manuscript as value
@@ -174,12 +174,12 @@ def _save_mapping(request):
       and values is a folio name
     Creates a temporary csv dump of folio mapping data and
     calls the import_folio_mapping command."""
-    
+
     manuscript_id = request.POST["manuscript_id"]
 
     # Create list of data for writing to CSV
     # with column headers "folio" and "uri"
-    data = [] 
+    data = []
     for index, value in request.POST.items():
         # 'index' should be the uri, and 'value' the folio name
         if (
@@ -188,7 +188,10 @@ def _save_mapping(request):
             or len(value) == 0
         ):
             continue
-        data.append({"folio":value, "uri" : index})
-    
-    call_command("import_folio_mapping", manuscripts = [manuscript_id], mapping_data = [data],
+        data.append({"folio": value, "uri": index})
+
+    call_command(
+        "import_folio_mapping",
+        manuscripts=[manuscript_id],
+        mapping_data=[data],
     )
