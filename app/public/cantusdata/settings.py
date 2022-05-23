@@ -18,11 +18,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 with open("/etc/key.txt", "r") as f:
     SECRET_KEY = f.read().strip()
 
-# Retrieving the staging/production context from the environment
-IS_PRODUCTION = "IS_PRODUCTION" in os.environ
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False if IS_PRODUCTION else True
+DEBUG = os.environ.get("DEBUG") == "true"
 
 ALLOWED_HOSTS = ["cantus.simssa.ca", "dev-cantus.simssa.ca", "localhost"]
 

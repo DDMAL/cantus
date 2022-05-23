@@ -6,6 +6,8 @@ services:
     depends_on:
       - postgres
       - solr
+    environment:
+      - DEBUG=${DEBUG}
 
   postgres:
     build: ./postgres
