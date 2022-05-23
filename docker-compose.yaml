@@ -26,7 +26,5 @@ services:
   solr:
     build: ./solr
     command: solr-precreate collection1 /code/solr/collection1
-    volumes:
-      - ./data/solr:/var/solr
     ports:
       - "8983:8983"
