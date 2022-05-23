@@ -1,0 +1,32 @@
+version: '3.7'
+services:
+  app:
+    build: ./app
+    command: ["/code/wait-for-it.sh", "postgres:5432", "--", "/code/django-config.sh"]
+    depends_on:
+      - postgres
+      - solr
+    environment:
+      - DEBUG=${DEBUG}
+
+  postgres:
+    build: ./postgres
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=cantus_db
+      - POSTGRES_USER=cantus_admin
+      - POSTGRES_PASSWORD=Pl4c3H0ld3r
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+  
+  solr:
+    build: ./solr
+    command: solr-precreate collection1 /code/solr/collection1
+    ports:
+      - "8983:8983"
