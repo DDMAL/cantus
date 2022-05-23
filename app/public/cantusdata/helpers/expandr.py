@@ -3,7 +3,7 @@ from cantusdata.helpers.scrapers.genre import genres
 import csv
 import urllib.request, urllib.error, urllib.parse
 import re
-import os
+
 
 def expand_mode(mode_code):
     input_list = mode_code.strip()
@@ -86,9 +86,7 @@ class PositionExpander(object):
     position_data_base = None
 
     def __init__(self):
-        cantusdata_path = os.path.split(os.path.dirname(__file__))[0]
-        public_path = os.path.split(cantusdata_path)[0]
-        self.csv_file = csv.DictReader(open(os.path.join(public_path, "data_dumps", "position_names.csv")))
+        self.csv_file = csv.DictReader(open("data_dumps/position_names.csv"))
         self.position_data_base = dict()
         for row in self.csv_file:
             office_code = self.remove_double_dash(row["Office"]).strip()
