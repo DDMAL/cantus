@@ -177,7 +177,7 @@ def _save_mapping(request):
 
     manuscript_id = request.POST["manuscript_id"]
 
-    # Create list of data for writing to CSV
+    # Create list of data for saving
     # with column headers "folio" and "uri"
     data = []
     for index, value in request.POST.items():
