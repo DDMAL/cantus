@@ -1,3 +1,4 @@
+from random import randint
 from rest_framework.test import APITransactionTestCase
 from cantusdata.settings import BASE_DIR
 import urllib.request
@@ -55,6 +56,45 @@ class IIIFSpeedTestCase(APITransactionTestCase):
                     elapsed = time.time() - start
                     report += f"{key}_load_time: {elapsed}\n" 
                 print(report)
+            except:
+                print(f"{manifest} has a problem")
+                continue
+    
+    def test_image_bursts(self):
+        for manifest in self.manifest_list:
+            try:
+                manifest_json = urllib.request.urlopen(manifest)
+                manifest_data = json.loads(manifest_json.read().decode("utf-8"))
+                total_time = 0
+                print(f"\n{manifest}\n========")
+                for i in range(4):
+                    canvas = manifest_data["sequences"][0]["canvases"][i]
+                    service = canvas["images"][0]["resource"]["service"]
+                    uri = service["@id"]
+                    path_tail = (
+                        "default.jpg"
+                        if service["@context"]
+                        == "http://iiif.io/api/image/2/context.json"
+                        else "native.jpg"
+                    )
+                    transformations = [
+                        {"region":"full", "size":",1800", "rotation":"0"},
+                        {"region":"pct:10,30,50,50", "size":",1800", "rotation":"0"},
+                        {"region":"pct:10,30,50,50", "size":",1800", "rotation":"45"},
+                        {"region":"pct:10,30,50,50", "size":",1500", "rotation":"45"},
+                        {"region":"full", "size":",1500", "rotation":"60"},
+                        {"region":"pct:40,10,40,80", "size":",300", "rotation":"0"},
+                        {"region":"pct:90,90,10,10", "size":",900", "rotation":"180"},
+                        {"region":"square", "size":",2000", "rotation":"20"}
+                    ]
+                    
+                    for (j, t) in enumerate(transformations):
+                        start = time.time()
+                        requests.get(f"{uri}/{t['region']}/{t['size']}/{t['rotation']}/{path_tail}")
+                        elapsed = time.time() - start
+                        total_time += elapsed
+                        print(f"  {i}.{j} - {elapsed}")
+                print(f"Total 4x8 time for {manifest} = {total_time}")
             except:
                 print(f"{manifest} has a problem")
                 continue
