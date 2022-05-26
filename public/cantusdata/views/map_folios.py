@@ -166,13 +166,20 @@ def _remove_number_padding(s):
 
 @transaction.atomic
 def _save_mapping(request):
-    # Add stuff in Solr if POST arguments
-    # A file dump should also be created so that Solr can be refreshed
+    """Called in case of a POST request to map_folios.
+    Contents of post request should have:
+    - a csrfmiddlewaretoken key-value pair
+    - a manuscript_id key with the id of mapped manuscript as value
+    - a series of key-value pairs where key is a IIIF uri
+      and values is a folio name
+    Creates a temporary csv dump of folio mapping data and
+    calls the import_folio_mapping command."""
 
     manuscript_id = request.POST["manuscript_id"]
-    manuscript = Manuscript.objects.get(id=manuscript_id)
-    data = [["folio", "uri"]]  # CSV column headers
 
+    # Create list of data for saving
+    # with column headers "folio" and "uri"
+    data = []
     for index, value in request.POST.items():
         # 'index' should be the uri, and 'value' the folio name
         if (
@@ -181,31 +188,10 @@ def _save_mapping(request):
             or len(value) == 0
         ):
             continue
+        data.append({"folio": value, "uri": index})
 
-        # Save in the Django DB
-        try:
-            folio_obj = Folio.objects.get(number=value, manuscript__id=manuscript_id)
-        except Folio.DoesNotExist:
-            # If no folio is found, create one
-            folio_obj = Folio()
-            folio_obj.number = value
-            folio_obj.manuscript = manuscript
-
-        folio_obj.image_uri = index
-        folio_obj.save()
-
-        # Data to be saved in a CSV file
-        data.append([value, index])
-
-    # Save in a data dump
-    with open(
-        "./data_dumps/folio_mapping/{0}.csv".format(manuscript_id), "w"
-    ) as dump_csv:
-        csv_writer = csv.writer(dump_csv)
-        csv_writer.writerows(data)
-
-    # Refresh all chants in solr after the folios have been updated
-    manuscript.is_mapped = True
-    manuscript.save()
-    call_command("refresh_solr", "chants", str(manuscript_id))
-    call_command("import_folio_mapping", manuscript_id, "{}.csv".format(manuscript_id))
+    call_command(
+        "import_folio_mapping",
+        manuscripts=[manuscript_id],
+        mapping_data=[data],
+    )
