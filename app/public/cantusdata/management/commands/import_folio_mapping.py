@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand
 from cantusdata.models.folio import Folio
 from cantusdata.models.manuscript import Manuscript
 from django.core.management import call_command
-from optparse import make_option
 import csv
 
 
@@ -10,12 +9,27 @@ class Command(BaseCommand):
     """
     Import a folio mapping (CSV file)
     Save that mapping to both django and Solr (through signals)
-
-    Usage: See 'help' below
     """
 
     def add_arguments(self, parser):
-        parser.add_argument("args", nargs=2)
+        parser.add_argument(
+            "--manuscripts",
+            action="store",
+            nargs="+",
+            dest="manuscript_ids",
+            help="Identifies manuscripts being mapped. Provided in same order as --mapping_data",
+        )
+        parser.add_argument(
+            "--mapping_data",
+            action="store",
+            nargs="+",
+            dest="mapping_data",
+            help="""Two possibilities can be passed in this argument. First, a list of file names of csvs 
+            that contain mapping data in same order as the --manuscripts argument. Second, a list
+            containing mapping data in the same order as the --manuscripts argument. Each item in the list
+            is a list of dictionaries with keys "folio" and "uri." The latter option is most 
+            useful when calling from the call_command function, rather than the command line.""",
+        )
         parser.add_argument(
             "--no-refresh",
             action="store_false",
@@ -23,58 +37,47 @@ class Command(BaseCommand):
             default=True,
             help="Do not refresh Solr after the import",
         )
-
-    help = (
-        "Usage: ./manage.py import_folio_mapping <manuscript_id> <mapping_csv_file> [<manuscript2_id> <mapping_csv_file2> ...]"
-        '\n\tNote that csv files must be in the folder "data_dumps/folio_mapping/"'
-    )
+        parser.add_argument(
+            "--path",
+            action="store",
+            dest="csvs_path",
+            default="data_dumps/folio_mapping",
+            help="Directory where mapping_data csvs are found. Defaults to ./data_dumps/folio_mapping",
+        )
 
     def handle(self, *args, **options):
 
-        if len(args) == 0 or len(args) % 2 == 1:
-            self.stdout.write(self.help)
-            return
+        manuscript_ids = options["manuscript_ids"]
+        manuscript_mapping_dict = dict(zip(manuscript_ids, options["mapping_data"]))
 
-        manuscripts = []
+        for manuscript_id in manuscript_ids:
+            input_data = manuscript_mapping_dict[manuscript_id]
 
-        for index, arg in enumerate(args):
-            if index % 2 == 0:
-                temp_manuscript = {"id": arg}
-            else:
-                temp_manuscript["file"] = arg
-                manuscripts.append(temp_manuscript)
-
-        for manuscript in manuscripts:
-            manuscript_id = manuscript["id"]
-            input_file = manuscript["file"]
-
+            # Query database for manuscript id.
             try:
                 manuscript = Manuscript.objects.get(id=manuscript_id)
             except IOError:
-                raise IOError(
-                    "Manuscript {0} does not exist".format(manuscript_id)
-                )
+                raise IOError(f"Manuscript {manuscript_id} does not exist")
 
-            try:
-                mapping_csv = csv.DictReader(
-                    open(
-                        "data_dumps/folio_mapping/{0}".format(input_file), "rU"
+            # If input_data is a string, it should be a csv file name
+            # where mapping data is persisted. Attempt to read it.
+            # If input_data is a list, it should be the mapping data itself.
+            if isinstance(input_data, str):
+                try:
+                    mapping_data = csv.DictReader(
+                        open(f"{options['csvs_path']}/{input_data}", "r")
                     )
-                )
-            except IOError:
-                raise IOError(
-                    "File data_dumps/folio_mapping/{0} does not exist".format(
-                        input_file
+                except IOError:
+                    raise IOError(
+                        f"File {options['csvs_path']}/{input_data} does not exist"
                     )
-                )
+            elif isinstance(input_data, list):
+                mapping_data = input_data
 
-            self.stdout.write(
-                "Starting import process for manuscript {0}".format(
-                    manuscript_id
-                )
-            )
+            self.stdout.write(f"Starting import process for manuscript {manuscript_id}")
 
-            for index, row in enumerate(mapping_csv):
+            # Iterate through rows in the mapping_data.
+            for index, row in enumerate(mapping_data):
                 folio = row["folio"]
                 uri = row["uri"]
 
@@ -93,22 +96,24 @@ class Command(BaseCommand):
                 folio_obj.save()
 
                 if index > 0 and index % 50 == 0:
-                    self.stdout.write("Imported {0} folios".format(index))
+                    self.stdout.write(f"Imported {index} folios")
+
+            manuscript.is_mapped = True
+            manuscript.save()
 
             self.stdout.write(
-                "All folios of manuscript {0} have been imported".format(
-                    manuscript_id
-                )
+                f"All folios of manuscript {manuscript_id} have been imported"
             )
 
         # Refreshing Solr chants is necessary since chants have a field image_uri
-        # which is used when clicking on a search result
+        # which is used when clicking on a search result. Folio records in solr
+        # are already updated during the database saving process through the solr_sync
+        # signal, but chant records are not because no interaction occurs with the chant
+        # object in the database.
         if options["refresh"]:
             self.stdout.write("Refreshing Solr chants after folio import")
             call_command(
-                "refresh_solr",
-                "chants",
-                *[str(man["id"]) for man in manuscripts]
+                "refresh_solr", record_type="chants", manuscript_ids=manuscript_ids
             )
         else:
             self.stdout.write(
