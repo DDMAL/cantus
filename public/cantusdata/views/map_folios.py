@@ -95,7 +95,7 @@ class MapFoliosView(APIView):
         # If previously-linked uris do not exist,
         # or previously-linked images do not contain folio id's,
         # map images to folios naively (nth image to nth folio).
-        if mapped_folios == 0 and len(uris_objs) >= len(folios):
+        if mapped_folios == 0:
             for idx, folio in enumerate(folios):
                 uris_objs[idx]["folio"] = folio
 
