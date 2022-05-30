@@ -106,10 +106,10 @@ class SynchronizationSession(object):
 
         self._executing_flag = False
     def execute(self):
-        conn = solr.SolrConnection(self.solr_server_url)
         additions = set(self._additions)
         deletions = set(self._deletions)
         self._executing_flag = True
+        conn = solr.SolrConnection(self.solr_server_url)
         
         for deleted in deletions:
             deleted.delete_from_solr(conn)
