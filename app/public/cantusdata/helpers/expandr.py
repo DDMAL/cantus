@@ -42,7 +42,9 @@ def expand_mode(mode_code):
 def expand_genre(genre_code):
     if genre_code in genres:
         description = genres[genre_code]
-        return description
+        #some extra stuff in parentheses is showing up
+        paren = description.find("(")
+        return description[:paren-1] if paren != -1 else description
 
     # If nothing was found, return the original
     return genre_code

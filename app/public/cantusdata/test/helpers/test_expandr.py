@@ -43,9 +43,9 @@ class ExpandrFunctionsTestCase(TestCase):
         self.assertEqual(expandr.expand_genre("I"), "Invitatory antiphon")
         self.assertEqual(expandr.expand_genre("Pr"), "Prefatio")
         self.assertEqual(expandr.expand_genre("IP"), "Invitatory psalm")
-        self.assertEqual(expandr.expand_genre("[M]"), "Miscellaneous")
+        self.assertEqual(expandr.expand_genre("M"), '"Miscellaneous"')
         self.assertEqual(expandr.expand_genre("G"), "Mass chant")
-        self.assertEqual(expandr.expand_genre("?"), "Unknown")
+        self.assertEqual(expandr.expand_genre("?"), "Unknown, ambiguous, unidentifiable, illegible")
         self.assertEqual(expandr.expand_genre("Z"), "Z")
 
     def test_expand_differentia(self):
