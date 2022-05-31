@@ -8,6 +8,9 @@ services:
       - solr
     environment:
       - DEBUG=${DEBUG}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 
   postgres:
     build: ./postgres
