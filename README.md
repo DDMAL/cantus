@@ -27,6 +27,15 @@ For simplicity, we assume that you will be running the site using [Vagrant](http
 
 For deploying in production or using a different provider (e.g., OpenStack inside ComputeCanada) an external provider plugin may be necessary. In our case, we require [vagrant-openstack-provider](https://github.com/ggiamarchi/vagrant-openstack-provider) to deploy in a remote [OpenStack](https://www.openstack.org/) cloud.
 
+### Launch with docker
+
+The postgres container reads takes a few important parameters from environment variables. These are:
+- `POSTGRES_DB`: Name of initial database created in postgres.
+- `POSTGRES_USER`: Admin postgres user name created at container build.
+- `POSTGRES_PASSWORD`: Admin postgres user password created at container build.
+The first two values default in this repo to `POSTGRES_DB=cantus_db` and `POSTGRES_USER=cantus_admin`. The defaults can be modified in the .env file. Upon deployment, provide a secure password for the database by uncommenting the appropriate line and adding a password in the .env file.
+
+
 ### Launch in development (Vagrant + Virtualbox)
 
 With Vagrant, execute the following commands from the root directory of the repo:

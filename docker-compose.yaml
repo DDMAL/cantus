@@ -2,21 +2,33 @@ version: '3.7'
 services:
   app:
     build: ./app
-    command: ["/code/wait-for-it.sh", "postgres:5432", "--", "/code/django-config.sh"]
+    command: /code/django-config.sh
     depends_on:
-      - postgres
-      - solr
+      postgres:
+        condition: service_healthy
+      solr:
+        condition: service_started
     environment:
       - DEBUG=${DEBUG}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
 
   postgres:
     build: ./postgres
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=cantus_db
-      - POSTGRES_USER=cantus_admin
-      - POSTGRES_PASSWORD=Pl4c3H0ld3r
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    healthcheck:
+      test: "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
 
   nginx:
     build: ./nginx

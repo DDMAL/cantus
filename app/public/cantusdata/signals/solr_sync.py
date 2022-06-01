@@ -48,8 +48,9 @@ class SolrSynchronizer(object):
     @contextlib.contextmanager
     def get_session(self):
         if self._session:
-            yield self._session
-            return
+            if not self._session._executing_flag:
+                yield self._session
+                return
 
         self._session = SynchronizationSession(self.solr_server_url)
 
@@ -103,16 +104,21 @@ class SynchronizationSession(object):
         self._deletions = set()
         self._additions = set()
 
+        self._executing_flag = False
     def execute(self):
+        additions = set(self._additions)
+        deletions = set(self._deletions)
+        self._executing_flag = True
         conn = solr.SolrConnection(self.solr_server_url)
-
-        for deleted in self._deletions:
+        
+        for deleted in deletions:
             deleted.delete_from_solr(conn)
 
         conn.add_many(
-            [added.create_solr_record() for added in self._additions]
+            [added.create_solr_record() for added in additions]
         )
         conn.commit()
+        self._executing_flag = False
 
     def schedule_update(self, model, is_new=False):
         if not is_new:

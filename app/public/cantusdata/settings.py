@@ -79,9 +79,9 @@ WSGI_APPLICATION = "cantusdata.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "cantus_db",
-        "USER": "cantus_admin",
-        "PASSWORD": "Pl4c3H0ld3r",
+        "NAME": os.environ.get("POSTGRES_DB"),
+        "USER": os.environ.get("POSTGRES_USER"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
         "HOST": "postgres",
         "PORT": "5432",
     }
