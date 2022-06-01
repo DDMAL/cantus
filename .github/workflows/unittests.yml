@@ -10,4 +10,4 @@ jobs:
       - run: docker-compose up -d
       - run: docker-compose exec -T app python manage.py makemigrations
       - run: docker-compose exec -T app python manage.py migrate
-      - run: docker-compose exec -T app python runtests.py cantusdata.test
+      - run: docker-compose exec -T app python runtests.py cantusdata.test.core
