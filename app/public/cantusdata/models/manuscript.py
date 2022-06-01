@@ -26,7 +26,7 @@ class Manuscript(models.Model):
     is_mapped = models.BooleanField(default=False)
     chants_loaded = models.BooleanField(default=False)
     plugins = models.ManyToManyField(
-        "cantusdata.Plugin", related_name="plugins", blank=True, null=True
+        "cantusdata.Plugin", related_name="plugins", blank=True
     )
 
     cantus_url = models.CharField(max_length=255, blank=True, null=True)
