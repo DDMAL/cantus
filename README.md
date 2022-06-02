@@ -75,7 +75,7 @@ and then relaunch the containers.
 
 ### Launch in production
 
-From the Compute Canada VM, follow the same instructions as above, only replace `docker-compose` with `docker compose` and make sure keeb `DEBUG=true` in the .env file.
+From the Compute Canada VM, follow the same instructions as above, only replace `docker-compose` with `docker compose` and make sure to keep `DEBUG=true` in the .env file.
 
 ## Initialize a newly launched website
 
