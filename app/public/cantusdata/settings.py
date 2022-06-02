@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 from pathlib import Path
 import os
 
+is_debug = os.environ.get("DEBUG") == "true"
+is_production = not is_debug
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -19,7 +22,7 @@ with open("/etc/key.txt", "r") as f:
     SECRET_KEY = f.read().strip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG") == "true"
+DEBUG = is_debug
 
 ALLOWED_HOSTS = ["cantus.simssa.ca", "dev-cantus.simssa.ca", "localhost"]
 
@@ -153,3 +156,10 @@ LOGGING_CONFIG = None
 MAX_TOKEN_AGE_DAYS = 3
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+SESSION_COOKIE_SECURE = is_production
+CSRF_COOKIE_SECURE = is_production
+
+SECURE_HSTS_SECONDS = 86400
+SECURE_HSTS_INCLUDE_SUBDOMAINS = is_production
+SECURE_HSTS_PRELOAD = is_production
