@@ -22,13 +22,14 @@ from cantusdata.views import staticpages
 from django.contrib.admin.views.decorators import staff_member_required
 
 urlpatterns = [
-    # Admin pages
-    path("admin/", admin.site.urls),
+    # Admin pages - add any additional custom view directs above the 
+    # catch-all admin.site.urls.
     path(
         "admin/map_folios/",
         staff_member_required(MapFoliosView.as_view()),
         name="map-folios-view",
     ),
+    path("admin/", admin.site.urls),
     # Static pages
     path("", staticpages.homepage, name="homepage"),
     path("about/", staticpages.about, name="about"),
