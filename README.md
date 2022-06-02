@@ -21,30 +21,31 @@ git submodule update --init
 ```
 
 ## Launching the website
-We use Docker Compose to containerize each service and keep all our dependencies in order.
+We use [Docker Compose](https://docs.docker.com/compose/) to containerize each service and keep all our dependencies in order.
 
-### The .env file
-The build process relies on enviornment variables specified in the .env file in the root of the repository. Most importantly `POSTGRES_PASSWORD` must be set by uncommenting the appropriate line and adding a secure password.
+### The `.env` file
+The build process relies on environment variables specified in the `.env` file, which is located in the root of the repository. The most important variable here is `POSTGRES_PASSWORD`, which must be set by uncommenting it from the code, and setting it with a secure password.
 
-### Launch in development (Vagrant + Virtualbox)
+### Launch in development
 
-In the .env file, change `DEBUG=false` to `DEBUG=true`. This will turn on Django's debug mode, showing detailed traces when Django encounters an error, as well as turn off certain security settings that might stop you from accessing the site locally.
+In the `.env` file, set the `DEBUG` variable to `true`. This will turn on Django's debug mode, showing detailed traces when Django encounters errors, as well as turn off security settings that might stop you from accessing the site locally.
 
-#### (Note for Windows users)
+> **Windows Users:** Make sure `/app/django-config.sh` has `LF` line endings before launching. This file gets copied over into an Ubuntu container and will break the process if git automatically checked out the file using Windows (`CRLF`) line endings.
 
-Make sure `/app/django-config.sh` has LF line endings before launching. This file gets copied over into the ubuntu container and will break the process if git automatically checked out the file CRLF.
-
-
-Execute the following commandsfrom the root directory of the repo:
+Execute the following commands from the root directory of the repo:
 
 ```sh
 # Build the images and launch the containers (this will take a while)
 $ docker-compose up -d
 ```
 
-(to test your changes, you'll need to run `docker-compose up --build -d` to see them propagate into the containers)
+When testing your changes, include the `--build` flag to see your changes propagate into the containers:
 
-After all the building completes (10 to 30 minutes), the site should now be accessible on http://localhost:8000/ in your host machine.
+```
+docker-compose up --build -d
+```
+
+After the building process completes (10 to 30 minutes), the site should be available on http://localhost:8000/ in your host machine.
 
 By default, Cantus Ultimus works in the following way:
 
@@ -75,11 +76,11 @@ and then relaunch the containers.
 
 ### Launch in production
 
-From the Compute Canada VM, follow the same instructions as above, only replace `docker-compose` with `docker compose` and make sure to keep `DEBUG=true` in the .env file.
+From the Compute Canada VM, follow the same instructions as above, only replace `docker-compose` with `docker compose` and make sure to keep `DEBUG=false` in the `.env` file.
 
 ## Initialize a newly launched website
 
-A freshly initialized instance of the website does not have an admin account. Addititionally, the database of Manuscripts, Chants, and Folios is not populated.
+A freshly initialized instance of the website does not have an admin account. Addititionally, the databases of Manuscripts, Chants, and Folios are not populated.
 
 A few commands will create an admin account and populate the database.
 
