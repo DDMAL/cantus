@@ -166,6 +166,10 @@ pre.preformatted-text {
     > thead > tr > th {
         white-space: nowrap;
         overflow: hidden;
+        position: sticky;
+        top: 0;
+        background-color: white;
+        z-index: 1;
 
         // Make table headers black in the search result list, even though they're links
         a {
@@ -299,9 +303,10 @@ body.propagate-height {
     height: 100%;
 }
 // Fix a bug in the modal content where the search drop-down would be hidden
-.modal-content > .modal-body > .propagate-height {
-    overflow: visible;
-}
+// ^This doesn't seem to be happening, and it was stopping the list from being scrollable - eli
+// .modal-content > .modal-body > .propagate-height {
+//     overflow: visible;
+// }
 
 #manuscript-data-container {
     // Relative-position the container so that percentage-based dimensions are calculated relative to it
