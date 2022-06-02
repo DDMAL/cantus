@@ -31,7 +31,7 @@ def main():
 
 def run_tests(tests):
     with create_test_solr_core():
-        os.environ["DJANGO_SETTINGS_MODULE"] = "cantusdata.test.test_settings"
+        os.environ["DJANGO_SETTINGS_MODULE"] = "cantusdata.test.core.test_settings"
         django.setup()
         TestRunner = get_runner(settings)
         test_runner = TestRunner()
