@@ -52,7 +52,7 @@ class ManuscriptAdmin(admin.ModelAdmin):
 
     def load_chants(self, request, queryset):
         for manuscript in queryset:
-            call_command("import_data", "chants", manuscript_id=manuscript.pk)
+            call_command("import_data", "chants", f"--manuscript-id={manuscript.pk}")
         self.message_user(request, "Loaded chants for manuscript")
 
     load_chants.short_description = "Imports the chants associated \
