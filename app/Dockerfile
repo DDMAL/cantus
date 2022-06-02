@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM python:3.6.9
+FROM python:3.10.4
 COPY . /code/
 EXPOSE 8001
 
