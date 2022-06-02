@@ -23,6 +23,8 @@ from django.contrib.admin.views.decorators import staff_member_required
 
 urlpatterns = [
     # Admin pages
+    # All custom admin pages should be added above the root
+    # admin path. Root admin path is a catch-all.
     path(
         "admin/map_folios/",
         staff_member_required(MapFoliosView.as_view()),
