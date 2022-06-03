@@ -21,34 +21,42 @@ git submodule update --init
 ```
 
 ## Launching the website
-The easiest way to launch an instance of the website is to run a virtual machine using [Vagrant](https://www.vagrantup.com/). It should also be possible (with some work) to set up the development server directly in a Unix-like environment.
+We use [Docker Compose](https://docs.docker.com/compose/) to containerize each service and keep all our dependencies in order.
 
-For simplicity, we assume that you will be running the site using [Vagrant](https://www.vagrantup.com/) and [VirtualBox](https://www.virtualbox.org/) as a provider, and that both are installed in your local machine. 
+### The `.env` file
+The build process relies on environment variables specified in the `.env` file, which is located at the root of the repository. 
 
-For deploying in production or using a different provider (e.g., OpenStack inside ComputeCanada) an external provider plugin may be necessary. In our case, we require [vagrant-openstack-provider](https://github.com/ggiamarchi/vagrant-openstack-provider) to deploy in a remote [OpenStack](https://www.openstack.org/) cloud.
+The most important variable here is `POSTGRES_PASSWORD`, which must be set by uncommenting it from the code, and setting it with a secure password.
 
-### Launch with docker
+#### Handling `postgres` authentication issues
 
-The postgres container reads takes a few important parameters from environment variables. These are:
-- `POSTGRES_DB`: Name of initial database created in postgres.
-- `POSTGRES_USER`: Admin postgres user name created at container build.
-- `POSTGRES_PASSWORD`: Admin postgres user password created at container build.
-The first two values default in this repo to `POSTGRES_DB=cantus_db` and `POSTGRES_USER=cantus_admin`. The defaults can be modified in the .env file. Upon deployment, provide a secure password for the database by uncommenting the appropriate line and adding a password in the .env file.
+When the containers are launched, a volume, `data/postgres`, will be created. When the `POSTGRES_PASSWORD` is changed between builds of the docker containers, the `postgres` container might run into an authentication problem because of the existing volume. If you run into that problem, make sure to remove the volume and re-launch the containers
 
-
-### Launch in development (Vagrant + Virtualbox)
-
-With Vagrant, execute the following commands from the root directory of the repo:
-
-```sh
-# The openstack plugin will be needed to deploy in production
-$ vagrant plugin install vagrant-openstack-provider
-
-# Set up the VM (this will take a while)
-$ vagrant up
+```
+docker rm -v <container-id>
+rm -r data
 ```
 
-After all the provisioning completes (10 to 30 minutes), the site should now be accessible on http://localhost:8000/ in your host machine.
+### Launch in development
+
+In the `.env` file, set the `DEBUG` variable to `true`. This will turn on Django's debug mode, showing detailed traces when Django encounters errors, as well as turn off security settings that might stop you from accessing the site locally.
+
+> **Windows Users:** Make sure `/app/django-config.sh` has `LF` line endings before launching. This file gets copied over into an Ubuntu container and will break the process if git automatically checked out the file using Windows (`CRLF`) line endings.
+
+Execute the following commands from the root directory of the repo:
+
+```sh
+# Build the images and launch the containers (this will take a while)
+$ docker-compose up -d
+```
+
+When testing your changes, include the `--build` flag to see your changes propagate into the containers:
+
+```
+docker-compose up --build -d
+```
+
+After the building process completes (10 to 30 minutes), the site should be available on http://localhost:8000/ in your host machine.
 
 By default, Cantus Ultimus works in the following way:
 
@@ -64,80 +72,40 @@ django --> solr: Bind django database "signals" to solr
 
 #### Enabling live changes with django's `runserver`
 
-During development, it is often useful to replace `gunicorn` with the default `django` web server, so that modifying the source code results in live changes in the website. This can be done running the following:
+During development, it is often useful to replace `gunicorn` with the default `django` web server, so that modifying the source code results in live changes in the website. This can be done by editing `/app/django-config.sh/`:
 
-```bash
-# SSH into the VM
-$ vagrant ssh
-
-# Turn off gunicorn, and free port 8001
-$ sudo systemctl stop gunicorn
-
-# Go to the public folder in the VM
-[vagrant]$ cd public
-
-# Activate the Python virtualenv
-[vagrant]$ source app_env/bin/activate
-
-# Run the server on 0.0.0.0 to expose it outside of the VM
-[vagrant](app_env)$ python manage.py runserver 0.0.0.0:8001
+replace
+```
+gunicorn -b 0:8001 cantusdata.wsgi --timeout 600 --workers 4
+```
+with
+```
+python manage.py runserver 0.0.0.0:8001
 ```
 
-### Launch in production (Vagrant + OpenStack)
+> Note that the web app itself runs on port `8001`, the `nginx` server is the one running on port `8000`
 
-If using OpenStack as a provider in a remote cloud, the following environment variables (credentials) must be set:
+and then relaunch the containers.
 
-- `OS_AUTH_URL`
-- `OS_PROJECT_NAME`
-- `OS_USER_DOMAIN_NAME`
-- `OS_USER_DOMAIN_NAME`
-- `OS_USERNAME`
-- `OS_PASSWORD`
-- `RegionOne`
-- `OS_IDENTITY_API_VERSION`
+### Launch in production
 
-If you are deploying on ComputeCanada, an OpenStack RC file is provided to you, which sets all of those environments variables for you. To obtain your OpenStack RC file, go to the dashboard of the cloud (e.g., Arbutus) -> API Access -> Download the OpenStack RC file.
-
-Additional instructions can be found here: https://docs.computecanada.ca/wiki/OpenStack_Command_Line_Clients#Connecting_CLI_to_OpenStack
-
-After you have the OpenStack RC file, `source` it and run the container.
-
-```sh
-$ source rxx-xxxxxx-openrc.sh
-
-$ vagrant up --provider openstack
-```
-
-If the connection to the provider was successful, `vagrant ssh` should provide access to the remote VM.
-```sh
-# SSH into the VM
-$ vagrant ssh
-```
+From the Compute Canada VM, follow the same instructions as above, only replace `docker-compose` with `docker compose` and make sure to keep `DEBUG=false` in the `.env` file.
 
 ## Initialize a newly launched website
 
-A freshly initialized instance of the website does not have an admin account. Addititionally, the database of Manuscripts, Chants, and Folios is not populated.
+A freshly initialized instance of the website does not have an admin account. Addititionally, the databases of Manuscripts, Chants, and Folios are not populated.
 
 A few commands will create an admin account and populate the database.
 
-Assuming that the site has been launched and is accessible in http://localhost:8000/, fire up another terminal and `ssh` into the server.
-
-```sh
-# SSH into the VM
-$ vagrant ssh
-# Go to the public folder in the VM
-[vagrant]$ cd public
-# Activate the Python virtualenv
-[vagrant]$ source app_env/bin/activate
-```
+Assuming that the site has been launched and is accessible in http://localhost:8000/, fire up another terminal.
 
 The first thing we need to do is to create an admin account for the website.
 
 ```sh
 # Creating a django admin account for the website
-[vagrant](app_env)$ python manage.py createsuperuser
+$ docker-compose exec app python manage.py createsuperuser
 
-Username (leave blank to use 'vagrant'): 
+Username (leave blank to use 'root'): 
 Email address: 
 Password: 
 Password (again): 
@@ -158,14 +126,14 @@ Import the concordances, manuscripts, and chants
 
 ```sh
 # Import the concordances
-[vagrant](app_env)$ python manage.py import_data concordances
+$ docker-compose exec app python manage.py import_data concordances
 Deleting old concordances data...
 Successfully imported 12 concordances into database.
 Waiting for Solr to finish...
 Done.
 
 # Import the manuscripts
-[vagrant](app_env)$ python manage.py import_data manuscripts
+$ docker-compose exec app python manage.py import_data manuscripts
 Deleting old manuscripts data...
 Starting manuscript import process.
 # It should take about 5 minutes to import the data.
@@ -177,7 +145,7 @@ Done.
 An additional command is included to import chants associated with a specific manuscript
 
 ```sh
-[vagrant](app_env)$ python manage.py import_data chants --manuscript-id MANUSCRIPT_ID
+$ docker-compose exec app python manage.py import_data chants --manuscript-id MANUSCRIPT_ID
 ```
 however, this process can already be done using the user interface. We recommend using the user interface from this point onward.
 
