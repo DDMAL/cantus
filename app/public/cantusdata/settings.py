@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 from pathlib import Path
 import os
 
-is_debug = os.environ.get("DEBUG") == "true"
+is_debug = os.environ.get("DEBUG") == 8000
 is_production = not is_debug
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.

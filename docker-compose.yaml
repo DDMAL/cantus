@@ -9,7 +9,7 @@ services:
       solr:
         condition: service_started
     environment:
-      - DEBUG=${DEBUG}
+      - DEBUG=${PORT}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -33,7 +33,7 @@ services:
   nginx:
     build: ./nginx
     ports:
-      - "8000:80"
+      - "${PORT}:80"
     depends_on:
       - app
   

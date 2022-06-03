@@ -39,7 +39,7 @@ rm -r data
 
 ### Launch in development
 
-In the `.env` file, set the `DEBUG` variable to `true`. This will turn on Django's debug mode, showing detailed traces when Django encounters errors, as well as turn off security settings that might stop you from accessing the site locally.
+In the `.env` file, set the `PORT` variable to `8000`. This will turn on Django's debug mode, showing detailed traces when Django encounters errors, as well as turn off security settings that might stop you from accessing the site locally.
 
 > **Windows Users:** Make sure `/app/django-config.sh` has `LF` line endings before launching. This file gets copied over into an Ubuntu container and will break the process if git automatically checked out the file using Windows (`CRLF`) line endings.
 
@@ -89,7 +89,7 @@ and then relaunch the containers.
 
 ### Launch in production
 
-From the Compute Canada VM, follow the same instructions as above, only replace `docker-compose` with `docker compose` and make sure to keep `DEBUG=false` in the `.env` file.
+From the Compute Canada VM, follow the same instructions as above, only replace `docker-compose` with `docker compose` and make sure to keep `PORT=80` in the `.env` file.
 
 ## Initialize a newly launched website
 
