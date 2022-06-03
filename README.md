@@ -39,7 +39,7 @@ rm -r data
 
 ### Launch in development
 
-In the `.env` file, set the `PORT` variable to `8000`. This will turn on Django's debug mode, showing detailed traces when Django encounters errors, as well as turn off security settings that might stop you from accessing the site locally.
+In the `.env` file, the `PORT` variable is set to `8000` (development) by default. This will turn on Django's debug mode, showing detailed traces when Django encounters errors, as well as turn off security settings that might stop you from accessing the site locally. In production, this should be set to `80`.
 
 > **Windows Users:** Make sure `/app/django-config.sh` has `LF` line endings before launching. This file gets copied over into an Ubuntu container and will break the process if git automatically checked out the file using Windows (`CRLF`) line endings.
 
