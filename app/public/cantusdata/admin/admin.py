@@ -6,6 +6,7 @@ from cantusdata.models.folio import Folio
 from cantusdata.models.plugin import Plugin
 from cantusdata.models.neume_exemplar import NeumeExemplar
 from django.core.management import call_command
+from django.http import HttpResponseRedirect
 
 
 def reindex_in_solr(modeladmin, request, queryset):
@@ -50,13 +51,13 @@ class ManuscriptAdmin(admin.ModelAdmin):
     )
     list_display = ("name", "siglum", "public", "chants_loaded", "is_mapped")
 
+    @admin.action(description = "Imports the chants associated \
+        with the selected manuscript(s)")
     def load_chants(self, request, queryset):
-        for manuscript in queryset:
-            call_command("import_data", "chants", f"--manuscript-id={manuscript.pk}")
+        manuscript_ids = [str(manuscript.pk) for manuscript in queryset]
+        manuscript_ids_str = ','.join(manuscript_ids)
         self.message_user(request, "Loaded chants for manuscript")
-
-    load_chants.short_description = "Imports the chants associated \
-        with the selected manuscript(s)"
+        return HttpResponseRedirect(f'/admin/cantusdata/manuscript/load_chants/?manuscript_ids={manuscript_ids_str}')
 
 
 class ChantAdmin(admin.ModelAdmin):
