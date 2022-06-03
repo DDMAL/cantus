@@ -34,6 +34,7 @@ When the containers are launched, a volume, `data/postgres`, will be created. Wh
 
 ```
 docker rm -v <container-id>
+rm -r data
 ```
 
 ### Launch in development
