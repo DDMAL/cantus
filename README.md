@@ -24,7 +24,17 @@ git submodule update --init
 We use [Docker Compose](https://docs.docker.com/compose/) to containerize each service and keep all our dependencies in order.
 
 ### The `.env` file
-The build process relies on environment variables specified in the `.env` file, which is located in the root of the repository. The most important variable here is `POSTGRES_PASSWORD`, which must be set by uncommenting it from the code, and setting it with a secure password.
+The build process relies on environment variables specified in the `.env` file, which is located at the root of the repository. 
+
+The most important variable here is `POSTGRES_PASSWORD`, which must be set by uncommenting it from the code, and setting it with a secure password.
+
+#### Handling `postgres` authentication issues
+
+When the containers are launched, a volume, `data/postgres`, will be created. When the `POSTGRES_PASSWORD` is changed between builds of the docker containers, the `postgres` container might run into an authentication problem because of the existing volume. If you run into that problem, make sure to remove the volume and re-launch the containers
+
+```
+docker rm -v <container-id>
+```
 
 ### Launch in development
 
@@ -71,6 +81,8 @@ with
 ```
 python manage.py runserver 0.0.0.0:8001
 ```
+
+> Note that the web app itself runs on port `8001`, the `nginx` server is the one running on port `8000`
 
 and then relaunch the containers.
 
