@@ -17,6 +17,7 @@ from cantusdata.views.chant_set import (
 from cantusdata.views.folio_set import ManuscriptFolioSetView
 from cantusdata.views.manuscript_glyph_set import ManuscriptGlyphSetView
 from cantusdata.views.map_folios import MapFoliosView
+from cantusdata.views.load_chants import LoadChantsView
 from cantusdata.views.manifest_proxy import ManifestProxyView
 from cantusdata.views import staticpages
 from django.contrib.admin.views.decorators import staff_member_required
@@ -29,6 +30,10 @@ urlpatterns = [
         "admin/map_folios/",
         staff_member_required(MapFoliosView.as_view()),
         name="map-folios-view",
+    ),
+    path("admin/cantusdata/manuscript/load_chants/",
+        staff_member_required(LoadChantsView.as_view()),
+        name="load-chants-view",
     ),
     path("admin/", admin.site.urls),
     # Static pages

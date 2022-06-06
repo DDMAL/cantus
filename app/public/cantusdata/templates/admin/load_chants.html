@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    h2, h5 {
+        width: 100%;
+        text-align: center;
+    }
+
+    .blue-button {
+        background-color: #264cff;
+        color: white;
+        border: solid 1px #0b97c4;
+        padding: 7px;
+        text-align: center;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .horizontal-center {
+  margin: 0;
+  position: absolute;
+  left: 50%;
+    }
+</style>
+{% endblock %}
+{% block body %}
+<h2>Chants are being loaded for these manuscripts.</h2>
+<h5>The changes are currently being applied to the database. They should appear in a few minutes.</h5>
+<form action="/admin/cantusdata/manuscript/">
+    <input class="blue-button horizontal-center" type="submit" value="Return to Admin Page">
+</form>
+{% endblock %}
