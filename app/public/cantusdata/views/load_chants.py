@@ -10,12 +10,20 @@ class LoadChantsView(APIView):
     renderer_classes = (TemplateHTMLRenderer,)
 
     def get(self, request):
-        manuscript_ids = request.GET['manuscript_ids'].split(',')
+        manuscript_ids = request.GET["manuscript_ids"].split(",")
         try:
             for man_id in manuscript_ids:
-                thread = threading.Thread(target=call_command, args=("import_data", "chants",f"--manuscript-id={man_id}"), kwargs={})
+                thread = threading.Thread(
+                    target=call_command,
+                    args=(
+                        "import_data",
+                        "chants",
+                        f"--manuscript-id={man_id}",
+                    ),
+                    kwargs={},
+                )
                 thread.start()
         except Exception as e:
             return Response({"error": e})
 
-        return Response({'manuscript_ids':manuscript_ids})
+        return Response({"manuscript_ids": manuscript_ids})
