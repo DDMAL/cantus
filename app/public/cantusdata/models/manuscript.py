@@ -43,7 +43,7 @@ class Manuscript(models.Model):
             force_insert, force_update, *args, **kwargs
         )
 
-        if self.public != self._last_public_value:
+        if (self.public != self._last_public_value) and self.chants_loaded:
             # The public property has changed, we need to refresh the Solr chants
             thread = threading.Thread(
                 target=call_command,

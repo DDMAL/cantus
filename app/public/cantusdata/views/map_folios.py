@@ -23,7 +23,7 @@ class MapFoliosView(APIView):
         # display list of manuscripts and mapping status.
         if "manuscript_id" not in request.GET:
             manuscripts = Manuscript.objects.filter(
-                manifest_url__isnull=False, public=True
+                manifest_url__isnull=False, public=True, chants_loaded=True
             )
             manuscript_ids = [(m.id, str(m), m.is_mapped) for m in manuscripts]
 
