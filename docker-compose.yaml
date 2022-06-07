@@ -3,6 +3,8 @@ services:
   app:
     build: ./app
     command: /code/django-config.sh
+    volumes:
+      - ./app/public:/code/public
     depends_on:
       postgres:
         condition: service_healthy

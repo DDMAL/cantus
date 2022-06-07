@@ -72,20 +72,7 @@ django --> solr: Bind django database "signals" to solr
 
 #### Enabling live changes with django's `runserver`
 
-During development, it is often useful to replace `gunicorn` with the default `django` web server, so that modifying the source code results in live changes in the website. This can be done by editing `/app/django-config.sh/`:
-
-replace
-```
-gunicorn -b 0:8001 cantusdata.wsgi --timeout 600 --workers 4
-```
-with
-```
-python manage.py runserver 0.0.0.0:8001
-```
-
-> Note that the web app itself runs on port `8001`, the `nginx` server is the one running on port `8000`
-
-and then relaunch the containers.
+During development, it is often useful to replace `gunicorn` with the default `django` web server, so that modifying the source code results in live changes in the website. This is done by default in `django-config.sh`. If you need to test `gunicorn` during development, edit the if statement in this file.
 
 ### Launch in production
 
