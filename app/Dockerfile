@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 FROM python:3.6.9
-COPY ./ /code
+COPY . /code/
 EXPOSE 8001
 
 RUN chmod u+x /code/django-config.sh
