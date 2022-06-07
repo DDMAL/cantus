@@ -131,8 +131,9 @@ class Command(BaseCommand):
             )
         )
 
+    @transaction.atomic
     def import_iiif_data(self):
-        with open(path.join(BASE_DIR, "cantusdata", "manifests.csv"), "r") as file:
+        with open(path.join(BASE_DIR, "data_dumps", "manifests.csv"), "r") as file:
             csv = file.readlines()
 
         for row in csv:
