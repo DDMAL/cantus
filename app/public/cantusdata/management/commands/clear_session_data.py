@@ -5,7 +5,7 @@ from django.db import connection
 class Command(BaseCommand):
     """
     Completely clears the django_session table. Runs `TRUNCATE django_session` against the
-    databse. 
+    database. 
 
     This is useful when building the app container with a database that is not a fresh build
     to avoid a 'Session data corrupted' warning.
