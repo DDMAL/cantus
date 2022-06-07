@@ -56,7 +56,6 @@ class ManuscriptAdmin(admin.ModelAdmin):
     def load_chants(self, request, queryset):
         manuscript_ids = [str(manuscript.pk) for manuscript in queryset]
         manuscript_ids_str = ','.join(manuscript_ids)
-        self.message_user(request, "Loaded chants for manuscript")
         return HttpResponseRedirect(f'/admin/cantusdata/manuscript/load_chants/?manuscript_ids={manuscript_ids_str}')
 
 
