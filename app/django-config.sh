@@ -2,5 +2,6 @@
 
 python manage.py makemigrations
 python manage.py migrate &
+python manage.py clear_session_data
 
 gunicorn -b 0:8001 cantusdata.wsgi --timeout 600 --workers 4
