@@ -137,7 +137,7 @@ class Command(BaseCommand):
             csv = file.readlines()
 
         for row in csv:
-            siglum, manifest_url = row.strip().split(",")
+            siglum, manifest_url = row.strip().rsplit(",", 1)
             qs = Manuscript.objects.filter(siglum=siglum)
             if len(qs) > 0:
                 mobj = qs[0]
