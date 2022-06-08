@@ -11,6 +11,8 @@ from cantusdata.helpers.scrapers.manuscript import parse as parse_manuscript
 from cantusdata.helpers.scrapers.concordances import concordances
 import urllib.request
 from io import StringIO
+from cantusdata.settings import BASE_DIR
+from os import path
 
 
 class Command(BaseCommand):
@@ -20,7 +22,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "type", choices=["chants", "concordances", "manuscripts"]
+            "type", choices=["chants", "concordances", "manuscripts", "iiif"]
         )
         parser.add_argument(
             "--manuscript-id",
@@ -55,6 +57,9 @@ class Command(BaseCommand):
             elif options["type"] == "manuscripts":
                 Manuscript.objects.all().delete()
                 self.import_manuscript_data(**options)
+            elif options["type"] == "iiif":
+                Manuscript.objects.all().update(manifest_url="")
+                self.import_iiif_data()
             self.stdout.write("Waiting for Solr to finish...")
         self.stdout.write("Done.")
 
@@ -125,3 +130,16 @@ class Command(BaseCommand):
                 chant_count
             )
         )
+
+    @transaction.atomic
+    def import_iiif_data(self):
+        with open(path.join(BASE_DIR, "data_dumps", "manifests.csv"), "r") as file:
+            csv = file.readlines()
+
+        for row in csv:
+            siglum, manifest_url = row.strip().rsplit(",", 1)
+            qs = Manuscript.objects.filter(siglum=siglum)
+            if len(qs) > 0:
+                mobj = qs[0]
+                mobj.manifest_url = manifest_url
+                mobj.save()
