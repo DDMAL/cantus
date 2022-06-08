@@ -94,30 +94,32 @@ def parse(file):
 
 
 
-#This basic idea can be used to find the containing neumes from a string of contours, pitches, intervals as well
-def zones_from_chant_text(chant_text: str, syllables: list) -> list:
-    chant_text = chant_text.replace(" ", "").lower()
-    for i, syllable in enumerate(syllables):
-        syl_text = syllable["syl"]["text"]
-        if chant_text[0:len(syl_text)] == syl_text.lower():
-            last = find_end_syl(i+1, chant_text[len(syl_text):])
+#Basic idea for finding the containing neumes from a string of contours, pitches, intervals etc
+def neumes_from_pitch_sequence(pitches: str, neumes: list) -> list:
+    neume_lists = []
+    for i, neume in enumerate(neumes):
+        neume_pitches = neume["pitches"]
+        if neume_pitches.startswith(pitches):
+            return [neume]
+        elif pitches.startswith(neume_pitches):
+            last = find_last_neume_pitch(i+1, pitches[len(neume_pitches):], neumes)
             if last == -1:
                 continue
             else:
-                text_zones = []
+                neume_list = []
                 for j in range(i, last):
-                    zone = syllables[j]["syl"]["zone"]
-                    text_zones.append(zone)
-                return text_zones
+                    neume_list.append(neumes[j])
+                neume_lists.append(neume_list)
+    return neume_lists
 
-def find_end_syl(next: int, remaining: str, syllables: list) -> int:
+def find_last_neume_pitch(next: int, remaining: str, neumes: list) -> int:
     if len(remaining) == 0:
         return next
     else:
-        syl_text = syllables[next]["syl"]["text"]
-        if remaining[0:len(syl_text)] == syl_text.lower():
-            return find_end_syl(next+1, remaining[len(syl_text):])
+        neume_pitches = neumes[next]["pitches"]
+        if neume_pitches.startswith(remaining):
+            return next+1
+        elif remaining.startswith(neume_pitches):
+            return find_last_neume_pitch(next+1, remaining[len(neume_pitches):], neumes)
         else:
             return -1
-
-#print(zones_from_chant_text("Qui regis Israhel"))# intende qui deducis velut ovem Joseph qui sedes super cherubim"))
