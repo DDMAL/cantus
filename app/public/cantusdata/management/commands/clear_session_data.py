@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from django.db import connection
+from django.db.utils import ProgrammingError
 
 class Command(BaseCommand):
     """
@@ -11,5 +12,11 @@ class Command(BaseCommand):
     to avoid a 'Session data corrupted' warning.
     """
     def handle(self, *args, **options):
-        with connection.cursor() as cursor:
-            cursor.execute("TRUNCATE django_session;")
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("TRUNCATE django_session;")
+        # ProgrammingError is returned if the table does not exist
+        # ie. on first build, when migrations have not yet been
+        # applied. 
+        except ProgrammingError:
+            pass
