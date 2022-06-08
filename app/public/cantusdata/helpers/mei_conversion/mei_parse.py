@@ -129,3 +129,46 @@ def find_last_neume_pitch(next: int, remaining: str, neumes: list) -> int:
             return find_last_neume_pitch(next+1, remaining[len(neume_pitches):], neumes)
         else:
             return -1
+
+#this one needs to figure out the bridge entry between each neume
+def neumes_from_contour_sequence(contour: str, neumes: list) -> list:
+    neume_lists = []
+    for i, neume in enumerate(neumes):
+        neume_contour = neume["contour"]
+        if neume_contour.startswith(contour):
+            return [neume]
+        elif contour.startswith(neume_contour):
+            trailing_note_name = neume["pitches"][len(neume["pitches"])-3:]
+            trailing_note = (trailing_note_name[0], trailing_note_name[1])
+
+            last = find_last_neume_contour(i+1, contour[len(neume_contour):], trailing_note, neumes)
+            if last == -1:
+                continue
+            else:
+                neume_list = []
+                for j in range(i, last):
+                    neume_list.append(neumes[j])
+                neume_lists.append(neume_list)
+    return neume_lists
+
+def find_last_neume_contour(next: int, remaining: str, trailing_note:dict, neumes: list) -> int:
+    if len(remaining) == 0:
+        return next
+    elif next >= len(neumes):
+        return -1
+    else:
+        cur = neumes[next]
+
+        leading_note_name = cur["pitches"][0:3]
+        leading_note = (leading_note_name[0], leading_note_name[1])
+        bridge = contour_from_component_pair(trailing_note, leading_note)
+        
+        neume_contour = bridge + neumes[next]["contour"]
+        if neume_contour.startswith(remaining):
+            return next+1
+        elif remaining.startswith(neume_contour):
+            trailing_note_name = cur["pitches"][len(cur["pitches"])-3:]
+            trailing_note = (trailing_note_name[0], trailing_note_name[1])
+            return find_last_neume_contour(next+1, remaining[len(neume_contour):], trailing_note, neumes)
+        else:
+            return -1
