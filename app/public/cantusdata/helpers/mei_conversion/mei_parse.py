@@ -30,27 +30,34 @@ NEUME_GROUPS = {
     "dudd": "Porrectus subpunctis"
 }
 
-def get_neume_type(ncs: list) -> str:
+def get_streams(ncs: list) -> tuple:
     contour = ""
+    pitches = ""
+    intervals = ""
     prev = None
     for nc in ncs:
+        #contour
         if prev != None:
-            if prev["octave"] > nc["octave"]:
+            if prev.get("oct") > nc.get("oct"):
                 contour += "d"
-            elif prev["octave"] < nc["octave"]:
+            elif prev.get("oct") < nc.get("oct"):
                 contour += "u"
             else:
-                pitch_value = PITCH_VALUES[nc["pitch"]]
-                prev_pitch_value = PITCH_VALUES[prev["pitch"]]
+                pitch_value = PITCH_VALUES[nc.get("pname")]
+                prev_pitch_value = PITCH_VALUES[prev.get("pname")]
                 if pitch_value < prev_pitch_value:
                     contour += "u"
                 elif pitch_value > prev_pitch_value:
                     contour += "d"
                 else:
                     contour += "s"
+        #pitch
+        pitches += nc.get("pname").upper() + nc.get("oct") + ","
+        #interval
+
         prev = nc
-    neume_type = NEUME_GROUPS.get(contour, "Compound")
-    return neume_type
+    
+    return (contour, pitches, intervals)
 
 def parse(file):
     tree = etree.parse(file)
@@ -66,21 +73,24 @@ def parse(file):
         lry = int(zone.get("lry", 0))
         rotation = zone.get("rotation", "0")
         region = f"{ulx},{uly},{lrx-ulx},{lry-uly}"
-        zones[zone_id] = {"region": region, "rotation": rotation}
+        zones["#"+zone_id] = {"region": region, "rotation": rotation}
 
-    syllables = []
     layer = music[1][0][0][1][0][0]
-    for syllable in layer.iter("{http://www.music-encoding.org/ns/mei}syllable"):
-        syl = syllable[0]
-        syl_dict = {"zone": zones[syl.get("facs")], "text": syl.text}
-        
-        ncs = []
-        neume = syllable[1]
-        for nc in neume:
-            ncs.append({"zone": zones[nc.get("facs")], "pitch": nc.get("pname"), "octave": nc.get("oct")})
-        neume_type = get_neume_type(ncs)
-        syllables.append({"syl": syl_dict, "neume": {"type": neume_type, "components": ncs}})
 
+    (folio_contour, folio_pitches, folio_intervals) = get_streams(layer.iter("{http://www.music-encoding.org/ns/mei}nc"))
+
+    neumes = []
+    for syllable in layer.iter("{http://www.music-encoding.org/ns/mei}syllable"):
+        syl = None
+        for s in syllable.iter("{http://www.music-encoding.org/ns/mei}syl"):
+            syl = s
+        syl_dict = {"zone": zones.get(syl.get("facs"), ""), "text": syl.text.strip()}
+        
+        for neume in syllable.iter("{http://www.music-encoding.org/ns/mei}neume"):
+            neume_zones = [zones.get(nc.get("facs"), "") for nc in neume]
+            (contour, pitches, intervals) = get_streams(neume)
+            neume_type = NEUME_GROUPS.get(contour, "Compound")
+            neumes.append({"type": neume_type, "contour": contour, "pitches": pitches, "intervals": intervals, "zones": neume_zones, "syl": syl_dict})
 
 
 
