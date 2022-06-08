@@ -30,6 +30,23 @@ NEUME_GROUPS = {
     "dudd": "Porrectus subpunctis"
 }
 
+def contour_from_component_pair(prev: tuple, cur: tuple) -> str:
+    (prev_note, prev_oct) = prev
+    (cur_note, cur_oct) = cur
+    if prev_oct > cur_oct:
+        return "d"
+    elif prev_oct < cur_oct:
+        return "u"
+    else:
+        cur_pitch_value = PITCH_VALUES[cur_note.lower()]
+        prev_pitch_value = PITCH_VALUES[prev_note.lower()]
+        if prev_pitch_value > cur_pitch_value:
+            return "d"
+        elif prev_pitch_value < cur_pitch_value:
+            return "u"
+        else:
+            return "s"
+
 def get_streams(ncs: list) -> tuple:
     contour = ""
     pitches = ""
@@ -38,23 +55,12 @@ def get_streams(ncs: list) -> tuple:
     for nc in ncs:
         #contour
         if prev != None:
-            if prev.get("oct") > nc.get("oct"):
-                contour += "d"
-            elif prev.get("oct") < nc.get("oct"):
-                contour += "u"
-            else:
-                pitch_value = PITCH_VALUES[nc.get("pname")]
-                prev_pitch_value = PITCH_VALUES[prev.get("pname")]
-                if pitch_value < prev_pitch_value:
-                    contour += "u"
-                elif pitch_value > prev_pitch_value:
-                    contour += "d"
-                else:
-                    contour += "s"
+            contour += contour_from_component_pair((prev.get("pname"), prev.get("oct")), (nc.get("pname"), nc.get("oct")))
         #pitch
         pitches += nc.get("pname").upper() + nc.get("oct") + ","
         #interval
-
+            #translate pitches to numbers (whole or semitones) (and add 8*octave?)
+            #subtract, +/-
         prev = nc
     
     return (contour, pitches, intervals)
