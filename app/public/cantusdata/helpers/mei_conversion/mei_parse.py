@@ -97,7 +97,7 @@ def parse_neumes(mei, zones):
                 nc_neume_grouping.append(neume_idx)
             neume_idx += 1
             global_pitches.extend(pitches)
-            pitches_pairs = list(zip(global_pitches[:-1], global_pitches[1:]))
+            pitches_pairs = list(zip(pitches[:-1], pitches[1:]))
             intervals = [interval(p1, p2) for p1, p2 in pitches_pairs]
             contours = [contour_from_interval(i) for i in intervals]
             neume_type = NEUME_GROUPS.get("".join(contours), "Compound")
@@ -121,6 +121,22 @@ def parse_neumes(mei, zones):
         "nc_neume_grouping": nc_neume_grouping,
     }
     return neumes, global_sequences
+
+
+def query_pitch_sequence(query, neumes, global_sequences):
+    """Query for a pitch sequence across a parsed MEI file."""
+    # TODO: This only works if Bb is encoded as a single character (i.e., b)
+    g_pitches = "".join([p[:-1] for p in global_sequences["pitches"]])
+    nc_neume = global_sequences["nc_neume_grouping"]
+    start_idx = 0
+    q_starts = g_pitches.find(query, start_idx)
+    matches = []
+    while q_starts != -1:
+        q_ends = q_starts + len(query)
+        neume_ids = list(range(nc_neume[q_starts], nc_neume[q_ends] + 1))
+        matches.append([neumes[idx] for idx in neume_ids])
+        q_starts = g_pitches.find(query, q_ends)
+    return matches
 
 
 def parse(file):
