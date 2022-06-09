@@ -128,8 +128,7 @@ def query_pitch_sequence(query, neumes, global_sequences):
     # TODO: This only works if Bb is encoded as a single character (i.e., b)
     g_pitches = "".join([p[:-1] for p in global_sequences["pitches"]])
     nc_neume = global_sequences["nc_neume_grouping"]
-    start_idx = 0
-    q_starts = g_pitches.find(query, start_idx)
+    q_starts = g_pitches.find(query)
     matches = []
     while q_starts != -1:
         q_ends = q_starts + len(query)
@@ -137,6 +136,16 @@ def query_pitch_sequence(query, neumes, global_sequences):
         matches.append([neumes[idx] for idx in neume_ids])
         q_starts = g_pitches.find(query, q_ends)
     return matches
+
+
+def query_interval_sequence(query, neumes, global_sequences):
+    # TODO: Implement this one
+    pass
+
+
+def query_contour_sequence(query, neumes, global_sequences):
+    # TODO: Implement this one
+    pass
 
 
 def parse(file):
