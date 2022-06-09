@@ -131,11 +131,8 @@ def query_pitch_sequence(query, neumes, global_sequences):
     q_starts = g_pitches.find(query)
     matches = []
     while q_starts != -1:
-        q_ends = q_starts + len(query)
-        neume_ids = []
-        for idx in range(q_starts, q_ends):
-            if not nc_neume[idx] in neume_ids:
-                neume_ids.append(nc_neume[idx])
+        q_ends = q_starts + len(query) - 1
+        neume_ids = list(range(nc_neume[q_starts], nc_neume[q_ends] + 1))
         matches.append([neumes[idx] for idx in neume_ids])
         q_starts = g_pitches.find(query, q_ends)
     return matches
@@ -155,10 +152,7 @@ def query_contour_sequence(query, neumes, global_sequences):
     matches = []
     while q_starts != -1:
         q_ends = q_starts + len(query)
-        neume_ids = []
-        for idx in range(q_starts, q_ends):
-            if not nc_neume[idx] in neume_ids:
-                neume_ids.append(nc_neume[idx])
+        neume_ids = list(range(nc_neume[q_starts], nc_neume[q_ends] + 1))
         matches.append([neumes[idx] for idx in neume_ids])
         q_starts = g_contours.find(query, q_ends)
     return matches
