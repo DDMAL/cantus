@@ -37,6 +37,11 @@ def pitch_to_midi(p):
     note, oct = parse_pitch(p)
     return PITCH_CLASS[note] + (12 * (oct + 1))
 
+def interval_to_str(m):
+    if m >= 0:
+        return "+" + str(m)
+    else:
+        return str(m)
 
 def interval(p1, p2):
     """Provides the interval in semitones."""
@@ -139,8 +144,18 @@ def query_pitch_sequence(query, neumes, global_sequences):
 
 
 def query_interval_sequence(query, neumes, global_sequences):
-    # TODO: Implement this one
-    pass
+    """Query for an interval sequence across a parsed MEI file."""
+    # TODO: This only works if Bb is encoded as a single character (i.e., b)
+    g_intervals = "".join(interval_to_str(i) for i in global_sequences["intervals"])
+    nc_neume = global_sequences["nc_neume_grouping"]
+    q_starts = g_intervals.find(query)
+    matches = []
+    while q_starts != -1:
+        q_ends = q_starts + len(query)
+        neume_ids = list(range(nc_neume[q_starts//2], nc_neume[q_ends//2] + 1))
+        matches.append([neumes[idx] for idx in neume_ids])
+        q_starts = g_intervals.find(query, q_ends)
+    return matches
 
 
 def query_contour_sequence(query, neumes, global_sequences):
