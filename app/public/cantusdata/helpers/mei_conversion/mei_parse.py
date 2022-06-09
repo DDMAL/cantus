@@ -1,4 +1,3 @@
-from typing import Iterator
 from lxml import etree
 import xml.etree.ElementTree as ET
 
