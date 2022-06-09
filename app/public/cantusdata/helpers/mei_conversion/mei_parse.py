@@ -1,14 +1,8 @@
+from typing import Iterator
 from lxml import etree
+import xml.etree.ElementTree as ET
 
-PITCH_VALUES = {
-    "c": 1,
-    "d": 2,
-    "e": 3,
-    "f": 4,
-    "g": 5,
-    "a": 6,
-    "b": 7
-}
+PITCH_CLASS = {"c": 0, "d": 2, "e": 4, "f": 5, "g": 7, "a": 9, "b": 11}
 
 NEUME_GROUPS = {
     "": "Punctum",
@@ -27,148 +21,108 @@ NEUME_GROUPS = {
     "udd": "Pes subpunctis",
     "uud": "Scandicus flexus",
     "uudd": "Scandicus subpunctis",
-    "dudd": "Porrectus subpunctis"
+    "dudd": "Porrectus subpunctis",
 }
 
-def contour_from_component_pair(prev: tuple, cur: tuple) -> str:
-    (prev_note, prev_oct) = prev
-    (cur_note, cur_oct) = cur
-    if prev_oct > cur_oct:
+MEINS = "{http://www.music-encoding.org/ns/mei}"
+XMLNS = "{http://www.w3.org/XML/1998/namespace}"
+
+
+def parse_pitch(p):
+    """Converts a pitch string into (pitch, octave)."""
+    # The octave should always be the last character
+    return p[:-1], int(p[-1])
+
+
+def pitch_to_midi(p):
+    """Converts a pitch string into a midi note number."""
+    note, oct = parse_pitch(p)
+    return PITCH_CLASS[note] + (12 * (oct + 1))
+
+
+def interval(p1, p2):
+    """Provides the interval in semitones."""
+    return pitch_to_midi(p2) - pitch_to_midi(p1)
+
+
+def contour_from_pitches(p1, p2):
+    """Computes the contour between two pitches."""
+    contour_from_interval(interval(p1, p2))
+
+
+def contour_from_interval(semitones):
+    """Computes the contour of an interval."""
+    if semitones < 0:
         return "d"
-    elif prev_oct < cur_oct:
+    elif semitones > 0:
         return "u"
     else:
-        cur_pitch_value = PITCH_VALUES[cur_note.lower()]
-        prev_pitch_value = PITCH_VALUES[prev_note.lower()]
-        if prev_pitch_value > cur_pitch_value:
-            return "d"
-        elif prev_pitch_value < cur_pitch_value:
-            return "u"
-        else:
-            return "s"
+        return "s"
 
-def get_streams(ncs: list) -> tuple:
-    contour = ""
-    pitches = ""
-    intervals = ""
-    prev = None
-    for nc in ncs:
-        #contour
-        if prev != None:
-            contour += contour_from_component_pair((prev.get("pname"), prev.get("oct")), (nc.get("pname"), nc.get("oct")))
-        #pitch
-        pitches += nc.get("pname").upper() + nc.get("oct") + ","
-        #interval
-            #translate pitches to numbers (whole or semitones) (and add 8*octave?)
-            #subtract, +/-
-        prev = nc
-    
-    return (contour, pitches, intervals)
+
+def parse_zones(mei):
+    """Get the zones (bounding boxes) from an MEI root element."""
+    zones = {}
+    for zone in mei.iter(f"{MEINS}zone"):
+        zone_id = zone.get(f"{XMLNS}id")
+        coordinate_names = ["ulx", "uly", "lrx", "lry"]
+        coordinates = [int(zone.get(c, 0)) for c in coordinate_names]
+        rotate = float(zone.get("rotate", 0.0))
+        zones[f"#{zone_id}"] = {
+            "coordinates": tuple(coordinates),
+            "rotate": rotate,
+        }
+    return zones
+
+
+def parse_neumes(mei, zones):
+    """Get all neume groupings and global pitch|interval|contour sequences."""
+    neumes = []
+    global_pitches = []
+    for syllable in mei.iter(f"{MEINS}syllable"):
+        syl = syllable.find(f"{MEINS}syl")
+        syltext = syl.text.strip()
+        syl_facs = syl.get("facs")
+        syl_coordinates = zones.get(syl_facs, (-1, -1, -1, -1))
+        for neume in syllable.findall(f"{MEINS}neume"):
+            pitches = []
+            nc_coordinates = []
+            for nc in neume:
+                pname = nc.get("pname")
+                oct = nc.get("oct")
+                facs = nc.get("facs")
+                coordinates = zones.get(facs, (-1, -1, -1, -1))
+                pitches.append(f"{pname}{oct}")
+                nc_coordinates.append(coordinates)
+            global_pitches.extend(pitches)
+            pitches_pairs = list(zip(global_pitches[:-1], global_pitches[1:]))
+            intervals = [interval(p1, p2) for p1, p2 in pitches_pairs]
+            contours = [contour_from_interval(i) for i in intervals]
+            neume_type = NEUME_GROUPS.get("".join(contours), "Compound")
+            neume_dict = {
+                "neume_type": neume_type,
+                "nc_coordinates": nc_coordinates,
+                "syl_coordinates": syl_coordinates,
+                "pitches": pitches,
+                "intervals": intervals,
+                "contours": contours,
+                "lyric": syltext,
+            }
+            neumes.append(neume_dict)
+    global_pitches_pairs = list(zip(global_pitches[:-1], global_pitches[1:]))
+    global_intervals = [interval(p1, p2) for p1, p2 in global_pitches_pairs]
+    global_contours = [contour_from_interval(i) for i in global_intervals]
+    global_sequences = {
+        "pitches": global_pitches,
+        "intervals": global_intervals,
+        "contours": global_contours,
+    }
+    return neumes, global_sequences
+
 
 def parse(file):
-    tree = etree.parse(file)
-    music = tree.getroot()[1]
-
-    zones = {}
-    surface = music[0][0]
-    for zone in surface:
-        zone_id = zone.get('{http://www.w3.org/XML/1998/namespace}id')
-        ulx = int(zone.get("ulx", 0))
-        uly = int(zone.get("uly", 0))
-        lrx = int(zone.get("lrx", 0))
-        lry = int(zone.get("lry", 0))
-        rotation = zone.get("rotation", "0")
-        region = f"{ulx},{uly},{lrx-ulx},{lry-uly}"
-        zones["#"+zone_id] = {"region": region, "rotation": rotation}
-
-    layer = music[1][0][0][1][0][0]
-
-    (folio_contour, folio_pitches, folio_intervals) = get_streams(layer.iter("{http://www.music-encoding.org/ns/mei}nc"))
-
-    neumes = []
-    for syllable in layer.iter("{http://www.music-encoding.org/ns/mei}syllable"):
-        syl = None
-        for s in syllable.iter("{http://www.music-encoding.org/ns/mei}syl"):
-            syl = s
-        syl_dict = {"zone": zones.get(syl.get("facs"), ""), "text": syl.text.strip()}
-        
-        for neume in syllable.iter("{http://www.music-encoding.org/ns/mei}neume"):
-            neume_zones = [zones.get(nc.get("facs"), "") for nc in neume]
-            (contour, pitches, intervals) = get_streams(neume)
-            neume_type = NEUME_GROUPS.get(contour, "Compound")
-            neumes.append({"type": neume_type, "contour": contour, "pitches": pitches, "intervals": intervals, "zones": neume_zones, "syl": syl_dict})
-
-
-
-#Basic idea for finding the containing neumes from a string of contours, pitches, intervals etc
-def neumes_from_pitch_sequence(pitches: str, neumes: list) -> list:
-    neume_lists = []
-    for i, neume in enumerate(neumes):
-        neume_pitches = neume["pitches"]
-        if neume_pitches.startswith(pitches):
-            return [neume]
-        elif pitches.startswith(neume_pitches):
-            last = find_last_neume_pitch(i+1, pitches[len(neume_pitches):], neumes)
-            if last == -1:
-                continue
-            else:
-                neume_list = []
-                for j in range(i, last):
-                    neume_list.append(neumes[j])
-                neume_lists.append(neume_list)
-    return neume_lists
-
-def find_last_neume_pitch(next: int, remaining: str, neumes: list) -> int:
-    if len(remaining) == 0:
-        return next
-    else:
-        neume_pitches = neumes[next]["pitches"]
-        if neume_pitches.startswith(remaining):
-            return next+1
-        elif remaining.startswith(neume_pitches):
-            return find_last_neume_pitch(next+1, remaining[len(neume_pitches):], neumes)
-        else:
-            return -1
-
-#this one needs to figure out the bridge entry between each neume
-def neumes_from_contour_sequence(contour: str, neumes: list) -> list:
-    neume_lists = []
-    for i, neume in enumerate(neumes):
-        neume_contour = neume["contour"]
-        if neume_contour.startswith(contour):
-            return [neume]
-        elif contour.startswith(neume_contour):
-            trailing_note_name = neume["pitches"][len(neume["pitches"])-3:]
-            trailing_note = (trailing_note_name[0], trailing_note_name[1])
-
-            last = find_last_neume_contour(i+1, contour[len(neume_contour):], trailing_note, neumes)
-            if last == -1:
-                continue
-            else:
-                neume_list = []
-                for j in range(i, last):
-                    neume_list.append(neumes[j])
-                neume_lists.append(neume_list)
-    return neume_lists
-
-def find_last_neume_contour(next: int, remaining: str, trailing_note:dict, neumes: list) -> int:
-    if len(remaining) == 0:
-        return next
-    elif next >= len(neumes):
-        return -1
-    else:
-        cur = neumes[next]
-
-        leading_note_name = cur["pitches"][0:3]
-        leading_note = (leading_note_name[0], leading_note_name[1])
-        bridge = contour_from_component_pair(trailing_note, leading_note)
-        
-        neume_contour = bridge + neumes[next]["contour"]
-        if neume_contour.startswith(remaining):
-            return next+1
-        elif remaining.startswith(neume_contour):
-            trailing_note_name = cur["pitches"][len(cur["pitches"])-3:]
-            trailing_note = (trailing_note_name[0], trailing_note_name[1])
-            return find_last_neume_contour(next+1, remaining[len(neume_contour):], trailing_note, neumes)
-        else:
-            return -1
+    tree = ET.parse(file)
+    mei = tree.getroot()
+    zones = parse_zones(mei)
+    neumes, global_sequences = parse_neumes(mei, zones)
+    return neumes, global_sequences
