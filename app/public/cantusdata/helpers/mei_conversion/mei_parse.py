@@ -79,9 +79,11 @@ def parse_zones(mei):
 
 
 def parse_neumes(mei, zones):
-    """Get all neume groupings and global pitch|interval|contour sequences."""
+    """Get all neume groupings and global pitch|interval|contour|lyric sequences."""
     neumes = []
     global_pitches = []
+    global_lyrics = ""
+    lyric_neume_grouping = []
     nc_neume_grouping = []
     neume_idx = 0
     for syllable in mei.iter(f"{MEINS}syllable"):
@@ -89,6 +91,8 @@ def parse_neumes(mei, zones):
         syltext = syl.text.strip()
         syl_facs = syl.get("facs")
         syl_coordinates = zones.get(syl_facs, (-1, -1, -1, -1))
+        global_lyrics += syltext
+        lyric_neume_grouping.extend([neume_idx]*len(syltext))
         for neume in syllable.findall(f"{MEINS}neume"):
             pitches = []
             nc_coordinates = []
@@ -124,6 +128,8 @@ def parse_neumes(mei, zones):
         "intervals": global_intervals,
         "contours": global_contours,
         "nc_neume_grouping": nc_neume_grouping,
+        "lyrics": global_lyrics,
+        "lyric_neume_grouping": lyric_neume_grouping,
     }
     return neumes, global_sequences
 
@@ -172,6 +178,20 @@ def query_contour_sequence(query, neumes, global_sequences):
         q_starts = g_contours.find(query, q_ends)
     return matches
 
+def query_lyric_sequence(query, neumes, global_sequences):
+    """Query for a pitch sequence across a parsed MEI file."""
+    # TODO: This only works if Bb is encoded as a single character (i.e., b)
+    query = query.replace(" ", "")
+    g_lyrics = "".join(global_sequences["lyrics"])
+    l_neume = global_sequences["lyric_neume_grouping"]
+    q_starts = g_lyrics.find(query)
+    matches = []
+    while q_starts != -1:
+        q_ends = q_starts + len(query) - 1
+        neume_ids = list(range(l_neume[q_starts], l_neume[q_ends] + 1))
+        matches.append([neumes[idx] for idx in neume_ids])
+        q_starts = g_lyrics.find(query, q_ends)
+    return matches
 
 def parse(file):
     tree = ET.parse(file)
