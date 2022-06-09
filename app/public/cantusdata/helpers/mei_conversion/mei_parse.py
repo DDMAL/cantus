@@ -77,6 +77,8 @@ def parse_neumes(mei, zones):
     """Get all neume groupings and global pitch|interval|contour sequences."""
     neumes = []
     global_pitches = []
+    nc_neume_grouping = []
+    neume_idx = 0
     for syllable in mei.iter(f"{MEINS}syllable"):
         syl = syllable.find(f"{MEINS}syl")
         syltext = syl.text.strip()
@@ -92,6 +94,8 @@ def parse_neumes(mei, zones):
                 coordinates = zones.get(facs, (-1, -1, -1, -1))
                 pitches.append(f"{pname}{oct}")
                 nc_coordinates.append(coordinates)
+                nc_neume_grouping.append(neume_idx)
+            neume_idx += 1
             global_pitches.extend(pitches)
             pitches_pairs = list(zip(global_pitches[:-1], global_pitches[1:]))
             intervals = [interval(p1, p2) for p1, p2 in pitches_pairs]
@@ -114,6 +118,7 @@ def parse_neumes(mei, zones):
         "pitches": global_pitches,
         "intervals": global_intervals,
         "contours": global_contours,
+        "nc_neume_grouping": nc_neume_grouping,
     }
     return neumes, global_sequences
 
