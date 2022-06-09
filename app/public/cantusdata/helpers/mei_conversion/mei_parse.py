@@ -144,8 +144,18 @@ def query_interval_sequence(query, neumes, global_sequences):
 
 
 def query_contour_sequence(query, neumes, global_sequences):
-    # TODO: Implement this one
-    pass
+    """Query for a contour sequence across a parsed MEI file."""
+    # TODO: This only works if Bb is encoded as a single character (i.e., b)
+    g_contours = "".join(global_sequences["contours"])
+    nc_neume = global_sequences["nc_neume_grouping"]
+    q_starts = g_contours.find(query)
+    matches = []
+    while q_starts != -1:
+        q_ends = q_starts + len(query)
+        neume_ids = list(range(nc_neume[q_starts], nc_neume[q_ends] + 1))
+        matches.append([neumes[idx] for idx in neume_ids])
+        q_starts = g_contours.find(query, q_ends)
+    return matches
 
 
 def parse(file):
