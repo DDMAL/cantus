@@ -149,14 +149,14 @@ def query_pitch_sequence(query, neumes, global_sequences):
 
 def query_interval_sequence(query, neumes, global_sequences):
     """Query for an interval sequence across a parsed MEI file."""
-    # TODO: This only works if Bb is encoded as a single character (i.e., b)
+    # TODO: This only works if all intervals in the sequence i <= 9 semitones
     g_intervals = "".join(interval_to_str(i) for i in global_sequences["intervals"])
     nc_neume = global_sequences["nc_neume_grouping"]
     q_starts = g_intervals.find(query)
     matches = []
     while q_starts != -1:
         q_ends = q_starts + len(query)
-        neume_ids = list(range(nc_neume[q_starts//2], nc_neume[q_ends//2] + 1))
+        neume_ids = list(range(nc_neume[q_starts // 2], nc_neume[q_ends // 2] + 1))
         matches.append([neumes[idx] for idx in neume_ids])
         q_starts = g_intervals.find(query, q_ends)
     return matches
