@@ -38,10 +38,8 @@ def pitch_to_midi(p):
     return PITCH_CLASS[note] + (12 * (oct + 1))
 
 def interval_to_str(m):
-    if m >= 0:
-        return "+" + str(m)
-    else:
-        return str(m)
+    """Returns a string version of an interval."""
+    return f"+{m}" if m >= 0 else str(m)
 
 def interval(p1, p2):
     """Provides the interval in semitones."""
