@@ -69,7 +69,7 @@ def parse_zones(mei):
     for zone in mei.iter(f"{MEINS}zone"):
         zone_id = zone.get(f"{XMLNS}id")
         coordinate_names = ["ulx", "uly", "lrx", "lry"]
-        coordinates = [int(zone.get(c, 0)) for c in coordinate_names]
+        coordinates = [int(zone.get(c, -1)) for c in coordinate_names]
         rotate = float(zone.get("rotate", 0.0))
         zones[f"#{zone_id}"] = {
             "coordinates": tuple(coordinates),
@@ -88,11 +88,16 @@ def parse_neumes(mei, zones):
     neume_idx = 0
     for syllable in mei.iter(f"{MEINS}syllable"):
         syl = syllable.find(f"{MEINS}syl")
-        syltext = syl.text.strip()
-        syl_facs = syl.get("facs")
-        syl_coordinates = zones.get(syl_facs, (-1, -1, -1, -1))
-        global_lyrics += syltext
-        lyric_neume_grouping.extend([neume_idx] * len(syltext))
+        syltext = ""
+        syl_coordinates = (-1, -1, -1, -1)
+        if syl:
+            if hasattr(syl, "text"):
+                syltext = syl.text or ""
+                syltext = syltext.strip()
+            syl_facs = syl.get("facs")
+            syl_coordinates = zones.get(syl_facs, (-1, -1, -1, -1))
+            global_lyrics += syltext
+            lyric_neume_grouping.extend([neume_idx] * len(syltext))
         for neume in syllable.findall(f"{MEINS}neume"):
             pitches = []
             nc_coordinates = []
@@ -203,4 +208,4 @@ def parse(file):
     mei = tree.getroot()
     zones = parse_zones(mei)
     neumes, global_sequences = parse_neumes(mei, zones)
-    return neumes, global_sequences
+    return zones, neumes, global_sequences
