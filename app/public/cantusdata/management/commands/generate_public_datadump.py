@@ -9,9 +9,7 @@ class Command(BaseCommand):
 
     help = (
         "Usage: ./manage.py generate_public_datadump\n"
-        "\tGenerates the file '{0}' based on the Django DB data.".format(
-            CSV_PATH
-        )
+        "\tGenerates the file '{0}' based on the Django DB data.".format(CSV_PATH)
     )
 
     def handle(self, *args, **options):
@@ -25,9 +23,7 @@ class Command(BaseCommand):
         data = [["id", "cantus_url", "manifest_url", "plugins"]]
 
         for manuscript in Manuscript.objects.filter(public=True):
-            plugins = ",".join(
-                [plugin.name for plugin in manuscript.plugins.all()]
-            )
+            plugins = ",".join([plugin.name for plugin in manuscript.plugins.all()])
             row = [
                 manuscript.id,
                 manuscript.cantus_url,

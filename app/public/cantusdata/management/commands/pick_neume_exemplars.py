@@ -40,9 +40,7 @@ class Command(BaseCommand):
         try:
             ms_id = int(ms_id)
         except (ValueError, TypeError):
-            raise ValueError(
-                "expected a manuscript id but got {!r}".format(ms_id)
-            )
+            raise ValueError("expected a manuscript id but got {!r}".format(ms_id))
 
         # Get the manuscript object, primarily to ensure that it actually exists
         self.manuscript = Manuscript.objects.get(id=ms_id)
@@ -67,9 +65,7 @@ class Command(BaseCommand):
             try:
                 index = int(index)
             except (TypeError, ValueError):
-                self.stderr.write(
-                    "expected an integer but got {}".format(index)
-                )
+                self.stderr.write("expected an integer but got {}".format(index))
                 return
 
             self.use_specific_exemplar(target, name, index)
@@ -77,8 +73,7 @@ class Command(BaseCommand):
 
         if os.path.isdir(target):
             files = chain.from_iterable(
-                (os.path.join(p, f) for f in fs)
-                for (p, _, fs) in os.walk(target)
+                (os.path.join(p, f) for f in fs) for (p, _, fs) in os.walk(target)
             )
             for file_path in files:
                 self.find_exemplars(file_path)
@@ -191,18 +186,14 @@ class Command(BaseCommand):
             )
 
         try:
-            folio = Folio.objects.get(
-                number=folio_number, manuscript=self.manuscript
-            )
+            folio = Folio.objects.get(number=folio_number, manuscript=self.manuscript)
         except Folio.DoesNotExist:
             raise DocumentManipulationException(
                 "no folio with number {} in manuscript".format(folio_number)
             )
         except Folio.MultipleObjectsReturned:
             raise DocumentManipulationException(
-                "multiple folios with number {} in manuscript...".format(
-                    folio_number
-                )
+                "multiple folios with number {} in manuscript...".format(folio_number)
             )
 
         doc = pymei.documentFromFile(file_path, False).getMeiDocument()

@@ -16,8 +16,7 @@ class ManuscriptModelTestCase(TransactionTestCase):
         self.second_manuscript = Manuscript.objects.get(name="NumberTwo")
 
     def test_unicode(self):
-        self.assertEqual(self.first_manuscript.__str__(),
-                         "provigo,     67  a# _ 1*")
+        self.assertEqual(self.first_manuscript.__str__(), "provigo,     67  a# _ 1*")
 
     def test_folio_count(self):
         """
@@ -47,32 +46,35 @@ class ManuscriptModelTestCase(TransactionTestCase):
         """
         Test that the manuscript chant set is updated correctly.
         """
-        first_folio = Folio.objects.create(number="f1",
-                                           manuscript=self.first_manuscript)
-        second_folio = Folio.objects.create(number="f2",
-                                            manuscript=self.second_manuscript)
+        first_folio = Folio.objects.create(
+            number="f1", manuscript=self.first_manuscript
+        )
+        second_folio = Folio.objects.create(
+            number="f2", manuscript=self.second_manuscript
+        )
         # No chants
         self.assertEqual(set(self.first_manuscript.chant_set.all()), set())
         # One chant
-        first_chant = Chant.objects.create(sequence=1,
-                                           manuscript=self.first_manuscript,
-                                           folio=first_folio)
+        first_chant = Chant.objects.create(
+            sequence=1, manuscript=self.first_manuscript, folio=first_folio
+        )
         self.assertEqual(set(self.first_manuscript.chant_set.all()), {first_chant})
         # Two chants
-        second_chant = Chant.objects.create(sequence=2,
-                                            manuscript=self.first_manuscript,
-                                            folio=first_folio)
-        self.assertEqual(set(self.first_manuscript.chant_set.all()),
-                         {first_chant, second_chant})
+        second_chant = Chant.objects.create(
+            sequence=2, manuscript=self.first_manuscript, folio=first_folio
+        )
+        self.assertEqual(
+            set(self.first_manuscript.chant_set.all()), {first_chant, second_chant}
+        )
         # Make sure that a chant from another manuscript doesn't affect set
         self.assertEqual(set(self.second_manuscript.chant_set.all()), set())
-        third_chant = Chant.objects.create(sequence=3,
-                                           manuscript=self.second_manuscript,
-                                           folio=second_folio)
-        self.assertEqual(set(self.second_manuscript.chant_set.all()),
-                         {third_chant})
-        self.assertEqual(set(self.first_manuscript.chant_set.all()),
-                         {second_chant, first_chant})
+        third_chant = Chant.objects.create(
+            sequence=3, manuscript=self.second_manuscript, folio=second_folio
+        )
+        self.assertEqual(set(self.second_manuscript.chant_set.all()), {third_chant})
+        self.assertEqual(
+            set(self.first_manuscript.chant_set.all()), {second_chant, first_chant}
+        )
         # First deletion
         first_chant.delete()
         self.assertEqual(set(self.first_manuscript.chant_set.all()), {second_chant})
@@ -82,20 +84,20 @@ class ManuscriptModelTestCase(TransactionTestCase):
 
     def test_solr_update(self):
         ms = self.first_manuscript
-        ms.name = 'I am the best book'
+        ms.name = "I am the best book"
 
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
         prior_resp = ms.fetch_solr_records(solrconn)
 
         self.assertEqual(prior_resp.numFound, 1)
-        self.assertNotEqual(prior_resp.results[0]['name'], 'I am the best book')
+        self.assertNotEqual(prior_resp.results[0]["name"], "I am the best book")
 
         ms.save()
 
         post_resp = ms.fetch_solr_records(solrconn)
 
         self.assertEqual(post_resp.numFound, 1)
-        self.assertEqual(post_resp.results[0]['name'], 'I am the best book')
+        self.assertEqual(post_resp.results[0]["name"], "I am the best book")
 
     def test_solr_deletion(self):
         pk = self.first_manuscript.pk
@@ -105,5 +107,5 @@ class ManuscriptModelTestCase(TransactionTestCase):
 
         solrconn.commit()
 
-        indexed = solrconn.query('type:cantusdata_manuscript AND item_id:{}'.format(pk))
+        indexed = solrconn.query("type:cantusdata_manuscript AND item_id:{}".format(pk))
         self.assertEqual(indexed.numFound, 0)

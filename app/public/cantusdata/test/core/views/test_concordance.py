@@ -2,6 +2,7 @@ from rest_framework.test import APITransactionTestCase
 from rest_framework import status
 
 from cantusdata.models import Concordance, Chant, Folio, Manuscript
+
 # Refer to http://www.django-rest-framework.org/api-guide/testing
 
 

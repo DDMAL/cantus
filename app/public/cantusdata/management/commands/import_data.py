@@ -121,6 +121,7 @@ class Command(BaseCommand):
         mobj = Manuscript.objects.get(id=options["manuscript_id"])
         scsv = urllib.request.urlopen(mobj.csv_export_url).read().decode("utf-8")
         task = options.get("task", None)
+
         # csv module can't handle csv as strings, so making it a file
         fcsv = StringIO(scsv)
         importer = ChantImporter(self.stdout)
