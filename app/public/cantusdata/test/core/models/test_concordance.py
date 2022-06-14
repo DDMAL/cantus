@@ -12,6 +12,7 @@ class ConcordanceModelTestCase(TransactionTestCase):
         self.assertEqual(self.concordance.__str__(), "A - DDMAL")
 
     def test_citation(self):
-        self.assertEqual(self.concordance.citation,
-                             "A  Montreal, DDMAL, ABC123" +
-                             " (Today, from Saturn) [RISM: QUE - 982]")
+        self.assertEqual(
+            self.concordance.citation,
+            "A  Montreal, DDMAL, ABC123" + " (Today, from Saturn) [RISM: QUE - 982]",
+        )

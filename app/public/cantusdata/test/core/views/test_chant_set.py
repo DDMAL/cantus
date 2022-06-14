@@ -10,16 +10,18 @@ class FolioChantSetViewTestCase(APITransactionTestCase):
         # Test that we get a response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Test that it's the response we're expecting
-        expected_string = '[{"office": "", "sequence": 72, "item_id": "1",' \
-                          ' "differentia": "", "marginalia": "",' \
-                          ' "cantus_id": "1234",' \
-                          ' "folio": "123", "manuscript": "ABC - 456",' \
-                          ' "folio_id": 1, "type": "cantusdata_chant",' \
-                          ' "manuscript_name_hidden": "geoff",' \
-                          ' "incipit": "5678", "volpiano": "",' \
-                          ' "genre": "", "manuscript_id": 3, "full_text": "",' \
-                          ' "feast": "", "mode": "", "finalis": "",' \
-                          ' "position": ""}]'
+        expected_string = (
+            '[{"office": "", "sequence": 72, "item_id": "1",'
+            ' "differentia": "", "marginalia": "",'
+            ' "cantus_id": "1234",'
+            ' "folio": "123", "manuscript": "ABC - 456",'
+            ' "folio_id": 1, "type": "cantusdata_chant",'
+            ' "manuscript_name_hidden": "geoff",'
+            ' "incipit": "5678", "volpiano": "",'
+            ' "genre": "", "manuscript_id": 3, "full_text": "",'
+            ' "feast": "", "mode": "", "finalis": "",'
+            ' "position": ""}]'
+        )
         self.assertJSONEqual(response.content, expected_string)
 
 
@@ -31,17 +33,19 @@ class ManuscriptChantSetTestCase(APITransactionTestCase):
         # Test that we get a response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Test that it's the response we're expecting
-        expected_string = '[{"office": "", "sequence": 72, "item_id": "1",' \
-                          ' "differentia": "", "marginalia": "",' \
-                          ' "cantus_id": "1234",' \
-                          ' "folio": "123", "manuscript": "ABC - 456",' \
-                          ' "folio_id": 1,' \
-                          ' "type": "cantusdata_chant",' \
-                          ' "manuscript_name_hidden": "geoff",' \
-                          ' "incipit": "5678", "volpiano": "",' \
-                          ' "genre": "", "manuscript_id": 3, "full_text": "",' \
-                          ' "feast": "", "mode": "", "finalis": "",' \
-                          ' "position": ""}]'
+        expected_string = (
+            '[{"office": "", "sequence": 72, "item_id": "1",'
+            ' "differentia": "", "marginalia": "",'
+            ' "cantus_id": "1234",'
+            ' "folio": "123", "manuscript": "ABC - 456",'
+            ' "folio_id": 1,'
+            ' "type": "cantusdata_chant",'
+            ' "manuscript_name_hidden": "geoff",'
+            ' "incipit": "5678", "volpiano": "",'
+            ' "genre": "", "manuscript_id": 3, "full_text": "",'
+            ' "feast": "", "mode": "", "finalis": "",'
+            ' "position": ""}]'
+        )
         self.assertJSONEqual(response.content, expected_string)
 
     def test_get_empty_chant(self):

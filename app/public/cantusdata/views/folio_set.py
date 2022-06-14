@@ -46,10 +46,8 @@ class ManuscriptFolioSetView(APIView):
             else:
                 raise Http404("No data for a folio with that number")
         else:
-            composed_request = (
-                'type:"cantusdata_folio" AND manuscript_id:{0}'.format(
-                    manuscript_id
-                )
+            composed_request = 'type:"cantusdata_folio" AND manuscript_id:{0}'.format(
+                manuscript_id
             )
             results = solrconn.query(
                 composed_request,

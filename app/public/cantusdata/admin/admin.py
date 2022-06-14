@@ -52,13 +52,18 @@ class ManuscriptAdmin(admin.ModelAdmin):
     )
     list_display = ("name", "siglum", "public", "chants_loaded", "is_mapped")
 
-    @admin.action(description = "Imports the chants associated \
-        with the selected manuscript(s)")
-
+    @admin.action(
+        description="Imports the chants associated \
+        with the selected manuscript(s)"
+    )
     def load_chants(self, request, queryset):
         manuscript_ids = [manuscript.pk for manuscript in queryset]
-        chant_import_result = chant_import_task.apply_async(kwargs = {'manuscript_ids' : manuscript_ids})
-        return HttpResponseRedirect(f'/admin/cantusdata/manuscript/load_chants/?id={chant_import_result}')
+        chant_import_result = chant_import_task.apply_async(
+            kwargs={"manuscript_ids": manuscript_ids}
+        )
+        return HttpResponseRedirect(
+            f"/admin/cantusdata/manuscript/load_chants/?id={chant_import_result}"
+        )
 
 
 class ChantAdmin(admin.ModelAdmin):

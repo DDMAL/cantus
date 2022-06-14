@@ -10,9 +10,7 @@ class Command(BaseCommand):
 
     help = (
         "Reads the file '{0}' and updates manuscripts accordingly."
-        "\nSets all manuscripts found in this file to public=True.".format(
-            CSV_PATH
-        )
+        "\nSets all manuscripts found in this file to public=True.".format(CSV_PATH)
     )
 
     def handle(self, *args, **options):
@@ -27,18 +25,14 @@ class Command(BaseCommand):
             try:
                 manuscript = Manuscript.objects.get(id=row["id"])
             except Manuscript.DoesNotExist:
-                self.stdout.write(
-                    "Manuscript {0} does not exist".format(row["id"])
-                )
+                self.stdout.write("Manuscript {0} does not exist".format(row["id"]))
                 continue
 
             self.stdout.write("Updating manuscript {0}".format(row["id"]))
 
             manuscript.public = True
             manuscript.cantus_url = row["cantus_url"].decode("utf-8").strip()
-            manuscript.manifest_url = (
-                row["manifest_url"].decode("utf-8").strip()
-            )
+            manuscript.manifest_url = row["manifest_url"].decode("utf-8").strip()
 
             # Parse plugins
             plugin_column = row["plugins"].decode("utf-8").strip()

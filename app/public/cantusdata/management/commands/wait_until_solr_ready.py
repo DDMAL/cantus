@@ -58,9 +58,7 @@ class Command(BaseCommand):
                     or last_http_status != response.status_code
                 ):
                     self.stderr.write(
-                        "Received response, status {}".format(
-                            response.status_code
-                        )
+                        "Received response, status {}".format(response.status_code)
                     )
 
                     last_state = "connected"
@@ -68,9 +66,7 @@ class Command(BaseCommand):
 
                 if response.status_code == 200:
                     try:
-                        solr_status = response.json()["responseHeader"][
-                            "status"
-                        ]
+                        solr_status = response.json()["responseHeader"]["status"]
 
                         if solr_status == 0:
                             return
@@ -80,9 +76,7 @@ class Command(BaseCommand):
                         )
                     except (ValueError, TypeError, IndexError) as e:
                         if last_state != "error":
-                            self.stderr.write(
-                                "Error reading content: {}".format(e)
-                            )
+                            self.stderr.write("Error reading content: {}".format(e))
                             last_state = "error"
 
             req_end = time.time()
