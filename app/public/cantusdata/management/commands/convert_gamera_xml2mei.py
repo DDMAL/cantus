@@ -47,7 +47,9 @@ class Command(BaseCommand):
 
             elif len(args) > 2:
                 raise ValueError(
-                    "{} accepts no more than 2 positional arguments".format(BASE_NAME)
+                    "{} accepts no more than 2 positional arguments".format(
+                        BASE_NAME
+                    )
                 )
 
         # Fake an argparse-style arguments object

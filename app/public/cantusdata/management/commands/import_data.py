@@ -30,27 +30,27 @@ class Command(BaseCommand):
             dest="manuscript_id",
             help="Manuscript id (used only when importing chants)",
         )
-
-        parser.add_argument(
-            "--task",
-            dest="task",
-            help="Optional argument used when called from the django admin interface. Passes asynchronous task.",
-        )
+        
+        parser.add_argument("--task",
+            dest = "task",
+            help="Optional argument used when called from the django admin interface. Passes asynchronous task."
+            )
 
     def handle(self, *args, **options):
         with solr_synchronizer.get_session():
-            self.stdout.write("Deleting old {0} data...".format(options["type"]))
-            task = options.get("task", None)
+            self.stdout.write(
+                "Deleting old {0} data...".format(options["type"])
+            )
+            task = options.get('task', None)
             if options["type"] == "chants":
                 # manuscript-id is not optional for chants
                 if options["manuscript_id"] is None:
-                    self.stdout.write("Please provide a manuscript-id. Doing nothing.")
+                    self.stdout.write(
+                        "Please provide a manuscript-id. Doing nothing."
+                    )
                 else:
                     if task:
-                        task.update_state(
-                            state="PROGRESS",
-                            meta={"chants_processed": 0, "chants_loaded": 0},
-                        )
+                        task.update_state(state = "PROGRESS", meta = {"chants_processed": 0, "chants_loaded":0})
                     Chant.objects.filter(
                         manuscript__id=options["manuscript_id"]
                     ).delete()
@@ -114,12 +114,16 @@ class Command(BaseCommand):
             concordance.rism_code = c["rism_code"]
             concordance.save()
         self.stdout.write(
-            "Successfully imported {} concordances into database.".format(idx + 1)
+            "Successfully imported {} concordances into database.".format(
+                idx + 1
+            )
         )
 
     def import_chant_data(self, **options):
         mobj = Manuscript.objects.get(id=options["manuscript_id"])
-        scsv = urllib.request.urlopen(mobj.csv_export_url).read().decode("utf-8")
+        scsv = (
+            urllib.request.urlopen(mobj.csv_export_url).read().decode("utf-8")
+        )
         task = options.get("task", None)
         # csv module can't handle csv as strings, so making it a file
         fcsv = StringIO(scsv)
@@ -129,12 +133,14 @@ class Command(BaseCommand):
         else:
             chant_count = importer.import_csv(fcsv)
         # Save the new chants
-        importer.save(task=task)
+        importer.save(task = task)
         # Register that chants are loaded for this manuscript
         mobj.chants_loaded = True
         mobj.save()
         self.stdout.write(
-            "Successfully imported {} chants into database.".format(chant_count)
+            "Successfully imported {} chants into database.".format(
+                chant_count
+            )
         )
 
     @transaction.atomic

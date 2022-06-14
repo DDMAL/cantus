@@ -38,7 +38,9 @@ class NeumeToken(object):
 
                 elif name == "neume":
                     zone = zones[child.getAttribute("facs").value]
-                    yield NeumeToken.from_elem(child, system=system_id, zone=zone)
+                    yield NeumeToken.from_elem(
+                        child, system=system_id, zone=zone
+                    )
 
     @staticmethod
     def from_elem(elem, system, zone):
@@ -50,7 +52,9 @@ class NeumeToken(object):
         for attr in ("ulx", "uly", "lrx", "lry"):
             location[attr] = int(zone.getAttribute(attr).value)
 
-        return NeumeToken(uuid, name=name, system=system, location=location, elem=elem)
+        return NeumeToken(
+            uuid, name=name, system=system, location=location, elem=elem
+        )
 
 
 class NoteToken(object):
@@ -75,4 +79,6 @@ class NoteToken(object):
 
         octave = int(elem.getAttribute("oct").value)
 
-        return NoteToken(uuid, pitch_name=pitch_name, octave=octave, neume=neume)
+        return NoteToken(
+            uuid, pitch_name=pitch_name, octave=octave, neume=neume
+        )

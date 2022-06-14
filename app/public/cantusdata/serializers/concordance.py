@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 
 class ConcordanceSerializer(serializers.HyperlinkedModelSerializer):
+
     class Meta:
         model = Concordance
-        fields = "__all__"
+        fields = '__all__'

@@ -38,7 +38,9 @@ class GameraXMLConverter:
         neumeElements = []
         zones = []
 
-        for elem in etree.parse(self.xmlFile).xpath("/gamera-database/glyphs/glyph"):
+        for elem in etree.parse(self.xmlFile).xpath(
+            "/gamera-database/glyphs/glyph"
+        ):
             # Get the relevant attributes from the glyph element
             startX = int(elem.get("ulx"))
             endX = startX + int(elem.get("ncols"))
@@ -72,7 +74,9 @@ class GameraXMLConverter:
 
         zoneElements = []
 
-        for zone in self._sortZones(zones, dumpVisualization=dumpVisualization):
+        for zone in self._sortZones(
+            zones, dumpVisualization=dumpVisualization
+        ):
             newZoneElement = MeiElement("zone")
             zoneElements.append(newZoneElement)
 
@@ -188,13 +192,17 @@ class GameraXMLConverter:
             else:
                 clusters.append(ZoneCluster([zone]))
 
-        logging.debug("initially found %s clusters. consolidating...", len(clusters))
+        logging.debug(
+            "initially found %s clusters. consolidating...", len(clusters)
+        )
         self.conversionInfo["initialClusters"] = len(clusters)
 
         if dumpVisualization:
             initialClusters = dict()
             for i in range(len(clusters)):
-                initialClusters.update((zone, i + 1) for zone in clusters[i].zones)
+                initialClusters.update(
+                    (zone, i + 1) for zone in clusters[i].zones
+                )
 
         # Consolidate overlapping clusters
         for i in range(len(clusters) - 1):
@@ -221,7 +229,9 @@ class GameraXMLConverter:
             key=lambda c: c.startY,
         )
 
-        logging.info("found %s zones which form %s clusters", len(zones), len(clusters))
+        logging.info(
+            "found %s zones which form %s clusters", len(zones), len(clusters)
+        )
         self.conversionInfo["zones"] = len(zones)
         self.conversionInfo["clusters"] = len(clusters)
 
@@ -277,7 +287,9 @@ class GameraXMLConverter:
         )
 
         height = max(cluster.endY for cluster in clusters)
-        width = max(max(zone.endX for zone in cluster.zones) for cluster in clusters)
+        width = max(
+            max(zone.endX for zone in cluster.zones) for cluster in clusters
+        )
 
         with open(dumpFile, "w") as f:
             f.write(
@@ -412,7 +424,9 @@ def overlaps(regionA, regionB, tolerance=0):
     # Check cases where one of the endpoints of region A are contained
     # within region B
     for point in (regionA.startY, regionA.endY):
-        if isWithin(point, regionB.startY - tolerance, regionB.endY + tolerance):
+        if isWithin(
+            point, regionB.startY - tolerance, regionB.endY + tolerance
+        ):
             return True
 
     # If neither of regions A's endpoints fall within region B, then
@@ -441,14 +455,19 @@ def loadNeumeNames(csvFile):
 
 
 def main(args):
-    logging.getLogger().setLevel(logging.DEBUG if args.verbose else logging.INFO)
+    logging.getLogger().setLevel(
+        logging.DEBUG if args.verbose else logging.INFO
+    )
 
-    neumeNames = loadNeumeNames(os.path.join(os.path.dirname(__file__), "ccnames.csv"))
+    neumeNames = loadNeumeNames(
+        os.path.join(os.path.dirname(__file__), "ccnames.csv")
+    )
 
     fileList = [
         f
         for f in os.listdir(args.input_directory)
-        if os.path.isfile(os.path.join(args.input_directory, f)) and f.endswith(".xml")
+        if os.path.isfile(os.path.join(args.input_directory, f))
+        and f.endswith(".xml")
     ]
 
     if not fileList:

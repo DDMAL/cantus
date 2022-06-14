@@ -14,12 +14,16 @@ class FolioModelTestCase(TransactionTestCase):
         self.manuscript = Manuscript.objects.get(name="geoff")
 
     def test_unicode(self):
-        self.assertEqual(self.first_plugin.__str__(), "A very nice plugin!")
-        self.assertEqual(self.second_plugin.__str__(), "Another great plugin.")
+        self.assertEqual(self.first_plugin.__str__(),
+                         "A very nice plugin!")
+        self.assertEqual(self.second_plugin.__str__(),
+                         "Another great plugin.")
 
     def test_slug(self):
-        self.assertEqual(self.first_plugin.slug, "a-very-nice-plugin")
-        self.assertEqual(self.second_plugin.slug, "another-great-plugin")
+        self.assertEqual(self.first_plugin.slug,
+                         "a-very-nice-plugin")
+        self.assertEqual(self.second_plugin.slug,
+                         "another-great-plugin")
 
     def test_manuscript_attachment(self):
         # Geoff doesn't have any Plugins yet

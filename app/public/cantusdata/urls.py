@@ -31,8 +31,7 @@ urlpatterns = [
         staff_member_required(MapFoliosView.as_view()),
         name="map-folios-view",
     ),
-    path(
-        "admin/cantusdata/manuscript/load_chants/",
+    path("admin/cantusdata/manuscript/load_chants/",
         staff_member_required(LoadChantsView.as_view()),
         name="load-chants-view",
     ),

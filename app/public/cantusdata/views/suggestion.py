@@ -12,7 +12,9 @@ class SuggestionView(APIView):
             return Response()
 
         q = "{0}".format(request.GET["q"])
-        dictionary = "{0}".format(request.GET["dictionary"])  # The suggester to use
+        dictionary = "{0}".format(
+            request.GET["dictionary"]
+        )  # The suggester to use
         manuscript = "{0}".format(
             request.GET["manuscript"]
         )  # Can be '*' when searching through all manuscripts
@@ -27,7 +29,9 @@ class SuggestionView(APIView):
         results = search_results.suggest[dictionary][q]
 
         # Remove duplicates from the suggestions and limits the return number to 10
-        results["suggestions"] = self._get_filtered_results(results["suggestions"])
+        results["suggestions"] = self._get_filtered_results(
+            results["suggestions"]
+        )
 
         response = Response(results)
         return response

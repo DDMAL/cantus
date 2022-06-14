@@ -32,7 +32,9 @@ class Command(BaseCommand):
                 )
             except IOError:
                 # If the file didn't already exist...
-                open("logs/mei_changes/{0}.txt".format(manuscript), "w").close()
+                open(
+                    "logs/mei_changes/{0}.txt".format(manuscript), "w"
+                ).close()
                 manuscript_log_file = open(
                     "logs/mei_changes/{0}.txt".format(manuscript), "w+"
                 )

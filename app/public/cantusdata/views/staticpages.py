@@ -41,18 +41,14 @@ def general(request, static_page):
     context = {"title": title, "content": content_as_html}
     return render(request, "staticpages/general.html", context)
 
-
 def about(request):
     return general(request, "about")
-
 
 def team(request):
     return general(request, "team")
 
-
 def activities(request):
     return general(request, "activities")
-
 
 def manifests(request):
     return general(request, "manifests")

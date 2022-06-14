@@ -26,7 +26,11 @@ class SourcesScraper(HTMLParser):
         if tag == "a" and len(attrs) == 2:
             attr1, link = attrs[0]
             attr2, title = attrs[1]
-            if attr1 == "href" and attr2 == "title" and link.startswith("/source/"):
+            if (
+                attr1 == "href"
+                and attr2 == "title"
+                and link.startswith("/source/")
+            ):
                 self.dictionary[link] = title
 
 

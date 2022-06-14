@@ -9,7 +9,7 @@ from cantusdata.models.folio import Folio
 
 
 class ChantModelTestCase(TransactionTestCase):
-    fixtures = ["2_initial_data.json"]
+    fixtures = ['2_initial_data.json']
 
     def setUp(self):
         self.manuscript = Manuscript.objects.get(name="MyName")
@@ -27,14 +27,14 @@ class ChantModelTestCase(TransactionTestCase):
         prior_resp = self.chant.fetch_solr_records(solrconn)
 
         self.assertEqual(prior_resp.numFound, 1)
-        self.assertNotEqual(prior_resp.results[0]["sequence"], 59)
+        self.assertNotEqual(prior_resp.results[0]['sequence'], 59)
 
         self.chant.save()
 
         post_resp = self.chant.fetch_solr_records(solrconn)
 
         self.assertEqual(post_resp.numFound, 1)
-        self.assertEqual(post_resp.results[0]["sequence"], 59)
+        self.assertEqual(post_resp.results[0]['sequence'], 59)
 
     def test_solr_deletion(self):
         pk = self.chant.pk
@@ -44,5 +44,5 @@ class ChantModelTestCase(TransactionTestCase):
 
         solrconn.commit()
 
-        indexed = solrconn.query("type:cantusdata_chant AND item_id:{}".format(pk))
+        indexed = solrconn.query('type:cantusdata_chant AND item_id:{}'.format(pk))
         self.assertEqual(indexed.numFound, 0)

@@ -2,7 +2,6 @@ from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
-
 # from rest_framework_jsonp.renderers import JSONPRenderer
 from cantusdata.serializers.search import SearchSerializer
 import solr
@@ -43,7 +42,9 @@ class FolioChantSetView(APIView):
         # manuscript.  It is fastest to pull these from Solr!
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
 
-        composed_request = 'type:"cantusdata_chant" AND folio_id:{0}'.format(folio_id)
+        composed_request = 'type:"cantusdata_chant" AND folio_id:{0}'.format(
+            folio_id
+        )
         results = solrconn.query(
             composed_request,
             sort="sequence asc",
@@ -69,8 +70,10 @@ class ManuscriptChantSetView(APIView):
 
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
 
-        composed_request = 'type:"cantusdata_chant" AND manuscript_id:{0}'.format(
-            manuscript_id
+        composed_request = (
+            'type:"cantusdata_chant" AND manuscript_id:{0}'.format(
+                manuscript_id
+            )
         )
         results = solrconn.query(
             composed_request,

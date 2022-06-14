@@ -152,7 +152,9 @@ class SearchNotationView(APIView):
                 {
                     "boxes": boxes,
                     "contour": get_value(d, "contour", list),
-                    "intervals": get_value(d, "intervals", lambda i: i.split("_")),
+                    "intervals": get_value(
+                        d, "intervals", lambda i: i.split("_")
+                    ),
                     "neumes": get_value(d, "neumes", lambda i: i.split("_")),
                     "pnames": get_value(d, "pnames", list),
                     "semitones": get_value(
@@ -163,7 +165,9 @@ class SearchNotationView(APIView):
                 }
             )
 
-        results.sort(key=lambda result: [box_sort_key(box) for box in result["boxes"]])
+        results.sort(
+            key=lambda result: [box_sort_key(box) for box in result["boxes"]]
+        )
 
         return results
 

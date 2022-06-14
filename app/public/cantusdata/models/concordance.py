@@ -10,10 +10,14 @@ class Concordance(models.Model):
     class Meta:
         app_label = "cantusdata"
 
-    letter_code = models.CharField(max_length=1, unique=True, blank=False, null=False)
+    letter_code = models.CharField(
+        max_length=1, unique=True, blank=False, null=False
+    )
     institution_city = models.CharField(max_length=255, blank=True, null=True)
     institution_name = models.CharField(max_length=255, blank=True, null=True)
-    library_manuscript_name = models.CharField(max_length=255, blank=True, null=True)
+    library_manuscript_name = models.CharField(
+        max_length=255, blank=True, null=True
+    )
     date = models.CharField(max_length=255, blank=True, null=True)
     location = models.CharField(max_length=255, blank=True, null=True)
     rism_code = models.CharField(

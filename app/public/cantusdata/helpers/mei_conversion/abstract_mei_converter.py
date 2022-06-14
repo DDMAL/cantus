@@ -29,7 +29,9 @@ class AbstractMEIConverter(metaclass=ABCMeta):
         self.min_gram = min_gram
         self.max_gram = max_gram
 
-        self.doc = pymei.documentFromFile(str(file_name), False).getMeiDocument()
+        self.doc = pymei.documentFromFile(
+            str(file_name), False
+        ).getMeiDocument()
         self.page_number = getPageNumber(file_name)
 
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
@@ -40,7 +42,9 @@ class AbstractMEIConverter(metaclass=ABCMeta):
         mei_files = cls._get_file_list(directory)
 
         if processes == 0:
-            processed = cls._process_in_sequence(mei_files, siglum_slug, id, **options)
+            processed = cls._process_in_sequence(
+                mei_files, siglum_slug, id, **options
+            )
         else:
             processed = cls._process_in_parallel(
                 mei_files, siglum_slug, id, processes=processes, **options
@@ -79,9 +83,14 @@ class AbstractMEIConverter(metaclass=ABCMeta):
             yield file_name, ngrams
 
     @classmethod
-    def _process_in_parallel(cls, mei_files, siglum_slug, id, processes, **options):
+    def _process_in_parallel(
+        cls, mei_files, siglum_slug, id, processes, **options
+    ):
         pool = Pool(initializer=init_worker, processes=processes)
-        args = ((cls, file_name, siglum_slug, id, options) for file_name in mei_files)
+        args = (
+            (cls, file_name, siglum_slug, id, options)
+            for file_name in mei_files
+        )
 
         return pool.imap(process_file_in_worker, args)
 
