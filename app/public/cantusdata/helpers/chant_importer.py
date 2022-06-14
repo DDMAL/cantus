@@ -34,9 +34,7 @@ class ChantImporter:
             self.add_chant(row)
             # Tracking
             if (index % 100) == 0:
-                self.stdout.write(
-                    "{0} chants processed for import.".format(index)
-                )
+                self.stdout.write("{0} chants processed for import.".format(index))
         return index
 
     def add_chant(self, row):
@@ -60,9 +58,7 @@ class ChantImporter:
         chant.office = expandr.expand_office(row["office"].strip())
         chant.genre = expandr.expand_genre(row["genre"].strip())
         chant.mode = expandr.expand_mode(row["mode"].strip())
-        chant.differentia = expandr.expand_differentia(
-            row["differentia"].strip()
-        )
+        chant.differentia = expandr.expand_differentia(row["differentia"].strip())
         chant.finalis = row["finalis"].strip()
         chant.incipit = row["incipit"].strip()
         chant.full_text = row["fulltext_standardized"].strip()
@@ -78,9 +74,7 @@ class ChantImporter:
         # See if this folio already exists or is set to be created
         if (folio_code, manuscript.pk) not in self.folio_registry:
             try:
-                folio = Folio.objects.get(
-                    number=folio_code, manuscript=manuscript
-                )
+                folio = Folio.objects.get(number=folio_code, manuscript=manuscript)
             except Folio.DoesNotExist:
                 # If the folio doesn't exist, prepare to create it
                 self.add_folio(folio_code, manuscript, image_link)
@@ -97,9 +91,7 @@ class ChantImporter:
                 concordances.append(matching_concordance[0])
         # Along with the unsaved chant, store the concordances to add to it, and the
         # folio to add if it still needs to be created
-        self.new_chant_info.append(
-            (chant, concordances, None if folio else folio_code)
-        )
+        self.new_chant_info.append((chant, concordances, None if folio else folio_code))
 
     def add_folio(self, folio_code, manuscript, image_link):
         folio = Folio()
@@ -113,9 +105,9 @@ class ChantImporter:
         try:
             return self._manuscript_cache[siglum]
         except KeyError:
-            manuscript = self._manuscript_cache[
-                siglum
-            ] = Manuscript.objects.get(siglum=siglum)
+            manuscript = self._manuscript_cache[siglum] = Manuscript.objects.get(
+                siglum=siglum
+            )
             return manuscript
 
     @transaction.atomic
@@ -142,26 +134,19 @@ class ChantImporter:
                 # Tracking
                 if (index % 100) == 0:
                     self.stdout.write(
-                        "{0} chants saved in the Django database.".format(
-                            index
-                        )
+                        "{0} chants saved in the Django database.".format(index)
                     )
 
     def _delete_existing_chants(self):
         manuscript_pks = set(
             chant.manuscript.pk for (chant, _, _) in self.new_chant_info
         )
-        if (
-            settings.DATABASES["default"]["ENGINE"]
-            == "django.db.backends.sqlite3"
-        ):
+        if settings.DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
             # sqlite has trouble with bulk deletion so we need to delete in increments
             increment = 100
             chants = [
                 chant.pk
-                for chant in Chant.objects.filter(
-                    manuscript__pk__in=manuscript_pks
-                )
+                for chant in Chant.objects.filter(manuscript__pk__in=manuscript_pks)
             ]
             for i in range(0, len(chants), increment):
                 # Can't delete a slice so we need to query again

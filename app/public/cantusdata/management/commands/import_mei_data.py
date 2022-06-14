@@ -22,8 +22,7 @@ class Command(BaseCommand):
             manuscript = args[1]
         else:
             raise Exception(
-                "Please provide arguments for processing"
-                " mode and manuscript name."
+                "Please provide arguments for processing" " mode and manuscript name."
             )
 
         # Make sure we're working with the right manuscript
@@ -108,9 +107,7 @@ def dump_to_csv(mei_location, siglum, id, path):
             " ",
             progressbar.ETA(),
         ]
-        prog_bar = progressbar.ProgressBar(
-            widgets=prog_widgets, maxval=len(files)
-        )
+        prog_bar = progressbar.ProgressBar(widgets=prog_widgets, maxval=len(files))
         prog_bar.start()
 
         for page_idx, (file_name, page) in enumerate(pages):
@@ -202,9 +199,7 @@ def upload_to_solr(filename):
 
     if failure_message is not None:
         print(
-            "Upload failed ({}). See the Solr logs for details.".format(
-                failure_message
-            )
+            "Upload failed ({}). See the Solr logs for details.".format(failure_message)
         )
     else:
         print("Upload successful.")

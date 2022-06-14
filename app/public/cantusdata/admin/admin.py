@@ -51,12 +51,16 @@ class ManuscriptAdmin(admin.ModelAdmin):
     )
     list_display = ("name", "siglum", "public", "chants_loaded", "is_mapped")
 
-    @admin.action(description = "Imports the chants associated \
-        with the selected manuscript(s)")
+    @admin.action(
+        description="Imports the chants associated \
+        with the selected manuscript(s)"
+    )
     def load_chants(self, request, queryset):
         manuscript_ids = [str(manuscript.pk) for manuscript in queryset]
-        manuscript_ids_str = ','.join(manuscript_ids)
-        return HttpResponseRedirect(f'/admin/cantusdata/manuscript/load_chants/?manuscript_ids={manuscript_ids_str}')
+        manuscript_ids_str = ",".join(manuscript_ids)
+        return HttpResponseRedirect(
+            f"/admin/cantusdata/manuscript/load_chants/?manuscript_ids={manuscript_ids_str}"
+        )
 
 
 class ChantAdmin(admin.ModelAdmin):
