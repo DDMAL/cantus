@@ -15,5 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: echo POSTGRES_PASSWORD=supersecurepassword99 >> .env
+      - run: echo RABBIT_PASSWORD=supersecurepassword99 >> .env
       - run: docker-compose up -d
       - run: docker-compose exec -T app python runtests.py cantusdata.test.core
