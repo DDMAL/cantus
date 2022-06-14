@@ -33,15 +33,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         with solr_synchronizer.get_session():
-            self.stdout.write(
-                "Deleting old {0} data...".format(options["type"])
-            )
+            self.stdout.write("Deleting old {0} data...".format(options["type"]))
             if options["type"] == "chants":
                 # manuscript-id is not optional for chants
                 if options["manuscript_id"] is None:
-                    self.stdout.write(
-                        "Please provide a manuscript-id. Doing nothing."
-                    )
+                    self.stdout.write("Please provide a manuscript-id. Doing nothing.")
                 else:
                     Chant.objects.filter(
                         manuscript__id=options["manuscript_id"]
@@ -106,16 +102,12 @@ class Command(BaseCommand):
             concordance.rism_code = c["rism_code"]
             concordance.save()
         self.stdout.write(
-            "Successfully imported {} concordances into database.".format(
-                idx + 1
-            )
+            "Successfully imported {} concordances into database.".format(idx + 1)
         )
 
     def import_chant_data(self, **options):
         mobj = Manuscript.objects.get(id=options["manuscript_id"])
-        scsv = (
-            urllib.request.urlopen(mobj.csv_export_url).read().decode("utf-8")
-        )
+        scsv = urllib.request.urlopen(mobj.csv_export_url).read().decode("utf-8")
         # csv module can't handle csv as strings, so making it a file
         fcsv = StringIO(scsv)
         importer = ChantImporter(self.stdout)
@@ -126,9 +118,7 @@ class Command(BaseCommand):
         mobj.chants_loaded = True
         mobj.save()
         self.stdout.write(
-            "Successfully imported {} chants into database.".format(
-                chant_count
-            )
+            "Successfully imported {} chants into database.".format(chant_count)
         )
 
     @transaction.atomic

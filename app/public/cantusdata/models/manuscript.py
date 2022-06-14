@@ -39,9 +39,7 @@ class Manuscript(models.Model):
         self._last_public_value = self.public
 
     def save(self, force_insert=False, force_update=False, *args, **kwargs):
-        super(Manuscript, self).save(
-            force_insert, force_update, *args, **kwargs
-        )
+        super(Manuscript, self).save(force_insert, force_update, *args, **kwargs)
 
         if (self.public != self._last_public_value) and self.chants_loaded:
             # The public property has changed, we need to refresh the Solr chants

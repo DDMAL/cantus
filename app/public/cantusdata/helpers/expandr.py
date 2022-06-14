@@ -6,6 +6,7 @@ import urllib.request, urllib.error, urllib.parse
 import re
 import os
 
+
 def expand_mode(mode_code):
     input_list = mode_code.strip()
     mode_output = []
@@ -42,9 +43,9 @@ def expand_mode(mode_code):
 def expand_genre(genre_code):
     if genre_code in genres:
         description = genres[genre_code]
-        #some extra stuff in parentheses is showing up
+        # some extra stuff in parentheses is showing up
         paren = description.find("(")
-        return description[:paren-1] if paren != -1 else description
+        return description[: paren - 1] if paren != -1 else description
 
     # If nothing was found, return the original
     return genre_code
@@ -89,7 +90,9 @@ class PositionExpander(object):
     position_data_base = None
 
     def __init__(self):
-        self.csv_file = csv.DictReader(open(os.path.join(BASE_DIR, "data_dumps", "position_names.csv")))
+        self.csv_file = csv.DictReader(
+            open(os.path.join(BASE_DIR, "data_dumps", "position_names.csv"))
+        )
         self.position_data_base = dict()
         for row in self.csv_file:
             office_code = self.remove_double_dash(row["Office"]).strip()
@@ -107,9 +110,9 @@ class PositionExpander(object):
 
     def get_text(self, office_code, genre_code, position_code):
         try:
-            return self.position_data_base[office_code.strip()][
-                genre_code.strip()
-            ][position_code.strip().lstrip("0").rstrip("._ ")]
+            return self.position_data_base[office_code.strip()][genre_code.strip()][
+                position_code.strip().lstrip("0").rstrip("._ ")
+            ]
         except KeyError:
             # If it's not in the dictionary then we just use an empty string
             return ""
@@ -132,14 +135,10 @@ class PositionExpander(object):
                     )
                 else:
                     # Position doesn't exist, so we create it
-                    self.position_data_base[office][genre].update(
-                        {position: text}
-                    )
+                    self.position_data_base[office][genre].update({position: text})
             else:
                 # Genre doesn't exist, so we create it and position
-                self.position_data_base[office].update(
-                    {genre: {position: text}}
-                )
+                self.position_data_base[office].update({genre: {position: text}})
         else:
             # Office doesn't exist, so we create office, genre, and position
             self.position_data_base.update({office: {genre: {position: text}}})

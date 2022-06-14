@@ -156,7 +156,7 @@ LOGGING_CONFIG = None
 # AUTHENTICATION
 MAX_TOKEN_AGE_DAYS = 3
 
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 SESSION_COOKIE_SECURE = is_production
 CSRF_COOKIE_SECURE = is_production
