@@ -21,7 +21,7 @@ class ChantImporter:
         # Use position expander object to get correct positions
         self.position_expander = expandr.PositionExpander()
 
-    def import_csv(self, file_csv):
+    def import_csv(self, file_csv, task = None):
         index = 0
         try:
             csv_file = csv.DictReader(file_csv)
@@ -33,6 +33,8 @@ class ChantImporter:
         for index, row in enumerate(csv_file):
             self.add_chant(row)
             # Tracking
+            if task:
+                task.update_state(state = "PROGRESS", meta = {"chants_processed": index, "chants_loaded": 0})
             if (index % 100) == 0:
                 self.stdout.write(
                     "{0} chants processed for import.".format(index)
@@ -119,7 +121,7 @@ class ChantImporter:
             return manuscript
 
     @transaction.atomic
-    def save(self, delete_existing=False):
+    def save(self, delete_existing=False, task = None):
         # Do all the updates within a single Solr session
         with solr_synchronizer.get_session():
             if delete_existing:
@@ -129,6 +131,7 @@ class ChantImporter:
                 folio.save()
                 # Keep track of the new folios so that we can add them to the chant field
                 new_folio_map[folio.number] = folio
+            total_chants = len(self.new_chant_info)
             for index, (chant, concordances, folio_code) in enumerate(
                 self.new_chant_info
             ):
@@ -140,6 +143,8 @@ class ChantImporter:
                 if concordances:
                     chant.concordances.add(*concordances)
                 # Tracking
+                if task:
+                    task.update_state(state = "PROGRESS", meta = {"chants_processed": total_chants, "chants_loaded": index})
                 if (index % 100) == 0:
                     self.stdout.write(
                         "{0} chants saved in the Django database.".format(

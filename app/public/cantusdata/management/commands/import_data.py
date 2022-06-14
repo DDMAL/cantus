@@ -30,12 +30,18 @@ class Command(BaseCommand):
             dest="manuscript_id",
             help="Manuscript id (used only when importing chants)",
         )
+        
+        parser.add_argument("--task",
+            dest = "task",
+            help="Optional argument used when called from the django admin interface. Passes asynchronous task."
+            )
 
     def handle(self, *args, **options):
         with solr_synchronizer.get_session():
             self.stdout.write(
                 "Deleting old {0} data...".format(options["type"])
             )
+            task = options.get('task', None)
             if options["type"] == "chants":
                 # manuscript-id is not optional for chants
                 if options["manuscript_id"] is None:
@@ -43,6 +49,8 @@ class Command(BaseCommand):
                         "Please provide a manuscript-id. Doing nothing."
                     )
                 else:
+                    if task:
+                        task.update_state(state = "PROGRESS", meta = {"chants_processed": 0, "chants_loaded":0})
                     Chant.objects.filter(
                         manuscript__id=options["manuscript_id"]
                     ).delete()
@@ -116,12 +124,16 @@ class Command(BaseCommand):
         scsv = (
             urllib.request.urlopen(mobj.csv_export_url).read().decode("utf-8")
         )
+        task = options.get("task", None)
         # csv module can't handle csv as strings, so making it a file
         fcsv = StringIO(scsv)
         importer = ChantImporter(self.stdout)
-        chant_count = importer.import_csv(fcsv)
+        if task:
+            chant_count = importer.import_csv(fcsv, task)
+        else:
+            chant_count = importer.import_csv(fcsv)
         # Save the new chants
-        importer.save()
+        importer.save(task = task)
         # Register that chants are loaded for this manuscript
         mobj.chants_loaded = True
         mobj.save()

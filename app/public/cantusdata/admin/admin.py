@@ -5,6 +5,7 @@ from cantusdata.models.concordance import Concordance
 from cantusdata.models.folio import Folio
 from cantusdata.models.plugin import Plugin
 from cantusdata.models.neume_exemplar import NeumeExemplar
+from cantusdata.tasks import chant_import_task
 from django.core.management import call_command
 from django.http import HttpResponseRedirect
 
@@ -53,10 +54,11 @@ class ManuscriptAdmin(admin.ModelAdmin):
 
     @admin.action(description = "Imports the chants associated \
         with the selected manuscript(s)")
+
     def load_chants(self, request, queryset):
-        manuscript_ids = [str(manuscript.pk) for manuscript in queryset]
-        manuscript_ids_str = ','.join(manuscript_ids)
-        return HttpResponseRedirect(f'/admin/cantusdata/manuscript/load_chants/?manuscript_ids={manuscript_ids_str}')
+        manuscript_ids = [manuscript.pk for manuscript in queryset]
+        chant_import_result = chant_import_task.apply_async(kwargs = {'manuscript_ids' : manuscript_ids})
+        return HttpResponseRedirect(f'/admin/cantusdata/manuscript/load_chants/?id={chant_import_result}')
 
 
 class ChantAdmin(admin.ModelAdmin):
