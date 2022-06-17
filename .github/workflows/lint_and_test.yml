@@ -10,8 +10,10 @@ jobs:
       - uses: psf/black@stable
   run-tests:
     runs-on: ubuntu-latest
+    env:
+      - POSTGRES_PASSWORD: supersecurepassword99
+      - RABBIT_PASSWORD: supersecurepassword88
     steps:
       - uses: actions/checkout@v3
-      - run: echo POSTGRES_PASSWORD=supersecurepassword99 >> .env
       - run: docker-compose up -d
       - run: docker-compose exec -T app python runtests.py cantusdata.test.core
