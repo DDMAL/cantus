@@ -57,3 +57,18 @@ services:
       - RABBITMQ_DEFAULT_VHOST=${RABBIT_VHOST}
     ports:
       - "5672:5672"
+    restart: always
+
+  celery:
+    image:  cantus_app
+    command: ["celery", "-A", "cantusdata", "worker", "-l", "INFO"]
+    environment:
+      - APP_VERSION=${APP_VERSION}
+      - APP_PORT=${PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - RABBIT_USER=${RABBIT_USER}
+      - RABBIT_PASSWORD=${RABBIT_PASSWORD}
+      - RABBIT_VHOST=${RABBIT_VHOST}
+    restart: always

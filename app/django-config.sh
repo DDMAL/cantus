@@ -9,5 +9,3 @@ if [[ $APP_PORT = 80 ]]; then
 else
     python manage.py runserver 0:8001
 fi
-
-celery -A cantusdata worker -l INFO
