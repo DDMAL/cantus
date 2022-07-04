@@ -45,10 +45,17 @@ class Command(BaseCommand):
             help="Directory where mapping_data csvs are found. Defaults to ./data_dumps/folio_mapping",
         )
 
+        parser.add_argument(
+            "--task",
+            dest="task",
+            help="Optional argument used when called from the django admin interface. Passes asynchronous task.",
+        )
+
     def handle(self, *args, **options):
 
         manuscript_ids = options["manuscript_ids"]
         manuscript_mapping_dict = dict(zip(manuscript_ids, options["mapping_data"]))
+        task = options.get("task", None)
 
         for manuscript_id in manuscript_ids:
             input_data = manuscript_mapping_dict[manuscript_id]
@@ -95,6 +102,8 @@ class Command(BaseCommand):
                 folio_obj.image_uri = uri
                 folio_obj.save()
 
+                if task:
+                    task.update_state(state="PROGRESS", meta={"folios_imported": index})
                 if index > 0 and index % 50 == 0:
                     self.stdout.write(f"Imported {index} folios")
 

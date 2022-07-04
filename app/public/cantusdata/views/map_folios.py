@@ -5,6 +5,7 @@ from django.core.management import call_command
 from django.db import transaction
 from cantusdata.models.folio import Folio
 from cantusdata.models.manuscript import Manuscript
+from cantusdata.tasks import map_folio_task
 import urllib.request, urllib.parse, urllib.error
 import json
 import csv
@@ -190,8 +191,4 @@ def _save_mapping(request):
             continue
         data.append({"folio": value, "uri": index})
 
-    call_command(
-        "import_folio_mapping",
-        manuscripts=[manuscript_id],
-        mapping_data=[data],
-    )
+    map_folio_task.apply_async(kwargs={"manuscript_id": manuscript_id, "data": data})

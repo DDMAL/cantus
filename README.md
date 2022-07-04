@@ -26,7 +26,7 @@ We use [Docker Compose](https://docs.docker.com/compose/) to containerize each s
 ### The `.env` file
 The build process relies on environment variables specified in the `.env` file, which is located at the root of the repository. 
 
-The most important variable here is `POSTGRES_PASSWORD`, which must be set by uncommenting it from the code, and setting it with a secure password.
+You must make two modifications to this file before the docker containers will build.  Both `POSTGRES_PASSWORD` and `RABBIT_PASSWORD` should be uncommented and set with secure passwords.
 
 #### Handling `postgres` authentication issues
 

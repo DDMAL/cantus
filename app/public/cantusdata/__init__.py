@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 from django.db.models.signals import post_migrate
-
+from .celery import app as celery_app
 
 default_app_config = "cantusdata.CantusdataConfig"
 

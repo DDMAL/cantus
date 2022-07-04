@@ -2,6 +2,7 @@ version: '3.7'
 services:
   app:
     build: ./app
+    container_name: cantus-app-1
     command: /code/django-config.sh
     volumes:
       - ./app/public:/code/public
@@ -16,10 +17,14 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - RABBIT_USER=${RABBIT_USER}
+      - RABBIT_PASSWORD=${RABBIT_PASSWORD}
+      - RABBIT_VHOST=${RABBIT_VHOST}
 
 
   postgres:
     build: ./postgres
+    container_name: cantus-postgres-1
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
     environment:
@@ -34,6 +39,7 @@ services:
       start_period: 30s
 
   nginx:
+    container_name: cantus-nginx-1
     build: ./nginx
     ports:
       - "${PORT}:80"
@@ -42,6 +48,33 @@ services:
   
   solr:
     build: ./solr
+    container_name: cantus-solr-1
     command: solr-precreate collection1 /code/solr/collection1
     ports:
       - "8983:8983"
+
+  rabbitmq:
+    build: ./rabbitmq
+    container_name: cantus-rabbitmq-1
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBIT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBIT_PASSWORD}
+      - RABBITMQ_DEFAULT_VHOST=${RABBIT_VHOST}
+    ports:
+      - "5672:5672"
+    restart: always
+
+  celery:
+    image:  cantus_app
+    container_name: cantus-celery-1
+    command: ["celery", "-A", "cantusdata", "worker", "-l", "INFO", "-c", "1"]
+    environment:
+      - APP_VERSION=${APP_VERSION}
+      - APP_PORT=${PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - RABBIT_USER=${RABBIT_USER}
+      - RABBIT_PASSWORD=${RABBIT_PASSWORD}
+      - RABBIT_VHOST=${RABBIT_VHOST}
+    restart: always
