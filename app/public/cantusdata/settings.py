@@ -166,7 +166,7 @@ SECURE_HSTS_SECONDS = 86400
 SECURE_HSTS_INCLUDE_SUBDOMAINS = is_production
 SECURE_HSTS_PRELOAD = is_production
 
-CELERY_BROKER_URL = f"amqp://{os.environ['RABBIT_USER']}:{os.environ['RABBIT_PASSWORD']}@cantus_rabbitmq_1:5672/{os.environ['RABBIT_VHOST']}"
+CELERY_BROKER_URL = f"amqp://{os.environ['RABBIT_USER']}:{os.environ['RABBIT_PASSWORD']}@cantus-rabbitmq-1:5672/{os.environ['RABBIT_VHOST']}"
 CELERY_RESULT_BACKEND = "django-db"
 CELERY_RESULT_PERSISTENT = False
 CELERY_APP = "cantusdata"
