@@ -26,11 +26,12 @@
 </head>
 <body>
     <div id="header-container">
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="--bs-breadcrumb-divider: '>';">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="--bs-breadcrumb-divider: '>';" >
             <div class="container-fluid">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a class="navbar-brand" href="/">Cantus Ultimus (v{{ APP_VERSION }})</a></li>
-                    <li class="breadcrumb-item" id="page-title">{% block breadcrumb %}{% endblock %}</li>
+                <ol class="breadcrumb" style="--bs-breadcrumb-margin-bottom: '0'; --bs-breadcrumb-divider-color: var(--bs-navbar-brand-color);">
+                {% block breadcrumb %}
+                    <li class="breadcrumb-item d-flex align-items-bottom"><a class="navbar-brand me-1" href="/">Cantus Ultimus</a><span class="text-light" style="font-size: .5rem">(v{{ APP_VERSION }})</span></li>
+                {% endblock %}
                 </ol>
                 <ul class="nav justify-content-end">
                     <li class="nav-item"><a class="btn btn-dark text-light" href="/manifests/">IIIF Manifests</a></li>
