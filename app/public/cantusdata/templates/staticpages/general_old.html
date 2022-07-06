@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block document_title %}
+    Cantus Ultimus {% if title %}— {{ title }}{% endif %}
+{% endblock %}
+
+{% spaceless %}
+    {% block breadcrumb %}
+        {% if title %}
+            <a class="secondary-brand-component">{{ title }}</a>
+        {% endif %}
+    {% endblock %}
+{% endspaceless %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="h2">{{ title }}</h1>
+                <div>{{ content|safe }}</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app/cantus-static-min.js"></script>
+{% endblock %}
