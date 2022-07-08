@@ -65,7 +65,7 @@ services:
     restart: always
 
   celery:
-    build:  ./app
+    image: cantus_app
     container_name: cantus-celery-1
     command: ["celery", "-A", "cantusdata", "worker", "-l", "INFO", "-c", "1"]
     environment:
