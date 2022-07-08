@@ -47,6 +47,7 @@ Execute the following commands from the root directory of the repo:
 
 ```sh
 # Build the images and launch the containers (this will take a while)
+$ docker-compose build
 $ docker-compose up -d
 ```
 
