@@ -80,6 +80,10 @@
         color: green;
     }
 
+    .folio-pending {
+        color: goldenrod;
+    }
+
     .folio-unmapped {
         color: red;
     }
@@ -114,14 +118,18 @@
     {% for m_id, m_str, is_mapped in manuscript_ids %}
     <tr>
         <td>{{ m_str }}</td>
-            {% if is_mapped %}
+            {% if is_mapped == "MAPPED" %}
             <td class="folio-mapped">Already mapped</td>
+            {% elif is_mapped == "PENDING" %}
+            <td class="folio-pending">Map pending</td>
             {% else %}
             <td class="folio-unmapped">Not mapped</td>
             {% endif %}
         <td>
-            {% if is_mapped %}
+            {% if is_mapped == "MAPPED" %}
             <a href="/admin/map_folios/?manuscript_id={{ m_id }}" class="table-link">Edit map</a>
+            {% elif is_mapped == "PENDING" %}
+            <span>Wait for mapping to process</span>
             {% else %}
             <a href="/admin/map_folios/?manuscript_id={{ m_id }}" class="table-link">Map now</a>
             {% endif %}

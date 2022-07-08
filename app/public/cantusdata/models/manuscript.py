@@ -5,7 +5,11 @@ import threading
 
 from cantusdata.models.neume_exemplar import NeumeExemplar
 
-
+class IsMapped(models.TextChoices):
+    UNMAPPED = "UNMAPPED", "Unmapped"
+    PENDING = "PENDING", "Pending"
+    MAPPED = "MAPPED", "Mapped"
+    
 class Manuscript(models.Model):
     """The top-level model, representing a particular manuscript
 
@@ -16,6 +20,7 @@ class Manuscript(models.Model):
     class Meta:
         app_label = "cantusdata"
         ordering = ["name"]
+        constraints = [models.CheckConstraint(check = models.Q(is_mapped__in = IsMapped.values), name = "is_mapped_status")]
 
     name = models.CharField(max_length=255, blank=True, null=True)
     siglum = models.CharField(max_length=255, blank=True, null=True)
@@ -23,7 +28,7 @@ class Manuscript(models.Model):
     provenance = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     public = models.BooleanField(default=False)
-    is_mapped = models.BooleanField(default=False)
+    is_mapped = models.CharField(max_length=10, choices=IsMapped.choices)
     chants_loaded = models.BooleanField(default=False)
     plugins = models.ManyToManyField(
         "cantusdata.Plugin", related_name="plugins", blank=True
