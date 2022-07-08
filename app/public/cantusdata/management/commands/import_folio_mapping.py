@@ -130,5 +130,5 @@ class Command(BaseCommand):
             )
         for manuscript_id in manuscript_ids:
             manuscript = Manuscript.objects.get(id=manuscript_id)
-            manuscript.is_mapped = 'MAPPED'
+            manuscript.is_mapped = "MAPPED"
             manuscript.save()

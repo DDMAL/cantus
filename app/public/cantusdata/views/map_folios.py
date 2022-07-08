@@ -177,10 +177,10 @@ def _save_mapping(request):
     calls the import_folio_mapping command."""
 
     manuscript_id = request.POST["manuscript_id"]
-    manuscript = Manuscript.objects.get(id = manuscript_id)
+    manuscript = Manuscript.objects.get(id=manuscript_id)
     manuscript.is_mapped = "PENDING"
     manuscript.save()
-    
+
     # Create list of data for saving
     # with column headers "folio" and "uri"
     data = []
