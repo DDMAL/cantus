@@ -74,7 +74,7 @@ class MapFoliosView(APIView):
             folios.append(folio.number)
             if folio.image_link:
                 folio_imagelink[folio.number] = folio.image_link
-            if man_is_mapped:
+            if man_is_mapped == "MAPPED":
                 uri_folio_map[folio.image_uri] = folio.number
 
         imagelinks = list(folio_imagelink.values())
@@ -85,7 +85,7 @@ class MapFoliosView(APIView):
         for idx, uri in enumerate(uris_objs):
             uri["id"] = uri_ids[idx]
             uri["folio"] = None
-            if man_is_mapped:
+            if man_is_mapped == "MAPPED":
                 uri["folio"] = uri_folio_map.get(uri["full"], "")
                 mapped_folios += 1
             else:
@@ -177,6 +177,9 @@ def _save_mapping(request):
     calls the import_folio_mapping command."""
 
     manuscript_id = request.POST["manuscript_id"]
+    manuscript = Manuscript.objects.get(id=manuscript_id)
+    manuscript.is_mapped = "PENDING"
+    manuscript.save()
 
     # Create list of data for saving
     # with column headers "folio" and "uri"

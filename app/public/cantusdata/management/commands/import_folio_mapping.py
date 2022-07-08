@@ -107,7 +107,6 @@ class Command(BaseCommand):
                 if index > 0 and index % 50 == 0:
                     self.stdout.write(f"Imported {index} folios")
 
-            manuscript.is_mapped = True
             manuscript.save()
 
             self.stdout.write(
@@ -129,3 +128,7 @@ class Command(BaseCommand):
                 "Import process completed. To refresh Solr,"
                 "use './manage.py refresh_solr chants [manuscript_id ...]'"
             )
+        for manuscript_id in manuscript_ids:
+            manuscript = Manuscript.objects.get(id=manuscript_id)
+            manuscript.is_mapped = "MAPPED"
+            manuscript.save()

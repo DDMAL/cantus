@@ -95,6 +95,7 @@ class Command(BaseCommand):
             manuscript.date = date
             manuscript.provenance = provenance
             manuscript.description = description
+            manuscript.is_mapped = "UNMAPPED"
             manuscript.save()
             i += 1
         self.stdout.write(
