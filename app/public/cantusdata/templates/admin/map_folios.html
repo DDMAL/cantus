@@ -101,11 +101,7 @@
 
 {% block body %}
 
-{% if posted %}
-<h2>The mapping has been successfully saved</h2>
-<h5>The changes are currently being applied to the database. They should appear in a few minutes.</h5>
-
-{% elif error %}
+{% if error %}
 <h2 class="error-message">{{ error }}</h2>
 
 {% elif manuscript_ids %}
