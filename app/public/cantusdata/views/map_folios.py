@@ -122,7 +122,7 @@ class MapFoliosView(APIView):
         manuscript.is_mapped = "PENDING"
         manuscript.save()
 
-        return HttpResponseRedirect('/admin/map_folios/')
+        return HttpResponseRedirect("/admin/map_folios/")
 
 
 def _extract_ids(str_list):

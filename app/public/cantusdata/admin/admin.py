@@ -59,13 +59,11 @@ class ManuscriptAdmin(admin.ModelAdmin):
     def load_chants(self, request, queryset):
         manuscript_ids = [manuscript.pk for manuscript in queryset]
         for manuscript in manuscript_ids:
-            chant_import_task.apply_async(
-                kwargs={"manuscript_ids": [manuscript]}
-            )
-        self.message_user(request,
-            "Importing chants for the selected manuscripts. This may take a few minutes. Check status on the Task Results page."
+            chant_import_task.apply_async(kwargs={"manuscript_ids": [manuscript]})
+        self.message_user(
+            request,
+            "Importing chants for the selected manuscripts. This may take a few minutes. Check status on the Task Results page.",
         )
-
 
 
 class ChantAdmin(admin.ModelAdmin):
