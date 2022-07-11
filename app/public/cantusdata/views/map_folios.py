@@ -106,6 +106,7 @@ class MapFoliosView(APIView):
                 "uris": uris_objs,
                 "folios": folios,
                 "manuscript_id": manuscript_id,
+                "manuscript_mapping_state": man_is_mapped,
             }
         )
 

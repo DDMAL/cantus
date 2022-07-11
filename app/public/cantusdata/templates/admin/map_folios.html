@@ -69,6 +69,16 @@
         cursor: pointer;
     }
 
+    .grey-button {
+        background-color: grey;
+        color: white;
+        border: solid 1px #0b97c4;
+        padding: 7px;
+        text-align: center;
+        display: inline-block;
+        cursor: pointer;
+    }
+
     .backup-options {
         position: fixed;
         top: calc(50% + 75px);
@@ -134,7 +144,7 @@
     {% endfor %}
 </table>
 
-{% elif manuscript_id and uris and folios %}
+{% elif manuscript_id and uris and folios and manuscript_mapping_state %}
 
 <h5><br><em>Tip: Use 'Tab' and 'Shift+Tab' to navigate the input fields.</em></h5>
 
@@ -157,9 +167,15 @@
         </li>
         {% endfor %}
     </ul>
+    {% if manuscript_mapping_state == "PENDING" %}
+    <div class="final-submit">
+        <input class="grey-button" type="button" value="Mapping in Progress. Try again later.">
+    </div>
+    {% else %}
     <div class="final-submit">
         <input class="blue-button" type="submit" value="Submit this Mapping">
     </div>
+    {% endif %}
 </form>
 <div class="backup-options">
     <div class="blue-button" onclick="onSaveBackup()">Save Backup</div>
