@@ -4,7 +4,6 @@ import GlobalVars from "config/GlobalVars";
 import ManuscriptCollection from "collections/ManuscriptCollection";
 
 import ManuscriptCollectionView from "./ManuscriptCollectionView";
-import FutureManuscriptCollectionView from "./FutureManuscriptCollectionView";
 
 import template from './manuscript-list-page.template.html';
 
@@ -16,7 +15,6 @@ export default Marionette.LayoutView.extend({
 
     regions: {
         manuscriptList: '.manuscript-list',
-        futureManuscriptList: '.future-manuscript-list'
     },
 
     onRender: function ()
@@ -33,12 +31,5 @@ export default Marionette.LayoutView.extend({
 
         availableManuscripts.render();
         this.manuscriptList.attachView(availableManuscripts);
-
-        var futureManuscripts = new FutureManuscriptCollectionView({
-            el: this.$(this.futureManuscriptList.el)
-        });
-
-        futureManuscripts.render();
-        this.futureManuscriptList.attachView(futureManuscripts);
     }
 });
