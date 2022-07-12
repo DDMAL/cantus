@@ -103,7 +103,7 @@ class Command(BaseCommand):
                 folio_obj.save()
 
                 if task:
-                    task.update_state(state="PROGRESS", meta={"folios_imported": index})
+                    task.update_state(state="STARTED", meta={"folios_imported": index})
                 if index > 0 and index % 50 == 0:
                     self.stdout.write(f"Imported {index} folios")
 
