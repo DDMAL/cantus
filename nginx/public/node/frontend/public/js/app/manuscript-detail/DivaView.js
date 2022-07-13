@@ -44,6 +44,7 @@ export default Marionette.ItemView.extend({
 
         // TODO(wabain): get this from the manuscript channel for consistency
         this.manifestUrl = options.manifestUrl;
+        this.manuscriptID = manuscriptChannel.request('manuscript')
     },
 
     onBeforeDestroy: function()
@@ -93,7 +94,8 @@ export default Marionette.ItemView.extend({
 
             objectData: '/manifest-proxy/' + manifestUrl,
 
-            blockMobileMove: false
+            blockMobileMove: false,
+            manuscriptID: this.manuscriptID,
         };
 
         // Destroy the diva div just in case
