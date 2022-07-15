@@ -90,10 +90,10 @@ class NeumeExemplarAdmin(admin.ModelAdmin):
     list_display = ("admin_image", "__str__")
     readonly_fields = ("admin_image",)
 
+
 class NewTaskResultAdmin(TaskResultAdmin):
-    list_display = ('task_name', 'date_done',
-                    'status', 'task_args', 'task_kwargs')
-    list_filter = ('status', 'date_done', 'task_name')
+    list_display = ("task_name", "date_done", "status", "task_args", "task_kwargs")
+    list_filter = ("status", "date_done", "task_name")
 
 
 admin.site.register(Manuscript, ManuscriptAdmin)
