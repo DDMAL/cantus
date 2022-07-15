@@ -26,7 +26,7 @@ export default Marionette.ItemView.extend({
     {
         _.bindAll(this, 'propagateFolioChange', 'onViewerLoad', 'setImageURI',
             'paintBoxes', 'updatePageAlias', 'gotoInputPage',
-            'getPageWhichMatchesAlias', 'onDocLoad');
+            'getPageWhichMatchesAlias', 'onDocLoad', 'showPageSuggestions');
 
         this.divaEventHandles = [];
 
@@ -177,7 +177,34 @@ export default Marionette.ItemView.extend({
             alert("Invalid page number");
         });
     },
+    /**
+     * 
+     * Replacement callback for the Diva page input search suggestions.
+     * Suggestions are taken from folio numbers in solr/Django db rather
+     * than the IIIF manifest.
+     */
 
+    showPageSuggestions: function showPageSuggestions(event){
+        var inputSuggestions = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'input-suggestions');
+        inputSuggestions.empty();
+        var manuscript = manuscriptChannel.request('manuscript');
+
+        var pageInput = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'goto-page-input');
+
+        var queryUrl =  '/folio-set/manuscript/' + manuscript + '/?q=' + pageInput.val();
+        $.get(queryUrl,
+            function (data){
+                for (const queryResult of data){
+                    var newInputSuggestion = document.createElement('div');
+                    newInputSuggestion.setAttribute('class','diva-input-suggestion');
+                    newInputSuggestion.textContent = queryResult.number;
+                    inputSuggestions.append(newInputSuggestion);
+                }
+            }
+        )
+
+        inputSuggestions.css('display','block');
+    },
     /**
      * Query Solr to convert a folio name to an image URI
      *
@@ -266,6 +293,12 @@ export default Marionette.ItemView.extend({
 
         input.off('submit');
         input.on('submit', this.gotoInputPage);
+
+        // Rebind the go to page input focus
+        var pageSearch = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'goto-page-input');
+
+        pageSearch.off('input focus');
+        pageSearch.on('input focuse', this.showPageSuggestions)
 
         // Rename the current page label from Page to Folio
         var pageLabel = this.toolbarParentObject.find('.diva-page-label')[0];
