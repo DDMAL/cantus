@@ -1,5 +1,7 @@
 from cantusdata.celery import app
 from django.core.management import call_command
+from celery.signals import task_received
+from django_celery_results.models import TaskResult
 
 
 @app.task(name="import-chants", bind=True)
@@ -21,4 +23,20 @@ def map_folio_task(self, *args, **kwargs):
         manuscripts=[kwargs["manuscript_id"]],
         mapping_data=[kwargs["data"]],
         task=self,
+    )
+
+
+@task_received.connect
+def task_received_handler(sender=None, headers=None, body=None, **kwargs):
+    request = kwargs["request"]
+    TaskResult.objects.store_result(
+        request.content_type,
+        request.content_encoding,
+        request.task_id,
+        "",
+        "RECEIVED",
+        task_args=request.args,
+        task_kwargs=request.kwargs,
+        task_name=request.task_name,
+        worker=sender,
     )
