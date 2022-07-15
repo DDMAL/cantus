@@ -20,7 +20,12 @@ SECRET_KEY = "P455W0RD"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG") == "true"
 
-ALLOWED_HOSTS = ["cantus.simssa.ca", "dev-cantus.simssa.ca", "localhost"]
+ALLOWED_HOSTS = [
+    "cantus.simssa.ca",
+    "dev-cantus.simssa.ca",
+    "cantus.staging.simssa.ca",
+    "localhost",
+]
 
 # Application definition
 
