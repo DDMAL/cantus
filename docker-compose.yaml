@@ -21,7 +21,6 @@ services:
       - RABBIT_PASSWORD=${RABBIT_PASSWORD}
       - RABBIT_VHOST=${RABBIT_VHOST}
 
-
   postgres:
     build: ./postgres
     container_name: cantus-postgres-1
@@ -45,7 +44,7 @@ services:
       - "${PORT}:80"
     depends_on:
       - app
-  
+
   solr:
     build: ./solr
     container_name: cantus-solr-1
@@ -67,7 +66,21 @@ services:
   celery:
     image: cantus_app
     container_name: cantus-celery-1
-    command: ["celery", "-A", "cantusdata", "worker", "-l", "INFO", "-c", "1"]
+    command:
+      [
+        "runuser",
+        "-u",
+        "daemon",
+        "--",
+        "celery",
+        "-A",
+        "cantusdata",
+        "worker",
+        "-l",
+        "INFO",
+        "-c",
+        "1"
+      ]
     environment:
       - APP_VERSION=${APP_VERSION}
       - APP_PORT=${PORT}
