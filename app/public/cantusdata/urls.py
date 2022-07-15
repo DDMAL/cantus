@@ -116,3 +116,6 @@ urlpatterns = [
 
 # Disambiguates json/html/browsable-api urls
 urlpatterns = format_suffix_patterns(urlpatterns)
+
+
+admin.site.site_header = "Cantus Ultimus Admin"
