@@ -24,7 +24,12 @@ with open("/etc/key.txt", "r") as f:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = is_development
 
-ALLOWED_HOSTS = ["cantus.simssa.ca", "dev-cantus.simssa.ca", "localhost"]
+ALLOWED_HOSTS = [
+    "cantus.simssa.ca",
+    "dev-cantus.simssa.ca",
+    "cantus.staging.simssa.ca",
+    "localhost",
+]
 
 # Application definition
 
