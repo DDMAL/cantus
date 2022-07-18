@@ -6,6 +6,7 @@ from django.db import transaction
 from cantusdata.models.folio import Folio
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.tasks import map_folio_task
+from django.http import HttpResponseRedirect
 import urllib.request, urllib.parse, urllib.error
 import json
 import csv
@@ -105,6 +106,7 @@ class MapFoliosView(APIView):
                 "uris": uris_objs,
                 "folios": folios,
                 "manuscript_id": manuscript_id,
+                "manuscript_mapping_state": man_is_mapped,
             }
         )
 
@@ -115,7 +117,12 @@ class MapFoliosView(APIView):
         except Exception as e:
             return Response({"error": e})
 
-        return Response({"posted": True})
+        manuscript_id = request.POST["manuscript_id"]
+        manuscript = Manuscript.objects.get(id=manuscript_id)
+        manuscript.is_mapped = "PENDING"
+        manuscript.save()
+
+        return HttpResponseRedirect("/admin/map_folios/")
 
 
 def _extract_ids(str_list):
@@ -177,9 +184,6 @@ def _save_mapping(request):
     calls the import_folio_mapping command."""
 
     manuscript_id = request.POST["manuscript_id"]
-    manuscript = Manuscript.objects.get(id=manuscript_id)
-    manuscript.is_mapped = "PENDING"
-    manuscript.save()
 
     # Create list of data for saving
     # with column headers "folio" and "uri"

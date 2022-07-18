@@ -59,12 +59,11 @@ class ManuscriptAdmin(admin.ModelAdmin):
         with the selected manuscript(s)"
     )
     def load_chants(self, request, queryset):
-        manuscript_ids = [manuscript.pk for manuscript in queryset]
-        chant_import_result = chant_import_task.apply_async(
-            kwargs={"manuscript_ids": manuscript_ids}
-        )
-        return HttpResponseRedirect(
-            f"/admin/cantusdata/manuscript/load_chants/?id={chant_import_result}"
+        for ms in queryset:
+            chant_import_task.apply_async(kwargs={"manuscript_ids": [ms.pk]})
+        self.message_user(
+            request,
+            "Importing chants for the selected manuscripts. This may take a few minutes. Check status on the Task Results page.",
         )
 
 
