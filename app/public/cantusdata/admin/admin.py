@@ -91,8 +91,16 @@ class NeumeExemplarAdmin(admin.ModelAdmin):
 
 
 class NewTaskResultAdmin(TaskResultAdmin):
-    list_display = ("task_name", "date_done", "status", "task_args", "task_kwargs")
+    list_display = ("task_name", "date_done", "status", "get_task_manuscript_ids")
     list_filter = ("status", "date_done", "task_name")
+
+    @admin.display(description="Manuscript(s)")
+    def get_task_manuscript_ids(self, obj):
+        obj_man_ids = eval(obj.task_kwargs[1:-1])["manuscript_id"]
+        task_manuscripts = [
+            man for man in Manuscript.objects.filter(id__in=obj_man_ids)
+        ]
+        return task_manuscripts
 
 
 admin.site.register(Manuscript, ManuscriptAdmin)
