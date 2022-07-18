@@ -98,8 +98,7 @@ class NewTaskResultAdmin(TaskResultAdmin):
 
     @admin.display(description="Manuscript(s)")
     def get_task_manuscript_ids(self, obj):
-        obj_man_ids = re.findall("'manuscript_ids': \[(.*)\]", obj.task_kwargs)[0]
-        obj_man_ids = obj_man_ids.split(", ")
+        obj_man_ids = eval(obj.task_kwargs[1:-1])["manuscript_id"]
         task_manuscripts = [
             man for man in Manuscript.objects.filter(id__in=obj_man_ids)
         ]
