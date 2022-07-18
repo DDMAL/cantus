@@ -10,6 +10,7 @@ from django.core.management import call_command
 from django.http import HttpResponseRedirect
 from django_celery_results.models import TaskResult
 from django_celery_results.admin import TaskResultAdmin
+import re
 
 
 def reindex_in_solr(modeladmin, request, queryset):
@@ -92,8 +93,13 @@ class NeumeExemplarAdmin(admin.ModelAdmin):
 
 
 class NewTaskResultAdmin(TaskResultAdmin):
-    list_display = ("task_name", "date_done", "status", "task_args", "task_kwargs")
+    list_display = ("task_name", "date_done", "status", "get_task_manuscript_ids")
     list_filter = ("status", "date_done", "task_name")
+
+    @admin.display(description="Manuscript IDs")
+    def get_task_manuscript_ids(self, obj):
+        obj_man_ids = re.findall("'manuscript_ids': \[(.*)\]", obj.task_kwargs)[0]
+        return obj_man_ids
 
 
 admin.site.register(Manuscript, ManuscriptAdmin)
