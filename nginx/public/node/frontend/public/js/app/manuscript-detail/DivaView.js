@@ -298,7 +298,7 @@ export default Marionette.ItemView.extend({
         var pageSearch = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'goto-page-input');
 
         pageSearch.off('input focus');
-        pageSearch.on('input focuse', this.showPageSuggestions)
+        pageSearch.on('input focus', this.showPageSuggestions)
 
         // Rename the current page label from Page to Folio
         var pageLabel = this.toolbarParentObject.find('.diva-page-label')[0];
