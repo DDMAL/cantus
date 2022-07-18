@@ -8,6 +8,8 @@ from cantusdata.models.neume_exemplar import NeumeExemplar
 from cantusdata.tasks import chant_import_task
 from django.core.management import call_command
 from django.http import HttpResponseRedirect
+from django_celery_results.models import TaskResult
+from django_celery_results.admin import TaskResultAdmin
 
 
 def reindex_in_solr(modeladmin, request, queryset):
@@ -89,9 +91,16 @@ class NeumeExemplarAdmin(admin.ModelAdmin):
     readonly_fields = ("admin_image",)
 
 
+class NewTaskResultAdmin(TaskResultAdmin):
+    list_display = ("task_name", "date_done", "status", "task_args", "task_kwargs")
+    list_filter = ("status", "date_done", "task_name")
+
+
 admin.site.register(Manuscript, ManuscriptAdmin)
 admin.site.register(Chant, ChantAdmin)
 admin.site.register(Concordance, ConcordanceAdmin)
 admin.site.register(Folio, FolioAdmin)
 admin.site.register(Plugin, PluginAdmin)
 admin.site.register(NeumeExemplar, NeumeExemplarAdmin)
+admin.site.unregister(TaskResult)
+admin.site.register(TaskResult, NewTaskResultAdmin)

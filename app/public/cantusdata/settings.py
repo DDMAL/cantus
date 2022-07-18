@@ -175,3 +175,4 @@ CELERY_BROKER_URL = f"amqp://{os.environ['RABBIT_USER']}:{os.environ['RABBIT_PAS
 CELERY_RESULT_BACKEND = "django-db"
 CELERY_RESULT_PERSISTENT = False
 CELERY_APP = "cantusdata"
+CELERY_TASK_TRACK_STARTED = True

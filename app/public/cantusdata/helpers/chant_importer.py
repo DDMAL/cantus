@@ -35,7 +35,7 @@ class ChantImporter:
             # Tracking
             if task:
                 task.update_state(
-                    state="PROGRESS",
+                    state="STARTED",
                     meta={"chants_processed": index, "chants_loaded": 0},
                 )
             if (index % 100) == 0:
@@ -140,7 +140,7 @@ class ChantImporter:
                 # Tracking
                 if task:
                     task.update_state(
-                        state="PROGRESS",
+                        state="STARTED",
                         meta={"chants_processed": total_chants, "chants_loaded": index},
                     )
                 if (index % 100) == 0:

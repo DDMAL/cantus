@@ -48,7 +48,7 @@ class Command(BaseCommand):
                 else:
                     if task:
                         task.update_state(
-                            state="PROGRESS",
+                            state="STARTED",
                             meta={"chants_processed": 0, "chants_loaded": 0},
                         )
                     Chant.objects.filter(
