@@ -10,7 +10,6 @@ from django.core.management import call_command
 from django.http import HttpResponseRedirect
 from django_celery_results.models import TaskResult
 from django_celery_results.admin import TaskResultAdmin
-import re
 
 
 def reindex_in_solr(modeladmin, request, queryset):
