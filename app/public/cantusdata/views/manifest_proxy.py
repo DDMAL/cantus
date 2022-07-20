@@ -1,7 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
-from django.http import Http404, StreamingHttpResponse
+from django.http import Http404, JsonResponse
+from cantusdata.helpers.postprocess_iiif import iiif_fn
 import requests
+import json
 
 
 class ManifestProxyView(APIView):
@@ -18,13 +20,13 @@ class ManifestProxyView(APIView):
 
     def get(self, request, *args, **kwargs):
         manifest_url = kwargs["manifest_url"]
+        postprocessing = iiif_fn.get(manifest_url, lambda x: x)
         format_ = kwargs.get("format", None)
         if format_:
             manifest_url += f".{format_}"
         try:
-            return StreamingHttpResponse(
-                requests.get(manifest_url, verify=False, stream=True),
-                content_type="application/json",
+            return JsonResponse(
+                postprocessing(json.loads(requests.get(manifest_url).text)),
             )
         except requests.exceptions.RequestException as e:
             raise Http404("Could not retrieve manifest from given url")
