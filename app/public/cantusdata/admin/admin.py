@@ -96,7 +96,12 @@ class NewTaskResultAdmin(TaskResultAdmin):
 
     @admin.display(description="Manuscript(s)")
     def get_task_manuscript_ids(self, obj):
-        obj_man_ids = eval(obj.task_kwargs[1:-1])["manuscript_id"]
+        if obj.status == "RECEIVED":
+            obj_man_ids = eval(obj.task_kwargs)["manuscript_ids"]
+        else:
+            obj_man_ids = eval(obj.task_kwargs[1:-1])["manuscript_ids"]
+        if not isinstance(obj_man_ids, list):
+            obj_man_ids = [obj_man_ids]
         task_manuscripts = [
             man for man in Manuscript.objects.filter(id__in=obj_man_ids)
         ]
