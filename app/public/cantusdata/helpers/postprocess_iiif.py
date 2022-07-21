@@ -8,6 +8,13 @@ def d_ka_aug_lx(datadict):
     The width and height attributes provided per folio distort the logic of the
     viewer. We only get sections of the folio instead of the entire folio.
     """
+    canvases = datadict['sequences'][0]['canvases']
+    for canvas in canvases:
+        images = canvas['images']
+        for image in images:
+            resource = image['resource']
+            resource.pop('height')
+            resource.pop('width')
     return datadict
 
 
