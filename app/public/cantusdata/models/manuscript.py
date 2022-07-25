@@ -34,7 +34,9 @@ class Manuscript(models.Model):
     provenance = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     public = models.BooleanField(default=False)
-    is_mapped = models.CharField(max_length=10, choices=IsMapped.choices)
+    is_mapped = models.CharField(
+        max_length=10, choices=IsMapped.choices, default="UNMAPPED"
+    )
     chants_loaded = models.BooleanField(default=False)
     plugins = models.ManyToManyField(
         "cantusdata.Plugin", related_name="plugins", blank=True
