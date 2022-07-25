@@ -19,7 +19,7 @@ def d_ka_aug_lx(datadict):
     return datadict
 
 
-def nl_uu_406_3_j_7(datadict):
+def b_gu_hs_bkt_006(datadict):
     """
     Decode encodings from image URLs in the IIIF manifest.
 
@@ -38,5 +38,5 @@ def nl_uu_406_3_j_7(datadict):
 
 iiif_fn = {
     "https://digital.blb-karlsruhe.de/i3f/v20/1253122/manifest": d_ka_aug_lx,
-    "https://adore.ugent.be/IIIF/manifests/archive.ugent.be:082FD364-C35A-11DF-A9D6-99EF78F64438": nl_uu_406_3_j_7,
+    "https://adore.ugent.be/IIIF/manifests/archive.ugent.be:082FD364-C35A-11DF-A9D6-99EF78F64438": b_gu_hs_bkt_006,
 }
