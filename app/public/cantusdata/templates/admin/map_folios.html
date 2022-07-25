@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load map_folios %}
 {% block head %}
 <style>
     form.paths, h2, h5 {
@@ -106,6 +106,11 @@
         text-decoration: underline;
         color: #0b97c4;
     }
+
+    .two-folio-checkbox{
+        width: 80%;
+        text-align: right;
+    }
 </style>
 {% endblock %}
 
@@ -148,13 +153,53 @@
 
 <h5><br><em>Tip: Use 'Tab' and 'Shift+Tab' to navigate the input fields.</em></h5>
 
+<div class="two-folio-checkbox">
+    <fieldset>
+        <input type="checkbox" id="two-folio-images" name="Two Folio Images"
+               unchecked>
+        <label for="two-folio-images">Images have two folios?</label>
+    </fieldset>
+</div>
+
 <form class="mapping-column" action="/admin/map_folios/" method="post">
     {% csrf_token %}
     <input type="hidden" name="manuscript_id" value="{{ manuscript_id }}" />
     <ul>
         <li><h4>Pages from the manifest:</h4></li>
         {% for uri in uris %}
-        <li>
+        <li hidden class="double-folio-list-items">
+            {% if forloop.counter0 == 0 %}
+            <a href={{ uri.large }} target="_blank"><img src={{ uri.thumbnail }} /></a>
+            {{ uri.id }}
+            {% if uri.folio %}
+            <input type="text" class="folio-mapping" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio }} />
+            {% else %}
+            <input type="text" class="folio-mapping" name={{ uri.full }} onchange="checkMappedFolios()" />
+            {% endif %}
+            <div class="button" onclick="onMoveUp({{ forloop.counter0 }})" tabindex="-1">Up</div>
+            <div class="button" onclick="onMoveDown({{ forloop.counter0 }})" tabindex="-1">Down</div>           
+            {% elif not forloop.counter0|divisibleby:"2" %}
+            <a href={{ uri.large }} target="_blank"><img src={{ uri.thumbnail }} /></a>
+            {% with uris|nextitem:forloop.counter0 as next_uri %}
+            {{ uri.id }}, {{ next_uri.id }}
+            {% if uri.folio %}
+            <input type="text" class="folio-mapping" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio }} />
+            {% else %}
+            <input type="text" class="folio-mapping" name={{ uri.full }} onchange="checkMappedFolios()" />
+            {% endif %}
+            {% if next_uri.folio %}
+            <input type="text" class="folio-mapping" name={{ next_uri.full }} onchange="checkMappedFolios()" value={{ next_uri.folio }} />
+            {% else %}
+            <input type="text" class="folio-mapping" name={{ next_uri.full }} onchange="checkMappedFolios()" />
+            {% endif %}
+            <div class="button" onclick="onMoveUp({{ forloop.counter0 }})" tabindex="-1">Up</div>
+            <div class="button" onclick="onMoveDown({{ forloop.counter0 }})" tabindex="-1">Down</div>
+            {% endwith %}
+            {% endif %}
+        </li>
+        {% endfor %}
+        {% for uri in uris %}
+        <li class="single-folio-list-items">
             <a href={{ uri.large }} target="_blank"><img src={{ uri.thumbnail }} /></a>
             {{ uri.id }}
             {% if uri.folio %}
@@ -196,6 +241,28 @@
     document.body.addEventListener('drop', handleFileDrop, false);
 
     checkMappedFolios();
+
+    var twoFolioBox = document.getElementById('two-folio-images');
+    twoFolioBox.addEventListener('change', handleTwoFolioBoxChange);
+
+    function handleTwoFolioBoxChange(evt){
+        var singleFolioItems = document.getElementsByClassName("single-folio-list-items");
+        var doubleFolioItems = document.getElementsByClassName("double-folio-list-items");
+        for (var i = 0; i < singleFolioItems.length; i++){
+            if (singleFolioItems[i].hidden){
+                singleFolioItems[i].hidden = false;
+            } else {
+                singleFolioItems[i].hidden = true;
+            }
+        }
+        for (var i = 0; i < doubleFolioItems.length; i++){
+            if (doubleFolioItems[i].hidden){
+                doubleFolioItems[i].hidden = false;
+            } else {
+                doubleFolioItems[i].hidden = true;
+            }
+        }
+    }
 
     function handleFileDrop(evt) {
         evt.stopPropagation();
