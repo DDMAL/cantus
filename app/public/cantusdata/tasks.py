@@ -20,7 +20,7 @@ def chant_import_task(self, *args, **kwargs):
 def map_folio_task(self, *args, **kwargs):
     call_command(
         "import_folio_mapping",
-        manuscripts=[kwargs["manuscript_id"]],
+        manuscripts=[kwargs["manuscript_ids"]],
         mapping_data=[kwargs["data"]],
         task=self,
     )

@@ -198,4 +198,4 @@ def _save_mapping(request):
             continue
         data.append({"folio": value, "uri": index})
 
-    map_folio_task.apply_async(kwargs={"manuscript_id": manuscript_id, "data": data})
+    map_folio_task.apply_async(kwargs={"manuscript_ids": manuscript_id, "data": data})
