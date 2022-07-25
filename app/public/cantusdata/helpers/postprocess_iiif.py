@@ -1,4 +1,5 @@
 """Customizations for certain IIIF manifests that will not work as provided"""
+import urllib
 
 
 def d_ka_aug_lx(datadict):
@@ -18,4 +19,24 @@ def d_ka_aug_lx(datadict):
     return datadict
 
 
-iiif_fn = {"https://digital.blb-karlsruhe.de/i3f/v20/1253122/manifest": d_ka_aug_lx}
+def nl_uu_406_3_j_7(datadict):
+    """
+    Decode encodings from image URLs in the IIIF manifest.
+
+    Colons and backslashes are already encoded in the image ID
+    URLs in this manifest. These get re-encoded by the diva viewer,
+    so we should pass the decoded URLs to diva.
+    """
+    canvases = datadict["sequences"][0]["canvases"]
+    for canvas in canvases:
+        images = canvas["images"]
+        resource = images[0]["resource"]
+        service = resource["service"]
+        service["@id"] = urllib.parse.unquote(service["@id"])
+    return datadict
+
+
+iiif_fn = {
+    "https://digital.blb-karlsruhe.de/i3f/v20/1253122/manifest": d_ka_aug_lx,
+    "https://adore.ugent.be/IIIF/manifests/archive.ugent.be:082FD364-C35A-11DF-A9D6-99EF78F64438": nl_uu_406_3_j_7,
+}
