@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load map_folios %}
 {% block head %}
 <style>
     form.paths, h2, h5 {
@@ -108,8 +107,9 @@
     }
 
     .two-folio-checkbox{
-        width: 80%;
-        text-align: right;
+        position: fixed;
+        top: 40%;
+        right: 25px;
     }
 </style>
 {% endblock %}
@@ -153,66 +153,35 @@
 
 <h5><br><em>Tip: Use 'Tab' and 'Shift+Tab' to navigate the input fields.</em></h5>
 
-<div class="two-folio-checkbox">
-    <fieldset>
-        <input type="checkbox" id="two-folio-images" name="Two Folio Images"
-               unchecked>
-        <label for="two-folio-images">Images have two folios?</label>
-    </fieldset>
-</div>
+
 
 <form class="mapping-column" action="/admin/map_folios/" method="post">
     {% csrf_token %}
     <input type="hidden" name="manuscript_id" value="{{ manuscript_id }}" />
+    <div class="two-folio-checkbox">
+            <input type="checkbox" id="two-folio-images" name="two_folio_images"
+                   unchecked>
+            <label for="two-folio-images">Images have two folios?</label>
+    </div>
     <ul>
         <li><h4>Pages from the manifest:</h4></li>
         {% for uri in uris %}
-        <li hidden class="double-folio-list-items">
-            {% if forloop.counter0 == 0 %}
+        <li>
             <a href={{ uri.large }} target="_blank"><img src={{ uri.thumbnail }} /></a>
             {{ uri.id }}
             {% if uri.folio %}
-            <input type="text" class="folio-mapping" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio }} />
+            <input type="text" class="folio-mapping single-folio-inputs" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio }} />
             {% else %}
-            <input type="text" class="folio-mapping" name={{ uri.full }} onchange="checkMappedFolios()" />
+            <input type="text" class="folio-mapping single-folio-inputs" name={{ uri.full }} onchange="checkMappedFolios()"/>
             {% endif %}
-            <div class="button" onclick="onMoveUp({{ forloop.counter0 }})" tabindex="-1">Up</div>
-            <div class="button" onclick="onMoveDown({{ forloop.counter0 }})" tabindex="-1">Down</div>           
-            {% elif not forloop.counter0|divisibleby:"2" %}
-            <a href={{ uri.large }} target="_blank"><img src={{ uri.thumbnail }} /></a>
-            {% with uris|nextitem:forloop.counter0 as next_uri %}
-            {{ uri.id }}, {{ next_uri.id }}
-            {% if uri.folio %}
-            <input type="text" class="folio-mapping" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio }} />
-            {% else %}
-            <input type="text" class="folio-mapping" name={{ uri.full }} onchange="checkMappedFolios()" />
-            {% endif %}
-            {% if next_uri.folio %}
-            <input type="text" class="folio-mapping" name={{ next_uri.full }} onchange="checkMappedFolios()" value={{ next_uri.folio }} />
-            {% else %}
-            <input type="text" class="folio-mapping" name={{ next_uri.full }} onchange="checkMappedFolios()" />
-            {% endif %}
-            <div class="button" onclick="onMoveUp({{ forloop.counter0 }})" tabindex="-1">Up</div>
-            <div class="button" onclick="onMoveDown({{ forloop.counter0 }})" tabindex="-1">Down</div>
-            {% endwith %}
-            {% endif %}
-        </li>
-        {% endfor %}
-        {% for uri in uris %}
-        <li class="single-folio-list-items">
-            <a href={{ uri.large }} target="_blank"><img src={{ uri.thumbnail }} /></a>
-            {{ uri.id }}
-            {% if uri.folio %}
-            <input type="text" class="folio-mapping" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio }} />
-            {% else %}
-            <input type="text" class="folio-mapping" name={{ uri.full }} onchange="checkMappedFolios()" />
-            {% endif %}
+            <input hidden type="text" class="folio-mapping double-folio-inputs" name={{ uri.full }} onchange="checkMappedFolios()" />      
             <div class="button" onclick="onMoveUp({{ forloop.counter0 }})" tabindex="-1">Up</div>
             <div class="button" onclick="onMoveDown({{ forloop.counter0 }})" tabindex="-1">Down</div>
         </li>
         {% endfor %}
     </ul>
     {% if manuscript_mapping_state == "PENDING" %}
+    AAA
     <div class="final-submit">
         <input class="grey-button" type="button" value="Mapping in Progress. Try again later.">
     </div>
@@ -236,6 +205,9 @@
 <script>
     var folios = document.getElementsByClassName('folio-name');
     var inputs = document.getElementsByClassName('folio-mapping');
+    var singleFolioInputs = document.getElementsByClassName('single-folio-inputs');
+    var doubleFolioInputs = document.getElementsByClassName('double-folio-inputs');
+    var visibleInputs = singleFolioInputs;
 
     document.body.addEventListener('dragover', handleDragOver, false);
     document.body.addEventListener('drop', handleFileDrop, false);
@@ -246,20 +218,29 @@
     twoFolioBox.addEventListener('change', handleTwoFolioBoxChange);
 
     function handleTwoFolioBoxChange(evt){
-        var singleFolioItems = document.getElementsByClassName("single-folio-list-items");
-        var doubleFolioItems = document.getElementsByClassName("double-folio-list-items");
-        for (var i = 0; i < singleFolioItems.length; i++){
-            if (singleFolioItems[i].hidden){
-                singleFolioItems[i].hidden = false;
+        for (var i = 0; i < doubleFolioInputs.length; i++){
+            if (doubleFolioInputs[i].hidden){
+                doubleFolioInputs[i].hidden = false;
             } else {
-                singleFolioItems[i].hidden = true;
+                doubleFolioInputs[i].hidden = true;
             }
         }
-        for (var i = 0; i < doubleFolioItems.length; i++){
-            if (doubleFolioItems[i].hidden){
-                doubleFolioItems[i].hidden = false;
-            } else {
-                doubleFolioItems[i].hidden = true;
+        if (twoFolioBox.checked){
+            visibleInputs = inputs;
+        } else {
+            visibleInputs = singleFolioInputs;
+        }
+        indexDoubleFolioToggle();
+        checkMappedFolios();
+    }
+
+    function indexDoubleFolioToggle(){
+        for (var i = 0; i < inputs.length; i++){
+            inputs[i].value = null;
+        }
+        for (var i = 0; i < folios.length; i++){
+            if (i < visibleInputs.length){
+                visibleInputs[i].value = folios[i].id;
             }
         }
     }
@@ -282,27 +263,33 @@
         // Move up should change the value above the current input field
         if (startIndex > 0)
             startIndex--;
-        var temp = inputs[startIndex].value;
-
-        for (var i = startIndex; i < inputs.length - 1; i++) {
-            inputs[i].value = inputs[i + 1].value;
+        if (twoFolioBox.checked){
+            startIndex = 2*startIndex;
         }
-        inputs[inputs.length - 1].value = temp;
+        var temp = visibleInputs[startIndex].value;
+
+        for (var i = startIndex; i < visibleInputs.length - 1; i++) {
+            visibleInputs[i].value = visibleInputs[i + 1].value;
+        }
+        visibleInputs[visibleInputs.length - 1].value = temp;
     }
 
     function onMoveDown(startIndex) {
-        var temp = inputs[inputs.length - 1].value;
-        for (var i = inputs.length - 1; i > startIndex; i--) {
-            inputs[i].value = inputs[i - 1].value;
+        var temp = visibleInputs[visibleInputs.length - 1].value;
+        if (twoFolioBox.checked){
+            startIndex = 2*startIndex;
         }
-        inputs[startIndex].value = temp;
+        for (var i = visibleInputs.length - 1; i > startIndex; i--) {
+            visibleInputs[i].value = visibleInputs[i - 1].value;
+        }
+        visibleInputs[startIndex].value = temp;
     }
 
     function checkMappedFolios() {
         for (var i = 0; i < folios.length; i++) {
             var isMapped = false;
             for (var j = 0; j < inputs.length; j++) {
-                if (folios[i].id == inputs[j].value) {
+                if (folios[i].id == inputs[j].value & !inputs[j].hidden) {
                     isMapped = true;
                 }
             }

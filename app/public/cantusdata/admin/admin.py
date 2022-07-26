@@ -43,7 +43,10 @@ class ManuscriptAdmin(admin.ModelAdmin):
             "Sources",
             {"fields": ["cantus_url", "csv_export_url", "manifest_url"]},
         ),
-        ("Status", {"fields": ["public", "chants_loaded", "is_mapped"]}),
+        (
+            "Status",
+            {"fields": ["public", "chants_loaded", "is_mapped", "dbl_folio_img"]},
+        ),
     ]
     readonly_fields = (
         "folio_count",
@@ -51,6 +54,7 @@ class ManuscriptAdmin(admin.ModelAdmin):
         "siglum_slug",
         "chants_loaded",
         "is_mapped",
+        "dbl_folio_img",
     )
     list_display = ("name", "siglum", "public", "chants_loaded", "is_mapped")
 
