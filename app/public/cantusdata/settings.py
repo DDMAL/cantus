@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 from pathlib import Path
 import os
 
-is_development = os.environ.get("APP_PORT") == 8000
+is_development = os.environ.get("APP_PORT") == "8000"
 is_production = not is_development
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -29,6 +29,7 @@ ALLOWED_HOSTS = [
     "dev-cantus.simssa.ca",
     "cantus.staging.simssa.ca",
     "localhost",
+    "cantus-app-1",
 ]
 
 # Application definition

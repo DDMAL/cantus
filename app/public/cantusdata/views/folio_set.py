@@ -34,15 +34,13 @@ class ManuscriptFolioSetView(APIView):
             result = solrconn.query(
                 composed_request,
                 sort="number asc",
-                rows=1,
+                rows=2,
                 fields=FOLIO_FIELDS,
                 score=False,
             )
 
-            # We only want the single result!
-            # TODO: Figure out the best way to handle this
             if result.results:
-                return Response(result.results[0])
+                return Response(result.results)
             else:
                 raise Http404("No data for a folio with that number")
         else:
