@@ -30,6 +30,7 @@ CHANT_FIELDS = [
     "full_text",
     "volpiano",
     "concordances",
+    "cdb_uri",
 ]
 
 

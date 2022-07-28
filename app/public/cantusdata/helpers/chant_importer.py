@@ -68,6 +68,7 @@ class ChantImporter:
         chant.incipit = row["incipit"].strip()
         chant.full_text = row["fulltext_standardized"].strip()
         chant.volpiano = row["volpiano"].strip()
+        chant.cdb_uri = row["node_id"].strip()
         chant.lit_position = self.position_expander.get_text(
             row["office"].strip(),
             row["genre"].strip(),
