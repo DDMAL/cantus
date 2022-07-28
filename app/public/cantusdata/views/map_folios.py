@@ -1,8 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
-from django.core.management import call_command
-from django.db import transaction
 from cantusdata.models.folio import Folio
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.tasks import map_folio_task
@@ -172,7 +170,6 @@ def _remove_number_padding(s):
     return ret_str
 
 
-@transaction.atomic
 def _save_mapping(request):
     """Called in case of a POST request to map_folios.
     Contents of post request should have:
