@@ -66,6 +66,8 @@ services:
   celery:
     image: cantus_app
     container_name: cantus-celery-1
+    volumes:
+      - ./app/public:/code/public
     command:
       [
         "runuser",

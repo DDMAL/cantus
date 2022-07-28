@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1
 FROM python:3.6.9
-COPY . /code/
+COPY django-config.sh /code/
+COPY public/requirements.txt /code/public/
+COPY cantus-staticpages/ /code/cantus-staticpages/
 EXPOSE 8001
 
 RUN chmod u+x /code/django-config.sh
