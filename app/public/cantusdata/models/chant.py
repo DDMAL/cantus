@@ -34,6 +34,7 @@ class Chant(models.Model):
     )
     volpiano = models.TextField(blank=True, null=True)
     manuscript = models.ForeignKey("Manuscript", on_delete=models.CASCADE)
+    cdb_uri = models.PositiveIntegerField("Cantus DB URI", null=True)
 
     def __str__(self):
         return "{0} - {1}".format(self.cantus_id, self.incipit)
@@ -75,6 +76,7 @@ class Chant(models.Model):
             "full_text": self.full_text,
             "volpiano": self.volpiano,
             "concordances": self.concordance_citation_list,
+            "cdb_uri": self.cdb_uri,
         }
 
     def fetch_solr_records(self, solrconn):
