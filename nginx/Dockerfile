@@ -9,7 +9,7 @@ RUN wget http://www.fawe.de/volpiano/volpiano51_web.zip
 RUN unzip volpiano51_web.zip
 RUN rm volpiano51_web.zip
 RUN mv volpiano51_web/volpiano.woff ../static/fonts/volpiano.woff
-RUN gulp build
+RUN gulp build --release
 
 FROM python:3.6.9 AS django-static
 COPY ./public/python /code
