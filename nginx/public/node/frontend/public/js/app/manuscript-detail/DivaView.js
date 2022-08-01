@@ -285,6 +285,9 @@ export default Marionette.ItemView.extend({
 
         // Customize the toolbar
         this._customizeToolbar();
+
+        // Change initial view to document view
+        this.divaInstance.changeView('document');
     },
 
     /** Do some awkward manual manipulation of the toolbar */
