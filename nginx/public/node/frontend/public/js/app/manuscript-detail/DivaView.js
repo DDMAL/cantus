@@ -152,6 +152,8 @@ export default Marionette.ItemView.extend({
      */
     updatePageAlias: function (folioName)
     {
+        const stringFolioName = new String(folioName);
+        const spacedFolioName = stringFolioName.split(",").join(", ");
         this.folioNumberSpan.textContent = folioName;
     },
 

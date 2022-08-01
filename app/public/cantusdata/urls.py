@@ -66,7 +66,7 @@ urlpatterns = [
     #######################
     # Query chants by folio
     path(
-        "chant-set/folio/<int:pk>/",
+        "chant-set/folio/<str:pk>/",
         FolioChantSetView.as_view(),
         name="folio-chant-set-view",
     ),
