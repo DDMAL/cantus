@@ -26,8 +26,8 @@ class ManuscriptFolioSetViewTestCase(APITransactionTestCase):
         response = self.client.get("/folio-set/manuscript/3/http%3A%2F%2Ftest.com/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         expected_string = (
-            '{"manuscript_id": 3, "number": "123",'
-            ' "item_id": "1", "type": "cantusdata_folio", "image_uri": "http://test.com"}'
+            '{"manuscript_id": [3], "number": ["123"],'
+            ' "item_id": ["1"], "type": ["cantusdata_folio"], "image_uri": ["http://test.com"]}'
         )
         # Empty response is just square brackets
         self.assertJSONEqual(response.content, expected_string)

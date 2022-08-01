@@ -4,11 +4,10 @@ from rest_framework.renderers import TemplateHTMLRenderer
 from cantusdata.models.folio import Folio
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.tasks import map_folio_task
+from cantusdata.settings import is_production
 from django.http import HttpResponseRedirect
-import urllib.request, urllib.parse, urllib.error
-import json
-import csv
 import re
+import requests
 import threading
 
 
@@ -39,8 +38,12 @@ class MapFoliosView(APIView):
         # Get individual URIs of manuscript.
         uris_objs = []
         uris = []
-        manifest_json = urllib.request.urlopen(manifest)
-        manifest_data = json.loads(manifest_json.read().decode("utf-8"))
+
+        proxy_port = 80 if is_production else 8001
+        manifest_json = requests.get(
+            f"http://cantus-app-1:{proxy_port}/manifest-proxy/" + manifest
+        )
+        manifest_data = manifest_json.json()
         for canvas in manifest_data["sequences"][0]["canvases"]:
             service = canvas["images"][0]["resource"]["service"]
             uri = service["@id"]
@@ -115,11 +118,6 @@ class MapFoliosView(APIView):
         except Exception as e:
             return Response({"error": e})
 
-        manuscript_id = request.POST["manuscript_id"]
-        manuscript = Manuscript.objects.get(id=manuscript_id)
-        manuscript.is_mapped = "PENDING"
-        manuscript.save()
-
         return HttpResponseRedirect("/admin/map_folios/")
 
 
@@ -174,25 +172,35 @@ def _save_mapping(request):
     """Called in case of a POST request to map_folios.
     Contents of post request should have:
     - a csrfmiddlewaretoken key-value pair
+    - a two_folio_images key with "on" or "off" result
     - a manuscript_id key with the id of mapped manuscript as value
     - a series of key-value pairs where key is a IIIF uri
       and values is a folio name
-    Creates a temporary csv dump of folio mapping data and
-    calls the import_folio_mapping command."""
-
+    Calls the import_folio_mapping command."""
+    # Set manuscript mapping status to pending
+    # Record whether mapping involves images with
+    # two folios.
     manuscript_id = request.POST["manuscript_id"]
+    manuscript = Manuscript.objects.get(id=manuscript_id)
+    dbl_folio_img = True if request.POST.get("two_folio_images", None) else False
+    manuscript.is_mapped = "PENDING"
+    manuscript.dbl_folio_img = dbl_folio_img
+    manuscript.save()
 
     # Create list of data for saving
     # with column headers "folio" and "uri"
     data = []
-    for index, value in request.POST.items():
+    for index, value in request.POST.lists():
         # 'index' should be the uri, and 'value' the folio name
         if (
             index == "csrfmiddlewaretoken"
             or index == "manuscript_id"
-            or len(value) == 0
+            or index == "two_folio_images"
         ):
             continue
-        data.append({"folio": value, "uri": index})
+        for fol in value:
+            if len(fol) == 0:
+                continue
+            data.append({"folio": fol, "uri": index})
 
     map_folio_task.apply_async(kwargs={"manuscript_ids": manuscript_id, "data": data})

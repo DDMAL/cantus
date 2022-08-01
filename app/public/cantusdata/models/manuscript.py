@@ -37,6 +37,7 @@ class Manuscript(models.Model):
     is_mapped = models.CharField(
         max_length=10, choices=IsMapped.choices, default="UNMAPPED"
     )
+    dbl_folio_img = models.BooleanField("Double-folio images", default=False)
     chants_loaded = models.BooleanField(default=False)
     plugins = models.ManyToManyField(
         "cantusdata.Plugin", related_name="plugins", blank=True
