@@ -19,7 +19,7 @@ export default Marionette.ItemView.extend({
     serializeData: function ()
     {
         return {
-            number: String(manuscriptChannel.request('folio')).split(",").join(", ")
-        };
+            number: manuscriptChannel.request('pageAlias')
+        }
     }
 });

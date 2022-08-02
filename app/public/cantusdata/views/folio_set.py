@@ -45,8 +45,10 @@ class ManuscriptFolioSetView(APIView):
                     for key in result.results[0].keys()
                 }
                 return Response(results_dict)
+            elif result.numFound == 0:
+                return Response({"number": None})
             else:
-                raise Http404("No data for a folio with that number")
+                raise Http404("Folio set query failed.")
         else:
             if "q" in request.GET:
                 query_str = request.GET["q"]
