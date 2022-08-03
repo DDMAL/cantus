@@ -8,52 +8,52 @@ $screen-lg-min: 1200px;
 $grid-float-breakpoint: $screen-sm-min;
 
 // Colors
-$gray-darker:            lighten(#000, 13.5%); // #222
-$gray-dark:              lighten(#000, 20%);   // #333
-$gray:                   #6f6f6f; // #555
-$gray-light:             lighten(#000, 60%);   // #999
-$gray-lighter:           lighten(#000, 93.5%); // #eee
+$gray-darker: lighten(#000, 13.5%); // #222
+$gray-dark: lighten(#000, 20%); // #333
+$gray: #6f6f6f; // #555
+$gray-light: lighten(#000, 60%); // #999
+$gray-lighter: lighten(#000, 93.5%); // #eee
 
-$brand-primary:         #c2342e;
-$brand-success:         #43ac6a;
-$brand-info:            #5bc0de;
-$brand-warning:         #E99002;
-$brand-danger:          #F04124;
+$brand-primary: #c2342e;
+$brand-success: #43ac6a;
+$brand-info: #5bc0de;
+$brand-warning: #E99002;
+$brand-danger: #F04124;
 
 //Bootstrap colors
-$bootstrap-blue:        #337ab7;
+$bootstrap-blue: #337ab7;
 
 //** Global textual link color.
-$link-color:            $brand-primary;
-$link-hover-color:      darken($link-color, 15%);
+$link-color: $brand-primary;
+$link-hover-color: darken($link-color, 15%);
 
 // Color used for a lot of borders in the Bootstrap things
 $border-color: #ddd;
 
-$zindex-navbar:            1000;
-$zindex-dropdown:          1000;
-$zindex-popover:           1010;
-$zindex-tooltip:           1030;
-$zindex-navbar-fixed:      1030;
-$zindex-modal-background:  1040;
-$zindex-modal:             1050;
+$zindex-navbar: 1000;
+$zindex-dropdown: 1000;
+$zindex-popover: 1010;
+$zindex-tooltip: 1030;
+$zindex-navbar-fixed: 1030;
+$zindex-modal-background: 1040;
+$zindex-modal: 1050;
 
-$zindex-diva-fullscreen:   $zindex-modal;
-$zindex-diva-canvas:       $zindex-diva-fullscreen + 5;
+$zindex-diva-fullscreen: $zindex-modal;
+$zindex-diva-canvas: $zindex-diva-fullscreen + 5;
 
 @import "sidenav";
 
 // Volpiano font
 @font-face {
-  font-family: 'Volpiano';
-  src: url('/static/fonts/volpiano.eot'); // IE9 Compat Modes
-  src: url('/static/fonts/volpiano.eot?#iefix') format('embedded-opentype'), // IE6-IE8
-       url('/static/fonts/volpiano.woff') format('woff'), // Modern Browsers
-       url('/static/fonts/volpiano.ttf')  format('truetype'), // Safari, Android, iOS
-       url('/static/fonts/volpiano.svg#a7a4d8715938a922c6a8c6587abbdcd3') format('svg'); // Legacy iOS
+    font-family: 'Volpiano';
+    src: url('/static/fonts/volpiano.eot'); // IE9 Compat Modes
+    src: url('/static/fonts/volpiano.eot?#iefix') format('embedded-opentype'), // IE6-IE8
+        url('/static/fonts/volpiano.woff') format('woff'), // Modern Browsers
+        url('/static/fonts/volpiano.ttf') format('truetype'), // Safari, Android, iOS
+        url('/static/fonts/volpiano.svg#a7a4d8715938a922c6a8c6587abbdcd3') format('svg'); // Legacy iOS
 
-  font-style:   normal;
-  font-weight:  400;
+    font-style: normal;
+    font-weight: 400;
 }
 
 
@@ -74,7 +74,8 @@ pre.preformatted-text {
     color: inherit;
 }
 
-.no-js-message .container, .no-js-message .logos {
+.no-js-message .container,
+.no-js-message .logos {
     padding-top: 25px;
 }
 
@@ -110,7 +111,9 @@ pre.preformatted-text {
     margin-left: -1px;
 }
 
-.volpiano, .field-volpiano, .field-volpiano_literal {
+.volpiano,
+.field-volpiano,
+.field-volpiano_literal {
     font-family: 'Volpiano';
     font-size: 22pt;
     line-height: 2.5em;
@@ -135,35 +138,39 @@ pre.preformatted-text {
 
 .volpiano-text {
     font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 12px;
+    font-size: 10px;
     margin-top: 35px;
     position: absolute;
     left: 0;
 }
 
-.field-volpiano, .field-volpiano_literal {
+.field-volpiano,
+.field-volpiano_literal {
     color: #333;
 }
 
-.field-volpiano.search-text-entered, .field-volpiano_literal.search-text-entered {
+.field-volpiano.search-text-entered,
+.field-volpiano_literal.search-text-entered {
     height: 2em;
     padding-top: 0;
     padding-bottom: 0;
 }
 
-.field-volpiano::placeholder, .field-volpiano_literal::placeholder {
+.field-volpiano::placeholder,
+.field-volpiano_literal::placeholder {
     font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 15px;
 }
 
 // We only need to set the line height on webkit, since it renders differently
 // than other browsers
-.field-volpiano::-webkit-input-placeholder, .field-volpiano_literal::-webkit-input-placeholder {
+.field-volpiano::-webkit-input-placeholder,
+.field-volpiano_literal::-webkit-input-placeholder {
     line-height: 1.42857143;
 }
 
 .result-list {
-    > thead > tr > th {
+    >thead>tr>th {
         white-space: nowrap;
         overflow: hidden;
         position: sticky;
@@ -177,7 +184,7 @@ pre.preformatted-text {
         }
     }
 
-    > tbody > tr > td {
+    >tbody>tr>td {
         // Hide the top border since the <tbody> acts as a delimiter
         border-top: 0;
     }
@@ -195,6 +202,7 @@ pre.preformatted-text {
 
 
 .full-result-record {
+
     .content-enter,
     .content-exit {
         overflow: hidden;
@@ -244,28 +252,32 @@ pre.preformatted-text {
 
 // When applied to ancestors of a nested element, this class uses flexbox to set the height
 // of the element to the remaining height of the viewport.
-.propagate-height, .modal-content, .modal-body {
+.propagate-height,
+.modal-content,
+.modal-body {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
     overflow: hidden;
 
     // Workaround for Safari, where elements would shrink if the chant list was too big
-    > * {
+    >* {
         flex-shrink: 0;
     }
 
-    > .propagate-height, > .result-table-wrapper, > .modal-body {
+    >.propagate-height,
+    >.result-table-wrapper,
+    >.modal-body {
         flex-shrink: 1;
     }
 
     // Workaround for Bootstrap tabs
-    .tab-content > &.tab-pane {
-            display: none;
+    .tab-content>&.tab-pane {
+        display: none;
 
-            &.active {
-                display: flex;
-            }
+        &.active {
+            display: flex;
+        }
     }
 }
 
@@ -280,7 +292,7 @@ body.propagate-height {
 
     // Distribute width to the columns equally by default,
     // allocating more for the Diva column on large screens
-    > * {
+    >* {
         width: 50%;
     }
 
@@ -299,9 +311,11 @@ body.propagate-height {
     width: 50%;
     height: 90%;
 }
+
 .modal-content {
     height: 100%;
 }
+
 // Fix a bug in the modal content where the search drop-down would be hidden
 // ^This doesn't seem to be happening, and it was stopping the list from being scrollable - eli
 // .modal-content > .modal-body > .propagate-height {
@@ -334,7 +348,7 @@ body.propagate-height {
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             background-color: #bbb;
 
-            + .prong {
+            +.prong {
                 margin-left: 1px;
             }
         }
@@ -383,13 +397,15 @@ body.propagate-height {
         }
     }
 
-    .diva-buttons-label, .diva-page-label {
+    .diva-buttons-label,
+    .diva-page-label {
         padding: 5px 10px !important;
         line-height: 1.5 !important;
         margin: 0;
     }
 
-    .diva-goto-form, .diva-input {
+    .diva-goto-form,
+    .diva-input {
         line-height: inherit;
     }
 
@@ -405,7 +421,9 @@ body.propagate-height {
     height: 120px;
     padding: 10px;
 
-    .diva-buttons-label, .diva-page-label, .diva-page-nav {
+    .diva-buttons-label,
+    .diva-page-label,
+    .diva-page-nav {
         padding-left: 0 !important;
         padding-right: 0 !important;
     }
@@ -426,25 +444,32 @@ body.propagate-height {
 .diva-outer.diva-fullscreen {
     z-index: $zindex-diva-fullscreen;
 }
-.diva-popup, .diva-tools.diva-fullscreen-tools {
+
+.diva-popup,
+.diva-tools.diva-fullscreen-tools {
     z-index: $zindex-diva-fullscreen + 1;
 }
 
 #diva-canvas-backdrop {
     z-index: $zindex-diva-canvas;
 }
+
 #diva-canvas-wrapper {
     z-index: $zindex-diva-canvas + 1;
 }
+
 #diva-canvas {
     z-index: $zindex-diva-canvas + 2;
 }
+
 #diva-canvas-tools {
     z-index: $zindex-diva-canvas + 3;
 }
+
 #diva-canvas-toolbar div {
     z-index: $zindex-diva-canvas + 4;
 }
+
 .canvas-throbber {
     z-index: $zindex-diva-canvas + 5;
 }
@@ -467,7 +492,8 @@ body.propagate-height {
     margin: 0;
 }
 
-.search-suggestions .list-group-item.active, .search-suggestions .list-group-item.active:hover{
+.search-suggestions .list-group-item.active,
+.search-suggestions .list-group-item.active:hover {
     background-color: $bootstrap-blue;
     border-color: $bootstrap-blue;
 }
@@ -494,7 +520,7 @@ body.propagate-height {
         padding-left: 40px;
     }
 
-    .nav li > a {
+    .nav li>a {
         color: #333;
     }
 }
@@ -504,7 +530,9 @@ body.propagate-height {
     margin-bottom: 22px;
     color: #333;
 
-    &:hover, &:active, &.active {
+    &:hover,
+    &:active,
+    &.active {
         text-decoration: none;
         color: #333;
         background-color: #eee;
@@ -515,14 +543,17 @@ body.propagate-height {
 // Select ancestors of .navbar-default to match the specificity of the Bootstrap styling
 // TODO(wabain): See if this can be done using Bootstrap variables. nav-link-padding?
 
-.navbar-default .navbar-brand, .sidenav-brand {
+.navbar-default .navbar-brand,
+.sidenav-brand {
     height: 50px;
     padding: 15px 15px;
     font-size: 20px;
     line-height: 20px;
 
     // Get anchor elements within a brand to be styled like the brand
-    a, a:hover, a:focus {
+    a,
+    a:hover,
+    a:focus {
         color: inherit;
         text-decoration: none;
     }
@@ -536,6 +567,7 @@ body.propagate-height {
 }
 
 @media (max-width: $screen-sm-min - 1) {
+
     // If there's a subhead and JS enhancements are supported then hide the
     // primary component on smaller screens
     html.js {
@@ -564,7 +596,7 @@ body.propagate-height {
     }
 }
 
-.navbar-default .navbar-nav > li > a {
+.navbar-default .navbar-nav>li>a {
     padding-top: 15px;
     padding-bottom: 15px;
 }
@@ -577,7 +609,7 @@ body.propagate-height {
 
     // Margin equal to $navbar-padding-horizontal
     margin-right: 0;
-    margin-left: 15px;//FIXME: use variable
+    margin-left: 15px; //FIXME: use variable
 
     padding-top: 11px;
     padding-bottom: 11px;
@@ -632,7 +664,8 @@ html.js {
     padding: 5px;
     color: $gray-darker;
 
-    &:hover, &:focus {
+    &:hover,
+    &:focus {
         text-decoration: none;
         border-color: $link-color;
         color: $gray-darker;
