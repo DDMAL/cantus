@@ -10,6 +10,7 @@ import GlobalVars from '../config/GlobalVars';
 import template from './diva.template.html';
 
 var manuscriptChannel = Backbone.Radio.channel('manuscript');
+var folioChannel = Backbone.Radio.channel('folio');
 
 /**
  * Manages the lifecycle and customization of the Diva viewer
@@ -38,7 +39,7 @@ export default Marionette.ItemView.extend({
         }, 250);
 
         this.listenTo(manuscriptChannel, 'change:imageURI', this.setImageURI);
-        this.listenTo(manuscriptChannel, 'change:folio', this.updatePageAlias);
+        this.listenTo(folioChannel, 'folioLoaded', this.updatePageAlias);
 
         this.toolbarParentObject = this.options.toolbarParentObject;
 
@@ -150,11 +151,17 @@ export default Marionette.ItemView.extend({
      *
      * @param folioName
      */
-    updatePageAlias: function (folioName)
+    updatePageAlias: function ()
     {
-        const stringFolioName = new String(folioName);
-        const spacedFolioName = stringFolioName.split(",").join(", ");
-        this.folioNumberSpan.textContent = folioName;
+        let folioNumber = manuscriptChannel.request('folio');
+        if (folioNumber != null){
+            var pageAlias = 'Folio ' + folioNumber;
+        } else {
+            let imageIndex = this.divaInstance.getCurrentAliasedPageIndex()
+            var pageAlias = 'Image ' + imageIndex;
+        }
+        manuscriptChannel.request('set:pageAlias', pageAlias, {replaceState: true});
+        this.folioNumberSpan.textContent = pageAlias;
     },
 
     /**
@@ -263,6 +270,9 @@ export default Marionette.ItemView.extend({
     {
         this.trigger('loaded:viewer');
 
+        // Customize the toolbar
+        this._customizeToolbar();
+
         // Go to the predetermined initial folio if one is set
         var initialFolio = manuscriptChannel.request('folio');
         if (initialFolio !== null)
@@ -282,9 +292,6 @@ export default Marionette.ItemView.extend({
 
         // Store the list of filenames
         this.divaFilenames = this.divaInstance.getFilenames();
-
-        // Customize the toolbar
-        this._customizeToolbar();
 
         // Change initial view to document view
         this.divaInstance.changeView('document');
@@ -307,7 +314,7 @@ export default Marionette.ItemView.extend({
 
         // Rename the current page label from Page to Folio
         var pageLabel = this.toolbarParentObject.find('.diva-page-label')[0];
-        pageLabel.firstChild.textContent = 'Folio ';
+        pageLabel.firstChild.textContent = '';
 
         // Add an empty span to display the folio name
         this.folioNumberSpan = document.createElement('span');

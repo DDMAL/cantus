@@ -11,6 +11,7 @@ import ChantCompositeView from "./ChantCompositeView";
 import template from './folio.template.html';
 
 var manuscriptChannel = Backbone.Radio.channel('manuscript');
+var folioChannel = Backbone.Radio.channel('folio');
 
 export default Marionette.LayoutView.extend({
     template,
@@ -60,6 +61,7 @@ export default Marionette.LayoutView.extend({
         }, this), 250);
 
         imageURI = encodeURIComponent(imageURI);
+        this.model.clear();
         this.model.fetch({
             url: GlobalVars.siteUrl + "folio-set/manuscript/" + manuscript + "/" + imageURI + "/"
         }).always(function ()
@@ -72,6 +74,8 @@ export default Marionette.LayoutView.extend({
     {
         // Broadcast that the folio name has been received
         manuscriptChannel.request('set:folio', this.model.get('number'), {replaceState: true});
+        folioChannel.trigger('folioLoaded');
+        this.chantCollection.reset();
         this.assignChants();
     },
 
@@ -79,12 +83,7 @@ export default Marionette.LayoutView.extend({
     {
         this.chantCollection.reset();
         this.model.clear();
-
-        // We can ignore 404s and take them to mean no data
-        if (xhr.status === 404)
-            this.assignChants();
-        else
-            this._showMessage('Failed to load chants.');
+        this._showMessage('Failed to load chants.');
     },
 
     /** Display a message */

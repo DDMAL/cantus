@@ -18,7 +18,8 @@ export default Backbone.Model.extend({
         imageURI: undefined,
         folio: undefined,
         chant: undefined,
-        search: undefined
+        search: undefined,
+        pageAlias: undefined
     },
 
     initialize: function()
@@ -67,6 +68,7 @@ export default Backbone.Model.extend({
         if (!this.hasChanged('folio'))
         {
             this.set('folio', null);
+            this.set('pageAlias', null);
         }
     },
 
