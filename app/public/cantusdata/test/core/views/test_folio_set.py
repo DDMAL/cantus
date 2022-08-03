@@ -36,4 +36,4 @@ class ManuscriptFolioSetViewTestCase(APITransactionTestCase):
         response = self.client.get("/folio-set/manuscript/3/66666666666/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         expected_string = '{"number":null}'
-        self.assertEqual(response.content, expected_string)
+        self.assertJSONEqual(response.content, expected_string)
