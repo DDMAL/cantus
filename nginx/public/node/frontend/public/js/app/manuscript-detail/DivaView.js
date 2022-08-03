@@ -163,9 +163,10 @@ export default Marionette.ItemView.extend({
     gotoInputPage: function (event)
     {
         event.preventDefault();
-
-        var pageInput = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'goto-page-input');
-        var pageAlias = pageInput.val();
+        
+        var inputSuggestions = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'input-suggestions');
+        var pageInput = $('.diva-input-suggestion:first', inputSuggestions)
+        var pageAlias = pageInput.text();
 
         if (!pageAlias)
             return;
