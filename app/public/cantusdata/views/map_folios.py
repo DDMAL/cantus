@@ -8,6 +8,8 @@ from cantusdata.settings import is_production
 from django.http import HttpResponseRedirect
 import re
 import requests
+import json
+import urllib.request
 import threading
 
 
@@ -39,11 +41,8 @@ class MapFoliosView(APIView):
         uris_objs = []
         uris = []
 
-        proxy_port = 80 if is_production else 8001
-        manifest_json = requests.get(
-            f"http://cantus-app-1:{proxy_port}/manifest-proxy/" + manifest
-        )
-        manifest_data = manifest_json.json()
+        manifest_json = urllib.request.urlopen(manifest)
+        manifest_data = json.loads(manifest_json.read().decode("utf-8"))
         for canvas in manifest_data["sequences"][0]["canvases"]:
             service = canvas["images"][0]["resource"]["service"]
             uri = service["@id"]
