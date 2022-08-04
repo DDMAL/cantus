@@ -170,9 +170,10 @@ export default Marionette.ItemView.extend({
     gotoInputPage: function (event)
     {
         event.preventDefault();
-
-        var pageInput = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'goto-page-input');
-        var pageAlias = pageInput.val();
+        
+        var inputSuggestions = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'input-suggestions');
+        var pageInput = $('.diva-input-suggestion:first', inputSuggestions)
+        var pageAlias = pageInput.text();
 
         if (!pageAlias)
             return;
@@ -195,7 +196,6 @@ export default Marionette.ItemView.extend({
 
     showPageSuggestions: function showPageSuggestions(event){
         var inputSuggestions = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'input-suggestions');
-        inputSuggestions.empty();
         var manuscript = manuscriptChannel.request('manuscript');
 
         var pageInput = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'goto-page-input');
@@ -203,6 +203,7 @@ export default Marionette.ItemView.extend({
         var queryUrl =  '/folio-set/manuscript/' + manuscript + '/?q=' + pageInput.val();
         $.get(queryUrl,
             function (data){
+                inputSuggestions.empty();
                 for (const queryResult of data){
                     var newInputSuggestion = document.createElement('div');
                     newInputSuggestion.setAttribute('class','diva-input-suggestion');
