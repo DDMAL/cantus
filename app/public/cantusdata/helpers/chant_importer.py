@@ -11,10 +11,12 @@ import csv
 
 
 class ChantImporter:
-    def __init__(self, stdout):
+    def __init__(self, stdout, mobj=None):
         self.stdout = stdout
         # Map siglum to manuscript model
         self._manuscript_cache = {}
+        # Provide a manuscript object to use always
+        self._mobj = mobj
         self.new_chant_info = []
         self.new_folios = []
         self.folio_registry = set()
@@ -108,13 +110,15 @@ class ChantImporter:
         self.folio_registry.add((folio_code, manuscript.pk))
 
     def get_manuscript(self, siglum):
-        try:
-            return self._manuscript_cache[siglum]
-        except KeyError:
-            manuscript = self._manuscript_cache[siglum] = Manuscript.objects.get(
-                siglum=siglum
-            )
-            return manuscript
+        if self._mobj:
+            # If provided with a manuscript object, use that
+            mobj = self._mobj
+        elif siglum in self._manuscript_cache:
+            mobj = self._manuscript_cache[siglum]
+        else:
+            mobj = Manuscript.objects.get(siglum=siglum)
+            self._manuscript_cache[siglum] = mobj
+        return mobj
 
     @transaction.atomic
     def save(self, delete_existing=False, task=None):
