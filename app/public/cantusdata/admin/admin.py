@@ -22,6 +22,7 @@ reindex_in_solr.short_description = "ReIndex in Solr"
 
 class ManuscriptAdmin(admin.ModelAdmin):
     actions = [reindex_in_solr, "load_chants"]
+    ordering = ["-public", "name"]
     list_per_page = 200
     fieldsets = [
         (
