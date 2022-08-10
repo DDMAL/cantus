@@ -4,7 +4,7 @@
 
 Serving images on a website using [Apache Solr](http://lucene.apache.org/solr/), [Diva.js](https://ddmal.github.io/diva.js/) and the [CANTUS](http://cantusdatabase.org/) collection.
 
-The status of manuscripts served by Cantus Ultimus is available [here][#manuscript-inventory]. Inclusion of additional manuscripts should be recorded there.
+The status of manuscripts served by Cantus Ultimus is available [here](#manuscript-inventory). Inclusion of additional manuscripts should be recorded there.
 
 ## Cloning the repository
 
