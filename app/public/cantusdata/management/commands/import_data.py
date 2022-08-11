@@ -69,6 +69,11 @@ class Command(BaseCommand):
                 Manuscript.objects.all().update(manifest_url="")
                 self.import_iiif_data()
             self.stdout.write("Waiting for Solr to finish...")
+        # Register that chants are loaded for this manuscript
+        if options["type"] == "chants":
+            mobj = Manuscript.objects.get(id=options["manuscript_id"])
+            mobj.chants_loaded = True
+            mobj.save()
         self.stdout.write("Done.")
 
     @transaction.atomic
@@ -131,9 +136,6 @@ class Command(BaseCommand):
             chant_count = importer.import_csv(fcsv)
         # Save the new chants
         importer.save(task=task)
-        # Register that chants are loaded for this manuscript
-        mobj.chants_loaded = True
-        mobj.save()
         self.stdout.write(
             "Successfully imported {} chants into database.".format(chant_count)
         )
