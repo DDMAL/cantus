@@ -16,6 +16,10 @@ export default Marionette.Object.extend({
      */
     set: function(manuscript, folio, chantNumber)
     {
+        if (_.isArray(folio)){
+            folio = folio.join(",");
+        }
+
         if (!(_.isString(manuscript) && _.isString(folio)))
         {
             /* eslint-disable no-console */
