@@ -163,7 +163,7 @@ export default Marionette.ItemView.extend({
 		var formattedVolpiano = parseVolpianoSyllables(text, volpiano);
 		this.model.set('volpiano', formattedVolpiano);
 		var cdb_uri = this.model.get('cdb_uri');
-		this.model.set({ 'cdb_link_url': 'https://cantus.uwaterloo.ca/chant/' + cdb_uri })
+		this.model.set({ 'cdb_link_url': 'https://cantus.uwaterloo.ca/node/' + cdb_uri })
 	},
 	events: {
 		"click #btnPlay": "submit"
