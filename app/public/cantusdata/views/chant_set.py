@@ -47,7 +47,7 @@ class FolioChantSetView(APIView):
         composed_request = f'type:"cantusdata_chant" AND ({folio_ids_str})'
         results = solrconn.query(
             composed_request,
-            sort="sequence asc",
+            sort="folio asc, sequence asc",
             rows=100,
             fields=CHANT_FIELDS,
             score=False,

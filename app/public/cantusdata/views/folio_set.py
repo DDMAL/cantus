@@ -41,7 +41,7 @@ class ManuscriptFolioSetView(APIView):
 
             if result.results:
                 results_dict = {
-                    key: set([res[key] for res in result.results])
+                    key: [res[key] for res in result.results]
                     for key in result.results[0].keys()
                 }
                 return Response(results_dict)
