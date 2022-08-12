@@ -155,6 +155,9 @@ export default Marionette.ItemView.extend({
     {
         let folioNumber = manuscriptChannel.request('folio');
         if (folioNumber != null){
+            if (_.isArray(folioNumber)){
+                folioNumber = folioNumber.join(', ');
+            }
             var pageAlias = 'Folio ' + folioNumber;
         } else {
             let imageIndex = this.divaInstance.getCurrentAliasedPageIndex()
