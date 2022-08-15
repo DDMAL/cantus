@@ -159,7 +159,7 @@ export default Marionette.ItemView.extend({
 	initialize: function () {
 		// Add a text underlay to the volpiano
 		var volpiano = this.model.get('volpiano');
-		var text = this.model.get('full_text');
+		var text = this.model.get('full_text_ms');
 		var formattedVolpiano = parseVolpianoSyllables(text, volpiano);
 		this.model.set('volpiano', formattedVolpiano);
 		var cdb_uri = this.model.get('cdb_uri');

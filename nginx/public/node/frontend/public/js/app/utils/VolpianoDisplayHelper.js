@@ -45,8 +45,32 @@ export function formatVolpianoResult(text, volpiano, query, onlyLiteralMatches)
 export function parseVolpianoSyllables(text, volpiano)
 {
     var volpianoWords = volpiano.split("---");
-    var textWords = text.split(" ");
+    var textWordsSplit = text.split(" ");
     var finalString = "";
+
+    // Text for areas with missing notes is surrounded by {}
+    // Rejoin "words" surrounded by {} so that these are correctly
+    // aligned with set of missing notes.
+    var textWords = [];
+    for (var i = 0; i < textWordsSplit.length; i++) {
+        if (textWordsSplit[i].includes("{")){
+            var foundClose = false;
+            var rejoinedString = "";
+            while (!foundClose){
+                if (textWordsSplit[i].includes("}")){
+                    rejoinedString += textWordsSplit[i];
+                    textWords.push(rejoinedString);
+                    foundClose = true;
+                } else {
+                    rejoinedString += textWordsSplit[i];
+                    rejoinedString += " ";
+                    i++;
+                }
+            }
+        } else {
+            textWords.push(textWordsSplit[i]);
+        }
+    }
 
     // We need a separate index for the text words since some
     // volpiano words like numbers are going to be skipped
@@ -54,51 +78,63 @@ export function parseVolpianoSyllables(text, volpiano)
 
     for (var i = 0, len = volpianoWords.length; i < len && volpianoWords[i]; i++)
     {
-        var wordString = '';
-        var volpianoSyllables = volpianoWords[i].split("--");
-        var textSyllables = Syllabifier.syllabifyWord(textWords[textWordIndex] || '');
-
-        // The word is just a number, no text should be attached to it
-        if (!isNaN(parseInt(volpianoWords[i])) && textWords[textWordIndex] !== '|')
-        {
-            textWordIndex--;
-            textSyllables = [];
-        }
-
-        for (var j = 0; j < volpianoSyllables.length; j++)
-        {
-            // Add a blank character if there are no more text syllables.
-            // This makes sure that the following divs will be correctly aligned
-            if (!textSyllables[j])
-                textSyllables[j] = '&nbsp;';
-
-            // This is not the end of the text
-            if (i < volpianoWords.length - 1)
+        // Missing music is noted with "6------6" in Volpiano.
+        // When split above, this results in the sequence of volpiano
+        // words "6", "", "6". We check for, and deal with, this case
+        // first. 
+        if (volpianoWords[i] == "6" && volpianoWords[i + 1] == "" && volpianoWords[i+2] == "6"){
+            finalString += '<div class="volpiano-syllable">6------6<span class="volpiano-text">' + 
+            textWords[textWordIndex] + '</span></div>';
+            textWordIndex++;
+            // Skip the next two volpianoWords (the "" and "6")
+            i += 2;
+        } else {
+            var wordString = '';
+            var volpianoSyllables = volpianoWords[i].split("--");
+            var textSyllables = Syllabifier.syllabifyWord(textWords[textWordIndex] || '');
+    
+            // The word is just a number, no text should be attached to it
+            if (!isNaN(parseInt(volpianoWords[i])) && textWords[textWordIndex] !== '|')
             {
-                if (j === volpianoSyllables.length - 1)  // End of a word
-                    volpianoSyllables[j] += '---';
-                else // End of a syllable
-                    volpianoSyllables[j] += '--';
+                textWordIndex--;
+                textSyllables = [];
             }
-
-            // If the syllabification doesn't match the volpiano,
-            // append the rest of the text to the last syllable
-            if (j === volpianoSyllables.length - 1 && volpianoSyllables.length < textSyllables.length)
+    
+            for (var j = 0; j < volpianoSyllables.length; j++)
             {
-                for (var k = j + 1; k < textSyllables.length; k++)
+                // Add a blank character if there are no more text syllables.
+                // This makes sure that the following divs will be correctly aligned
+                if (!textSyllables[j])
+                    textSyllables[j] = '&nbsp;';
+    
+                // This is not the end of the text
+                if (i < volpianoWords.length - 1)
                 {
-                    textSyllables[j] += textSyllables[k];
+                    if (j === volpianoSyllables.length - 1)  // End of a word
+                        volpianoSyllables[j] += '---';
+                    else // End of a syllable
+                        volpianoSyllables[j] += '--';
                 }
+    
+                // If the syllabification doesn't match the volpiano,
+                // append the rest of the text to the last syllable
+                if (j === volpianoSyllables.length - 1 && volpianoSyllables.length < textSyllables.length)
+                {
+                    for (var k = j + 1; k < textSyllables.length; k++)
+                    {
+                        textSyllables[j] += textSyllables[k];
+                    }
+                }
+                else if (j < textSyllables.length - 1)  // This is not the end of a text word
+                    textSyllables[j] += '-';
+    
+                wordString += '<div class="volpiano-syllable">' + volpianoSyllables[j] +
+                    '<span class="volpiano-text">' + textSyllables[j] + '</span></div>';
             }
-            else if (j < textSyllables.length - 1)  // This is not the end of a text word
-                textSyllables[j] += '-';
-
-            wordString += '<div class="volpiano-syllable">' + volpianoSyllables[j] +
-                '<span class="volpiano-text">' + textSyllables[j] + '</span></div>';
+    
+            finalString += wordString;
+            textWordIndex++;
         }
-
-        finalString += wordString;
-        textWordIndex++;
     }
 
     return finalString;
