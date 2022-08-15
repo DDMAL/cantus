@@ -93,11 +93,14 @@ export function parseVolpianoSyllables(text, volpiano)
             var volpianoSyllables = volpianoWords[i].split("--");
             var textSyllables = Syllabifier.syllabifyWord(textWords[textWordIndex] || '');
     
-            // The word is just a number, no text should be attached to it
+            // The word is just a number, no text should be attached to it.
             if (!isNaN(parseInt(volpianoWords[i])) && textWords[textWordIndex] !== '|')
             {
-                textWordIndex--;
-                textSyllables = [];
+                // If the word begins with "9", then it is still a valid note sequence.
+                if (parseInt(volpianoWords[i]) != 9){
+                    textWordIndex--;
+                    textSyllables = [];
+                }
             }
     
             for (var j = 0; j < volpianoSyllables.length; j++)
