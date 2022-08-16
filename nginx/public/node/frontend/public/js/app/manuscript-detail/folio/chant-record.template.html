@@ -1,5 +1,14 @@
+<% if (cantus_id || cdb_link_url) { %>
+<p>
+<% } %>
 <% if (cantus_id) { %>
-<p><b>Cantus ID:</b> <%= cantus_id %> (<a href = <%= cdb_link_url %> >Visit record in Cantus Database</a>)</p>
+<b>Cantus ID:</b> <%= cantus_id %>
+<% } %>
+<% if (cdb_link_url) { %>
+(<a href = <%= cdb_link_url %> >Visit record in Cantus Database</a>)
+<% } %>
+<% if (cantus_id || cdb_link_url) { %>
+</p>
 <% } %>
 <% if (marginalia) { %>
 <p><b>Marginalia:</b> <%= marginalia %></p>
