@@ -83,8 +83,14 @@ export function parseVolpianoSyllables(text, volpiano)
         // words "6", "", "6". We check for, and deal with, this case
         // first. 
         if (volpianoWords[i] == "6" && volpianoWords[i + 1] == "" && volpianoWords[i+2] == "6"){
-            finalString += '<div class="volpiano-syllable">6------6<span class="volpiano-text">' + 
-            textWords[textWordIndex] + '</span></div>';
+            var numBlankWords = textWords[textWordIndex].split(" ").length;
+            var innerSpaceString = "6---";
+            for (j = 0; j < numBlankWords; j++){
+                innerSpaceString += "---";
+            }
+            innerSpaceString += "6";
+            finalString += '<div class="volpiano-syllable">' + innerSpaceString + 
+            '<span class="volpiano-text">' + textWords[textWordIndex] + '</span></div>';
             textWordIndex++;
             // Skip the next two volpianoWords (the "" and "6")
             i += 2;
