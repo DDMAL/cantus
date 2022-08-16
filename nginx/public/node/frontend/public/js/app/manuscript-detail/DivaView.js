@@ -173,10 +173,19 @@ export default Marionette.ItemView.extend({
     gotoInputPage: function (event)
     {
         event.preventDefault();
-        
-        var inputSuggestions = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'input-suggestions');
-        var pageInput = $('.diva-input-suggestion:first', inputSuggestions)
-        var pageAlias = pageInput.text();
+        // If the form was explicitly submitted by the user (eg. by clicking "Go"
+        // or pressing the Enter key), we take the first suggestion as the page
+        // destination. If the form was triggered by the user clicking a page
+        // suggestion, we take the clicked suggestion as the destination (this is already
+        // set in the Diva default handler for a "mousedown" event).
+        if (event.originalEvent){
+            var inputSuggestions = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'input-suggestions');
+            var pageInput = $('.diva-input-suggestion:first', inputSuggestions);
+            var pageAlias = pageInput.text();
+        } else {
+            var pageInput = $(this.divaInstance.getInstanceSelector() + 'goto-page-input').get(0);
+            var pageAlias = pageInput.value
+        }
 
         if (!pageAlias)
             return;
