@@ -50,7 +50,7 @@ class Command(BaseCommand):
         manuscript_ids = options["manuscript_ids"]
         types = []
         if options["all"]:
-            record_types += list(self.TYPE_MAPPING.keys())
+            record_types = list(self.TYPE_MAPPING.keys())
         else:
             record_types = [options["record_type"]]
 
