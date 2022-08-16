@@ -29,6 +29,7 @@ class Chant(models.Model):
     finalis = models.CharField(max_length=255, blank=True, null=True)
     incipit = models.TextField(blank=True, null=True)
     full_text = models.TextField(blank=True, null=True)
+    full_text_ms = models.TextField(blank=True, null=True)
     concordances = models.ManyToManyField(
         "cantusdata.Concordance", related_name="concordances", blank=True
     )
@@ -74,6 +75,7 @@ class Chant(models.Model):
             "finalis": self.finalis,
             "incipit": self.incipit,
             "full_text": self.full_text,
+            "full_text_ms": self.full_text_ms,
             "volpiano": self.volpiano,
             "concordances": self.concordance_citation_list,
             "cdb_uri": self.cdb_uri,

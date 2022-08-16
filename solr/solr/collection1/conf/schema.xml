@@ -122,6 +122,7 @@
     <field name="finalis" type="string" indexed="true" stored="true" multiValued="false" />
     <field name="incipit" type="string" indexed="true" stored="true" multiValued="false" />
     <field name="full_text" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="full_text_ms" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="volpiano" type="volpiano_general" indexed="true" stored="true" multiValued="false" />
     <field name="volpiano_literal" type="volpiano_literal" indexed="true" stored="false" multiValued="false" />
     <field name="concordances" type="string" indexed="true" stored="true" multiValued="true" />

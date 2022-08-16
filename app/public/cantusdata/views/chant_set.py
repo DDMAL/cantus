@@ -28,6 +28,7 @@ CHANT_FIELDS = [
     "finalis",
     "incipit",
     "full_text",
+    "full_text_ms",
     "volpiano",
     "concordances",
     "cdb_uri",

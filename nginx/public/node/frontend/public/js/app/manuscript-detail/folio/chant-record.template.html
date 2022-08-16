@@ -35,12 +35,13 @@
 <p><b>Finalis: </b> <%= finalis %></p>
 <% } %>
 <hr/>
+<% if (full_text) { %>
 <h5>Full Text</h5>
 <%= full_text %>
+<% } %>
 <% if (volpiano) { %>
 <hr/>
 <div class="volpiano"><%= volpiano %></div>
-<% } %>
 <hr/>
-
 <button id="btnPlay">Play Audio</button>
+<% } %>
