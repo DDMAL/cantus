@@ -117,7 +117,7 @@ function volpiano2midi(input_arr, note_dur) {
 				//var notes_played = 0;
 				//iterate through each note pitch character, convert  lowercase, check if in dictionary, play the corresponding pitch
 				for (var j = 0; j < pitches.length; j++) {
-					if (pitches.charAt(j).toLowerCase() in pitch_dict) {
+					if (pitches.charAt(j) in pitch_dict) {
 						MIDI.noteOn(0, pitch_dict[pitches.charAt(j)], 127, notes_played * note_dur);
 						MIDI.noteOff(0, pitch_dict[pitches.charAt(j)], notes_played * note_dur + note_dur);
 						notes_played = notes_played + 1;
