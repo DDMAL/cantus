@@ -177,6 +177,6 @@ export default Marionette.ItemView.extend({
 		var volArr = parse_volpiano(current_volpianos)
 
 		//var volTempo = 60.0/document.getElementById('myRange').value
-		volpiano2midi(volArr, 1.0)
+		volpiano2midi(volArr, .6)
 	}
 });
