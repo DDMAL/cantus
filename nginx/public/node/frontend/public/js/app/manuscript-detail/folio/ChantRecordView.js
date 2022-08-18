@@ -100,6 +100,10 @@ function volpiano2midi(input_arr, note_dur) {
 	pitch_dict['R'] = 72;
 	pitch_dict['S'] = 74;
 
+	// create array of volpiano characters representing barlines
+	// for purposes of midi playback, these are treated as rests
+	let rest_arr = ['3','4','5','6'];
+
 	MIDI.loadPlugin({
 		soundfontUrl: "https://cdn.jsdelivr.net/gh/jacobsanz97/test502/soundfont/",
 		instrument: "vowels",
@@ -120,7 +124,10 @@ function volpiano2midi(input_arr, note_dur) {
 					if (pitches.charAt(j) in pitch_dict) {
 						MIDI.noteOn(0, pitch_dict[pitches.charAt(j)], 127, notes_played * note_dur);
 						MIDI.noteOff(0, pitch_dict[pitches.charAt(j)], notes_played * note_dur + note_dur);
-						notes_played = notes_played + 1;
+						notes_played++;
+					}
+					if (rest_arr.includes(pitches.charAt(j))) {
+						notes_played++;
 					}
 				}
 			}
