@@ -78,6 +78,27 @@ function volpiano2midi(input_arr, note_dur) {
 	pitch_dict['q'] = 71;
 	pitch_dict['r'] = 72;
 	pitch_dict['s'] = 74;
+	// add liquescent neumes to pitch dictionary
+	pitch_dict['('] = 41; // liquescent low f
+	pitch_dict[')'] = 43; // liquescent low g
+	pitch_dict['A'] = 45;
+	pitch_dict['B'] = 47;
+	pitch_dict['C'] = 48;
+	pitch_dict['D'] = 50;
+	pitch_dict['E'] = 52;
+	pitch_dict['F'] = 53;
+	pitch_dict['G'] = 55;
+	pitch_dict['H'] = 57;
+	pitch_dict['J'] = 59;
+	pitch_dict['K'] = 60;
+	pitch_dict['L'] = 62;
+	pitch_dict['M'] = 64;
+	pitch_dict['N'] = 65;
+	pitch_dict['O'] = 67;
+	pitch_dict['P'] = 69;
+	pitch_dict['Q'] = 71;
+	pitch_dict['R'] = 72;
+	pitch_dict['S'] = 74;
 
 	MIDI.loadPlugin({
 		soundfontUrl: "https://cdn.jsdelivr.net/gh/jacobsanz97/test502/soundfont/",
