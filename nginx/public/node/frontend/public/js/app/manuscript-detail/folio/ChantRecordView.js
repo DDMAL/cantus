@@ -194,13 +194,22 @@ export default Marionette.ItemView.extend({
 		this.model.set({ 'cdb_link_url': 'https://cantus.uwaterloo.ca/node/' + cdb_uri })
 	},
 	ui : {
-		volpianoSyllables: ".volpiano-syllable"
+		volpianoSyllables: ".volpiano-syllable",
+		btnPlay: ".btnPlay",
+		btnStop: ".btnStop"
 	},
 	events: {
-		"click .btnPlay": "submit"
+		"click .btnPlay": "submit",
+		"click .btnStop": "stop"
 	},
 	submit: function mainPlay() {
 		var volArr = parse_volpiano(this.ui.volpianoSyllables);
+		this.ui.btnPlay.html("Playing...");
+		this.ui.btnPlay.attr("disabled", true);
 		volpiano2midi(volArr, .6);
+	},
+	stop: function stopPlay(){
+		this.ui.btnPlay.html("Play Audio");
+		this.ui.btnPlay.attr("disabled", false);
 	}
 });
