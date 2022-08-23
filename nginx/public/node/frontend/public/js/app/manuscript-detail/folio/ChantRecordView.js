@@ -78,27 +78,8 @@ function volpiano2midi(input_arr, note_dur) {
 	pitch_dict['q'] = 71;
 	pitch_dict['r'] = 72;
 	pitch_dict['s'] = 74;
-	// add liquescent neumes to pitch dictionary
 	pitch_dict['('] = 41; // liquescent low f
 	pitch_dict[')'] = 43; // liquescent low g
-	pitch_dict['A'] = 45;
-	pitch_dict['B'] = 47;
-	pitch_dict['C'] = 48;
-	pitch_dict['D'] = 50;
-	pitch_dict['E'] = 52;
-	pitch_dict['F'] = 53;
-	pitch_dict['G'] = 55;
-	pitch_dict['H'] = 57;
-	pitch_dict['J'] = 59;
-	pitch_dict['K'] = 60;
-	pitch_dict['L'] = 62;
-	pitch_dict['M'] = 64;
-	pitch_dict['N'] = 65;
-	pitch_dict['O'] = 67;
-	pitch_dict['P'] = 69;
-	pitch_dict['Q'] = 71;
-	pitch_dict['R'] = 72;
-	pitch_dict['S'] = 74;
 
 	// create array of volpiano characters representing barlines
 	// for purposes of midi playback, these are treated as rests
@@ -119,11 +100,13 @@ function volpiano2midi(input_arr, note_dur) {
 				var vowel = input_arr[i][1]
 				MIDI.programChange(0, vowel);
 				//var notes_played = 0;
-				//iterate through each note pitch character, convert  lowercase, check if in dictionary, play the corresponding pitch
+				//iterate through each note pitch character, check if in dictionary, play the corresponding pitch
+				// characters in volpiano are converted to lowercase to play liquescent neumes, which 
+				// are indicated in volpiano by uppercase characters
 				for (var j = 0; j < pitches.length; j++) {
-					if (pitches.charAt(j) in pitch_dict) {
-						MIDI.noteOn(0, pitch_dict[pitches.charAt(j)], 127, notes_played * note_dur);
-						MIDI.noteOff(0, pitch_dict[pitches.charAt(j)], notes_played * note_dur + note_dur);
+					if (pitches.charAt(j).toLowerCase() in pitch_dict) {
+						MIDI.noteOn(0, pitch_dict[pitches.charAt(j).toLowerCase()], 127, notes_played * note_dur + 5);
+						MIDI.noteOff(0, pitch_dict[pitches.charAt(j).toLowerCase()], notes_played * note_dur + note_dur + 5);
 						notes_played++;
 					}
 					if (rest_arr.includes(pitches.charAt(j))) {
@@ -191,7 +174,7 @@ export default Marionette.ItemView.extend({
 		var formattedVolpiano = parseVolpianoSyllables(text, volpiano);
 		this.model.set('volpiano', formattedVolpiano);
 		var cdb_uri = this.model.get('cdb_uri');
-		this.model.set({ 'cdb_link_url': 'https://cantus.uwaterloo.ca/node/' + cdb_uri })
+		this.model.set({ 'cdb_link_url': 'https://cantus.uwaterloo.ca/node/' + cdb_uri });
 	},
 	ui : {
 		volpianoSyllables: ".volpiano-syllable",
@@ -209,6 +192,10 @@ export default Marionette.ItemView.extend({
 		volpiano2midi(volArr, .6);
 	},
 	stop: function stopPlay(){
+		var audioCxt = MIDI.getContext();
+		audioCxt.close();
+		var newAudioCxt = new window.AudioContext();
+		MIDI.setContext(newAudioCxt);
 		this.ui.btnPlay.html("Play Audio");
 		this.ui.btnPlay.attr("disabled", false);
 	}
