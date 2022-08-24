@@ -53,6 +53,18 @@ function CustomSplit(str, delimiter, removeEmptyItems) {
 	return result;
 }
 
+function audioStopReset(MIDI){
+	var audioCxt = MIDI.getContext();
+	audioCxt.close();
+	for (var i = 0; i < MIDI.sources.length; i++){
+		MIDI.sources[i].disconnect();
+	}
+	var newAudioCxt = new window.AudioContext();
+	MIDI.setContext(newAudioCxt);
+	$('.btnPlay').html("Play Audio");
+	$('.btnPlay').attr("disabled", false);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////
 //Plays the volpiano notes using MIDI.js
 function volpiano2midi(input_arr, note_dur) {
@@ -117,6 +129,10 @@ function volpiano2midi(input_arr, note_dur) {
 				}
 			}
 			MIDI.sources = sources;
+			// add an ended event listener to the final note
+			MIDI.sources[MIDI.sources.length - 1].addEventListener("ended", function(event){
+				audioStopReset(MIDI);
+			})
 		}
 	});
 };
@@ -194,15 +210,7 @@ export default Marionette.ItemView.extend({
 		this.ui.btnPlay.attr("disabled", true);
 		volpiano2midi(volArr, .6);
 	},
-	stop: function stopPlay(){
-		var audioCxt = MIDI.getContext();
-		audioCxt.close();
-		for (var i = 0; i < MIDI.sources.length; i++){
-			MIDI.sources[i].disconnect();
-		}
-		var newAudioCxt = new window.AudioContext();
-		MIDI.setContext(newAudioCxt);
-		this.ui.btnPlay.html("Play Audio");
-		this.ui.btnPlay.attr("disabled", false);
+	stop: function(){
+		audioStopReset(MIDI);
 	}
 });
