@@ -95,6 +95,7 @@ function volpiano2midi(input_arr, note_dur) {
 			//iterate through each syllable
 			MIDI.setVolume(0, 127);
 			var notes_played = 0;
+			var sources = [];
 			for (var i = 0; i < input_arr.length; i++) {
 				var pitches = input_arr[i][0]
 				var vowel = input_arr[i][1]
@@ -105,7 +106,8 @@ function volpiano2midi(input_arr, note_dur) {
 				// are indicated in volpiano by uppercase characters
 				for (var j = 0; j < pitches.length; j++) {
 					if (pitches.charAt(j).toLowerCase() in pitch_dict) {
-						MIDI.noteOn(0, pitch_dict[pitches.charAt(j).toLowerCase()], 127, notes_played * note_dur + 5);
+						var source = MIDI.noteOn(0, pitch_dict[pitches.charAt(j).toLowerCase()], 127, notes_played * note_dur + 5);
+						sources.push(source);
 						MIDI.noteOff(0, pitch_dict[pitches.charAt(j).toLowerCase()], notes_played * note_dur + note_dur + 5);
 						notes_played++;
 					}
@@ -114,6 +116,7 @@ function volpiano2midi(input_arr, note_dur) {
 					}
 				}
 			}
+			MIDI.sources = sources;
 		}
 	});
 };
@@ -194,6 +197,9 @@ export default Marionette.ItemView.extend({
 	stop: function stopPlay(){
 		var audioCxt = MIDI.getContext();
 		audioCxt.close();
+		for (var i = 0; i < MIDI.sources.length; i++){
+			MIDI.sources[i].disconnect();
+		}
 		var newAudioCxt = new window.AudioContext();
 		MIDI.setContext(newAudioCxt);
 		this.ui.btnPlay.html("Play Audio");
