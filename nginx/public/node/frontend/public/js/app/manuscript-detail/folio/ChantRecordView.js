@@ -4,24 +4,76 @@ import { parseVolpianoSyllables } from 'utils/VolpianoDisplayHelper';
 
 import template from './chant-record.template.html';
 
-
-function dynamicallyLoadScript(url) {
+function dynamicallyLoadScript(url, onLoadFunction) {
 	var script = document.createElement("script");  // create a script DOM node
 	script.src = url;  // set its src to the provided URL
-	document.head.appendChild(script);  // add it to the end of the head section of the page (could change 'head' to 'body' to add it to the end of the body section instead)
+	if (onLoadFunction){
+		script.onload = onLoadFunction;
+	}
+	document.body.appendChild(script); // add it to the end of the head section of the page (could change 'head' to 'body' to add it to the end of the body section instead)
 }
 
+// Replacement for the built-in MIDI.noteOn function to 
+// fix timing errors. In this function, the Source Node
+// start time delay is added to the current Audio Context
+// time in all cases so that nodes are all played at a 
+// future time.
+function replNoteOn(channelId, noteId, velocity, delay, stop_delay) {
+		var ctx = MIDI.getContext();
+
+		/// Find the note
+		var channel = MIDI.channels[channelId];
+		var instrument = channel.instrument;
+		var bufferId = instrument + '' + noteId;
+		var buffer = MIDI.audioBuffers[bufferId];
+
+		delay += ctx.currentTime;
+		stop_delay += ctx.currentTime;
+	
+		var source = ctx.createBufferSource();
+		source.buffer = buffer;
+
+		var gain = (velocity / 127) * 2 - 1;
+		source.connect(ctx.destination);
+		source.playbackRate.value = 1; // pitch shift 
+		var gainNode = ctx.createGain(); // gain
+		gainNode.connect(ctx.destination);
+		gainNode.gain.value = Math.min(1.0, Math.max(-1.0, gain));
+		gainNode.gain.linearRampToValueAtTime(gainNode.gain.value, stop_delay);
+		gainNode.gain.linearRampToValueAtTime(-1.0, stop_delay + 0.3);
+		source.gainNode = gainNode;
+		source.connect(source.gainNode);
+		source.start(delay);
+		source.stop(stop_delay + 0.5);
+		return source;
+	};
+
 //Dynamically load all of the files needed to use MIDI.js player
+window.onload = function (){
 dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/inc/shim/Base64.js')
 dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/inc/shim/Base64binary.js')
 dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/inc/shim/WebAudioAPI.js')
 
-dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/audioDetect.js')
-dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/gm.js')
-dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/loader.js')
-dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/plugin.audiotag.js')
-dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/plugin.webaudio.js')
-dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/plugin.webmidi.js')
+dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/audioDetect.js', function(){
+dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/loader.js', function(){
+	dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/gm.js');
+	dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/plugin.audiotag.js');
+	dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/plugin.webmidi.js');
+	dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/plugin.webaudio.js', function(){
+	MIDI.loadPlugin({
+		soundfontUrl: "https://cdn.jsdelivr.net/gh/jacobsanz97/test502/soundfont/",
+		instrument: "vowels",
+		onprogress: function (state, progress) {
+			console.log(state, progress);
+		}, onsuccess: function(){
+			MIDI.setVolume(0, 127);
+		}
+	});
+	MIDI.NoteOn = replNoteOn;
+});
+});
+});
+}
 
 dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/util/dom_request_xhr.js')
 dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/util/dom_request_script.js')
@@ -131,47 +183,38 @@ function volpiano2midi(input_arr, note_dur) {
 	// for purposes of midi playback, these are treated as rests
 	let rest_arr = ['3','4','5','6'];
 
-	MIDI.loadPlugin({
-		soundfontUrl: "https://cdn.jsdelivr.net/gh/jacobsanz97/test502/soundfont/",
-		instrument: "vowels",
-		onprogress: function (state, progress) {
-			console.log(state, progress);
-		},
-		onsuccess: function () {
-			//iterate through each syllable
-			MIDI.setVolume(0, 127);
-			var notes_played = 0;
-			var sources = [];
-			for (var i = 0; i < input_arr.length; i++) {
-				var pitches = input_arr[i][0];
-				if (pitches.includes("y") || pitches.includes("i") || pitches.includes("z")){
-					pitches = handleFlats(pitches);
-				}
-				var vowel = input_arr[i][1];
-				MIDI.programChange(0, vowel);
-				//var notes_played = 0;
-				//iterate through each note pitch character, check if in dictionary, play the corresponding pitch
-				// characters in volpiano are converted to lowercase to play liquescent neumes, which 
-				// are indicated in volpiano by uppercase characters
-				for (var j = 0; j < pitches.length; j++) {
-					if (pitches.charAt(j).toLowerCase() in pitch_dict) {
-						var source = MIDI.noteOn(0, pitch_dict[pitches.charAt(j).toLowerCase()], 127, notes_played * note_dur + 5);
-						sources.push(source);
-						MIDI.noteOff(0, pitch_dict[pitches.charAt(j).toLowerCase()], notes_played * note_dur + note_dur + 5);
-						notes_played++;
-					}
-					if (rest_arr.includes(pitches.charAt(j))) {
-						notes_played++;
-					}
-				}
-			}
-			MIDI.sources = sources;
-			// add an ended event listener to the final note
-			MIDI.sources[MIDI.sources.length - 1].addEventListener("ended", function(event){
-				audioStopReset(MIDI);
-			})
+
+	//iterate through each syllable
+	
+	var notes_played = 0;
+	var sources = [];
+	for (var i = 0; i < input_arr.length; i++) {
+		var pitches = input_arr[i][0];
+		if (pitches.includes("y") || pitches.includes("i") || pitches.includes("z")){
+			pitches = handleFlats(pitches);
 		}
-	});
+		var vowel = input_arr[i][1];
+		MIDI.programChange(0, vowel);
+		//var notes_played = 0;
+		//iterate through each note pitch character, check if in dictionary, play the corresponding pitch
+		// characters in volpiano are converted to lowercase to play liquescent neumes, which 
+		// are indicated in volpiano by uppercase characters
+		for (var j = 0; j < pitches.length; j++) {
+			if (pitches.charAt(j).toLowerCase() in pitch_dict) {
+				var source = MIDI.NoteOn(0, pitch_dict[pitches.charAt(j).toLowerCase()], 127, notes_played * note_dur, notes_played * note_dur + note_dur);
+				sources.push(source);
+				notes_played++;
+			}
+			if (rest_arr.includes(pitches.charAt(j))) {
+				notes_played++;
+			}
+		}
+	}
+	MIDI.sources = sources;
+	// Clear sources and reset button after last note
+	MIDI.sources[MIDI.sources.length - 1].addEventListener("ended", function(event){
+		audioStopReset(MIDI);
+	})
 };
 
 //////////////////////////////////////////////////////////////////////////
