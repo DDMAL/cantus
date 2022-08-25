@@ -65,6 +65,37 @@ function audioStopReset(MIDI){
 	$('.btnPlay').attr("disabled", false);
 }
 
+// A basic function to handle flats.
+// Flats are applied to B's that immediately follow a flat
+// along with any B's in the same text syllable, unless
+// a natural cancels it.
+function handleFlats (inputStr){
+	var flatReplDict = {};
+	flatReplDict["y"] = ["b","t"];
+	flatReplDict["i"] = ["j","u"];
+	flatReplDict["z"] = ["q","v"];
+	function applyFlat(inputStr, flatStr){
+		// find location of flat in syllable
+		var flatIndex = inputStr.indexOf(flatStr);
+		// find subsequent location of natural in syllable, if any
+		var natIndex = inputStr.indexOf(flatStr.toUpperCase(), flatIndex);
+		if (natIndex == -1){natIndex = inputStr.length}
+		var preString = inputStr.slice(0, flatIndex);
+		var toFlattenString = inputStr.slice(flatIndex, natIndex);
+		var postString = inputStr.slice(natIndex, inputStr.length);
+		var flattedString = toFlattenString.toLowerCase().replaceAll(flatReplDict[flatStr][0], flatReplDict[flatStr][1]);
+		return preString + flattedString + postString;
+	}
+	if (inputStr.includes("y")) {
+		var outputStr = applyFlat(inputStr, "y");
+	} else if (inputStr.includes("i")){
+		var outputStr = applyFlat(inputStr, "i");
+	} else if (inputStr.includes("z")){
+		var outputStr = applyFlat(inputStr, "z");
+	}
+	return outputStr
+}
+
 ///////////////////////////////////////////////////////////////////////////////////
 //Plays the volpiano notes using MIDI.js
 function volpiano2midi(input_arr, note_dur) {
@@ -92,6 +123,9 @@ function volpiano2midi(input_arr, note_dur) {
 	pitch_dict['s'] = 74;
 	pitch_dict['('] = 41; // liquescent low f
 	pitch_dict[')'] = 43; // liquescent low g
+	pitch_dict['t'] = 46; // make-shift Bb3
+	pitch_dict['u'] = 58; // make-shift Bb4
+	pitch_dict['v'] = 50; // make-shift Bb5
 
 	// create array of volpiano characters representing barlines
 	// for purposes of midi playback, these are treated as rests
@@ -109,8 +143,11 @@ function volpiano2midi(input_arr, note_dur) {
 			var notes_played = 0;
 			var sources = [];
 			for (var i = 0; i < input_arr.length; i++) {
-				var pitches = input_arr[i][0]
-				var vowel = input_arr[i][1]
+				var pitches = input_arr[i][0];
+				if (pitches.includes("y") || pitches.includes("i") || pitches.includes("z")){
+					pitches = handleFlats(pitches);
+				}
+				var vowel = input_arr[i][1];
 				MIDI.programChange(0, vowel);
 				//var notes_played = 0;
 				//iterate through each note pitch character, check if in dictionary, play the corresponding pitch
