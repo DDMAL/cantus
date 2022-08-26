@@ -76,6 +76,7 @@ export default Marionette.LayoutView.extend({
         manuscriptChannel.request('set:folio', this.model.get('number'), {replaceState: true});
         folioChannel.trigger('folioLoaded');
         this.chantCollection.reset();
+        manuscriptChannel.request('set:chant', null);
         this.assignChants();
     },
 
