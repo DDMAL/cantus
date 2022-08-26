@@ -10,7 +10,7 @@ function dynamicallyLoadScript(url, onLoadFunction) {
 	if (onLoadFunction){
 		script.onload = onLoadFunction;
 	}
-	document.body.appendChild(script); // add it to the end of the head section of the page (could change 'head' to 'body' to add it to the end of the body section instead)
+	document.body.appendChild(script); // add it to the end of the body section of the page (could change 'body' to 'head' to add it to the end of the head section instead)
 }
 
 // Replacement for the built-in MIDI.noteOn function to 
@@ -133,9 +133,9 @@ function audioStopReset(MIDI){
 // a natural cancels it.
 function handleFlats (inputStr){
 	var flatReplDict = {};
-	flatReplDict["y"] = ["b","t"];
-	flatReplDict["i"] = ["j","u"];
-	flatReplDict["z"] = ["q","v"];
+	flatReplDict["y"] = ["b","t"]; // where flat is encoded as "y", change B3 to our make-shift encoding of Bb3
+	flatReplDict["i"] = ["j","u"]; // where flat is encoded as "i", change B4 to our make-shift encoding of Bb4
+	flatReplDict["z"] = ["q","v"]; // where flat is encoded as "z", change B5 to our make-shift encoding of Bb5
 	function applyFlat(inputStr, flatStr){
 		// find location of flat in syllable
 		var flatIndex = inputStr.indexOf(flatStr);
