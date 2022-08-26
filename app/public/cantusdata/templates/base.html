@@ -47,7 +47,9 @@
                     <div class="collapse navbar-collapse" id="top-menu">
                         <ul class="nav navbar-nav navbar-right">
                             <li><a style="font-weight:bold; font-size:larger" href="/manuscripts/">Manuscripts</a></li>
+                            {% if IS_DEVELOPMENT %}
                             <li><a href="/manifests/">IIIF Manifests</a></li>
+                            {% endif %}
                             <li><a href="/about/">About</a></li>
                             <li><a href="/activities/">Activities</a></li>
                             <li><a href="/team/">Team</a></li>
