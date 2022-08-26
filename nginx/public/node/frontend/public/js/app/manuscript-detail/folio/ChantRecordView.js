@@ -60,16 +60,26 @@ dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/l
 	dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/plugin.audiotag.js');
 	dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/plugin.webmidi.js');
 	dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/plugin.webaudio.js', function(){
-	MIDI.loadPlugin({
-		soundfontUrl: "https://cdn.jsdelivr.net/gh/jacobsanz97/test502/soundfont/",
-		instrument: "vowels",
-		onprogress: function (state, progress) {
-			console.log(state, progress);
-		}, onsuccess: function(){
-			MIDI.setVolume(0, 127);
+	MIDI.audioDetect(function (supports){
+		if (supports['audio/ogg']){
+			var soundfontUrl = "https://cdn.jsdelivr.net/gh/jacobsanz97/test502/soundfont/";
+			var instrument = "vowels";
+		} else if (supports['audio/mpeg']){
+			var soundfontUrl = "https://cdn.jsdelivr.net/gh/jacobsanz97/test502/soundfont_eg/";
+			var instrument = "acoustic_grand_piano";
 		}
+		MIDI.loadPlugin({
+			soundfontUrl: soundfontUrl,
+			instrument: instrument,
+			onprogress: function (state, progress) {
+				console.log(state, progress);
+			}, onsuccess: function(){
+				MIDI.setVolume(0, 127);
+			}
+		});
+		MIDI.NoteOn = replNoteOn;
+		MIDI.instrument = instrument;
 	});
-	MIDI.NoteOn = replNoteOn;
 });
 });
 });
@@ -194,7 +204,9 @@ function volpiano2midi(input_arr, note_dur) {
 			pitches = handleFlats(pitches);
 		}
 		var vowel = input_arr[i][1];
-		MIDI.programChange(0, vowel);
+		if (MIDI.instrument == "vowels"){
+			MIDI.programChange(0, vowel);
+		}
 		//var notes_played = 0;
 		//iterate through each note pitch character, check if in dictionary, play the corresponding pitch
 		// characters in volpiano are converted to lowercase to play liquescent neumes, which 
