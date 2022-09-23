@@ -11,10 +11,10 @@ import { Base64Binary } from './Base64binary.js'
 function webAudio(root) { 'use strict';
 
 	(window.AudioContext || window.webkitAudioContext) && (function() {
-		var audioContext = null; // new AudioContext();
-		var useStreamingBuffer = false; // !!audioContext.createMediaElementSource;
+		var audioContext = null; 
+		var useStreamingBuffer = false; 
 		var midi = root.WebAudio = {api: 'webaudio'};
-		var ctx; // audio context
+		var ctx;
 		var sources = {};
 		var effects = {};
 		var masterVolume = 127;

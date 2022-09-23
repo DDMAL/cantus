@@ -41,17 +41,8 @@ function loader(root) { 'use strict';
 		var supports = root.supports;
 		var hash = window.location.hash;
 		var api = '';
-		/// use the most appropriate plugin if not specified
-		if (supports[opts.api]) {
-			api = opts.api;
-		} else if (supports[hash.substr(1)]) {
-			api = hash.substr(1);
-		// } else if (supports.webmidi) {
-		// 	api = 'webmidi';
-		} else if (window.AudioContext || window.webkitAudioContext) { // Chrome
+		if (window.AudioContext || window.webkitAudioContext) { 
 			api = 'webaudio';
-		// } else if (window.Audio) { // Firefox
-		// 	api = 'audiotag';
 		}
 		if (connect[api]) {
 			/// use audio/ogg when supported
@@ -83,18 +74,7 @@ function loader(root) { 'use strict';
 	};
 
 	var connect = {
-		// webmidi: function(opts) {
-		// 	// cant wait for this to be standardized!
-		// 	root.WebMIDI.connect(opts);
-		// },
-		// audiotag: function(opts) {
-		// 	// works ok, kinda like a drunken tuna fish, across the board
-		// 	// http://caniuse.com/audio
-		// 	requestQueue(opts, 'AudioTag');
-		// },
 		webaudio: function(opts) {
-			// works awesome! safari, chrome and firefox support
-			// http://caniuse.com/web-audio
 			requestQueue(opts, 'WebAudio');
 		}
 	};
