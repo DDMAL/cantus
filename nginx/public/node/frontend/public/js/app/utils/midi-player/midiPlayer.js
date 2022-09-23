@@ -1,0 +1,26 @@
+
+import { audioDetect } from './audioDetect.js';
+import { loader } from './loader.js';
+import { gm } from './gm.js';
+import { webAudio } from './plugin.webaudio.js';
+import { requestXHR } from './dom_request_xhr.js';
+//import { webMidi } from './plugin.webmidi.js';
+
+if (typeof MIDI === 'undefined') {
+	var MIDI = {};
+}
+
+audioDetect(MIDI);
+
+MIDI.Soundfont = MIDI.Soundfont || {};
+MIDI.Player = MIDI.Player || {};
+
+loader(MIDI);
+gm(MIDI);
+webAudio(MIDI);
+//webMidi(MIDI);
+requestXHR(MIDI);
+
+export { MIDI }
+
+

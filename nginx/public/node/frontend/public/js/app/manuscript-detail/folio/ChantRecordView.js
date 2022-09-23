@@ -4,89 +4,23 @@ import { parseVolpianoSyllables } from 'utils/VolpianoDisplayHelper';
 
 import template from './chant-record.template.html';
 
-function dynamicallyLoadScript(url, onLoadFunction) {
-	var script = document.createElement("script");  // create a script DOM node
-	script.src = url;  // set its src to the provided URL
-	if (onLoadFunction){
-		script.onload = onLoadFunction;
-	}
-	document.body.appendChild(script); // add it to the end of the body section of the page (could change 'body' to 'head' to add it to the end of the head section instead)
-}
+import { MIDI }  from 'utils/midi-player/midiPlayer.js';
 
-// Replacement for the built-in MIDI.noteOn function to 
-// fix timing errors. In this function, the Source Node
-// start time delay is added to the current Audio Context
-// time in all cases so that nodes are all played at a 
-// future time.
-function replNoteOn(channelId, noteId, velocity, delay, stop_delay) {
-		var ctx = MIDI.getContext();
-
-		/// Find the note
-		var channel = MIDI.channels[channelId];
-		var instrument = channel.instrument;
-		var bufferId = instrument + '' + noteId;
-		var buffer = MIDI.audioBuffers[bufferId];
-
-		delay += ctx.currentTime;
-		stop_delay += ctx.currentTime;
-	
-		var source = ctx.createBufferSource();
-		source.buffer = buffer;
-
-		var gain = (velocity / 127) * 2 - 1;
-		source.connect(ctx.destination);
-		source.playbackRate.value = 1; // pitch shift 
-		var gainNode = ctx.createGain(); // gain
-		gainNode.connect(ctx.destination);
-		gainNode.gain.value = Math.min(1.0, Math.max(-1.0, gain));
-		gainNode.gain.linearRampToValueAtTime(gainNode.gain.value, stop_delay);
-		gainNode.gain.linearRampToValueAtTime(-1.0, stop_delay + 0.3);
-		source.gainNode = gainNode;
-		source.connect(source.gainNode);
-		source.start(delay);
-		source.stop(stop_delay + 0.5);
-		return source;
-	};
-
-//Dynamically load all of the files needed to use MIDI.js player
-window.onload = function (){
-dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/inc/shim/Base64.js')
-dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/inc/shim/Base64binary.js')
-dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/inc/shim/WebAudioAPI.js')
-
-dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/audioDetect.js', function(){
-dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/loader.js', function(){
-	dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/gm.js');
-	dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/plugin.audiotag.js');
-	dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/plugin.webmidi.js');
-	dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/midi/plugin.webaudio.js', function(){
-	MIDI.audioDetect(function (supports){
-		if (supports['audio/ogg']){
-			var soundfontUrl = "https://cdn.jsdelivr.net/gh/jacobsanz97/test502/soundfont/";
-			var instrument = "vowels";
-		} else if (supports['audio/mpeg']){
-			var soundfontUrl = "https://cdn.jsdelivr.net/gh/jacobsanz97/test502/soundfont_eg/";
-			var instrument = "acoustic_grand_piano";
+MIDI.audioDetect(function (supports){
+	MIDI.supports = supports;
+	var soundfontUrl = "/static/soundfonts/";
+	var instrument = "vowels";
+	MIDI.loadPlugin({
+		soundfontUrl: soundfontUrl,
+		instrument: instrument,
+		onprogress: function (state, progress) {
+			console.log(state, progress);
+		}, onsuccess: function(){
+			MIDI.setVolume(0, 127);
 		}
-		MIDI.loadPlugin({
-			soundfontUrl: soundfontUrl,
-			instrument: instrument,
-			onprogress: function (state, progress) {
-				console.log(state, progress);
-			}, onsuccess: function(){
-				MIDI.setVolume(0, 127);
-			}
-		});
-		MIDI.NoteOn = replNoteOn;
-		MIDI.instrument = instrument;
 	});
+	MIDI.instrument = instrument;
 });
-});
-});
-}
-
-dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/util/dom_request_xhr.js')
-dynamicallyLoadScript('https://cdn.jsdelivr.net/gh/jacobsanz97/test502/js/util/dom_request_script.js')
 
 //string length that can deal with null inputs
 function strLength(s) {
@@ -121,7 +55,7 @@ function audioStopReset(MIDI){
 	for (var i = 0; i < MIDI.sources.length; i++){
 		MIDI.sources[i].disconnect();
 	}
-	var newAudioCxt = new window.AudioContext();
+	var newAudioCxt = new (window.AudioContext || window.webkitAudioContext)();
 	MIDI.setContext(newAudioCxt);
 	$('.btnPlay').html("Play Audio");
 	$('.btnPlay').attr("disabled", false);
