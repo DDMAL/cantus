@@ -98,7 +98,7 @@ export default Marionette.Object.extend({
     {
         // Don't present a field name
         return {
-            field: null,
+            fieldName: this.searchParameters.get('field'),
             query: this.searchParameters.get('query'),
             numFound: this.collection.metadata.numFound
         };
