@@ -43,11 +43,21 @@ export default Marionette.ItemView.extend({
         if (query)
             this.ui.searchInput.val(query);
 
+        // For volpiano searches, remove the clef from the search before execution
+        var searchField = this.model.get('field');
+        var searchInput = this.ui.searchInput.val();
+        if (searchField === 'volpiano' || searchField === 'volpiano_literal'){
+            if (searchInput == "" || searchInput == "1"){
+                this.ui.searchInput.val("1-");
+                searchInput = "1-";
+            }
+            searchInput = searchInput.replace("1-","");
+        }
         // FIXME(wabain): While this class needs to take a SearchInput model so it can initially
         // be rendered, we're not actually updating that model here - we're just triggering
         // an event which will cause the appropriate changes to propagate. That's kind of
         // confusing.
-        this.trigger('search', this.ui.searchInput.val());
+        this.trigger('search', searchInput);
         this.updateQueryInput();
     },
 
