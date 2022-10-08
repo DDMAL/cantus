@@ -96,7 +96,6 @@ export default Marionette.Object.extend({
 
     getSearchMetadata: function ()
     {
-        // Don't present a field name
         return {
             fieldName: this.searchParameters.get('field'),
             query: this.searchParameters.get('query'),
