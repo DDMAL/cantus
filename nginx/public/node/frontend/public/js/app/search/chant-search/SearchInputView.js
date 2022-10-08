@@ -29,6 +29,10 @@ export default Marionette.ItemView.extend({
         _.bindAll(this, 'setQuery');
 
         this.setQueryDebounced = _.debounce(this.setQuery, 250);
+
+        // Create a regex that will match all invalid volpiano
+        // characters
+        this.invalidVolpianoRegex = /[^1-9a-sw-zA-SW-Z-\(\)]/i
     },
 
     /** We don't need to do anything real on a submit because the query is set on each change. */
@@ -51,7 +55,9 @@ export default Marionette.ItemView.extend({
                 this.ui.searchInput.val("1-");
                 searchInput = "1-";
             }
-            searchInput = searchInput.replace("1-","");
+            searchInput = searchInput.replaceAll(this.invalidVolpianoRegex, "")
+            this.ui.searchInput.val(searchInput)
+            searchInput = searchInput.replaceAll("1-","");
         }
         // FIXME(wabain): While this class needs to take a SearchInput model so it can initially
         // be rendered, we're not actually updating that model here - we're just triggering
