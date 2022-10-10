@@ -1,8 +1,10 @@
 import Marionette from 'marionette';
+import Backbone from 'backbone';
 import $ from 'jquery';
 
 import template from './diva-folio-advancer.template.html';
 
+var manuscriptChannel = Backbone.Radio.channel('manuscript');
 /**
  * A widget with buttons that controls
  */
@@ -12,13 +14,15 @@ export default Marionette.ItemView.extend({
     ui:
     {
         nextButton: ".next-folio",
-        previousButton: ".previous-folio"
+        previousButton: ".previous-folio",
+        firstChantFolioButton: ".first-chant-folio"
     },
 
     events:
     {
         "click @ui.nextButton": "nextButtonCallbackHandler",
-        "click @ui.previousButton": "previousButtonCallbackHandler"
+        "click @ui.previousButton": "previousButtonCallbackHandler",
+        "click @ui.firstChantFolioButton": "firstChantFolioCallbackHandler",
     },
 
     /**
@@ -63,6 +67,18 @@ export default Marionette.ItemView.extend({
                 return index - (inBookView ? 2 : 1);
             }
         );
+    },
+
+    firstChantFolioCallbackHandler: function(event){
+        // Query which folio in the manuscript has the first chant
+        var manuscript = manuscriptChannel.request('manuscript');
+        var queryUrl =  '/folio-set/manuscript/' + manuscript + '/';
+        var divaData = this.getDivaData();
+        $.get(queryUrl,
+            function(data){
+                var firstFolioURI = data[0].image_uri;
+                divaData.gotoPageByName(firstFolioURI);
+            })
     },
 
     /**
