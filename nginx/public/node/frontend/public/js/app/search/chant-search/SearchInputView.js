@@ -32,7 +32,7 @@ export default Marionette.ItemView.extend({
 
         // Create a regex that will match all invalid volpiano
         // characters
-        this.invalidVolpianoRegex = /[^1-9a-sw-zA-SW-Z-\(\)]/i
+        this.invalidVolpianoRegex = new RegExp('[^1-9a-sw-zA-SW-Z-\(\)]', 'g')
     },
 
     /** We don't need to do anything real on a submit because the query is set on each change. */
