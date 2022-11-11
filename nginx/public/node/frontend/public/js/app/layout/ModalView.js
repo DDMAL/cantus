@@ -11,6 +11,7 @@ import template from './modal.template.html';
 export default Marionette.LayoutView.extend({
     title: null,
     visitorView: null,
+    modalId: null,
 
     template,
 
@@ -22,6 +23,7 @@ export default Marionette.LayoutView.extend({
     {
         this.title = options.title;
         this.visitorView = options.view;
+        this.modalId = options.modalId;
     },
 
     onRender: function()
@@ -36,7 +38,8 @@ export default Marionette.LayoutView.extend({
     serializeData: function()
     {
         return {
-            title: this.title
+            title: this.title,
+            modalId: this.modalId
         };
     }
 });

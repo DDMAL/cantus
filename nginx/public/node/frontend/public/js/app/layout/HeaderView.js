@@ -49,7 +49,7 @@ export default Marionette.LayoutView.extend({
         });
 
         // The modal box for the search pop-up
-        this.searchModalView = new ModalView({title: "Search", view: this.searchView});
+        this.searchModalView = new ModalView({title: "Search", view: this.searchView, modalId: "searchModal"});
     },
 
     /**
@@ -93,7 +93,7 @@ export default Marionette.LayoutView.extend({
     {
         var searchModalAttrs = {
             'data-toggle': 'modal',
-            href: '#myModal'
+            href: '#searchModal'
         };
 
         // Dynamically make the search link a modal
