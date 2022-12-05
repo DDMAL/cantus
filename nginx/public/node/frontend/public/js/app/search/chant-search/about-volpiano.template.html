@@ -1,1 +1,90 @@
-More information about volpiano goes here
+<div class="container-fluid">
+    <div class="row">
+        <p>
+            Volpiano is a font that was created for the transcription of chant
+            melodies. It was developed Fabian Weber at the University of
+            Regensburg under the direction of David Hiley.
+        </p>
+        <p>
+            With Volpiano, alphanumeric characters and other symbols are
+            rendered as pitches and other musical elements on standard staffs.
+            On Cantus Ultimus, you can use Volpiano to enter a certain melody
+            and search for that melody in available manuscripts.
+        </p>
+
+
+        <p><b>Volpiano Dictionary</b></p>
+
+        <p>Queries can be entered using the characters below.</p>
+    </div>
+    <div class="row justify-content-center" style="margin-bottom:20pt">
+        <div class="volpiano" style="text-align:center">
+            <div class="volpiano-syllable">1---</div><div
+                class="volpiano-syllable">e--<span
+                    class="volpiano-text-lg">e</span></div><div
+                class="volpiano-syllable">f--<span
+                    class="volpiano-text-lg">f</span></div><div
+                class="volpiano-syllable">g--<span
+                    class="volpiano-text-lg">g</span></div><div
+                class="volpiano-syllable">h--<span
+                    class="volpiano-text-lg">h</span></div><div
+                class="volpiano-syllable">j--<span
+                    class="volpiano-text-lg">j</span></div><div
+                class="volpiano-syllable">k--<span
+                    class="volpiano-text-lg">k</span></div><div
+                class="volpiano-syllable">l--<span
+                    class="volpiano-text-lg">l</span></div><div
+                class="volpiano-syllable">i--<span
+                    class="volpiano-text-lg">i</span></div><div
+                class="volpiano-syllable">I--<span
+                    class="volpiano-text-lg">I</span></div>
+        </div>
+    </div>
+    <div class="row">
+        <p><b>Features of Volpiano Search</b></p>
+        <ol>
+            <li>
+                There are two types of Volpiano search in Cantus Ultimus:
+                "Volpiano" and "Volpiano (Literal)." "Volpiano (Literal)"
+                matches the way pitches in the query are divided into neumes. In
+                Volpiano, a hyphen ("-") separates pitches belonging to
+                different neumes. For example, the two queries below will yield
+                the same results in a "Volpiano" search, but not in a "Volpiano
+                (Literal)" search. In a "Volpiano (Literal)" search, the first
+                query will only return chants in which those four pitches occur
+                a single neume, and the second will only return chants where the
+                pitches occur in two consecutive two-pitch neumes.
+                <div class="volpiano" style="text-align:center"><div
+                        class="volpiano-syllable">1---fgfh---33---fg-fh--</div>
+                </div>
+            </li>
+            <li>
+                Volpiano search is not octave dependent. For example, the first
+                query below will return a chant with a sequence of the pitches F
+                and G in
+                any octave. The second search will return a chant with a
+                sequence of
+                pitches E and D in any octave.
+                <div class="volpiano" style="text-align:center"><div
+                        class="volpiano-syllable">1---fg---33---el---</div></div>
+            </li>
+            <li>
+                Liquescents are shown as smaller noteheads in Volpiano results.
+                For the purposes of search, however, liquescents are treated as
+                regular notes. For example, searching the string
+                <div class="volpiano" style="text-align:center"><div
+                        class="volpiano-syllable">1---gf---</div></div>
+                could return a chant that includes
+                <div class="volpiano" style="text-align:center"><div
+                        class="volpiano-syllable">1---gF---</div></div>
+            </li>
+            <li>
+                Accidentals are encoded according to their position in the
+                manuscript,
+                and therefore might not immediately preceed the note they
+                effect. Just like notes, volpiano search does not specify the
+                octave in which the accidental occurs.
+            </li>
+        </ol>
+    </div>
+</div>
