@@ -1,4 +1,5 @@
 import Marionette from "marionette";
+import $ from 'jquery';
 
 import template from './modal.template.html';
 
@@ -17,6 +18,10 @@ export default Marionette.LayoutView.extend({
 
     regions: {
         body: '.modal-body'
+    },
+
+    events: {
+        "hidden.bs.modal": "modalDismissCallback"
     },
 
     initialize: function(options)
@@ -41,5 +46,13 @@ export default Marionette.LayoutView.extend({
             title: this.title,
             modalId: this.modalId
         };
+    },
+
+    modalDismissCallback: function(event){
+        if (this.modalId == "aboutVolModal"){
+            if ($('#manuscript-search-pane').length == 0){
+                $('#searchModal').modal('show');
+            }
+        }
     }
 });
