@@ -141,6 +141,15 @@ pre.preformatted-text {
     left: 0;
 }
 
+.volpiano-text-lg {
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 15px;
+    margin-top: 35px;
+    margin-bottom: 35px;
+    position: absolute;
+    left: 0;
+}
+
 .field-volpiano, .field-volpiano_literal {
     color: #333;
 }
@@ -248,7 +257,7 @@ pre.preformatted-text {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    overflow: hidden;
+    overflow: scroll;
 
     // Workaround for Safari, where elements would shrink if the chant list was too big
     > * {

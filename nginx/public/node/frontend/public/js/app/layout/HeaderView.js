@@ -3,6 +3,7 @@ import Radio from "backbone.radio";
 
 import SearchView from "search/SearchView";
 import ChantSearchProvider from "search/chant-search/ChantSearchProvider";
+import AboutVolpianoView from "search/chant-search/AboutVolpianoView";
 
 import ModalView from "./ModalView";
 
@@ -23,7 +24,8 @@ export default Marionette.LayoutView.extend({
 
     regions: {
         pageTitle: '#page-title',
-        searchModalRegion: '#search-modal'
+        searchModalRegion: '#search-modal',
+        aboutVolpianoModalRegion: '#about-volpiano-modal'
     },
 
     ui: {
@@ -49,7 +51,10 @@ export default Marionette.LayoutView.extend({
         });
 
         // The modal box for the search pop-up
-        this.searchModalView = new ModalView({title: "Search", view: this.searchView});
+        this.searchModalView = new ModalView({title: "Search", view: this.searchView, modalId: "searchModal"});
+
+        this.aboutVolpianoView = new AboutVolpianoView();
+        this.aboutVolpianoModalView = new ModalView({title: "About Volpiano", view: this.aboutVolpianoView, modalId: "aboutVolModal"});
     },
 
     /**
@@ -93,7 +98,7 @@ export default Marionette.LayoutView.extend({
     {
         var searchModalAttrs = {
             'data-toggle': 'modal',
-            href: '#myModal'
+            href: '#searchModal'
         };
 
         // Dynamically make the search link a modal
@@ -117,10 +122,12 @@ export default Marionette.LayoutView.extend({
         });
 
         this.searchModalRegion.show(this.searchModalView, {preventDestroy: true});
+        this.aboutVolpianoModalRegion.show(this.aboutVolpianoModalView, {preventDestroy: true});
     },
 
     onDestroy: function ()
     {
         this.searchModalView.destroy();
+        this.aboutVolpianoModalView.destroy();
     }
 });
