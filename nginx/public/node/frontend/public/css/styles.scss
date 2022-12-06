@@ -257,7 +257,7 @@ pre.preformatted-text {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    overflow: hidden;
+    overflow: scroll;
 
     // Workaround for Safari, where elements would shrink if the chant list was too big
     > * {
