@@ -1,4 +1,3 @@
-import _ from "underscore";
 import Marionette from "marionette";
 
 import template from './about-volpiano.template.html';
