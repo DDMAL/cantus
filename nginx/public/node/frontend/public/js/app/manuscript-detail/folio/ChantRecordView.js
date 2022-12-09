@@ -191,6 +191,12 @@ function get_vowel(texti) {
 	}
 	for (var x = 0; x < strLength(texti); x++) {
 		if (texti[x].toLowerCase() == "a") {
+			// Handle "ae" dipthong
+			if (x < strLength(texti) - 1){
+				if (texti[x+1].toLowerCase() == "e"){
+					return 1;
+			} 
+		}
 			return 0;
 		}
 		if (texti[x].toLowerCase() == "e") {
@@ -200,10 +206,26 @@ function get_vowel(texti) {
 			return 2;
 		}
 		if (texti[x].toLowerCase() == "o") {
+			// Handle "oe" dipthong
+			if (x < strLength(texti) - 1) {
+				if (texti[x+1].toLowerCase() == "e"){
+				return 1;
+				}
+			}
 			return 3;
 		}
 		if (texti[x].toLowerCase() == "u") {
+		// Handle "Qu" combination
+			if (x > 0){
+				if (texti[x-1].toLowerCase() == "q"){
+					continue;
+				}
+			}
 			return 4;
+		}
+		// Have "y" vowels sung the same as "i"
+		if (texti[x].toLowerCase() == "y") {
+			return 2;
 		}
 	}
 	return 0;
