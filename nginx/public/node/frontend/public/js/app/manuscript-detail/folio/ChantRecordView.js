@@ -183,48 +183,48 @@ function parse_volpiano(syllableArray) {
 }
 
 ////////////////////////////////////////////////////////////////////////
-//Returns the number associated with first vowel in an input string (a=0,...,u=4). If no vowels, or empty string, return a=0.
+//Returns the number associated with the appropriate vowel sound in an input string (a=0,...,u=4). If no vowels, or empty string, return a=0.
 
-function get_vowel(texti) {
-	if (strLength(texti) < 1) {
+function get_vowel(syllStr) {
+	if (strLength(syllStr) < 1) {
 		return 0;
 	}
-	for (var x = 0; x < strLength(texti); x++) {
-		if (texti[x].toLowerCase() == "a") {
-			// Handle "ae" dipthong
-			if (x < strLength(texti) - 1){
-				if (texti[x+1].toLowerCase() == "e"){
+	for (var x = 0; x < strLength(syllStr); x++) {
+		if (syllStr[x].toLowerCase() == "a") {
+			// Handle "ae" diphthong
+			if (x < strLength(syllStr) - 1){
+				if (syllStr[x+1].toLowerCase() == "e"){
 					return 1;
 			} 
 		}
 			return 0;
 		}
-		if (texti[x].toLowerCase() == "e") {
+		if (syllStr[x].toLowerCase() == "e") {
 			return 1;
 		}
-		if (texti[x].toLowerCase() == "i") {
+		if (syllStr[x].toLowerCase() == "i") {
 			return 2;
 		}
-		if (texti[x].toLowerCase() == "o") {
-			// Handle "oe" dipthong
-			if (x < strLength(texti) - 1) {
-				if (texti[x+1].toLowerCase() == "e"){
+		if (syllStr[x].toLowerCase() == "o") {
+			// Handle "oe" diphthong
+			if (x < strLength(syllStr) - 1) {
+				if (syllStr[x+1].toLowerCase() == "e"){
 				return 1;
 				}
 			}
 			return 3;
 		}
-		if (texti[x].toLowerCase() == "u") {
+		if (syllStr[x].toLowerCase() == "u") {
 		// Handle "Qu" combination
 			if (x > 0){
-				if (texti[x-1].toLowerCase() == "q"){
+				if (syllStr[x-1].toLowerCase() == "q"){
 					continue;
 				}
 			}
 			return 4;
 		}
 		// Have "y" vowels sung the same as "i"
-		if (texti[x].toLowerCase() == "y") {
+		if (syllStr[x].toLowerCase() == "y") {
 			return 2;
 		}
 	}
