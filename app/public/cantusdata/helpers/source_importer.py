@@ -74,7 +74,6 @@ class SourceImporter:
         """
         source_pg_url = self.cdb_base_url + "/source/" + source_id
         source_pg_response = request.urlopen(source_pg_url).read().decode()
-        #import pdb; pdb.set_trace()
         source_pg_html = ProvenanceParser()
         source_pg_html.feed(source_pg_response)
         return source_pg_html.provenance
