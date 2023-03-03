@@ -41,7 +41,7 @@ class SourceImporter:
         
         :return: a list of character source ID's
         """
-        sources_url = self.cdb_base_url + "/json-sources/"
+        sources_url = f"{self.cdb_base_url}/json-sources/"
         sources_response = request.urlopen(sources_url).read()
         sources_json = json.loads(sources_response)
         source_ids = sources_json.keys()
@@ -55,7 +55,7 @@ class SourceImporter:
         :param str source_id: the ID of the source in CantusDB
         :return: a parsed json object containing source data
         """
-        source_url = self.cdb_base_url + "/json-node/" + source_id
+        source_url = f"{self.cdb_base_url}/json-node/{source_id}"
         source_response = request.urlopen(source_url).read()
         source_json = json.loads(source_response)
         return source_json
@@ -72,7 +72,7 @@ class SourceImporter:
         (see https://github.com/DDMAL/CantusDB/issues/564), so this will be
         simplified once that is complete.
         """
-        source_pg_url = self.cdb_base_url + "/source/" + source_id
+        source_pg_url = f"{self.cdb_base_url}/source/{source_id}"
         source_pg_response = request.urlopen(source_pg_url).read().decode()
         source_pg_html = ProvenanceParser()
         source_pg_html.feed(source_pg_response)
@@ -111,8 +111,9 @@ class SourceImporter:
             
     def get_source_data(self, source_id):
         """
-        Given a CantusDB, returns a dictionary of source metadata 
-        required to create a Cantus Ultimus manuscript object.
+        Given a source ID from CantusDB, returns a dictionary of 
+        source metadata required to create a Cantus Ultimus 
+        manuscript object.
 
         :param str source_id: the ID of the source in CantusDB
         :return: a dictionary of metadata for use in creating a

@@ -90,8 +90,8 @@ class Command(BaseCommand):
                 # Getting the fields from the scraper
                 id = source.get("id")
                 name = source.get("name")
-                cantus_url = cdb_base_url + "source/" + id
-                csv_export_url = cdb_base_url + "sites/default/files/csv/" + id + ".csv"
+                cantus_url = f"{cdb_base_url}source/{id}"
+                csv_export_url = f"{cdb_base_url}sites/default/files/csv/{id}.csv"
                 siglum = source.get("siglum")
                 date = source.get("date")
                 provenance = source.get("provenance")
@@ -108,15 +108,15 @@ class Command(BaseCommand):
                 manuscript.description = description
                 manuscript.is_mapped = "UNMAPPED"
                 manuscript.save()
-                self.stdout.write(source["id"] + " " + source["name"])
+                self.stdout.write(f'{source["id"]} {source["name"]}')
                 i += 1
             except urllib.error.HTTPError as http_error:
                 if http_error.code == 403:
-                    self.stdout.write("FORBIDDEN: " + source_id)
+                    self.stdout.write(f"FORBIDDEN: {source_id}")
                 else:
-                    self.stdout.write("FAILED: " + source_id)
+                    self.stdout.write(f"FAILED: {source_id}")
         self.stdout.write(
-            "Successfully imported {} manuscripts into database.".format(i)
+            f"Successfully imported {i} manuscripts into database."
         )
 
     @transaction.atomic
