@@ -1,5 +1,30 @@
 from urllib import request
 import json
+from html.parser import HTMLParser
+
+class ProvenanceParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.provenance_class = False
+        self.is_provenance = False
+        self.provenance = ""
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "div":
+            if ("class","views-field views-field-field-provenance-tax") in attrs:
+                self.provenance_class = True
+        if tag == "a":
+            if self.provenance_class:
+                self.is_provenance = True
+
+    def handle_endtag(self, tag):
+        if self.is_provenance:
+            self.provenance_class = False
+            self.is_provenance = False
+    
+    def handle_data(self, data):
+        if self.is_provenance:
+            self.provenance = data
 
 class SourceImporter:
     """
@@ -22,7 +47,7 @@ class SourceImporter:
         source_ids = sources_json.keys()
         return source_ids
 
-    def request_source_data(self, source_id):
+    def source_data_download(self, source_id):
         """
         Requests data on an individual source in CantusDB using
         the /json-node/ endpoint.
@@ -34,8 +59,27 @@ class SourceImporter:
         source_response = request.urlopen(source_url).read()
         source_json = json.loads(source_response)
         return source_json
+    
+    def source_provenance_download(self, source_id):
+        """
+        The current Old CantusDB API endpoints do not provide
+        a method for obtaining Provenance metadata (the text returned
+        by the API in the provenance field contains more extensive notes
+        on the source provenance, but not the shorter designation that is
+        displayed publicly in CantusDB and on Cantus Ultimus). As such, this
+        method extracts this source provenance from CantusDB html. Incorporating
+        this into CantusDB's API is an open issue 
+        (see https://github.com/DDMAL/CantusDB/issues/564), so this will be
+        simplified once that is complete.
+        """
+        source_pg_url = self.cdb_base_url + "/source/" + source_id
+        source_pg_response = request.urlopen(source_pg_url).read().decode()
+        #import pdb; pdb.set_trace()
+        source_pg_html = ProvenanceParser()
+        source_pg_html.feed(source_pg_response)
+        return source_pg_html.provenance
 
-    def source_json_extractor(source_json):
+    def source_json_extractor(self, source_json):
         """
         Extracts required elements for the CU Manuscript
         model from the API response json.
@@ -46,25 +90,35 @@ class SourceImporter:
         source_dict = {}
         source_dict["id"] = source_json["vid"]
         source_dict["name"] = source_json["title"]
-        source_dict["siglum"] = source_json["field_siglum"]["und"][0]["value"]
-        source_dict["date"] = source_json["field_date"]["und"][0]["value"]
-        source_dict["provenance"] = source_json["field_provenance"]["und"][0]["value"]
-        source_dict["description"] = source_json["field_summary"]["und"][0]["value"]
+        if source_json["field_siglum"]:
+            source_dict["siglum"] = source_json["field_siglum"]["und"][0]["value"]
+        else:
+            source_dict["siglum"] = ""
+        if source_json["field_date"]:
+            source_dict["date"] = source_json["field_date"]["und"][0]["value"]
+        else:
+            source_dict["date"] = ""
+        ## See documentation for 
+        # if source_json["field_provenance"]:
+        #     source_dict["provenance"] = source_json["field_provenance"]["und"][0]["value"]
+        # else:
+        #     source_dict["provenance"] = ""
+        source_dict["provenance"] = self.source_provenance_download(source_dict["id"])
+        if source_json["field_summary"]:
+            source_dict["description"] = source_json["field_summary"]["und"][0]["value"]
+        else:
+            source_dict["description"] = ""
         return source_dict
-        
-    def collect_sources(self):
+            
+    def get_source_data(self, source_id):
         """
-        Collects data on all sources in CantusDB for for importing
-        into Cantus Ultimus.
+        Given a CantusDB, returns a dictionary of source metadata 
+        required to create a Cantus Ultimus manuscript object.
 
-        :return: a list of dictionaries with metadata on each source
+        :param str source_id: the ID of the source in CantusDB
+        :return: a dictionary of metadata for use in creating a
+        Manuscript object in Cantus Ultimus
         """
-        source_ids = self.request_source_ids()
-        source_list = []
-        for id in source_ids:
-            source_json = self.request_source_data(id)
-            source_attrs = self.source_json_extractor(source_json)
-            source_list.append(source_attrs)
-        return source_list
-            
-            
+        source_json = self.source_data_download(source_id)
+        source_data = self.source_json_extractor(source_json)
+        return source_data
