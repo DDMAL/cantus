@@ -47,7 +47,7 @@ class SourceImporter:
         source_ids = sources_json.keys()
         return source_ids
 
-    def source_data_download(self, source_id):
+    def download_source_data(self, source_id):
         """
         Requests data on an individual source in CantusDB using
         the /json-node/ endpoint.
@@ -60,7 +60,7 @@ class SourceImporter:
         source_json = json.loads(source_response)
         return source_json
     
-    def source_provenance_download(self, source_id):
+    def download_source_provenance(self, source_id):
         """
         The current Old CantusDB API endpoints do not provide
         a method for obtaining Provenance metadata (the text returned
@@ -79,7 +79,7 @@ class SourceImporter:
         source_pg_html.feed(source_pg_response)
         return source_pg_html.provenance
 
-    def source_json_extractor(self, source_json):
+    def extract_source_data(self, source_json):
         """
         Extracts required elements for the CU Manuscript
         model from the API response json.
@@ -103,7 +103,7 @@ class SourceImporter:
         #     source_dict["provenance"] = source_json["field_provenance"]["und"][0]["value"]
         # else:
         #     source_dict["provenance"] = ""
-        source_dict["provenance"] = self.source_provenance_download(source_dict["id"])
+        source_dict["provenance"] = self.download_source_provenance(source_dict["id"])
         if source_json["field_summary"]:
             source_dict["description"] = source_json["field_summary"]["und"][0]["value"]
         else:
@@ -119,6 +119,6 @@ class SourceImporter:
         :return: a dictionary of metadata for use in creating a
         Manuscript object in Cantus Ultimus
         """
-        source_json = self.source_data_download(source_id)
-        source_data = self.source_json_extractor(source_json)
+        source_json = self.download_source_data(source_id)
+        source_data = self.extract_source_data(source_json)
         return source_data
