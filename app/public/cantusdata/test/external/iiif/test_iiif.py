@@ -101,7 +101,7 @@ class IIIFTestCase(TestCase):
                     {"region": "full", "size": ",160"},
                 ]
 
-                for (j, t) in enumerate(transformations):
+                for j, t in enumerate(transformations):
                     start = time.time()
                     req = f"{uri}/{t['region']}/{t['size']}/0/{path_tail}"
                     requests.get(req)

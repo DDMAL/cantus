@@ -115,9 +115,7 @@ class Command(BaseCommand):
                     self.stdout.write(f"FORBIDDEN: {source_id}")
                 else:
                     self.stdout.write(f"FAILED: {source_id}")
-        self.stdout.write(
-            f"Successfully imported {i} manuscripts into database."
-        )
+        self.stdout.write(f"Successfully imported {i} manuscripts into database.")
 
     @transaction.atomic
     def import_concordance_data(self, **options):

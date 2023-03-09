@@ -24,5 +24,5 @@ def getLocation(tokens):
 
 
 def getTokensBySystem(tokens):
-    for (_, group) in groupby(tokens, lambda tok: tok.system):
+    for _, group in groupby(tokens, lambda tok: tok.system):
         yield list(group)

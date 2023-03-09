@@ -22,7 +22,6 @@ class SearchNotationView(APIView):
     """
 
     def get(self, request, *args, **kwargs):
-
         q = request.GET.get("q", None)
         stype = request.GET.get("type", None)
         manuscript = request.GET.get("manuscript", None)

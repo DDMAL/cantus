@@ -36,13 +36,13 @@ class SolrSynchronizer(object):
             (Chant, post_delete, self.chant_deleted),
         ]
 
-        for (model, signal, receiver) in handlers:
+        for model, signal, receiver in handlers:
             signal.connect(receiver, sender=model)
 
         return handlers
 
     def detach_handlers(self):
-        for (model, signal, receiver) in self._handlers:
+        for model, signal, receiver in self._handlers:
             signal.disconnect(receiver, sender=model)
 
     @contextlib.contextmanager

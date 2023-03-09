@@ -7,7 +7,6 @@ from cantusdata.models import Folio, Chant, Manuscript
 
 
 class FolioViewTestCase(APITransactionTestCase):
-
     fixtures = ["1_users", "2_initial_data"]
 
     def setUp(self):

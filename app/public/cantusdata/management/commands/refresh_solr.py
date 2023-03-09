@@ -7,7 +7,6 @@ import solr
 
 
 class Command(BaseCommand):
-
     TYPE_MAPPING = {
         "manuscripts": Manuscript,
         "chants": Chant,
