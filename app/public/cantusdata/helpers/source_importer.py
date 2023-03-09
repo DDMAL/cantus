@@ -3,26 +3,50 @@ import json
 from html.parser import HTMLParser
 
 class ProvenanceParser(HTMLParser):
+    """
+    ProvenanceParser extracts the short provenance name from a CantusDB source
+    page (/source/id-of-source/). 
+    
+    provenance_div flags whether the parser has reached the div containing the 
+    provenance text.
+    
+    is_provenance flags whether the parser has reached the anchor tag that contains 
+    the provenance text.
+    """
     def __init__(self):
         super().__init__()
-        self.provenance_class = False
+        self.provenance_div = False
         self.is_provenance = False
         self.provenance = ""
 
     def handle_starttag(self, tag, attrs):
+        """
+        While parsing the html:
+        1. determine whether a div tag encountered by the parser has the unique
+        class attributes assigned to the div that contains provenance data. If
+        this div is encountered, the provenance_div flag is set to True.
+        2. if a anchor tag is encountered within this div tag, set the 
+        is_provenance flag to True.
+        """
         if tag == "div":
             if ("class","views-field views-field-field-provenance-tax") in attrs:
-                self.provenance_class = True
+                self.provenance_div = True
         if tag == "a":
-            if self.provenance_class:
+            if self.provenance_div:
                 self.is_provenance = True
 
     def handle_endtag(self, tag):
+        """
+        Once provenance data has been extracted, set the flags to False
+        """
         if self.is_provenance:
-            self.provenance_class = False
+            self.provenance_div = False
             self.is_provenance = False
     
     def handle_data(self, data):
+        """
+        Extract the provenance data when is_provenance has been triggered.
+        """
         if self.is_provenance:
             self.provenance = data
 
