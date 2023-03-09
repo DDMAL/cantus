@@ -10,13 +10,13 @@ class ProvenanceParser(HTMLParser):
     provenance_div flags whether the parser has reached the div containing the 
     provenance text.
     
-    is_provenance flags whether the parser has reached the anchor tag that contains 
+    provenance_a flags whether the parser has reached the anchor tag that contains 
     the provenance text.
     """
     def __init__(self):
         super().__init__()
         self.provenance_div = False
-        self.is_provenance = False
+        self.provenance_a = False
         self.provenance = ""
 
     def handle_starttag(self, tag, attrs):
@@ -26,14 +26,14 @@ class ProvenanceParser(HTMLParser):
         class attributes assigned to the div that contains provenance data. If
         this div is encountered, the provenance_div flag is set to True.
         2. if a anchor tag is encountered within this div tag, set the 
-        is_provenance flag to True.
+        provenance_a flag to True.
         """
         if tag == "div":
             if ("class","views-field views-field-field-provenance-tax") in attrs:
                 self.provenance_div = True
         if tag == "a":
             if self.provenance_div:
-                self.is_provenance = True
+                self.provenance_a = True
 
     def handle_endtag(self, tag):
         """
@@ -41,13 +41,13 @@ class ProvenanceParser(HTMLParser):
         """
         if self.is_provenance:
             self.provenance_div = False
-            self.is_provenance = False
+            self.provenance_a = False
     
     def handle_data(self, data):
         """
-        Extract the provenance data when is_provenance has been triggered.
+        Extract the provenance data when provenance_a has been triggered.
         """
-        if self.is_provenance:
+        if self.provenance_a:
             self.provenance = data
 
 class SourceImporter:
