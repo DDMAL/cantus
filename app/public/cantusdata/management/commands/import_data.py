@@ -7,9 +7,10 @@ from cantusdata.models.manuscript import Manuscript
 from cantusdata.signals.solr_sync import solr_synchronizer
 from cantusdata.helpers.chant_importer import ChantImporter
 from cantusdata.helpers.scrapers.sources import sources
-from cantusdata.helpers.scrapers.manuscript import parse as parse_manuscript
+from cantusdata.helpers.source_importer import SourceImporter
 from cantusdata.helpers.scrapers.concordances import concordances
 import urllib.request
+import urllib
 from io import StringIO
 from cantusdata.settings import BASE_DIR
 from os import path
@@ -79,32 +80,43 @@ class Command(BaseCommand):
     @transaction.atomic
     def import_manuscript_data(self, **options):
         self.stdout.write("Starting manuscript import process.")
+        cdb_base_url = "https://cantus.uwaterloo.ca/"
+        source_importer = SourceImporter(cdb_base_url)
+        source_ids = source_importer.request_source_ids()
         i = 0
-        for source, name in sources.items():
-            self.stdout.write(source + " " + name)
-            # Getting the fields from the scraper
-            metadata = parse_manuscript(source)
-            name = metadata.get("Title", "")
-            cantus_url = metadata.get("CantusURL", "")
-            csv_export_url = metadata.get("CSVExport", "")
-            siglum = metadata.get("Siglum", "")
-            date = metadata.get("Date", "")
-            provenance = metadata.get("Provenance", "")
-            description = metadata.get("Summary", "")
-            # Populating the Manuscript model
-            manuscript = Manuscript()
-            manuscript.name = name
-            manuscript.cantus_url = cantus_url
-            manuscript.csv_export_url = csv_export_url
-            manuscript.siglum = siglum
-            manuscript.date = date
-            manuscript.provenance = provenance
-            manuscript.description = description
-            manuscript.is_mapped = "UNMAPPED"
-            manuscript.save()
-            i += 1
+        for source_id in source_ids:
+            try:
+                source = source_importer.get_source_data(source_id)
+                # Getting the fields from the scraper
+                id = source.get("id")
+                name = source.get("name")
+                cantus_url = f"{cdb_base_url}source/{id}"
+                csv_export_url = f"{cdb_base_url}sites/default/files/csv/{id}.csv"
+                siglum = source.get("siglum")
+                date = source.get("date")
+                provenance = source.get("provenance")
+                description = source.get("description")
+                # Populating the Manuscript model
+                manuscript = Manuscript()
+                manuscript.id = int(id)
+                manuscript.name = name
+                manuscript.cantus_url = cantus_url
+                manuscript.csv_export_url = csv_export_url
+                manuscript.siglum = siglum
+                manuscript.date = date
+                manuscript.provenance = provenance
+                manuscript.description = description
+                manuscript.is_mapped = "UNMAPPED"
+                manuscript.save()
+                self.stdout.write(f'{source["id"]} {source["name"]}')
+                i += 1
+            except urllib.error.HTTPError as http_error:
+                if http_error.code == 403:
+                    self.stdout.write(f"FORBIDDEN: {source_id}")
+                else:
+                    self.stdout.write(f"FAILED: {source_id}")
         self.stdout.write(
-            "Successfully imported {} manuscripts into database.".format(i)
+            f"Successfully imported {i} manuscripts into database."
         )
 
     @transaction.atomic

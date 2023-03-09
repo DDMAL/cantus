@@ -28,6 +28,7 @@ class Manuscript(models.Model):
             )
         ]
 
+    id = models.IntegerField(primary_key = True)
     name = models.CharField(max_length=255, blank=True, null=True)
     siglum = models.CharField(max_length=255, blank=True, null=True)
     date = models.CharField(max_length=50, blank=True, null=True)
