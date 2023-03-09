@@ -125,7 +125,8 @@ class SourceImporter:
             source_dict["date"] = source_json["field_date"]["und"][0]["value"]
         else:
             source_dict["date"] = ""
-        ## See documentation for
+        ## See documentation of the download_source_provenance method for details
+        ## on these commented lines.
         # if source_json["field_provenance"]:
         #     source_dict["provenance"] = source_json["field_provenance"]["und"][0]["value"]
         # else:
