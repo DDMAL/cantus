@@ -39,7 +39,7 @@ class ProvenanceParser(HTMLParser):
         """
         Once provenance data has been extracted, set the flags to False
         """
-        if self.is_provenance:
+        if self.provenance_a:
             self.provenance_div = False
             self.provenance_a = False
     
