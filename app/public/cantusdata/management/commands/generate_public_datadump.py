@@ -4,7 +4,6 @@ import csv
 
 
 class Command(BaseCommand):
-
     CSV_PATH = "data_dumps/public-manuscripts.csv"
 
     help = (

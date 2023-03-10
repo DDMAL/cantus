@@ -83,7 +83,6 @@ class ExpandrFunctionsTestCase(TestCase):
 
 
 class PositionExpanderTestCase(TestCase):
-
     position_expander = None
 
     def setUp(self):

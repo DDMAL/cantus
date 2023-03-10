@@ -86,7 +86,6 @@ def expand_office(office_code):
 
 
 class PositionExpander(object):
-
     position_data_base = None
 
     def __init__(self):

@@ -7,7 +7,6 @@ import solr
 
 class SuggestionView(APIView):
     def get(self, request, *args, **kwargs):
-
         if not ("q" in request.GET and "dictionary" in request.GET):
             return Response()
 
@@ -35,7 +34,6 @@ class SuggestionView(APIView):
     def _get_filtered_results(self, suggestions):
         results = []
         for suggestion in suggestions:
-
             unique = True
 
             for result in results:

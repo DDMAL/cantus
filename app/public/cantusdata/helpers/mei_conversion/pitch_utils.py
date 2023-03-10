@@ -14,7 +14,7 @@ def getIntervals(semitones, pnames):
     tritones, they may use the semitones field.
     """
     intervals = []
-    for (interval, pname) in zip(semitones, pnames):
+    for interval, pname in zip(semitones, pnames):
         if interval == 0:
             intervals.append("r")
         else:

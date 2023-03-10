@@ -7,7 +7,6 @@ from cantusdata.models import Manuscript, Folio, Chant, Concordance
 
 
 class ChantViewTestCase(APITransactionTestCase):
-
     fixtures = ["1_users", "2_initial_data"]
 
     def setUp(self):

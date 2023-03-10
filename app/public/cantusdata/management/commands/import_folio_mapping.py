@@ -54,7 +54,6 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
-
         manuscript_ids = options["manuscript_ids"]
         manuscript_mapping_dict = dict(zip(manuscript_ids, options["mapping_data"]))
         task = options.get("task", None)

@@ -3,7 +3,6 @@ from rest_framework import status
 
 
 class ManuscriptFolioSetViewTestCase(APITransactionTestCase):
-
     fixtures = ["1_users", "2_initial_data"]
 
     def setUp(self):
