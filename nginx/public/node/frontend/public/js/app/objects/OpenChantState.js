@@ -84,14 +84,14 @@ export default Marionette.Object.extend({
      */
     persist: function (manuscript)
     {
-        if (window.localStorage)
+        if (window.sessionStorage)
         {
-            var key = this.getLocalStorageKey(manuscript);
+            var key = this.getSessionStorageKey(manuscript);
             var data = JSON.stringify(this.manuscripts[manuscript]);
 
             try
             {
-                window.localStorage.setItem(key, data);
+                window.sessionStorage.setItem(key, data);
             }
             catch (e)
             {
@@ -115,15 +115,15 @@ export default Marionette.Object.extend({
             return false;
         }
 
-        // Try to load the data from localStorage
-        if (window.localStorage)
+        // Try to load the data from sessionStorage
+        if (window.sessionStorage)
         {
-            var key = this.getLocalStorageKey(manuscript);
+            var key = this.getSessionStorageKey(manuscript);
             var data;
 
             try
             {
-                data = window.localStorage.getItem(key);
+                data = window.sessionStorage.getItem(key);
             }
             catch (e)
             {
@@ -156,7 +156,7 @@ export default Marionette.Object.extend({
         return true;
     },
 
-    getLocalStorageKey: function(manuscript)
+    getSessionStorageKey: function(manuscript)
     {
         return 'openChants:' + manuscript;
     }
