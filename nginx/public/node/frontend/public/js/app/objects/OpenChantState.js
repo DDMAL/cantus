@@ -1,6 +1,23 @@
 import _ from 'underscore';
 import Marionette from 'marionette';
 
+/**
+ * NOTE: The OpenChantState object stores the state of chants
+ * for a particular manuscript in sessionStorage. Chant states
+ * are reset in new sessions (eg. new tabs or upon navigating
+ * away from the detail view of a particular manuscript). While 
+ * this has been implemented as a default so that chant do not
+ * "remain open" across visits some time apart, a future feature
+ * could allow users to decide whether or not chant states should
+ * reset or persist across multiple sessions and windows (ie. whether
+ * sessionStorage or localStorage should be used). When this feature
+ * is implemented logic in the various methods of this object ("persist",
+ * "ensureCreated") should be added to read and write chant states
+ * to sessionStorage or localStorage based on user preferences, rather
+ * than to sessionStorage only.
+ */
+
+
 export default Marionette.Object.extend({
     initialize: function ()
     {
@@ -84,14 +101,14 @@ export default Marionette.Object.extend({
      */
     persist: function (manuscript)
     {
-        if (window.localStorage)
+        if (window.sessionStorage) 
         {
-            var key = this.getLocalStorageKey(manuscript);
+            var key = this.getSessionStorageKey(manuscript);
             var data = JSON.stringify(this.manuscripts[manuscript]);
 
             try
             {
-                window.localStorage.setItem(key, data);
+                window.sessionStorage.setItem(key, data);
             }
             catch (e)
             {
@@ -115,15 +132,15 @@ export default Marionette.Object.extend({
             return false;
         }
 
-        // Try to load the data from localStorage
-        if (window.localStorage)
+        // Try to load the data from sessionStorage
+        if (window.sessionStorage)
         {
-            var key = this.getLocalStorageKey(manuscript);
+            var key = this.getSessionStorageKey(manuscript);
             var data;
 
             try
             {
-                data = window.localStorage.getItem(key);
+                data = window.sessionStorage.getItem(key);
             }
             catch (e)
             {
@@ -156,7 +173,7 @@ export default Marionette.Object.extend({
         return true;
     },
 
-    getLocalStorageKey: function(manuscript)
+    getSessionStorageKey: function(manuscript)
     {
         return 'openChants:' + manuscript;
     }
