@@ -2,7 +2,7 @@
     <div class="row">
         <p>
             Volpiano is a font that was created for the transcription of chant
-            melodies. It was developed Fabian Weber at the University of
+            melodies. It was developed by Fabian Weber at the University of
             Regensburg under the direction of David Hiley.
         </p>
         <p>
@@ -21,47 +21,79 @@
         <div class="volpiano" style="text-align:center">
             <div class="volpiano-syllable">1---</div><div
                 class="volpiano-syllable">e--<span
-                    class="volpiano-text-lg">e</span></div><div
+                    class="volpiano-text-serif">e</span></div><div
                 class="volpiano-syllable">f--<span
-                    class="volpiano-text-lg">f</span></div><div
+                    class="volpiano-text-serif">f</span></div><div
                 class="volpiano-syllable">g--<span
-                    class="volpiano-text-lg">g</span></div><div
+                    class="volpiano-text-serif">g</span></div><div
                 class="volpiano-syllable">h--<span
-                    class="volpiano-text-lg">h</span></div><div
+                    class="volpiano-text-serif">h</span></div><div
                 class="volpiano-syllable">j--<span
-                    class="volpiano-text-lg">j</span></div><div
+                    class="volpiano-text-serif">j</span></div><div
                 class="volpiano-syllable">k--<span
-                    class="volpiano-text-lg">k</span></div><div
+                    class="volpiano-text-serif">k</span></div><div
                 class="volpiano-syllable">l--<span
-                    class="volpiano-text-lg">l</span></div><div
+                    class="volpiano-text-serif">l</span></div><div
                 class="volpiano-syllable">i--<span
-                    class="volpiano-text-lg">i</span></div><div
+                    class="volpiano-text-serif">i</span></div><div
                 class="volpiano-syllable">I--<span
-                    class="volpiano-text-lg">I</span></div>
+                    class="volpiano-text-serif">I</span></div>
         </div>
+    </div>
+    <div class="row">
+        <p>In Volpiano, a hyphen ("-") is used to separate pitches, with additional
+            hyphens increasing the separation between pitches. </p>
+        </div>
+        <div class="row justify-content-center" style="margin-bottom:20pt">
+            <div class="volpiano" style="text-align:center"><div class="volpiano-syllable">
+                1---</div><div class="volpiano-syllable">
+                gh---33---<span class="volpiano-text-serif">
+                gh</span></div><div class="volpiano-syllable">g-h---33---<span class="volpiano-text-serif">
+                g-h</span></div><div class="volpiano-syllable">g--h---33---<span class="volpiano-text-serif">
+                g--h</span></div><div class="volpiano-syllable">g---h--<span class="volpiano-text-serif">
+                g---h</span></div></div>
+            </div>
+        <div class="row">
+        <p>No separation occurs between pitches in the same neume. One hyphen ("-") separates
+            neumes. Two hyphens ("--") separate neumes associated with different syllables.
+            Three hyphens ("---") separate neumes associated with different words.
+        </p>
     </div>
     <div class="row">
         <p><b>Features of Volpiano Search</b></p>
         <ol>
-            <li>
+            <li style="margin-bottom:20pt">
                 There are two types of Volpiano search in Cantus Ultimus:
-                "Volpiano" and "Volpiano (Literal)." "Volpiano (Literal)"
-                matches the way pitches in the query are divided into neumes. In
-                Volpiano, a hyphen ("-") separates pitches belonging to
-                different neumes. For example, the two queries below will yield
-                the same results in a "Volpiano" search, but not in a "Volpiano
-                (Literal)" search. In a "Volpiano (Literal)" search, the first
-                query will only return chants in which those four pitches occur
-                a single neume, and the second will only return chants where the
-                pitches occur in two consecutive two-pitch neumes.
+                "Volpiano" and "Volpiano (Literal)." "Volpiano" matches a 
+                sequence of pitches, regardless of how those pitches are grouped 
+                into neumes, syllables, and words. "Volpiano (Literal)" matches 
+                the pitches in the query and the way those pitches are grouped. 
+                For example, the two queries below will return the same results 
+                in a "Volpiano" search, but different subsets of those 
+                results in a "Volpiano (Literal)" search. In a "Volpiano (Literal)" 
+                search, the first query will only return chants 
+                in which the sequence of four pitches shown occurs in a single neume, 
+                while the second will only return chants where the pitches occur 
+                in two separate consecutive neumes. 
                 <div class="volpiano" style="text-align:center"><div
                         class="volpiano-syllable">1---fgfh---33</div><div
                         class="volpiano-syllable">
                         1---fg-fh---
                     </div>
                 </div>
+                Note that in these queries, chants may be returned where the pitches 
+                do not make up a complete neume. For example, a "Volpiano (Literal)" 
+                search of the second query above could return a chant that includes:
+                <div class="volpiano" style="text-align:center"><div
+                        class="volpiano-syllable">1---efg-fhgf---</div>
+                </div>
+                <!---
+                You can require some sequence of pitches in your query to be a complete 
+                neume (or syllable or word), by surrounding those pitches by the appropriate 
+                number of hyphens.
+                -->
             </li>
-            <li>
+            <li style="margin-bottom:20pt">
                 Volpiano search is not octave dependent. For example, this
                 query will return a chant with a sequence of the pitches F
                 and G in
@@ -74,22 +106,22 @@
                 <div class="volpiano" style="text-align:center"><div
                         class="volpiano-syllable">1---el---</div></div>
             </li>
-            <li>
+            <li style="margin-bottom:20pt">
                 Liquescents are shown as smaller noteheads in Volpiano results.
-                For the purposes of search, however, liquescents are treated as
-                regular notes. For example, searching the string
+                For the purposes of search, however, liquescents are treated like 
+                regular (non-liquescent) notes. For example, searching the string
                 <div class="volpiano" style="text-align:center"><div
                         class="volpiano-syllable">1---gf---</div></div>
-                could return a chant that includes
+                will also return any chant that includes
                 <div class="volpiano" style="text-align:center"><div
                         class="volpiano-syllable">1---gF---</div></div>
             </li>
-            <li>
+            <li style="margin-bottom:20pt">
                 Accidentals are encoded according to their position in the
                 manuscript,
-                and therefore might not immediately preceed the note they
-                effect. Just like notes, volpiano search does not specify the
-                octave in which the accidental occurs.
+                and therefore might not immediately precede the note they
+                affect. As with pitches, the octave of the accidental does 
+                not affect the search results.
             </li>
         </ol>
     </div>
