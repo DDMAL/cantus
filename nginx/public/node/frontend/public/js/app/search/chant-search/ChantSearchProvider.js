@@ -96,10 +96,13 @@ export default Marionette.Object.extend({
 
     getSearchMetadata: function ()
     {
+        let query = this.searchParameters.get('query');
+        let displayedQuery = query.replaceAll("\\-", "-");
         return {
             fieldName: this.searchParameters.get('field'),
-            query: this.searchParameters.get('query'),
-            numFound: this.collection.metadata.numFound
+            query: query,
+            numFound: this.collection.metadata.numFound,
+            displayedQuery: displayedQuery
         };
     },
 
