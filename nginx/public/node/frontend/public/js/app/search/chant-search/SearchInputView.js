@@ -58,6 +58,7 @@ export default Marionette.ItemView.extend({
             searchInput = searchInput.replaceAll(this.invalidVolpianoRegex, "")
             this.ui.searchInput.val(searchInput)
             searchInput = searchInput.replaceAll("1-","");
+            searchInput = searchInput.replaceAll("-","\\-");
         }
         // FIXME(wabain): While this class needs to take a SearchInput model so it can initially
         // be rendered, we're not actually updating that model here - we're just triggering
