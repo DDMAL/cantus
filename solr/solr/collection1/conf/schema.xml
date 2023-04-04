@@ -358,12 +358,12 @@
     <fieldType name="volpiano_general" class="solr.TextField" positionIncrementGap="100">
         <analyzer type="index">
             <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ExtractVolpianoNotes.txt" />
-            <filter class="solr.PatternReplaceFilterFactory" pattern="-" replacement="" />
-            <tokenizer class="solr.NGramTokenizerFactory" minGramSize="2" maxGramSize="50" />
+            <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="-" replacement="" />
+            <tokenizer class="solr.NGramTokenizerFactory" minGramSize="1" maxGramSize="50" />
         </analyzer>
         <analyzer type="query">
             <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ExtractVolpianoNotes.txt" />
-            <filter class="solr.PatternReplaceFilterFactory" pattern="-" replacement="" />
+            <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="-" replacement="" />
             <tokenizer class="solr.KeywordTokenizerFactory" />
         </analyzer>
     </fieldType>
@@ -371,7 +371,7 @@
     <fieldType name="volpiano_literal" class="solr.TextField" positionIncrementGap="100">
         <analyzer type="index">
             <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ExtractVolpianoNotes.txt" />
-            <tokenizer class="solr.NGramTokenizerFactory" minGramSize="2" maxGramSize="50" />
+            <tokenizer class="solr.NGramTokenizerFactory" minGramSize="1" maxGramSize="50" />
         </analyzer>
         <analyzer type="query">
             <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ExtractVolpianoNotes.txt" />
