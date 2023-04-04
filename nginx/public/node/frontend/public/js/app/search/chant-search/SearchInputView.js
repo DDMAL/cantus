@@ -51,13 +51,19 @@ export default Marionette.ItemView.extend({
         var searchField = this.model.get('field');
         var searchInput = this.ui.searchInput.val();
         if (searchField === 'volpiano' || searchField === 'volpiano_literal'){
+            // Ensure that search input field displays a treble clef as the default
+            // search value, and replace it if user deletes it.
             if (searchInput == "" || searchInput == "1"){
                 this.ui.searchInput.val("1-");
                 searchInput = "1-";
             }
             searchInput = searchInput.replaceAll(this.invalidVolpianoRegex, "")
             this.ui.searchInput.val(searchInput)
+            // Remove the treble clef before the string is sent to solr. Volpiano
+            // searches assume treble clef.
             searchInput = searchInput.replaceAll("1-","");
+            // Replace hyphens (a reserved character in solr queries) with 
+            // escaped hyphens in the query string.
             searchInput = searchInput.replaceAll("-","\\-");
         }
         // FIXME(wabain): While this class needs to take a SearchInput model so it can initially

@@ -96,6 +96,8 @@ export default Marionette.Object.extend({
 
     getSearchMetadata: function ()
     {
+        // Modify query returned by solr so it is ready for display.
+        // Remove escaping backslashes from the displayed string.
         let query = this.searchParameters.get('query');
         let displayedQuery = query.replaceAll("\\-", "-");
         return {
