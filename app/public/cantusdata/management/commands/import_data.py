@@ -6,14 +6,13 @@ from cantusdata.models.concordance import Concordance
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.signals.solr_sync import solr_synchronizer
 from cantusdata.helpers.chant_importer import ChantImporter
-from cantusdata.helpers.scrapers.sources import sources
 from cantusdata.helpers.source_importer import SourceImporter
-from cantusdata.helpers.scrapers.concordances import concordances
 import urllib.request
 import urllib
 from io import StringIO
 from cantusdata.settings import BASE_DIR
 from os import path
+import csv
 
 
 class Command(BaseCommand):
@@ -119,18 +118,27 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def import_concordance_data(self, **options):
-        for idx, c in enumerate(concordances):
-            concordance = Concordance()
-            concordance.letter_code = c["letter_code"]
-            concordance.institution_city = c["institution_city"]
-            concordance.institution_name = c["institution_name"]
-            concordance.library_manuscript_name = c["library_manuscript_name"]
-            concordance.date = c["date"]
-            concordance.location = c["location"]
-            concordance.rism_code = c["rism_code"]
-            concordance.save()
+        """
+        Reads concordances from data_dumps/concordances.csv and
+        creates a Concordance object in the database for each
+        concordance.
+        """
+        with open(f"{BASE_DIR}/data_dumps/concordances.csv", "r", encoding="utf-8") as file:
+            concord_reader = csv.DictReader(file)
+            concord_counter = 0
+            for c in concord_reader:
+                concordance = Concordance()
+                concordance.letter_code = c["letter_code"]
+                concordance.institution_city = c["institution_city"]
+                concordance.institution_name = c["institution_name"]
+                concordance.library_manuscript_name = c["library_manuscript_name"]
+                concordance.date = c["date"]
+                concordance.location = c["location"]
+                concordance.rism_code = c["rism_code"]
+                concordance.save()
+                concord_counter += 1
         self.stdout.write(
-            "Successfully imported {} concordances into database.".format(idx + 1)
+            f"Successfully imported {concord_counter} concordances into database."
         )
 
     def import_chant_data(self, **options):

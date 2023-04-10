@@ -3,6 +3,12 @@ import urllib.request
 import sys
 import re
 
+# April 2023: In order to harmonize the process of importing concordances 
+# with that of other static data (ie. iiif manifests), concordances are now
+# stored in data_dumps/concordances.csv and loaded directly in the 
+# import_concordance_data function in the import_data command.
+# This file is retained for reference.
+
 """The CAO concordances used to be scraped from the Cantus Website.
 
 However, as of July 2020, this information is no longer on the website.
