@@ -123,7 +123,9 @@ class Command(BaseCommand):
         creates a Concordance object in the database for each
         concordance.
         """
-        with open(f"{BASE_DIR}/data_dumps/concordances.csv", "r", encoding="utf-8") as file:
+        with open(
+            f"{BASE_DIR}/data_dumps/concordances.csv", "r", encoding="utf-8"
+        ) as file:
             concord_reader = csv.DictReader(file)
             concord_counter = 0
             for c in concord_reader:
@@ -154,18 +156,18 @@ class Command(BaseCommand):
             chant_count = importer.import_csv(fcsv)
         # Save the new chants
         importer.save(task=task)
-        self.stdout.write(
-            f"Successfully imported {chant_count} chants into database."
-        )
+        self.stdout.write(f"Successfully imported {chant_count} chants into database.")
 
     @transaction.atomic
     def import_iiif_data(self):
-        with open(f"{BASE_DIR}/data_dumps/manifests.csv", "r", encoding ='utf-8') as file:
+        with open(
+            f"{BASE_DIR}/data_dumps/manifests.csv", "r", encoding="utf-8"
+        ) as file:
             iiif_reader = csv.DictReader(file)
 
             for row in iiif_reader:
-                siglum = row['siglum']
-                manifest_url = row['manifest_url']
+                siglum = row["siglum"]
+                manifest_url = row["manifest_url"]
                 qs = Manuscript.objects.filter(siglum=siglum)
                 if len(qs) > 0:
                     mobj = qs[0]
