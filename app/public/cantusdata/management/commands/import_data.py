@@ -39,7 +39,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         with solr_synchronizer.get_session():
-            self.stdout.write("Deleting old {0} data...".format(options["type"]))
+            self.stdout.write(f"Deleting old {options['type']} data...")
             task = options.get("task", None)
             if options["type"] == "chants":
                 # manuscript-id is not optional for chants
@@ -155,18 +155,19 @@ class Command(BaseCommand):
         # Save the new chants
         importer.save(task=task)
         self.stdout.write(
-            "Successfully imported {} chants into database.".format(chant_count)
+            f"Successfully imported {chant_count} chants into database."
         )
 
     @transaction.atomic
     def import_iiif_data(self):
-        with open(path.join(BASE_DIR, "data_dumps", "manifests.csv"), "r") as file:
-            csv = file.readlines()
+        with open(f"{BASE_DIR}/data_dumps/manifests.csv", "r", encoding ='utf-8') as file:
+            iiif_reader = csv.DictReader(file)
 
-        for row in csv:
-            siglum, manifest_url = row.strip().rsplit(",", 1)
-            qs = Manuscript.objects.filter(siglum=siglum)
-            if len(qs) > 0:
-                mobj = qs[0]
-                mobj.manifest_url = manifest_url
-                mobj.save()
+            for row in iiif_reader:
+                siglum = row['siglum']
+                manifest_url = row['manifest_url']
+                qs = Manuscript.objects.filter(siglum=siglum)
+                if len(qs) > 0:
+                    mobj = qs[0]
+                    mobj.manifest_url = manifest_url
+                    mobj.save()
