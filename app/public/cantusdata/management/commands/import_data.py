@@ -6,14 +6,13 @@ from cantusdata.models.concordance import Concordance
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.signals.solr_sync import solr_synchronizer
 from cantusdata.helpers.chant_importer import ChantImporter
-from cantusdata.helpers.scrapers.sources import sources
 from cantusdata.helpers.source_importer import SourceImporter
-from cantusdata.helpers.scrapers.concordances import concordances
 import urllib.request
 import urllib
 from io import StringIO
 from cantusdata.settings import BASE_DIR
 from os import path
+import csv
 
 
 class Command(BaseCommand):
@@ -40,7 +39,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         with solr_synchronizer.get_session():
-            self.stdout.write("Deleting old {0} data...".format(options["type"]))
+            self.stdout.write(f"Deleting old {options['type']} data...")
             task = options.get("task", None)
             if options["type"] == "chants":
                 # manuscript-id is not optional for chants
@@ -119,18 +118,29 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def import_concordance_data(self, **options):
-        for idx, c in enumerate(concordances):
-            concordance = Concordance()
-            concordance.letter_code = c["letter_code"]
-            concordance.institution_city = c["institution_city"]
-            concordance.institution_name = c["institution_name"]
-            concordance.library_manuscript_name = c["library_manuscript_name"]
-            concordance.date = c["date"]
-            concordance.location = c["location"]
-            concordance.rism_code = c["rism_code"]
-            concordance.save()
+        """
+        Reads concordances from data_dumps/concordances.csv and
+        creates a Concordance object in the database for each
+        concordance.
+        """
+        with open(
+            f"{BASE_DIR}/data_dumps/concordances.csv", "r", encoding="utf-8"
+        ) as file:
+            concord_reader = csv.DictReader(file)
+            concord_count = 0
+            for c in concord_reader:
+                concordance = Concordance()
+                concordance.letter_code = c["letter_code"]
+                concordance.institution_city = c["institution_city"]
+                concordance.institution_name = c["institution_name"]
+                concordance.library_manuscript_name = c["library_manuscript_name"]
+                concordance.date = c["date"]
+                concordance.location = c["location"]
+                concordance.rism_code = c["rism_code"]
+                concordance.save()
+                concord_count += 1
         self.stdout.write(
-            "Successfully imported {} concordances into database.".format(idx + 1)
+            f"Successfully imported {concord_count} concordances into database."
         )
 
     def import_chant_data(self, **options):
@@ -146,19 +156,20 @@ class Command(BaseCommand):
             chant_count = importer.import_csv(fcsv)
         # Save the new chants
         importer.save(task=task)
-        self.stdout.write(
-            "Successfully imported {} chants into database.".format(chant_count)
-        )
+        self.stdout.write(f"Successfully imported {chant_count} chants into database.")
 
     @transaction.atomic
     def import_iiif_data(self):
-        with open(path.join(BASE_DIR, "data_dumps", "manifests.csv"), "r") as file:
-            csv = file.readlines()
+        with open(
+            f"{BASE_DIR}/data_dumps/manifests.csv", "r", encoding="utf-8"
+        ) as file:
+            iiif_reader = csv.DictReader(file)
 
-        for row in csv:
-            siglum, manifest_url = row.strip().rsplit(",", 1)
-            qs = Manuscript.objects.filter(siglum=siglum)
-            if len(qs) > 0:
-                mobj = qs[0]
-                mobj.manifest_url = manifest_url
-                mobj.save()
+            for row in iiif_reader:
+                siglum = row["siglum"]
+                manifest_url = row["manifest_url"]
+                qs = Manuscript.objects.filter(siglum=siglum)
+                if len(qs) > 0:
+                    mobj = qs[0]
+                    mobj.manifest_url = manifest_url
+                    mobj.save()
