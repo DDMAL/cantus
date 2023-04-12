@@ -127,7 +127,7 @@ class Command(BaseCommand):
             f"{BASE_DIR}/data_dumps/concordances.csv", "r", encoding="utf-8"
         ) as file:
             concord_reader = csv.DictReader(file)
-            concord_counter = 0
+            concord_count = 0
             for c in concord_reader:
                 concordance = Concordance()
                 concordance.letter_code = c["letter_code"]
@@ -138,9 +138,9 @@ class Command(BaseCommand):
                 concordance.location = c["location"]
                 concordance.rism_code = c["rism_code"]
                 concordance.save()
-                concord_counter += 1
+                concord_count += 1
         self.stdout.write(
-            f"Successfully imported {concord_counter} concordances into database."
+            f"Successfully imported {concord_count} concordances into database."
         )
 
     def import_chant_data(self, **options):
