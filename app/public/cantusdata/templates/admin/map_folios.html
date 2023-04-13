@@ -303,16 +303,18 @@
 
     function onSaveBackup() {
         var data = 'folio,uri\n';
-        for (var i = 0, len = inputs.length; i < len; i++) {
-            data += inputs[i].value + ',' + inputs[i].name + '\n';
+        for (var i = 0, len = visibleInputs.length; i < len; i++) {
+            data += visibleInputs[i].value + ',' + visibleInputs[i].name + '\n';
         }
-        console.log(data);
-        download('backup.csv', data);
+        const loc = document.location;
+        const searchParams = new URLSearchParams(loc.search);
+        const manID = searchParams.get('manuscript_id');
+        download(`folio_mapping_backup_${manID}.csv`, data);
     }
 
     function loadBackup(file) {
         var reader = new FileReader();
-        reader.readAsText(file, "UTF-8");
+        reader.readAsText(file, "UTF-8");d
         reader.onload = function (e) {
             var lines = e.target.result.split('\n');
             var inputIndex = 0;
