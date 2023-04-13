@@ -314,7 +314,7 @@
 
     function loadBackup(file) {
         var reader = new FileReader();
-        reader.readAsText(file, "UTF-8");d
+        reader.readAsText(file, "UTF-8");
         reader.onload = function (e) {
             var lines = e.target.result.split('\n');
             var inputIndex = 0;
