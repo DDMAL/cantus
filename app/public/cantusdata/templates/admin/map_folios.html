@@ -225,7 +225,6 @@
     var inputs = document.getElementsByClassName('folio-mapping');
     var singleFolioInputs = document.getElementsByClassName('first-folio-input');
     var doubleFolioInputs = document.getElementsByClassName('second-folio-input');
-    var visibleInputs = singleFolioInputs;
 
     document.body.addEventListener('dragover', handleDragOver, false);
     document.body.addEventListener('drop', handleFileDrop, false);
@@ -234,6 +233,12 @@
 
     var twoFolioBox = document.getElementById('two-folio-images');
     twoFolioBox.addEventListener('change', handleTwoFolioBoxChange);
+
+    if (twoFolioBox.checked){
+        var visibleInputs = inputs;
+    } else {
+        var visibleInputs = singleFolioInputs;
+    }
 
     function handleTwoFolioBoxChange(evt){
         if (twoFolioBox.checked){
