@@ -4,10 +4,8 @@ from rest_framework.renderers import TemplateHTMLRenderer
 from cantusdata.models.folio import Folio
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.tasks import map_folio_task
-from cantusdata.settings import is_production
 from django.http import HttpResponseRedirect
 import re
-import requests
 import json
 import urllib.request
 import threading
@@ -63,40 +61,39 @@ class MapFoliosView(APIView):
         # Get unique ids in uri strings
         uri_ids = _extract_ids(uris)
         # Query db for folios associated with manuscript
-        folios = []
-        folio_imagelink = {}
-        uri_folio_map = {}
         folios_query = Folio.objects.filter(manuscript__id=manuscript_id)
-        man_is_mapped = manuscript_obj.is_mapped
+        folios = [f.number for f in folios_query]
+        map_status = manuscript_obj.is_mapped
+        dbl_folio_img = manuscript_obj.dbl_folio_img
 
-        # Create list of folios.
-        # Map folios to previously-linked image and/or uri.
-        for folio in folios_query:
-            folios.append(folio.number)
-            if folio.image_link:
-                folio_imagelink[folio.number] = folio.image_link
-            if man_is_mapped == "MAPPED":
-                uri_folio_map[folio.image_uri] = folio.number
+        # Create a dictionary mapping IDs extracted
+        # from the image_link field (where it exists)
+        # to folio numbers.
+        if map_status == "UNMAPPED":
+            imagelinks = folios_query.values_list("number", "image_link")
+            imagelinks_ids = _extract_ids([i[1] for i in imagelinks if len(i[1]) > 0])
+            imagelink_folio = {k: v for k, v in zip(imagelinks_ids, [i[0] for i in imagelinks])}
 
-        imagelinks = list(folio_imagelink.values())
-        imagelinks_ids = _extract_ids(imagelinks)
-        imagelink_folio = {k: v for k, v in zip(imagelinks_ids, folio_imagelink.keys())}
-
+        # Iterate through manifest uris.
+        # When a manuscript is already mapped, 
+        # map uris to folios based on the existing image_uri field.
+        # Where not mapped, try to map uris to folios based on the
+        # image_link field. If a manuscript is not mapped, and
+        # no image_link field exists, map uris to folios naively (first
+        # uri to first folio, etc.)
         mapped_folios = 0
         for idx, uri in enumerate(uris_objs):
             uri["id"] = uri_ids[idx]
             uri["folio"] = None
-            if man_is_mapped == "MAPPED":
-                uri["folio"] = uri_folio_map.get(uri["full"], "")
+            if map_status == "MAPPED":
+                fols_w_uri = folios_query.filter(image_uri=uri["full"])
+                uri["folio"] = [f.number for f in fols_w_uri]
                 mapped_folios += 1
             else:
                 if uri["id"] in imagelink_folio:
-                    uri["folio"] = imagelink_folio[uri["id"]]
+                    uri["folio"] = [imagelink_folio[uri["id"]]]
                     mapped_folios += 1
 
-        # If previously-linked uris do not exist,
-        # or previously-linked images do not contain folio id's,
-        # map images to folios naively (nth image to nth folio).
         if mapped_folios == 0 and len(uris_objs) >= len(folios):
             for idx, folio in enumerate(folios):
                 uris_objs[idx]["folio"] = folio
@@ -106,7 +103,8 @@ class MapFoliosView(APIView):
                 "uris": uris_objs,
                 "folios": folios,
                 "manuscript_id": manuscript_id,
-                "manuscript_mapping_state": man_is_mapped,
+                "manuscript_mapping_state": map_status,
+                "dbl_folio_img": dbl_folio_img,
             }
         )
 

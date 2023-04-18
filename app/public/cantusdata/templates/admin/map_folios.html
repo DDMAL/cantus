@@ -159,8 +159,13 @@
     {% csrf_token %}
     <input type="hidden" name="manuscript_id" value="{{ manuscript_id }}" />
     <div class="two-folio-checkbox">
+        {% if not dbl_folio_img %}
             <input type="checkbox" id="two-folio-images" name="two_folio_images"
                    unchecked>
+        {% else %}
+            <input type="checkbox" id="two-folio-images" name="two_folio_images"
+                checked>
+        {% endif %}
             <label for="two-folio-images">Images have two folios?</label>
     </div>
     <ul>
@@ -169,12 +174,26 @@
         <li>
             <a href={{ uri.large }} target="_blank"><img src={{ uri.thumbnail }} /></a>
             {{ uri.id }}
-            {% if uri.folio %}
-            <input type="text" class="folio-mapping single-folio-inputs" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio }} />
+            {% if not dbl_folio_img %}
+                {% if uri.folio %}
+                    <input type="text" class="folio-mapping first-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio.0 }} />
+                {% else %}
+                    <input type="text" class="folio-mapping first-folio-input" name={{ uri.full }} onchange="checkMappedFolios()"/>
+                {% endif %}
+                <input hidden type="text" class="folio-mapping second-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" />      
             {% else %}
-            <input type="text" class="folio-mapping single-folio-inputs" name={{ uri.full }} onchange="checkMappedFolios()"/>
+                {% if uri.folio %}
+                    <input type="text" class="folio-mapping first-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio.0 }} />
+                    {% if uri.folio.1 %}
+                        <input type="text" class="folio-mapping second-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio.1 }} />
+                    {% else %}
+                        <input type="text" class="folio-mapping second-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" />
+                    {% endif %}
+                {% else %}
+                    <input type="text" class="folio-mapping first-folio-input" name={{ uri.full }} onchange="checkMappedFolios()"/>
+                    <input type="text" class="folio-mapping second-folio-input" name={{ uri.full }} onchange="checkMappedFolios()"/>
+                {% endif %}
             {% endif %}
-            <input hidden type="text" class="folio-mapping double-folio-inputs" name={{ uri.full }} onchange="checkMappedFolios()" />      
             <div class="button" onclick="onMoveUp({{ forloop.counter0 }})" tabindex="-1">Up</div>
             <div class="button" onclick="onMoveDown({{ forloop.counter0 }})" tabindex="-1">Down</div>
         </li>
@@ -204,8 +223,8 @@
 <script>
     var folios = document.getElementsByClassName('folio-name');
     var inputs = document.getElementsByClassName('folio-mapping');
-    var singleFolioInputs = document.getElementsByClassName('single-folio-inputs');
-    var doubleFolioInputs = document.getElementsByClassName('double-folio-inputs');
+    var singleFolioInputs = document.getElementsByClassName('first-folio-input');
+    var doubleFolioInputs = document.getElementsByClassName('second-folio-input');
     var visibleInputs = singleFolioInputs;
 
     document.body.addEventListener('dragover', handleDragOver, false);
@@ -217,16 +236,15 @@
     twoFolioBox.addEventListener('change', handleTwoFolioBoxChange);
 
     function handleTwoFolioBoxChange(evt){
-        for (var i = 0; i < doubleFolioInputs.length; i++){
-            if (doubleFolioInputs[i].hidden){
-                doubleFolioInputs[i].hidden = false;
-            } else {
-                doubleFolioInputs[i].hidden = true;
-            }
-        }
         if (twoFolioBox.checked){
+            for (var i = 0; i < doubleFolioInputs.length; i++){
+                doubleFolioInputs[i].hidden = false;
+            }
             visibleInputs = inputs;
         } else {
+            for (var i = 0; i < doubleFolioInputs.length; i++){
+                doubleFolioInputs[i].hidden = true;
+            }
             visibleInputs = singleFolioInputs;
         }
         indexDoubleFolioToggle();
@@ -250,6 +268,7 @@
 
         var file = evt.dataTransfer.files[0];
         loadBackup(file);
+        CheckMappedFolios();
     }
 
     function handleDragOver(evt) {
@@ -321,11 +340,11 @@
             for (var i = 1; i < lines.length; i++) {
                 var values = lines[i].split(',');
 
-                while (inputIndex < inputs.length && inputs[inputIndex].name !== values[1])
+                while (inputIndex < visibleInputs.length && visibleInputs[inputIndex].name !== values[1])
                     inputIndex++;
 
-                if (inputIndex < inputs.length)
-                    inputs[inputIndex].value = values[0];
+                if (inputIndex < visibleInputs.length)
+                    visibleInputs[inputIndex].value = values[0];
             }
         }
     }
