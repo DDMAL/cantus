@@ -170,6 +170,11 @@
     </div>
     <ul>
         <li><h4>Pages from the manifest:</h4></li>
+        <!-- Manuscripts are assumed by default to have only one folio per image. In this case, 
+            or if the manuscript has previously been mapped with only one folio per image,
+            the input boxes with second-folio-input are created hidden. If the manuscript has
+            previously been mapped with two folios per image, this mapping is shown intially (ie.
+            the second-folio-input boxes are visible). -->
         {% for uri in uris %}
         <li>
             <a href={{ uri.large }} target="_blank"><img src={{ uri.thumbnail }} /></a>
@@ -234,6 +239,9 @@
     var twoFolioBox = document.getElementById('two-folio-images');
     twoFolioBox.addEventListener('change', handleTwoFolioBoxChange);
 
+    // Set the visible inputs to the correct set
+    // of inputs based on whether the manuscript has
+    // images with two folios.
     if (twoFolioBox.checked){
         var visibleInputs = inputs;
     } else {
@@ -273,7 +281,6 @@
 
         var file = evt.dataTransfer.files[0];
         loadBackup(file);
-        CheckMappedFolios();
     }
 
     function handleDragOver(evt) {
@@ -343,14 +350,21 @@
             var lines = e.target.result.split('\n');
             var inputIndex = 0;
             for (var i = 1; i < lines.length; i++) {
-                var values = lines[i].split(',');
-
+                let line = lines[i].replaceAll('\r','');
+                let values = line.split(',');
+                
+                // Iterate through visible inputs until the appropriate image uri
+                // is reached. In manuscripts with images with two folios (and
+                // therefore two input fields per image), the fields are filled in the
+                // order in which they occur in the backup file.
                 while (inputIndex < visibleInputs.length && visibleInputs[inputIndex].name !== values[1])
                     inputIndex++;
 
                 if (inputIndex < visibleInputs.length)
                     visibleInputs[inputIndex].value = values[0];
+                    inputIndex++;
             }
+            checkMappedFolios();
         }
     }
 
