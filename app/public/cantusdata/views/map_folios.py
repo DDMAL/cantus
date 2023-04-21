@@ -96,8 +96,8 @@ class MapFoliosView(APIView):
 
         if mapped_folios == 0 and len(uris_objs) >= len(folios):
             for idx, folio in enumerate(folios):
-                uris_objs[idx]["folio"] = folio
-
+                uris_objs[idx]["folio"] = [folio]
+        
         return Response(
             {
                 "uris": uris_objs,
