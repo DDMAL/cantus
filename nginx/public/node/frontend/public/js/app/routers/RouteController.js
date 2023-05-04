@@ -99,7 +99,7 @@ export default Marionette.Object.extend({
         this.listenToOnce(this.manuscriptState, 'load:manuscript', function (model)
         {
             this.showContentView(new ManuscriptDetailPageView({model: model}), {
-                title: model.get("name"),
+                title: model.get("provenance") + ", " + model.get("siglum"),
                 navbarTitle: model.get("provenance") + ", " + model.get("siglum")
             });
         });
