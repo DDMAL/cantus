@@ -72,10 +72,12 @@ class MapFoliosView(APIView):
         if map_status == "UNMAPPED":
             imagelinks = folios_query.values_list("number", "image_link")
             imagelinks_ids = _extract_ids([i[1] for i in imagelinks if len(i[1]) > 0])
-            imagelink_folio = {k: v for k, v in zip(imagelinks_ids, [i[0] for i in imagelinks])}
+            imagelink_folio = {
+                k: v for k, v in zip(imagelinks_ids, [i[0] for i in imagelinks])
+            }
 
         # Iterate through manifest uris.
-        # When a manuscript is already mapped, 
+        # When a manuscript is already mapped,
         # map uris to folios based on the existing image_uri field.
         # Where not mapped, try to map uris to folios based on the
         # image_link field. If a manuscript is not mapped, and
@@ -97,7 +99,7 @@ class MapFoliosView(APIView):
         if mapped_folios == 0 and len(uris_objs) >= len(folios):
             for idx, folio in enumerate(folios):
                 uris_objs[idx]["folio"] = [folio]
-        
+
         return Response(
             {
                 "uris": uris_objs,
