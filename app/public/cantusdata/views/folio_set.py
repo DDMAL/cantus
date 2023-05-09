@@ -27,10 +27,8 @@ class ManuscriptFolioSetView(APIView):
 
         if "image_uri" in kwargs:
             image_uri = kwargs["image_uri"]
-            composed_request = 'type:"cantusdata_folio" AND manuscript_id:{0} AND image_uri:"{1}"'.format(
-                manuscript_id, image_uri
-            )
-
+            composed_request = f'''type:"cantusdata_folio" AND
+                 manuscript_id:{manuscript_id} AND image_uri:"{image_uri}"'''
             result = solrconn.query(
                 composed_request,
                 sort="number asc",
@@ -45,33 +43,32 @@ class ManuscriptFolioSetView(APIView):
                     for key in result.results[0].keys()
                 }
                 return Response(results_dict)
-            elif result.numFound == 0:
+            if result.numFound == 0:
                 return Response({"number": None})
-            else:
-                raise Http404("Folio set query failed.")
-        else:
-            if "q" in request.GET:
-                query_str = request.GET["q"]
-                composed_request = f'type:"cantusdata_folio" AND manuscript_id:{manuscript_id} AND number:*{query_str}*'
-                results = solrconn.query(
-                    composed_request,
-                    sort="number asc",
-                    rows=8,
-                    fields="number",
-                    score=False,
-                )
-                return Response(results)
-            else:
-                composed_request = (
-                    'type:"cantusdata_folio" AND manuscript_id:{0}'.format(
-                        manuscript_id
-                    )
-                )
-                results = solrconn.query(
-                    composed_request,
-                    sort="number asc",
-                    rows=1000,
-                    fields=FOLIO_FIELDS,
-                    score=False,
-                )
-                return Response(results)
+            raise Http404("Folio set query failed.")
+        if "q" in request.GET:
+            query_str = request.GET["q"]
+            # Query for suggested folio numbers should return folios associated with
+            # the manuscript that have the form:
+            # [some number of leading zeros][the user-entered string][wildcard of characters].
+            # Here we assume at most 3 leading zeros.
+            composed_request = f"""type:"cantusdata_folio" AND manuscript_id:{manuscript_id}
+                                 AND number:(000{query_str}* OR 00{query_str}* OR 0{query_str}*
+                                 OR {query_str}*)"""
+            results = solrconn.query(
+                composed_request,
+                sort="number asc",
+                rows=8,
+                fields="number",
+                score=False,
+            )
+            return Response(results)
+        composed_request = f'type:"cantusdata_folio" AND manuscript_id:{manuscript_id}'
+        results = solrconn.query(
+            composed_request,
+            sort="number asc",
+            rows=1000,
+            fields=FOLIO_FIELDS,
+            score=False,
+        )
+        return Response(results)
