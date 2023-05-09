@@ -202,6 +202,7 @@
     <copyField source="incipit" dest="text" />
     <copyField source="full_text" dest="text" />
     <copyField source="folio" dest="text" />
+    <copyField source="genre" dest="text" />
     <!-- Above, multiple source fields are copied to the [text] field.
          Another way to map multiple source fields to the same
          destination field is to use the dynamic field syntax.
