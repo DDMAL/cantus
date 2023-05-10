@@ -4,10 +4,8 @@ from rest_framework.renderers import TemplateHTMLRenderer
 from cantusdata.models.folio import Folio
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.tasks import map_folio_task
-from cantusdata.settings import is_production
 from django.http import HttpResponseRedirect
 import re
-import requests
 import json
 import urllib.request
 import threading
@@ -18,8 +16,14 @@ class MapFoliosView(APIView):
     renderer_classes = (TemplateHTMLRenderer,)
 
     def get(self, request, *args, **kwargs):
-        # Return the URIs and folio names
-
+        """
+        A GET request to the map folios page can have two different states:
+        1. No manuscript_id is specified in the request. In this case, we display
+        a list of manuscripts and their mapping status.
+        2. A manuscript_id is specified in the request. In this case, the user
+        has specified a manuscript to map (or re-map). In this case, we display
+        the mapping tool.
+        """
         # If no manuscript specified,
         # display list of manuscripts and mapping status.
         if "manuscript_id" not in request.GET:
@@ -31,82 +35,57 @@ class MapFoliosView(APIView):
             return Response({"manuscript_ids": manuscript_ids})
 
         # If manuscript is specified, retrieve manuscript object
-        # from db.
+        # and that manuscripts folios from db.
         manuscript_id = int(request.GET["manuscript_id"])
         manuscript_obj = Manuscript.objects.get(id=manuscript_id)
-        manifest = manuscript_obj.manifest_url
+        folios_objs = Folio.objects.filter(manuscript__id=manuscript_id)
+        folios = [f.number for f in folios_objs]
+        map_status = manuscript_obj.is_mapped
+        dbl_folio_img = manuscript_obj.dbl_folio_img
+        manifest_url = manuscript_obj.manifest_url
 
-        # Get IIIF manifest from manifest link.
-        # Get individual URIs of manuscript.
-        uris_objs = []
-        uris = []
-
-        manifest_json = urllib.request.urlopen(manifest)
-        manifest_data = json.loads(manifest_json.read().decode("utf-8"))
-        for canvas in manifest_data["sequences"][0]["canvases"]:
-            service = canvas["images"][0]["resource"]["service"]
-            uri = service["@id"]
-            uris.append(uri)
-            path_tail = (
-                "default.jpg"
-                if service["@context"] == "http://iiif.io/api/image/2/context.json"
-                else "native.jpg"
-            )
-            uris_objs.append(
-                {
-                    "full": uri,
-                    "thumbnail": uri + "/full/,160/0/" + path_tail,
-                    "large": uri + "/full/,1800/0/" + path_tail,
-                    "short": re.sub(r"^.*/(?!$)", "", uri),
-                }
-            )
-        # Get unique ids in uri strings
+        # Extract individual image uris and ids from the manifest.
+        uris, uris_objs = _extract_uris_from_manifest(manifest_url)
         uri_ids = _extract_ids(uris)
-        # Query db for folios associated with manuscript
-        folios = []
-        folio_imagelink = {}
-        uri_folio_map = {}
-        folios_query = Folio.objects.filter(manuscript__id=manuscript_id)
-        man_is_mapped = manuscript_obj.is_mapped
 
-        # Create list of folios.
-        # Map folios to previously-linked image and/or uri.
-        for folio in folios_query:
-            folios.append(folio.number)
-            if folio.image_link:
-                folio_imagelink[folio.number] = folio.image_link
-            if man_is_mapped == "MAPPED":
-                uri_folio_map[folio.image_uri] = folio.number
+        # If the manuscript has not yet been mapped in Cantus Ultimus,
+        # we first check to see if a mapping between folios and images was
+        # imported alongside chant data from CantusDB (these would be
+        # stored in the "image_link" field of the folio object)
+        if map_status == "UNMAPPED":
+            imagelink_folio_map = _extract_imagelinks(folios_objs)
 
-        imagelinks = list(folio_imagelink.values())
-        imagelinks_ids = _extract_ids(imagelinks)
-        imagelink_folio = {k: v for k, v in zip(imagelinks_ids, folio_imagelink.keys())}
-
-        mapped_folios = 0
+        # Iterate through all the image uris extracted from the manifest.
+        # When a manuscript is already mapped,
+        # map uris to folios based on the existing image_uri field.
+        # Where not mapped, try to map uris to folios based on the
+        # image_link field. If a manuscript is not mapped, and
+        # the image_link field is empty or yields no mapping,
+        # map uris to folios naively (first uri to first folio, etc.)
+        any_previously_mapped_folios = False
         for idx, uri in enumerate(uris_objs):
             uri["id"] = uri_ids[idx]
             uri["folio"] = None
-            if man_is_mapped == "MAPPED":
-                uri["folio"] = uri_folio_map.get(uri["full"], "")
-                mapped_folios += 1
+            if map_status == "MAPPED":
+                fols_w_uri = folios_objs.filter(image_uri=uri["full"])
+                uri["folio"] = [f.number for f in fols_w_uri]
+                any_previously_mapped_folios = True
             else:
-                if uri["id"] in imagelink_folio:
-                    uri["folio"] = imagelink_folio[uri["id"]]
-                    mapped_folios += 1
+                if uri["id"] in imagelink_folio_map:
+                    uri["folio"] = [imagelink_folio_map[uri["id"]]]
+                    any_previously_mapped_folios = True
 
-        # If previously-linked uris do not exist,
-        # or previously-linked images do not contain folio id's,
-        # map images to folios naively (nth image to nth folio).
-        if mapped_folios == 0 and len(uris_objs) >= len(folios):
+        if not any_previously_mapped_folios and len(uris_objs) >= len(folios):
             for idx, folio in enumerate(folios):
-                uris_objs[idx]["folio"] = folio
+                uris_objs[idx]["folio"] = [folio]
 
         return Response(
             {
                 "uris": uris_objs,
                 "folios": folios,
                 "manuscript_id": manuscript_id,
-                "manuscript_mapping_state": man_is_mapped,
+                "manuscript_mapping_state": map_status,
+                "dbl_folio_img": dbl_folio_img,
             }
         )
 
@@ -118,6 +97,49 @@ class MapFoliosView(APIView):
             return Response({"error": e})
 
         return HttpResponseRedirect("/admin/map_folios/")
+
+
+def _extract_uris_from_manifest(manifest_url):
+    """
+    Downloads the IIIF manifest from the provided url and extracts
+    the uris for individual images in the manuscript.
+    Returns a list of these uris, as well as a list of dictionaries
+    containing the image uri (key: "full") as well as constructed
+    requests to thumbnail (key: "thumbnail") and large (key: "large") versions
+    of the image for use on the folio mapping page.
+    """
+    uris_objs = []
+    uris = []
+    manifest_json = urllib.request.urlopen(manifest_url)
+    manifest_data = json.loads(manifest_json.read().decode("utf-8"))
+    for canvas in manifest_data["sequences"][0]["canvases"]:
+        service = canvas["images"][0]["resource"]["service"]
+        uri = service["@id"]
+        uris.append(uri)
+        path_tail = "default.jpg"
+        uris_objs.append(
+            {
+                "full": uri,
+                "thumbnail": uri + "/full/,160/0/" + path_tail,
+                "large": uri + "/full/,1800/0/" + path_tail,
+            }
+        )
+    return uris, uris_objs
+
+
+def _extract_imagelinks(folios_objs):
+    """
+    Extracts image links, if available, from the folios queryset.
+
+    Parameters
+    ----------
+    folios_objs : django.db.models.query.QuerySet
+        Queryset of Folio objects.
+    """
+    imagelinks_folios = folios_objs.values_list("number", "image_link")
+    imagelinks_ids = _extract_ids([i[1] for i in imagelinks_folios if len(i[1]) > 0])
+    imagelink_folio_map = dict(zip(imagelinks_ids, [i[0] for i in imagelinks_folios]))
+    return imagelink_folio_map
 
 
 def _extract_ids(str_list):

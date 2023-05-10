@@ -159,22 +159,46 @@
     {% csrf_token %}
     <input type="hidden" name="manuscript_id" value="{{ manuscript_id }}" />
     <div class="two-folio-checkbox">
+        {% if not dbl_folio_img %}
             <input type="checkbox" id="two-folio-images" name="two_folio_images"
                    unchecked>
+        {% else %}
+            <input type="checkbox" id="two-folio-images" name="two_folio_images"
+                checked>
+        {% endif %}
             <label for="two-folio-images">Images have two folios?</label>
     </div>
     <ul>
         <li><h4>Pages from the manifest:</h4></li>
+        <!-- Manuscripts are assumed by default to have only one folio per image. In this case, 
+            or if the manuscript has previously been mapped with only one folio per image,
+            the input boxes with second-folio-input are created hidden. If the manuscript has
+            previously been mapped with two folios per image, this mapping is shown intially (ie.
+            the second-folio-input boxes are visible). -->
         {% for uri in uris %}
         <li>
             <a href={{ uri.large }} target="_blank"><img src={{ uri.thumbnail }} /></a>
             {{ uri.id }}
-            {% if uri.folio %}
-            <input type="text" class="folio-mapping single-folio-inputs" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio }} />
+            {% if not dbl_folio_img %}
+                {% if uri.folio %}
+                    <input type="text" class="folio-mapping first-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio.0 }} />
+                {% else %}
+                    <input type="text" class="folio-mapping first-folio-input" name={{ uri.full }} onchange="checkMappedFolios()"/>
+                {% endif %}
+                <input hidden type="text" class="folio-mapping second-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" />      
             {% else %}
-            <input type="text" class="folio-mapping single-folio-inputs" name={{ uri.full }} onchange="checkMappedFolios()"/>
+                {% if uri.folio %}
+                    <input type="text" class="folio-mapping first-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio.0 }} />
+                    {% if uri.folio.1 %}
+                        <input type="text" class="folio-mapping second-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio.1 }} />
+                    {% else %}
+                        <input type="text" class="folio-mapping second-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" />
+                    {% endif %}
+                {% else %}
+                    <input type="text" class="folio-mapping first-folio-input" name={{ uri.full }} onchange="checkMappedFolios()"/>
+                    <input type="text" class="folio-mapping second-folio-input" name={{ uri.full }} onchange="checkMappedFolios()"/>
+                {% endif %}
             {% endif %}
-            <input hidden type="text" class="folio-mapping double-folio-inputs" name={{ uri.full }} onchange="checkMappedFolios()" />      
             <div class="button" onclick="onMoveUp({{ forloop.counter0 }})" tabindex="-1">Up</div>
             <div class="button" onclick="onMoveDown({{ forloop.counter0 }})" tabindex="-1">Down</div>
         </li>
@@ -204,9 +228,8 @@
 <script>
     var folios = document.getElementsByClassName('folio-name');
     var inputs = document.getElementsByClassName('folio-mapping');
-    var singleFolioInputs = document.getElementsByClassName('single-folio-inputs');
-    var doubleFolioInputs = document.getElementsByClassName('double-folio-inputs');
-    var visibleInputs = singleFolioInputs;
+    var firstFolioInputs = document.getElementsByClassName('first-folio-input');
+    var secondFolioInputs = document.getElementsByClassName('second-folio-input');
 
     document.body.addEventListener('dragover', handleDragOver, false);
     document.body.addEventListener('drop', handleFileDrop, false);
@@ -216,18 +239,26 @@
     var twoFolioBox = document.getElementById('two-folio-images');
     twoFolioBox.addEventListener('change', handleTwoFolioBoxChange);
 
+    // Set the visible inputs to the correct set
+    // of inputs based on whether the manuscript has
+    // images with two folios.
+    if (twoFolioBox.checked){
+        var visibleInputs = inputs;
+    } else {
+        var visibleInputs = firstFolioInputs;
+    }
+
     function handleTwoFolioBoxChange(evt){
-        for (var i = 0; i < doubleFolioInputs.length; i++){
-            if (doubleFolioInputs[i].hidden){
-                doubleFolioInputs[i].hidden = false;
-            } else {
-                doubleFolioInputs[i].hidden = true;
-            }
-        }
         if (twoFolioBox.checked){
+            for (var i = 0; i < secondFolioInputs.length; i++){
+                secondFolioInputs[i].hidden = false;
+            }
             visibleInputs = inputs;
         } else {
-            visibleInputs = singleFolioInputs;
+            for (var i = 0; i < secondFolioInputs.length; i++){
+                secondFolioInputs[i].hidden = true;
+            }
+            visibleInputs = firstFolioInputs;
         }
         indexDoubleFolioToggle();
         checkMappedFolios();
@@ -303,28 +334,43 @@
 
     function onSaveBackup() {
         var data = 'folio,uri\n';
-        for (var i = 0, len = inputs.length; i < len; i++) {
-            data += inputs[i].value + ',' + inputs[i].name + '\n';
+        for (var i = 0, len = visibleInputs.length; i < len; i++) {
+            data += visibleInputs[i].value + ',' + visibleInputs[i].name + '\n';
         }
-        console.log(data);
-        download('backup.csv', data);
+        const loc = document.location;
+        const searchParams = new URLSearchParams(loc.search);
+        const manID = searchParams.get('manuscript_id');
+        download(`folio_mapping_backup_${manID}.csv`, data);
     }
 
     function loadBackup(file) {
+        // Read the backup csv file uploaded by the user.
         var reader = new FileReader();
         reader.readAsText(file, "UTF-8");
         reader.onload = function (e) {
+            // Split the lines of the csv.
             var lines = e.target.result.split('\n');
             var inputIndex = 0;
+            // Iterate through each line (folio, uri) of the 
+            // csv file and fill in the appropriate input field.
             for (var i = 1; i < lines.length; i++) {
-                var values = lines[i].split(',');
-
-                while (inputIndex < inputs.length && inputs[inputIndex].name !== values[1])
+                let line = lines[i].replaceAll('\r','');
+                let values = line.split(',');
+                let folio = values[0];
+                let uri = values[1];
+                
+                // Iterate through visible inputs until the appropriate image uri
+                // is reached. In manuscripts with images with two folios (and
+                // therefore two input fields per image), the fields are filled in the
+                // order in which they occur in the backup file.
+                while (inputIndex < visibleInputs.length && visibleInputs[inputIndex].name !== uri)
                     inputIndex++;
 
-                if (inputIndex < inputs.length)
-                    inputs[inputIndex].value = values[0];
+                if (inputIndex < visibleInputs.length)
+                    visibleInputs[inputIndex].value = folio;
+                    inputIndex++;
             }
+            checkMappedFolios();
         }
     }
 
