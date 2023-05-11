@@ -53,7 +53,7 @@ export default Marionette.ItemView.extend({
         if (searchField === 'volpiano' || searchField === 'volpiano_literal'){
             // Ensure that search input field displays a treble clef as the default
             // search value, and replace it if user deletes it.
-            if (searchInput == "" || searchInput == "1"){
+            if (searchInput === "" || searchInput === "1"){
                 this.ui.searchInput.val("1-");
                 searchInput = "1-";
             }
@@ -97,5 +97,19 @@ export default Marionette.ItemView.extend({
     {
         // Set dynamic classes on the query input
         this.updateQueryInput();
+
+        // If the mode field is selected, 
+        // "select" the previously queried modes
+        if (this.model.get('field') === "mode"){
+            let mode_query = this.model.get('query');
+            for (let i = 0; i < mode_query.length; i++){
+                // We use the first character of each mode search string.
+                // Where the search string is a number, the first character is that
+                // number. 
+                let selected_mode = mode_query[i][0];
+                let mode_input = this.$el.find(`#mode-option-${selected_mode}`);
+                mode_input.attr("selected", true);
+            }
+        }
     }
 });
