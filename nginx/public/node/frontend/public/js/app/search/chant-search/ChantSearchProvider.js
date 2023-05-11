@@ -96,14 +96,16 @@ export default Marionette.Object.extend({
 
     getSearchMetadata: function ()
     {
+        let fieldName = this.searchParameters.get('field');
+        let numFound = this.collection.metadata.numFound;
         // Modify query returned by solr so it is ready for display.
         // Remove escaping backslashes from the displayed string.
         let query = this.searchParameters.get('query');
-        let displayedQuery = query.replaceAll("\\-", "-");
+        let displayedQuery = (fieldName === "volpiano" || fieldName === "volpiano_literal") ? query.replaceAll("\\-", "-") : query;
         return {
-            fieldName: this.searchParameters.get('field'),
+            fieldName: fieldName,
             query: query,
-            numFound: this.collection.metadata.numFound,
+            numFound: numFound,
             displayedQuery: displayedQuery
         };
     },
