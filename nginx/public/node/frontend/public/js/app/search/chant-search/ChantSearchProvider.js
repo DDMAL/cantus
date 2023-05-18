@@ -96,14 +96,16 @@ export default Marionette.Object.extend({
 
     getSearchMetadata: function ()
     {
+        let fieldName = this.searchParameters.get('field');
+        let numFound = this.collection.metadata.numFound;
         // Modify query returned by solr so it is ready for display.
         // Remove escaping backslashes from the displayed string.
         let query = this.searchParameters.get('query');
-        let displayedQuery = query.replaceAll("\\-", "-");
+        let displayedQuery = (fieldName === "volpiano" || fieldName === "volpiano_literal") ? query.replaceAll("\\-", "-") : query;
         return {
-            fieldName: this.searchParameters.get('field'),
+            fieldName: fieldName,
             query: query,
-            numFound: this.collection.metadata.numFound,
+            numFound: numFound,
             displayedQuery: displayedQuery
         };
     },
@@ -154,10 +156,19 @@ export default Marionette.Object.extend({
                 query = query.split(',');
         }
 
+        // The default sort order is defined in the SearchInput model: by
+        // folio ascending. If searching by mode, we sort by Solr's scoring 
+        // and then by the given sort-by parameters
+        // (this gives more appropriate results when multiple 
+        // modes are selected at once).
         var params = {
             sort: this.searchParameters.get('sortBy') + ' ' +
                 (this.searchParameters.get('reverseSort') ? 'desc' : 'asc')
         };
+
+        if (field === 'mode'){
+            params.sort = 'score desc, ' + params.sort;
+        }
 
         var queryBuilder = new SolrQuery({params: params});
 
@@ -177,13 +188,24 @@ export default Marionette.Object.extend({
     },
 
     /**
-     * FIXME(wabain)
-     *
-     * This is an overly complicated workaround to push single-character
-     * mode searches into a field that will return results for them.
-     *
-     * The problem is that currently the mode_t_hidden field doesn't
-     * index single characters
+     * Set field, value pairs in the Solr query. 
+     * 
+     * For non-mode searches, set the value of the field in the 
+     * query to the string entered. Note (as of May 2023): Although a 
+     * connector ("OR") is passed here to the queryBuilder.setField function,
+     * it does not seem like any non-mode searches have multiple values.
+     * Most search types pass strings, while Volpiano-type searches pass 
+     * arrays to this function, but these arrays are of length 1. 
+     * 
+     * For mode searches, we remove the single-letter code prefix from 
+     * the search terms for special modes (eg. "F, Formulaic" --> "Formulaic")
+     * so that the result can be used as a phrase in the query (chant records 
+     * can have "Formulaic" in their mode field but will not have "F, Formulaic").
+     * Mode searches for "basic" modes (eg. "1", "2") are left as-is. We search
+     * the "mode_t_hidden" field, because that field is analyzed (and tokenized)
+     * by Solr to allow results to match partial strings (eg. a chant with mode
+     * "4 Chant in Transposition" will match a search for "4" and "Chant in Transposition").
+     * Multiple selections in a mode search are treated as disjunctions (ORs).
      *
      * @param queryBuilder
      * @param field
@@ -197,39 +219,14 @@ export default Marionette.Object.extend({
             return;
         }
 
-        if (_.isString(query))
-        {
-            queryBuilder.setField(
-                query.length === 1 ? 'mode' : 'mode_t_hidden',
-                query);
-            return;
-        }
-
-        var modeStringValues = [];
-        var modeTextValues = [];
-
-        _.forEach(query, function (value)
-        {
-            if (value.length === 1)
-                modeStringValues.push(value);
-            else
-                modeTextValues.push(value);
-        });
-
-        if (modeStringValues.length === 0)
-            queryBuilder.setField('mode_t_hidden', modeTextValues, 'OR');
-        else if (modeTextValues.length === 0)
-            queryBuilder.setField('mode', modeStringValues, 'OR');
-        else
-        {
-            var hardCodedQuery = '(mode:(' +
-                modeStringValues.join(' OR ') +
-                ') OR mode_t_hidden:(' +
-                modeTextValues.join(' OR ') +
-                '))';
-
-            queryBuilder.setField('_hardcodedSpecialQuery', hardCodedQuery);
-        }
+        let query_modified = [];
+        _.forEach(query, function (value){
+            if (value.length === 1){
+                query_modified.push(value);
+            } else {
+                query_modified.push(`"${value.slice(3)}"`);
+        }});
+        queryBuilder.setField('mode_t_hidden', query_modified, "OR");
     },
 
     /**

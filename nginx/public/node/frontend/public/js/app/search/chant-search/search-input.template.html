@@ -4,19 +4,19 @@
         <% // FIXME(wabain): would a typeahead be better? %>
         <% if (field === 'mode') { %>
         <select multiple class="form-control search-input">
-            <option value="1">Mode 1</option>
-            <option value="2">Mode 2</option>
-            <option value="3">Mode 3</option>
-            <option value="4">Mode 4</option>
-            <option value="5">Mode 5</option>
-            <option value="6">Mode 6</option>
-            <option value="7">Mode 7</option>
-            <option value="8">Mode 8</option>
-            <option>No Music</option>
-            <option>F, Formulaic</option>
-            <option>U, Uncertain</option>
-            <option>R, Responsory (special)</option>
-            <option>T, Chant in Transposition</option>
+            <option id="mode-option-1" value="1">Mode 1</option>
+            <option id="mode-option-2" value="2">Mode 2</option>
+            <option id="mode-option-3" value="3">Mode 3</option>
+            <option id="mode-option-4" value="4">Mode 4</option>
+            <option id="mode-option-5" value="5">Mode 5</option>
+            <option id="mode-option-6" value="6">Mode 6</option>
+            <option id="mode-option-7" value="7">Mode 7</option>
+            <option id="mode-option-8" value="8">Mode 8</option>
+            <option id="mode-option-N">No Music</option>
+            <option id="mode-option-F">F, Formulaic</option>
+            <option id="mode-option-U">U, Uncertain</option>
+            <option id="mode-option-R">R, Responsory (special)</option>
+            <option id="mode-option-T">T, Chant in Transposition</option>
         </select>
             <% } else if (field === 'volpiano' || field === 'volpiano_literal') { %>
                 <input type="text" class="form-control search-input field-<%= field %>"
