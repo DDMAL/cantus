@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one or more
+ contributor license agreements.  See the NOTICE file distributed with
+ this work for additional information regarding copyright ownership.
+ The ASF licenses this file to You under the Apache License, Version 2.0
+ (the "License"); you may not use this file except in compliance with
+ the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<config>
+    <!-- Allows us to define our schema in ./schema.xml
+    rather than a Solr-managed schema. -->
+    <schemaFactory class="ClassicIndexSchemaFactory" />
+    <luceneMatchVersion>9.4.2</luceneMatchVersion>
+    <dataDir>${solr.data.dir:/var/solr}</dataDir>
+    <!-- Controls how indexes are stored. The cantus_ultimus_1 
+    core uses the default, which combines some elements of an index
+    in the filesystem and memory for performance. -->
+    <directoryFactory name="DirectoryFactory" class="${solr.directoryFactory:solr.NRTCachingDirectoryFactory}"></directoryFactory>
+    <indexConfig>
+        <!-- Lucene's info stream is written to the solr log. -->
+        <infoStream>true</infoStream>
+    </indexConfig>
+    <!-- TODO: Ensure that our auto commit procedure
+    makes sense with the way that we are indexing our data
+    (eg. the index client in the django app)-->
+    <updateHandler class="solr.DirectUpdateHandler2">
+        <updateLog>
+            <str name="dir">${solr.ulog.dir:}</str>
+            <int name="numVersionBuckets">${solr.ulog.numVersionBuckets:65536}</int>
+        </updateLog>
+        <autoCommit>
+            <maxTime>${solr.autoCommit.maxTime:15000}</maxTime>
+            <openSearcher>false</openSearcher>
+        </autoCommit>
+        <autoSoftCommit>
+            <maxTime>${solr.autoSoftCommit.maxTime:-1}</maxTime>
+        </autoSoftCommit>
+    </updateHandler>
+
+    <query>
+        <maxBooleanClauses>1024</maxBooleanClauses>
+        <filterCache class="solr.CaffeineCache" size="512" initialSize="512" autowarmCount="0" />
+        <queryResultCache class="solr.CaffeineCache" size="512" initialSize="512" autowarmCount="0" />
+        <documentCache class="solr.CaffeineCache" size="512" initialSize="512" autowarmCount="0" />
+        <!-- custom cache currently used by block join 
+        <cache name="perSegFilter" class="solr.search.LRUCache" size="10" initialSize="0" autowarmCount="10" regenerator="solr.NoOpRegenerator" />
+        -->
+        <enableLazyFieldLoading>true</enableLazyFieldLoading>
+        <queryResultWindowSize>20</queryResultWindowSize>
+        <queryResultMaxDocsCached>200</queryResultMaxDocsCached>
+        <useColdSearcher>false</useColdSearcher>
+        <maxWarmingSearchers>2</maxWarmingSearchers>
+    </query>
+
+    <requestDispatcher handleSelect="false">
+        <requestParsers multipartUploadLimitInKB="2048000" formdataUploadLimitInKB="2048" addHttpRequestToContext="false" />
+        <httpCaching never304="false" />
+    </requestDispatcher>
+
+    <requestHandler name="/select" class="solr.SearchHandler">
+        <lst name="defaults">
+            <str name="echoParams">explicit</str>
+            <int name="rows">10</int>
+            <str name="df">text</str>
+        </lst>
+    </requestHandler>
+
+    <!-- A request handler that returns indented JSON by default -->
+    <requestHandler name="/query" class="solr.SearchHandler">
+        <lst name="defaults">
+            <str name="echoParams">explicit</str>
+            <str name="wt">json</str>
+            <str name="indent">true</str>
+            <str name="df">text</str>
+        </lst>
+    </requestHandler>
+    <initParams path="/update/**,/query,/select,/tvrh,/elevate,/spell">
+        <lst name="defaults">
+            <str name="df">text</str>
+        </lst>
+    </initParams>
+</config>

@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one or more
+ contributor license agreements.  See the NOTICE file distributed with
+ this work for additional information regarding copyright ownership.
+ The ASF licenses this file to You under the Apache License, Version 2.0
+ (the "License"); you may not use this file except in compliance with
+ the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<schema name="cantusdata-solr" version="2.0">
+    <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false" />
+    <field name="type" type="string" indexed="true" stored="true" required="true" multiValued="false" />
+    <field name="item_id" type="string" indexed="true" stored="true" required="false" multiValued="false" />
+    <field name="name" type="text_general" indexed="true" stored="true" />
+    <field name="siglum" type="text_general" indexed="true" stored="true" />
+    <field name="siglum_slug" type="string" indexed="true" stored="true" />
+    <field name="date" type="string" indexed="true" stored="true" />
+    <field name="provenance" type="text_general" indexed="true" stored="true" />
+    <field name="description" type="text_general" indexed="true" stored="true" />
+    <field name="public" type="boolean" default="true" indexed="true" stored="true" />
+    <field name="number" type="string" indexed="true" stored="true" />
+    <field name="manuscript" type="text_general" indexed="true" stored="true" />
+    <field name="manuscript_id" type="int" indexed="true" stored="true" />
+    <field name="manuscript_name_hidden" type="string" indexed="false" stored="true" />
+    <field name="chant_count" type="int" indexed="true" stored="true" />
+    <field name="folio_count" type="int" indexed="true" stored="true" />
+    <field name="marginalia" type="text_general" indexed="true" stored="true" />
+    <field name="folio" type="string" indexed="true" stored="true" />
+    <field name="folio_id" type="int" indexed="true" stored="true" />
+    <field name="image_uri" type="string" indexed="true" stored="true"/>
+    <field name="sequence" type="int" indexed="true" stored="true" />
+    <field name="cantus_id" type="text_general" indexed="true" stored="true" />
+    <field name="cdb_uri" type="text_general" indexed="true" stored="true" />
+    <field name="feast" type="string" indexed="true" stored="true" />
+    <field name="feast_date" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="feast_code" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="feast_explanation" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <!-- This field is necessary for the suggesters to work but is empty -->
+    <field name="weight_field" type="float" indexed="false" stored="true" />
+    <field name="office" type="string" indexed="true" stored="true" multiValued="false" />
+    <field name="genre" type="string" indexed="true" stored="true" multiValued="false" />
+    <field name="position" type="string" indexed="true" stored="true" multiValued="false" />
+    <field name="mode" type="string" indexed="true" stored="true" multiValued="false" />
+    <field name="differentia" type="string" indexed="true" stored="true" multiValued="false" />
+    <field name="finalis" type="string" indexed="true" stored="true" multiValued="false" />
+    <field name="incipit" type="string" indexed="true" stored="true" multiValued="false" />
+    <field name="full_text" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="full_text_ms" type="text_general" indexed="true" stored="true" multiValued="false" />
+    <field name="volpiano" type="volpiano_general" indexed="true" stored="true" multiValued="false" />
+    <field name="volpiano_literal" type="volpiano_literal" indexed="true" stored="false" multiValued="false" />
+    <field name="concordances" type="string" indexed="true" stored="true" multiValued="true" />
+    <!-- Fields related to OMR Data -->
+    <!-- <field name="suggest" type="suggestions" indexed="true" multiValued="true" /> -->
+    <field name="pagen" type="int" indexed="true" stored="true" required="false" />
+    <field name="pnames" type="string" indexed="true" stored="true" required="false" />
+    <field name="neumes" type="string" indexed="true" stored="true" required="false" />
+    <field name="contour" type="string" indexed="true" stored="true" required="false" />
+    <field name="semitones" type="string" indexed="true" stored="true" required="false" />
+    <field name="intervals" type="string" indexed="true" stored="true" required="false" />
+    <field name="location" type="string" indexed="false" stored="true" required="false" />
+    <dynamicField name="*_strm" type="string" indexed="true" stored="true" multiValued="true" />
+    <dynamicField name="*_stored" type="string" indexed="false" stored="true" />
+    <!-- Some fields I made up to match the python file output -->
+    <field name="project" type="int" indexed="true" stored="true" required="false" />
+    <!-- catchall field, containing all other searchable text fields (implemented
+         via copyField further on in this schema  -->
+    <field name="text" type="text_general" indexed="true" stored="false" multiValued="true" />
+    <field name="_version_" type="long" indexed="true" stored="true" />
+
+    <dynamicField name="*_i" type="int" indexed="true" stored="true" />
+    <dynamicField name="*_is" type="int" indexed="true" stored="true" multiValued="true" />
+    <dynamicField name="*_s" type="string" indexed="true" stored="true" />
+    <dynamicField name="*_ss" type="string" indexed="true" stored="true" multiValued="true" />
+    <dynamicField name="*_l" type="long" indexed="true" stored="true" />
+    <dynamicField name="*_ls" type="long" indexed="true" stored="true" multiValued="true" />
+    <dynamicField name="*_t" type="text_general" indexed="true" stored="true" />
+    <dynamicField name="*_t_hidden" type="text_general" indexed="true" stored="false" />
+    <dynamicField name="*_txt" type="text_general" indexed="true" stored="true" multiValued="true" />
+    <dynamicField name="*_b" type="boolean" indexed="true" stored="true" />
+    <dynamicField name="*_bs" type="boolean" indexed="true" stored="true" multiValued="true" />
+    <dynamicField name="*_f" type="float" indexed="true" stored="true" />
+    <dynamicField name="*_fs" type="float" indexed="true" stored="true" multiValued="true" />
+    <dynamicField name="*_d" type="double" indexed="true" stored="true" />
+    <dynamicField name="*_ds" type="double" indexed="true" stored="true" multiValued="true" />
+    <!-- Type used to index the lat and lon components for the "location" FieldType -->
+    <dynamicField name="*_dt" type="date" indexed="true" stored="true" />
+    <dynamicField name="*_dts" type="date" indexed="true" stored="true" multiValued="true" />
+
+    <dynamicField name="ignored_*" type="ignored" multiValued="true" />
+    <dynamicField name="attr_*" type="text_general" indexed="true" stored="true" multiValued="true" />
+    <dynamicField name="random_*" type="random" />
+
+    <uniqueKey>id</uniqueKey>
+
+    <copyField source="name" dest="text" />
+    <copyField source="mode" dest="text" />
+    <copyField source="feast" dest="text" />
+    <copyField source="office" dest="text" />
+    <copyField source="siglum" dest="text" />
+    <copyField source="date" dest="text" />
+    <copyField source="provenance" dest="text" />
+    <copyField source="marginalia" dest="text" />
+    <copyField source="incipit" dest="text" />
+    <copyField source="full_text" dest="text" />
+    <copyField source="folio" dest="text" />
+    <copyField source="genre" dest="text" />
+
+    <!-- Copy string fields we want to search by into dynamic text fields -->
+    <copyField source="feast" dest="feast_t_hidden" />
+    <copyField source="office" dest="office_t_hidden" />
+    <copyField source="genre" dest="genre_t_hidden" />
+    <copyField source="position" dest="position_t_hidden" />
+    <copyField source="mode" dest="mode_t_hidden" />
+    <copyField source="differentia" dest="differentia_t_hidden" />
+    <copyField source="finalis" dest="finalis_t_hidden" />
+    <copyField source="folio" dest="folio_t_hidden" />
+    <copyField source="incipit" dest="incipit_t_hidden" />
+    <copyField source="volpiano" dest="volpiano_literal" />
+
+    <fieldType name="string" class="solr.StrField" sortMissingLast="true" />
+    <fieldType name="boolean" class="solr.BoolField" sortMissingLast="true" />
+    <fieldType name="int" class="solr.IntPointField"  />
+    <fieldType name="float" class="solr.FloatPointField"  />
+    <fieldType name="long" class="solr.LongPointField" />
+    <fieldType name="double" class="solr.DoublePointField"  />
+
+    <fieldType name="date" class="solr.DatePointField" />
+    <!--Binary data type. The data should be sent/retrieved in as Base64 encoded Strings -->
+    <fieldtype name="binary" class="solr.BinaryField" />
+
+    <fieldType name="random" class="solr.RandomSortField" indexed="true" />
+
+    <fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
+        <analyzer type="index">
+            <tokenizer class="solr.StandardTokenizerFactory" />
+            <filter class="solr.LowerCaseFilterFactory" />
+            <filter class="solr.NGramFilterFactory" minGramSize="1" maxGramSize="15" />
+        </analyzer>
+        <analyzer type="query">
+            <tokenizer class="solr.StandardTokenizerFactory" />
+            <filter class="solr.LowerCaseFilterFactory" />
+        </analyzer>
+    </fieldType>
+    <!-- A text field for Volpiano music notation data. -->
+    <fieldType name="volpiano_general" class="solr.TextField" positionIncrementGap="100">
+        <analyzer type="index">
+            <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ExtractVolpianoNotes.txt" />
+            <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="-" replacement="" />
+            <tokenizer class="solr.NGramTokenizerFactory" minGramSize="1" maxGramSize="50" />
+        </analyzer>
+        <analyzer type="query">
+            <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ExtractVolpianoNotes.txt" />
+            <charFilter class="solr.PatternReplaceCharFilterFactory" pattern="-" replacement="" />
+            <tokenizer class="solr.KeywordTokenizerFactory" />
+        </analyzer>
+    </fieldType>
+    <!-- A text field for literal Volpiano music notation data. -->
+    <fieldType name="volpiano_literal" class="solr.TextField" positionIncrementGap="100">
+        <analyzer type="index">
+            <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ExtractVolpianoNotes.txt" />
+            <tokenizer class="solr.NGramTokenizerFactory" minGramSize="1" maxGramSize="50" />
+        </analyzer>
+        <analyzer type="query">
+            <charFilter class="solr.MappingCharFilterFactory" mapping="mapping-ExtractVolpianoNotes.txt" />
+            <tokenizer class="solr.KeywordTokenizerFactory" />
+        </analyzer>
+    </fieldType>
+    <!-- Just like text_general except it reverses the characters of
+	 each token, to enable more efficient leading wildcard queries. -->
+    <fieldType name="text_general_rev" class="solr.TextField" positionIncrementGap="100">
+        <analyzer type="index">
+            <tokenizer class="solr.StandardTokenizerFactory" />
+            <filter class="solr.LowerCaseFilterFactory" />
+            <filter class="solr.ReversedWildcardFilterFactory" withOriginal="true" maxPosAsterisk="3" maxPosQuestion="2" maxFractionAsterisk="0.33" />
+        </analyzer>
+        <analyzer type="query">
+            <tokenizer class="solr.StandardTokenizerFactory" />
+            <filter class="solr.LowerCaseFilterFactory" />
+        </analyzer>
+    </fieldType>
+  
+   <fieldtype name="ignored" stored="false" indexed="false" multiValued="true" class="solr.StrField" />
+</schema>
