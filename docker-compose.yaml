@@ -48,7 +48,6 @@ services:
   solr:
     build: ./solr
     container_name: cantus-solr-1
-    command: solr start -f
     ports:
       - "8983:8983"
     environment:
