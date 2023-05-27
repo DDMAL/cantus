@@ -64,7 +64,7 @@ services:
     restart: always
 
   celery:
-    image: cantus_app
+    image: cantus-app
     container_name: cantus-celery-1
     volumes:
       - ./app/public:/code/public
