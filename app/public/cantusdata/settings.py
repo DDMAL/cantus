@@ -154,7 +154,7 @@ REST_FRAMEWORK = {
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
 
-SOLR_SERVER = "http://solr:8983/solr/collection1"
+SOLR_SERVER = "http://solr:8983/solr/cantus_ultimus_1"
 SOLR_ADMIN = "http://solr:8983/solr/admin"
 SOLR_TEST_SERVER = "http://solr:8983/solr/cantus-test"
 
