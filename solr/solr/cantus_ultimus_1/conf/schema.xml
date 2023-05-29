@@ -27,6 +27,9 @@
     <field name="description" type="text_general" indexed="true" stored="true" />
     <field name="public" type="boolean" default="true" indexed="true" stored="true" />
     <field name="number" type="string" indexed="true" stored="true" />
+    <!-- This field removes leading zeros from the folio number in order
+    to offer better folio navigation search suggestions -->
+    <field name="number_wo_lz" type="string" indexed="true" stored="false" />
     <field name="manuscript" type="text_general" indexed="true" stored="true" />
     <field name="manuscript_id" type="int" indexed="true" stored="true" />
     <field name="manuscript_name_hidden" type="string" indexed="false" stored="true" />

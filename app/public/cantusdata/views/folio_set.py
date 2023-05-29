@@ -52,9 +52,8 @@ class ManuscriptFolioSetView(APIView):
             # the manuscript that have the form:
             # [some number of leading zeros][the user-entered string][wildcard of characters].
             # Here we assume at most 3 leading zeros.
-            composed_request = f"""type:"cantusdata_folio" AND manuscript_id:{manuscript_id}
-                                 AND number:(000{query_str}* OR 00{query_str}* OR 0{query_str}*
-                                 OR {query_str}*)"""
+            composed_request = f"""type:"cantusdata_folio" AND manuscript_id:{manuscript_id} 
+                                AND number_wo_lz:{query_str}*"""
             results = solrconn.query(
                 composed_request,
                 sort="number asc",
