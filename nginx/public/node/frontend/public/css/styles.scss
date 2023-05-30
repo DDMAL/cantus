@@ -264,7 +264,6 @@ pre.preformatted-text {
 }
 
 .result-table-wrapper {
-    overflow: auto;
     min-height: 200px;
 }
 
@@ -281,15 +280,15 @@ pre.preformatted-text {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    overflow: scroll;
-
-    // Workaround for Safari, where elements would shrink if the chant list was too big
-    > * {
-        flex-shrink: 0;
-    }
 
     > .propagate-height, > .result-table-wrapper, > .modal-body {
         flex-shrink: 1;
+        overflow:auto;
+    }
+
+    > .row {
+        margin-right: 0px;
+        margin-left:0px;
     }
 
     // Workaround for Bootstrap tabs
@@ -335,11 +334,6 @@ body.propagate-height {
 .modal-content {
     height: 100%;
 }
-// Fix a bug in the modal content where the search drop-down would be hidden
-// ^This doesn't seem to be happening, and it was stopping the list from being scrollable - eli
-// .modal-content > .modal-body > .propagate-height {
-//     overflow: visible;
-// }
 
 #manuscript-data-container {
     // Relative-position the container so that percentage-based dimensions are calculated relative to it
@@ -371,11 +365,6 @@ body.propagate-height {
                 margin-left: 1px;
             }
         }
-    }
-
-    //Allow chants to be scrolled in the manuscript-info pane
-    .tab-content {
-        overflow: auto;
     }
 }
 
