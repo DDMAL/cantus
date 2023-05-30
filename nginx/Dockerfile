@@ -4,12 +4,13 @@ RUN npm install -g gulp
 
 WORKDIR /code/frontend
 RUN npm install
-COPY ./public/node/ /code/
+RUN mkdir -p ../static/fonts
 RUN wget http://www.fawe.de/volpiano/volpiano51_web.zip
 RUN unzip volpiano51_web.zip
 RUN rm volpiano51_web.zip
 RUN mv volpiano51_web/volpiano.woff ../static/fonts/volpiano.woff
-RUN gulp build --release
+COPY ./public/node/ /code/
+RUN gulp build
 
 FROM python:3.6.9 AS django-static
 COPY ./public/python /code
