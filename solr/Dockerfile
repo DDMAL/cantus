@@ -1,3 +1,4 @@
-FROM solr:6.1.0
-COPY ./solr /code/solr
+FROM solr:9.2.1
+COPY --chown=solr:solr ./solr /var/solr/data/
 EXPOSE 8983
+CMD ["solr","start", "-f"]
