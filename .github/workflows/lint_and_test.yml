@@ -15,5 +15,6 @@ jobs:
       RABBIT_PASSWORD: supersecurepassword99
     steps:
       - uses: actions/checkout@v3
-      - run: docker-compose up -d
-      - run: docker-compose exec -T app python runtests.py cantusdata.test.core
+      - run: docker compose build
+      - run: docker compose up -d
+      - run: docker compose exec -T app python runtests.py cantusdata.test.core
