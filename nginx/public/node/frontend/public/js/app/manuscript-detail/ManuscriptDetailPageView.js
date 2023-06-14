@@ -140,7 +140,7 @@ export default Marionette.LayoutView.extend({
             additionalResultFields: ['genre', 'mode', 'feast', 'office', 'position']
         });
 
-        chantSearchProvider.setRestriction('manuscript', '"' + this.model.get("siglum") + '"');
+        chantSearchProvider.setRestriction('manuscript_id', '"' + this.model.get("id") + '"');
 
         var notationSearchProvider = new OMRSearchProvider({
             divaView: divaView,
