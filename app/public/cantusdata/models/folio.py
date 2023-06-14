@@ -31,6 +31,7 @@ class Folio(models.Model):
             "item_id": self.id,
             "image_uri": self.image_uri,
             "manuscript_id": self.manuscript.id,
+            "number_wo_lead_zero": self.number.lstrip("0"),
         }
 
     def fetch_solr_records(self, solrconn):
