@@ -39,16 +39,12 @@ class ManuscriptFolioSetView(APIView):
                 score=False,
             )
             if results.numFound > 0:
-                # Initialize combined results dict with the first result
-                combined_results = results.results[0]
-                # For manuscripts with double-folio images, add the possible
-                # second folio to the combined results dict.
-                if results.numFound == 2:
-                    for field in FOLIO_FIELDS:
-                        combined_results[field] = [
-                            combined_results[field],
-                            results.results[1][field],
-                        ]
+                result_contents = results.results
+                combined_results = {}
+                for field in FOLIO_FIELDS:
+                    combined_results[field] = [
+                        result_contents[i][field] for i in range(results.numFound)
+                    ]
                 return Response(combined_results)
             if results.numFound == 0:
                 return Response({"number": None})
