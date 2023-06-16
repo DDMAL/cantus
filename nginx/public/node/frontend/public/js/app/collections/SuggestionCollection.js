@@ -14,6 +14,6 @@ export default Backbone.Collection.extend({
 
     parse: function(data)
     {
-        return data.suggestions;
+        return data;
     }
 });

@@ -48,5 +48,6 @@ class SuggestionView(APIView):
             facet_counts = results.json()["facet_counts"]["facet_fields"][field]
             # The names of the facets (ie. the suggestions) are in the even indices of the list
             facet_counts = facet_counts[::2]
-            response = Response(facet_counts)
+            suggestion_objs = [{"term": term} for term in facet_counts]
+            response = Response(suggestion_objs)
             return response
