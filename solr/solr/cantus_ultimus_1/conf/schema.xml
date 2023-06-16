@@ -46,8 +46,8 @@
     <field name="feast_date" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="feast_code" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="feast_explanation" type="text_general" indexed="true" stored="true" multiValued="false" />
-    <!-- This field is necessary for the suggesters to work but is empty -->
-    <field name="weight_field" type="float" indexed="false" stored="true" />
+    <!-- The "weight_field" field is necessary for the suggesters to work but is empty -->
+    <!-- <field name="weight_field" type="float" indexed="false" stored="true" /> -->
     <field name="office" type="string" indexed="true" stored="true" multiValued="false" />
     <field name="genre" type="string" indexed="true" stored="true" multiValued="false" />
     <field name="position" type="string" indexed="true" stored="true" multiValued="false" />
@@ -61,7 +61,6 @@
     <field name="volpiano_literal" type="volpiano_literal" indexed="true" stored="false" multiValued="false" />
     <field name="concordances" type="string" indexed="true" stored="true" multiValued="true" />
     <!-- Fields related to OMR Data -->
-    <!-- <field name="suggest" type="suggestions" indexed="true" multiValued="true" /> -->
     <field name="pagen" type="int" indexed="true" stored="true" required="false" />
     <field name="pnames" type="string" indexed="true" stored="true" required="false" />
     <field name="neumes" type="string" indexed="true" stored="true" required="false" />
@@ -190,6 +189,8 @@
         </analyzer>
     </fieldType>
 
+    <!-- This field type is not currently used, but is used by the commented 
+    suggester configuration. See comment in solrconfig.xml for more details. -->
     <!-- <fieldtype name="text_suggest" class="solr.TextField">
         <analyzer type="index">
             <tokenizer class="solr.StandardTokenizerFactory" />
