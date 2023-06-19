@@ -19,7 +19,7 @@ WORKDIR /code
 RUN pip install -r requirements.txt
 RUN python manage.py collectstatic --noinput
 
-FROM nginx
+FROM nginx:1.25
 COPY ./nginx.conf /etc/nginx/nginx.conf
 COPY --from=frontend /code/static /code/static
 COPY --from=django-static /code/cantusdata/static /code/static
