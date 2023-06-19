@@ -49,5 +49,4 @@ class SuggestionView(APIView):
             # The names of the facets (ie. the suggestions) are in the even indices of the list
             facet_counts = facet_counts[::2]
             suggestion_objs = [{"term": term} for term in facet_counts]
-            response = Response(suggestion_objs)
-            return response
+            return Response(suggestion_objs)
