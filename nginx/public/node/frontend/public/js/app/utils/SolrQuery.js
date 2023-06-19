@@ -168,15 +168,14 @@ var SolrQuery = Marionette.Object.extend({
         var self = this;
         var suggestString = null;
 
+        // We currently only provide suggestions for feast, genre, and office
         ['feast', 'genre', 'office'].forEach(function (field)
         {
-            var term = self.fields[field] || self.fields[field + '_t_hidden'];
+            var term = self.fields[field + '_t_hidden'];
             if (term)
             {
-                var manuscript = self.fields.manuscript || '*';
-                suggestString = 'q=' + self.getSolrTerm(term, false) +
-                    '&dictionary=' + field + 'Suggester' +
-                    '&manuscript=' + manuscript;
+                var manuscript_id = self.fields.manuscript_id || '*';
+                suggestString = `q=${self.getSolrTerm(term, false)}&field=${field}&manuscript_id=${manuscript_id}`;
             }
         });
 

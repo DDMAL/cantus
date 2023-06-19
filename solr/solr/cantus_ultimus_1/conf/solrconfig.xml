@@ -89,4 +89,38 @@
             <str name="df">text</str>
         </lst>
     </initParams>
+
+    <!-- Define the suggestion components for office.
+    We do not use the built-in suggester to provide suggestions
+    for these fields (the facet query defined in the "suggestion.py" view
+    in the backend provides better results). However, this is a working 
+    suggester configuration with the solr update, so I'm keeping this commented
+    to provide direction if search suggestions are desired in the future. -->
+    <!-- <searchComponent name="suggest" class="solr.SuggestComponent">
+        <lst name="suggester">
+            <str name="name">OfficeSuggester</str>
+            <str name="lookupImpl">BlendedInfixLookupFactory</str>
+            <str name="dictionaryImpl">DocumentDictionaryFactory</str>
+            <str name="field">office</str>
+            <str name="suggestAnalyzerFieldType">text_suggest</str>
+            <str name="buildOnStartup">false</str>
+            <str name="buildOnCommit">true</str>
+            <str name="weightField">weight</str>
+            <str name="highlight">false</str>
+            <str name="contextField">manuscript_id</str>
+            <str name="numFactor">2</str>
+        </lst>
+    </searchComponent>
+
+    <requestHandler name="/suggest" class="solr.SearchHandler" startup="lazy">
+        <lst name="defaults">
+            <str name="suggest">true</str>
+            <str name="suggest.count">10</str>
+        </lst>
+    <arr name="components">
+      <str>suggest</str>
+    </arr>
+    </requestHandler> -->
+
+
 </config>
