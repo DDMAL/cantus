@@ -17,7 +17,6 @@ var webpack = require('webpack');
 var del = require('del');
 var path = require('path');
 var fs = require('fs');
-var mkdirp = require('mkdirp');
 
 // Set path variables
 var sources = {
