@@ -1,4 +1,4 @@
-FROM node:10 AS frontend
+FROM node:12 AS frontend
 COPY ./public/node/frontend/package.json /code/frontend/
 RUN npm install -g gulp
 

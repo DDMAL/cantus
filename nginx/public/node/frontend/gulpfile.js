@@ -1,7 +1,6 @@
 "use strict";
 
 var gulp = require('gulp');
-var runSequence = require('run-sequence');
 var eslint = require('gulp-eslint');
 var jscs = require('gulp-jscs');
 var concat = require('gulp-concat');
@@ -42,17 +41,6 @@ var getWebpackCompiler = (function ()
 })();
 
 /*
- * High-level tasks
- */
-
-gulp.task('default', function (cb)
-{
-    runSequence(['lint-nofail:js', 'build'], 'watch', cb);
-});
-
-gulp.task('build', ['build:js', 'build:css']);
-
-/*
  * JavaScript linting
  */
 
@@ -71,17 +59,6 @@ gulp.task('lint-nofail:js', function ()
 /*
  * JavaScript build tasks
  */
-
-gulp.task('build:js', function (cb)
-{
-    runSequence(
-        'clean:js',
-        'bundle:js',
-        cb
-    );
-});
-
-gulp.task('rebuild:js', ['bundle:js']);
 
 gulp.task('bundle:js', function (cb)
 {
@@ -131,20 +108,17 @@ gulp.task('clean:js', function (done)
     });
 });
 
+gulp.task('rebuild:js', gulp.series('bundle:js'));
+
+gulp.task('build:js', gulp.series('clean:js','bundle:js'), function (cb)
+{
+        cb();
+});
+
 /*
  * CSS build tasks
  */
 
-gulp.task('build:css', function (done)
-{
-    runSequence(
-        'clean:css',
-        'bundle:css',
-        done
-    );
-});
-
-gulp.task('rebuild:css', ['bundle:css']);
 
 gulp.task('bundle:css', function ()
 {
@@ -185,6 +159,12 @@ gulp.task('clean:css', function (done)
     });
 });
 
+gulp.task('rebuild:css', gulp.series('bundle:css'));
+
+gulp.task('build:css', gulp.series('clean:css','bundle:css'), function (done)
+{
+        done();
+});
 /*
  * Watching
  */
@@ -225,3 +205,14 @@ function lintJS()
         .pipe(jscs())
         .pipe(jscs.reporter());
 }
+
+gulp.task('build', gulp.series('build:js', 'build:css'));
+
+/*
+ * High-level tasks
+ */
+
+gulp.task('default', gulp.series('lint-nofail:js','build','watch'), function (cb)
+{
+    cb();
+});
