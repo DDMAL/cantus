@@ -97,14 +97,14 @@ gulp.task('bundle:js', function (cb)
     getWebpackCompiler().run(onBundleComplete);
 });
 
-gulp.task('clean:js', function (done)
+gulp.task('clean:js', function (cb)
 {
     del(['../static/js/', './.tmp'], {force: true}, function (err)
     {
         if (err)
-            done(err);
+            cb(err);
         else
-            done();
+            cb();
     });
 });
 
@@ -148,28 +148,28 @@ gulp.task('bundle:css', function ()
         .pipe(gulpif(isCssFile, livereload())); // Don't reload for sourcemaps
 });
 
-gulp.task('clean:css', function (done)
+gulp.task('clean:css', function (cb)
 {
     del('../static/css/', {force: true}, function (err)
     {
         if (err)
-            done(err);
+            cb(err);
         else
-            done();
+            cb();
     });
 });
 
 gulp.task('rebuild:css', gulp.series('bundle:css'));
 
-gulp.task('build:css', gulp.series('clean:css','bundle:css'), function (done)
+gulp.task('build:css', gulp.series('clean:css','bundle:css'), function (cb)
 {
-        done();
+        cb();
 });
 /*
  * Watching
  */
 
-gulp.task('watch', function (done) // eslint-disable-line no-unused-vars
+gulp.task('watch', function (cb) // eslint-disable-line no-unused-vars
 {
     // Never call the callback: this runs forever
 
