@@ -12,7 +12,7 @@ RUN mv volpiano51_web/volpiano.woff ../static/fonts/volpiano.woff
 COPY ./public/node/ /code/
 RUN gulp build --release
 
-FROM python:3.6.9 AS django-static
+FROM python:3.8.17 AS django-static
 COPY ./public/python /code
 
 WORKDIR /code

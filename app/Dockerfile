@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM python:3.6.9
+FROM python:3.8.17
 COPY django-config.sh /code/
 COPY public/requirements.txt /code/public/
 COPY cantus-staticpages/ /code/cantus-staticpages/
