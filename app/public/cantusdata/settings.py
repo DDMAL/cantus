@@ -46,7 +46,7 @@ INSTALLED_APPS = (
     "django_celery_results",
     "rest_framework",
     "rest_framework.authtoken",
-    "cantusdata",
+    "cantusdata.CantusdataConfig",
     "django_extensions",
     "coverage",
 )

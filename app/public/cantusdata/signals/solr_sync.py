@@ -69,7 +69,7 @@ class SolrSynchronizer(object):
         with self.get_session() as sess:
             sess.schedule_update(instance, is_new=created)
 
-    def folio_or_manuscript_deleted(self, sender, instance, **kwargs):
+    def folio_or_manuscript_deleted(self, sender, instance, using, **kwargs):
         with self.get_session() as sess:
             sess.schedule_deletion(instance)
 
@@ -81,7 +81,7 @@ class SolrSynchronizer(object):
                 sess.schedule_update(instance.folio)
                 sess.schedule_update(instance.manuscript)
 
-    def chant_deleted(self, sender, instance, **kwargs):
+    def chant_deleted(self, sender, instance, using, **kwargs):
         with self.get_session() as sess:
             sess.schedule_deletion(instance)
             sess.schedule_update(instance.folio)
