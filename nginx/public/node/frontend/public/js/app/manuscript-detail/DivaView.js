@@ -252,18 +252,19 @@ export default Marionette.ItemView.extend({
             error: _.bind(function(response)
             {
                 // We didn't find a match; fall back to treating this as a non-aliased page number
-                if (alias.match(/^\d+$/))
+                if (alias.match(/^Image (\d+)$/)){
+                    var pageIndex = parseInt(alias.match(/^Image (\d+)$/)[1], 10) - 1;
+                } else if (alias.match(/^\d+$/))
                 {
                     var pageIndex = parseInt(alias, 10) - 1;
-
-                    if (pageIndex >= 0 && pageIndex < this.divaFilenames.length)
+                }
+                if (pageIndex >= 0 && pageIndex < this.divaFilenames.length)
                     {
                         return deferred.resolve(this.divaFilenames[pageIndex]);
+                    } else {
+                        // If nothing worked, then just return null
+                        return deferred.reject(response);
                     }
-                }
-
-                // If nothing worked, then just return null
-                return deferred.reject(response);
             }, this)
         });
 
@@ -287,7 +288,7 @@ export default Marionette.ItemView.extend({
         this._customizeToolbar();
 
         // Go to the predetermined initial folio if one is set
-        var initialFolio = manuscriptChannel.request('folio');
+        var initialFolio = manuscriptChannel.request('folio') ? manuscriptChannel.request('folio') : manuscriptChannel.request('pageAlias');
         if (initialFolio !== null)
         {
             this.getPageWhichMatchesAlias(initialFolio).done(_.bind(function (initialImageURI)

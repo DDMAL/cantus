@@ -65,7 +65,7 @@ export default Backbone.Model.extend({
     {
         this.manuscriptModel = null;
 
-        if (!this.hasChanged('folio'))
+        if (!this.hasChanged('folio') && !this.hasChanged('pageAlias'))
         {
             this.set('folio', null);
             this.set('pageAlias', null);
