@@ -178,3 +178,8 @@ CELERY_RESULT_PERSISTENT = False
 CELERY_RESULT_EXTENDED = True
 CELERY_APP = "cantusdata"
 CELERY_TASK_TRACK_STARTED = True
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": 50,
+}
