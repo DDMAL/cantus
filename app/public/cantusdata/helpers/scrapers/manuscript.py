@@ -148,7 +148,7 @@ class ManuscriptScraper(HTMLParser):
 
 
 def parse(url):
-    baseurl = "https://cantus.uwaterloo.ca"
+    baseurl = "https://cantusdatabase.org"
     # url is relative? -> join, url is absolute? -> nothing should change
     url = urljoin(baseurl, url)
     contents = urllib.request.urlopen(url).read().decode("utf-8")

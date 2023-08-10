@@ -8,7 +8,7 @@ W_REGEX = re.compile(r"^(\d+)w$")
 
 
 class Command(BaseCommand):
-    """Normalize chants exported from http://cantus.uwaterloo.ca for compatibility with the chant import script"""
+    """Normalize chants exported from Cantus Database for compatibility with the chant import script"""
 
     args = "filename.csv"
 
