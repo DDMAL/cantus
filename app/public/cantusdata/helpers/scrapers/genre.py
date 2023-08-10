@@ -57,7 +57,7 @@ class GenreScraper(HTMLParser):
                 self.value = data
 
 
-genre_url = "https://cantusdatabase.org/genre"
+genre_url = "https://cantusdatabase.org/genres"
 contents = urllib.request.urlopen(genre_url).read().decode("utf-8")
 parser = GenreScraper()
 parser.feed(contents)
