@@ -4,7 +4,7 @@ from django.http import Http404
 from rest_framework import generics
 
 
-class FolioList(generics.ListCreateAPIView):
+class FolioList(generics.ListAPIView):
     model = Folio
     serializer_class = FolioSerializer
 
@@ -29,7 +29,7 @@ class FolioList(generics.ListCreateAPIView):
             return queryset[:1]  # Make sure we return only one element
 
 
-class FolioDetail(generics.RetrieveUpdateDestroyAPIView):
+class FolioDetail(generics.RetrieveAPIView):
     model = Folio
     queryset = Folio.objects.all()
     serializer_class = FolioSerializer
