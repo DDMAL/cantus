@@ -101,7 +101,18 @@ export default Marionette.Object.extend({
         // Modify query returned by solr so it is ready for display.
         // Remove escaping backslashes from the displayed string.
         let query = this.searchParameters.get('query');
-        let displayedQuery = (fieldName === "volpiano" || fieldName === "volpiano_literal") ? query.replaceAll("\\-", "-") : query;
+        let displayedQuery;
+        switch (fieldName){
+            case "volpiano":
+            case "volpiano_literal":
+                displayedQuery = query.replaceAll("\\-", "-");
+                break;
+            case "mode":
+                displayedQuery = query.join(", ");
+                break;
+            default:
+                displayedQuery = query;
+        }
         return {
             fieldName: fieldName,
             query: query,
