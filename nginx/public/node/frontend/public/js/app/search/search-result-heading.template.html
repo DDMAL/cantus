@@ -1,7 +1,7 @@
-<p class="h4"><i><%- numFound %> <%- numFound === 1 ? 'result' : 'results' %> for query 
+<p class="h5"><i><%- numFound %> <%- numFound === 1 ? 'result' : 'results' %> for query:</i>
 <% if (fieldName == "volpiano" || fieldName == "volpiano_literal") { %>
-</i><span class = "volpiano">1-<%- displayedQuery %></span>
+<span class = "volpiano">1-<%- displayedQuery %></span>
 <% } else { %>
-"<%- query %>"</i>
+<span class="displayed-query"><%- displayedQuery %></span>
 <% } %>
 </p>
