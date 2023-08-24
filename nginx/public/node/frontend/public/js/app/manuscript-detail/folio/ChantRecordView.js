@@ -1,3 +1,4 @@
+import Backbone from 'backbone';
 import Marionette from 'marionette';
 
 import { parseVolpianoSyllables } from 'utils/VolpianoDisplayHelper';
@@ -5,6 +6,8 @@ import { parseVolpianoSyllables } from 'utils/VolpianoDisplayHelper';
 import template from './chant-record.template.html';
 
 import { MIDI }  from 'utils/midi-player/midiPlayer.js';
+
+var manuscriptChannel = Backbone.Radio.channel('manuscript');
 
 MIDI.audioDetect(function (supports){
 	MIDI.supports = supports;
@@ -242,6 +245,7 @@ export default Marionette.ItemView.extend({
 		this.model.set('volpiano', formattedVolpiano);
 		var cdb_uri = this.model.get('cdb_uri');
 		this.model.set({ 'cdb_link_url': 'https://cantus.uwaterloo.ca/node/' + cdb_uri });
+		this.listenTo(manuscriptChannel, 'change:chant', this.chantChanged);
 	},
 	ui : {
 		volpianoSyllables: ".volpiano-syllable",
@@ -260,5 +264,10 @@ export default Marionette.ItemView.extend({
 	},
 	stop: function(){
 		audioStopReset(MIDI);
+	},
+	chantChanged: function(){
+		if (MIDI.getContext().state === "running"){
+			audioStopReset(MIDI);
+		}
 	}
 });
