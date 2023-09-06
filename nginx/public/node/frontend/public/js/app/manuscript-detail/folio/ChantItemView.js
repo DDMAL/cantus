@@ -1,7 +1,10 @@
 import Marionette from 'marionette';
+import Backbone from 'backbone';
 import ChantRecordView from './ChantRecordView';
 
 import template from './chant-item.template.html';
+
+var manuscriptChannel = Backbone.Radio.channel('manuscript');
 
 /**
  * A panel containing chant information
@@ -18,12 +21,14 @@ export default Marionette.LayoutView.extend({
     },
 
     ui: {
-        collapse: '.collapse'
+        collapse: '.collapse',
+        panelHeading: '.panel-heading'
     },
 
     events: {
         'hide.bs.collapse': '_triggerFoldChant',
-        'show.bs.collapse': '_triggerUnfoldChant'
+        'show.bs.collapse': '_triggerUnfoldChant',
+        'click @ui.panelHeading': 'onChantAccordionClick'
     },
 
     collapseContent: function ()
@@ -74,5 +79,13 @@ export default Marionette.LayoutView.extend({
     _triggerUnfoldChant: function ()
     {
         this.trigger('unfold:chant');
+    },
+
+    /**
+     * Trigger an event to stop any audio that is playing
+        */
+    onChantAccordionClick: function ()
+    {
+        manuscriptChannel.trigger('chantAccordion:click');
     }
 });
