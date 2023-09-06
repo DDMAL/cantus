@@ -245,7 +245,7 @@ export default Marionette.ItemView.extend({
 		this.model.set('volpiano', formattedVolpiano);
 		var cdb_uri = this.model.get('cdb_uri');
 		this.model.set({ 'cdb_link_url': 'https://cantus.uwaterloo.ca/node/' + cdb_uri });
-		this.listenTo(manuscriptChannel, 'change:chant', this.chantChanged);
+		manuscriptChannel.on('chantAccordion:click',this.stopChantAudio, this);
 	},
 	ui : {
 		volpianoSyllables: ".volpiano-syllable",
@@ -265,9 +265,12 @@ export default Marionette.ItemView.extend({
 	stop: function(){
 		audioStopReset(MIDI);
 	},
-	chantChanged: function(){
+	stopChantAudio: function(){
 		if (MIDI.getContext().state === "running"){
 			audioStopReset(MIDI);
 		}
+	},
+	onDestroy: function(){
+		manuscriptChannel.off('chantAccordion:click',this.stopChantAudio, this);
 	}
 });
