@@ -167,6 +167,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 SESSION_COOKIE_SECURE = is_production
 CSRF_COOKIE_SECURE = is_production
+CSRF_TRUSTED_ORIGINS = ["https://cantus.simssa.ca", "https://cantus.staging.simssa.ca"]
 
 SECURE_HSTS_SECONDS = 86400
 SECURE_HSTS_INCLUDE_SUBDOMAINS = is_production
