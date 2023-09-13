@@ -66,6 +66,12 @@ export default Marionette.ItemView.extend({
             // escaped hyphens in the query string.
             searchInput = searchInput.replaceAll("-","\\-");
         }
+        // Handle quotations in text field searches. Solr errors if quotation marks
+        // are not closed. If the search string contains an odd number of quotation
+        // marks, add a quotation mark to the end of the string.
+        if (["all","feast","genre","office"].includes(searchField)){
+            (searchInput.split('"').length - 1) % 2 === 1 ? searchInput += '"' : null;
+        }
         // FIXME(wabain): While this class needs to take a SearchInput model so it can initially
         // be rendered, we're not actually updating that model here - we're just triggering
         // an event which will cause the appropriate changes to propagate. That's kind of
