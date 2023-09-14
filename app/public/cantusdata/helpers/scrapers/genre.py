@@ -19,6 +19,7 @@ class GenreScraper(HTMLParser):
     def flush(self):
         self.is_field_name = False
         self.is_field_description = False
+        self.row_cell_count = 0
         self.key = ""
         self.value = ""
         self.dictionary = {}
@@ -29,12 +30,12 @@ class GenreScraper(HTMLParser):
         return ret
 
     def handle_starttag(self, tag, attrs):
-        field_name = ("class", "views-field views-field-name")
-        field_description = ("class", "views-field views-field-description")
+        if tag == "tr":
+            self.row_cell_count = 0
         if tag == "td":
-            if field_name in attrs:
+            if self.row_cell_count == 0:
                 self.is_field_name = True
-            elif field_description in attrs:
+            elif self.row_cell_count == 1:
                 self.is_field_description = True
 
     def handle_endtag(self, tag):
@@ -47,6 +48,7 @@ class GenreScraper(HTMLParser):
                     self.dictionary[self.key.strip("[]")] = self.value
                     self.key = ""
                     self.value = ""
+            self.row_cell_count += 1
 
     def handle_data(self, data):
         if self.is_field_name:
@@ -54,7 +56,7 @@ class GenreScraper(HTMLParser):
                 self.key = data
         if self.is_field_description:
             if not data.isspace():
-                self.value = data
+                self.value = data.strip()
 
 
 genre_url = "https://cantusdatabase.org/genres"
