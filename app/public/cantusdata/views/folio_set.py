@@ -3,7 +3,7 @@ from django.http import Http404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
-from cantusdata.serializers.search import SearchSerializer
+from cantusdata.renderers.csv_renderer import CSVRenderer
 import solr
 
 
@@ -17,8 +17,10 @@ FOLIO_FIELDS = [
 
 
 class ManuscriptFolioSetView(APIView):
-    serializer_class = SearchSerializer
-    renderer_classes = (JSONRenderer,)
+    renderer_classes = (
+        JSONRenderer,
+        CSVRenderer,
+    )
 
     def get(self, request, *args, **kwargs):
         solrconn = solr.SolrConnection(settings.SOLR_SERVER)
@@ -65,14 +67,14 @@ class ManuscriptFolioSetView(APIView):
                 fields="number",
                 score=False,
             )
-            return Response(results)
+            return Response(results.results)
         # Otherwise, simply return the given manuscript's folios.
         composed_request = f'type:"cantusdata_folio" AND manuscript_id:{manuscript_id}'
         results = solrconn.query(
             composed_request,
             sort="number asc",
-            rows=1000,
+            rows=10000,
             fields=FOLIO_FIELDS,
             score=False,
         )
-        return Response(results)
+        return Response(results.results)
