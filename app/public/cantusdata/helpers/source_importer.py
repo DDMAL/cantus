@@ -101,7 +101,6 @@ class SourceImporter:
         simplified once that is complete.
         """
         source_pg_url = f"{self.cdb_base_url}/source/{source_id}"
-        print(source_pg_url)
         source_pg_response = request.urlopen(source_pg_url).read().decode()
         source_pg_html = ProvenanceParser()
         source_pg_html.feed(source_pg_response)
