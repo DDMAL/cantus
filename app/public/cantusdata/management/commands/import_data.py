@@ -79,7 +79,7 @@ class Command(BaseCommand):
     @transaction.atomic
     def import_manuscript_data(self, **options):
         self.stdout.write("Starting manuscript import process.")
-        cdb_base_url = "https://cantus.uwaterloo.ca/"
+        cdb_base_url = "https://cantusdatabase.org"
         source_importer = SourceImporter(cdb_base_url)
         source_ids = source_importer.request_source_ids()
         i = 0

@@ -1,6 +1,6 @@
 # [Cantus Ultimus](http://cantus.simssa.ca/)
 
-Serving images on a website using [Apache Solr](http://lucene.apache.org/solr/), [Diva.js](https://ddmal.github.io/diva.js/) and the [CANTUS](http://cantusdatabase.org/) collection.
+Serving images on a website using [Apache Solr](http://lucene.apache.org/solr/), [Diva.js](https://ddmal.github.io/diva.js/) and the [CANTUS](https://cantusdatabase.org/) collection.
 
 The status of manuscripts served by Cantus Ultimus is available [here](#manuscript-inventory). Inclusion of additional manuscripts should be recorded there.
 
@@ -106,7 +106,7 @@ Using your admin credentials, verify that you are able to log into the admin dja
 
 When navigating through any of the tables in the admin interface (e.g., Manuscripts, Concordances, and Chants), they will appear to be empty.
 
-We can pre-populate the Concordances, Manuscripts, and Chants from the information available in the [Cantus Database](http://cantus.uwaterloo.ca/).
+We can pre-populate the Concordances, Manuscripts, and Chants from the information available in the [Cantus Database](https://cantusdatabase.org/).
 
 The scripts to populate the database are included in the repository. Head back to the terminal where you created the admin user account.
 

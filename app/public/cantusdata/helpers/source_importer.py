@@ -115,27 +115,15 @@ class SourceImporter:
         :return: a dictionary of Manuscript attributes
         """
         source_dict = {}
-        source_dict["id"] = source_json["vid"]
+        source_dict["id"] = source_json["id"]
         source_dict["name"] = source_json["title"]
-        if source_json["field_siglum"]:
-            source_dict["siglum"] = source_json["field_siglum"]["und"][0]["value"]
-        else:
-            source_dict["siglum"] = ""
-        if source_json["field_date"]:
-            source_dict["date"] = source_json["field_date"]["und"][0]["value"]
-        else:
-            source_dict["date"] = ""
+        source_dict["siglum"] = source_json.get("siglum", "")
+        source_dict["date"] = source_json.get("date", "")
         ## See documentation of the download_source_provenance method for details
         ## on these commented lines.
-        # if source_json["field_provenance"]:
-        #     source_dict["provenance"] = source_json["field_provenance"]["und"][0]["value"]
-        # else:
-        #     source_dict["provenance"] = ""
+        # source_dict["provenance"] = source_json.get("provenance","")
         source_dict["provenance"] = self.download_source_provenance(source_dict["id"])
-        if source_json["field_summary"]:
-            source_dict["description"] = source_json["field_summary"]["und"][0]["value"]
-        else:
-            source_dict["description"] = ""
+        source_dict["description"] = source_json.get("summary", "")
         return source_dict
 
     def get_source_data(self, source_id):

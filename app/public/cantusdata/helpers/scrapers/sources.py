@@ -30,7 +30,7 @@ class SourcesScraper(HTMLParser):
                 self.dictionary[link] = title
 
 
-sources_url = "http://cantus.uwaterloo.ca/sources"
+sources_url = "https://cantusdatabase.org/sources"
 contents = urllib.request.urlopen(sources_url).read().decode("utf-8")
 parser = SourcesScraper()
 parser.feed(contents)
