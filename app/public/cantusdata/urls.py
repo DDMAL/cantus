@@ -47,7 +47,7 @@ urlpatterns = [
     path("browse/", browse_view, name="api-root"),
     # Main pages
     path("manuscripts/", ManuscriptList.as_view(), name="manuscript-list"),
-    path("manuscript/25/", RedirectView.as_view(url="/manuscript/123723/", permanent=True, query_string=True)),
+    path("manuscript/25/", RedirectView.as_view(url="/", permanent=True, query_string=True)),
     path(
         "manuscript/<int:pk>/",
         ManuscriptDetail.as_view(),
