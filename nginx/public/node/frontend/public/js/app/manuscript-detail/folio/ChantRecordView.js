@@ -97,7 +97,7 @@ function handleFlats (inputStr){
 
 ///////////////////////////////////////////////////////////////////////////////////
 //Plays the volpiano notes using MIDI.js
-function volpiano2midi(input_arr, note_dur) {
+function volpiano2midi(input_arr, note_dur, treble_voice = false) {
 
 	//construct dictionary with pitch values
 	var pitch_dict = {};
@@ -125,6 +125,11 @@ function volpiano2midi(input_arr, note_dur) {
 	pitch_dict['t'] = 46; // make-shift Bb3
 	pitch_dict['u'] = 58; // make-shift Bb4
 	pitch_dict['v'] = 50; // make-shift Bb5
+	if (treble_voice) {
+		for (var key in pitch_dict) {
+			pitch_dict[key] += 12;
+		}
+	}
 
 	// create array of volpiano characters representing barlines
 	// for purposes of midi playback, these are treated as rests
@@ -260,7 +265,12 @@ export default Marionette.ItemView.extend({
 		var volArr = parse_volpiano(this.ui.volpianoSyllables);
 		this.ui.btnPlay.html("Playing...");
 		this.ui.btnPlay.attr("disabled", true);
-		volpiano2midi(volArr, .6);
+		if (this.model.get('manuscript_id') === 123723){
+			volpiano2midi(volArr, .6, true);
+		} else {
+			volpiano2midi(volArr, .6);
+		}
+		
 	},
 	stop: function(){
 		audioStopReset(MIDI);
