@@ -21,6 +21,7 @@ from cantusdata.views.load_chants import LoadChantsView
 from cantusdata.views.manifest_proxy import ManifestProxyView
 from cantusdata.views import staticpages
 from django.contrib.admin.views.decorators import staff_member_required
+from django.views.generic.base import RedirectView
 
 urlpatterns = [
     # Admin pages
@@ -46,6 +47,7 @@ urlpatterns = [
     path("browse/", browse_view, name="api-root"),
     # Main pages
     path("manuscripts/", ManuscriptList.as_view(), name="manuscript-list"),
+    path("manuscript/25/", RedirectView.as_view(url="/manuscript/123723/", permanent=True, query_string=True)),
     path(
         "manuscript/<int:pk>/",
         ManuscriptDetail.as_view(),
