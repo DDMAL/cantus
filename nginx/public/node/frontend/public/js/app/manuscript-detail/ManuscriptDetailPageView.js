@@ -15,6 +15,8 @@ import DivaView from "./DivaView";
 import ManuscriptInfoView from "./ManuscriptInfoView";
 import NavFolioNumberView from './NavFolioNumberView';
 import DivaFolioAdvancerView from './DivaFolioAdvancerView';
+import {NavMenuView, testNavMenuCollection}  from './NavMenuView';
+import ModalView from 'layout/ModalView';
 
 import template from './manuscript.template.html';
 
@@ -38,7 +40,8 @@ export default Marionette.LayoutView.extend({
         folioViewRegion: "#folio",
         searchViewRegion: "#manuscript-search",
         navFolioRegion: '#manuscript-nav-folio-number',
-        folioAdvancerRegion: '#manuscript-folio-advancer-container'
+        folioAdvancerRegion: '#manuscript-folio-advancer-container',
+        salzinnesNavMenuRegion: '#salzinnes-nav-menu-modal'
     },
 
     ui: {
@@ -167,6 +170,28 @@ export default Marionette.LayoutView.extend({
         this.searchViewRegion.show(searchView);
         this.navFolioRegion.show(new NavFolioNumberView());
         this.folioAdvancerRegion.show(new DivaFolioAdvancerView());
+
+        if (this.model.get('id') === 123723)
+        {
+        // Add a link to a modal for special navigation in the center of the toolbar
+        // row
+            this.listenToOnce(divaView, 'loaded:viewer', function ()
+            {
+                let navMenu = $('<span>').attr('id', 'manuscript-special-nav-menu');
+                let navMenuButton = $('<button>').addClass('btn btn-med').text('Manuscript Highlights');
+                navMenuButton.attr('data-toggle', 'modal');
+                navMenuButton.attr('data-target', '#salzinnesNavMenuModal');
+                navMenuButton.appendTo(navMenu);
+                navMenu.appendTo(this.ui.toolbarRow.find('.diva-tools-left'));
+            });
+            this.navCollection = testNavMenuCollection;
+            this.salzinnesNavMenuView = new NavMenuView({collection: this.navCollection});
+            // this.navItemModel = testNavItemModel;
+            // this.salzinnesNavMenuView = new NavItemView({model: this.navItemModel});
+            this.salzinnesNavMenuModalView = new ModalView({title: "Salzinnes Highlights", view: this.salzinnesNavMenuView, modalId: "salzinnesNavMenuModal"});
+            this.salzinnesNavMenuRegion.show(this.salzinnesNavMenuModalView);
+        }
+
 
         // Attach the info sidenav
         this._infoSidenavParent = $('<div class="manuscript-info-sidenav-container"></div>');
