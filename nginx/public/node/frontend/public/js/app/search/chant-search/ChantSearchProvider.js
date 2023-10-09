@@ -24,7 +24,7 @@ var KNOWN_FIELDS = [
     {type: "office", "name": "Office"}
 ];
 
-var INITIAL_LOAD_CUTOFF = 100;
+var INITIAL_LOAD_CUTOFF = 20;
 var CLIENT_SIDE_SORT_LIMIT = 500;
 
 /**

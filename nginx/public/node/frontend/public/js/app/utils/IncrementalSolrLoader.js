@@ -10,7 +10,7 @@ import Marionette from 'marionette';
  * state remains correct.
  */
 export default Marionette.Object.extend({
-    rows: 20,
+    rows: 10,
     _fetchCount: 0,
     _currentParams: 0,
 
