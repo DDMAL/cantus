@@ -56,9 +56,9 @@ function audioStopReset(MIDI){
 	var audioCxt = MIDI.getContext();
 	audioCxt.close();
 	if (MIDI.sources != undefined){
-	for (var i = 0; i < MIDI.sources.length; i++){
-		MIDI.sources[i].disconnect();
-	}
+		for (var i = 0; i < MIDI.sources.length; i++){
+			MIDI.sources[i].disconnect();
+		}
 	}
 	var newAudioCxt = new (window.AudioContext || window.webkitAudioContext)();
 	MIDI.setContext(newAudioCxt);
