@@ -1,0 +1,36 @@
+name: Deploy to staging Server
+on: 
+  push:
+    branches:
+      - "main"
+
+concurrency:
+  group: staging
+  cancel-in-progress: true
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout to source code
+        uses: actions/checkout@v3
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.KEY }}
+          known_hosts: ${{ secrets.KNOWN_HOSTS }}
+      - name: Stop docker swarm and cleanup services
+        run: |
+          ssh -J ${{ secrets.PROXY_USERNAME }}@${{ secrets.PROXY_HOST1 }},${{ secrets.PROXY_USERNAME }}@${{ secrets.PROXY_HOST2 }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} "cd /cantus-ultimus && sudo docker compose stop"
+      - name: Log git branch we're on
+        run: |
+          ssh -J ${{ secrets.PROXY_USERNAME }}@${{ secrets.PROXY_HOST1 }},${{ secrets.PROXY_USERNAME }}@${{ secrets.PROXY_HOST2 }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} "cd /cantus-ultimus && sudo git branch --all -v"
+      - name: Fetch on dev branch
+        run: |
+          ssh -J ${{ secrets.PROXY_USERNAME }}@${{ secrets.PROXY_HOST1 }},${{ secrets.PROXY_USERNAME }}@${{ secrets.PROXY_HOST2 }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} "cd /cantus-ultimus && sudo git fetch origin main && sudo git merge origin/main"
+      - name: Build docker images
+        run: |
+          ssh -J ${{ secrets.PROXY_USERNAME }}@${{ secrets.PROXY_HOST1 }},${{ secrets.PROXY_USERNAME }}@${{ secrets.PROXY_HOST2 }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} "cd /cantus-ultimus && sudo docker compose build"
+      - name: Start the service
+        run: |
+          ssh -J ${{ secrets.PROXY_USERNAME }}@${{ secrets.PROXY_HOST1 }},${{ secrets.PROXY_USERNAME }}@${{ secrets.PROXY_HOST2 }} ${{ secrets.USERNAME }}@${{ secrets.HOST }} "cd /cantus-ultimus && sudo docker compose up -d"
