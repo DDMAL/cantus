@@ -28,9 +28,9 @@ class ManuscriptDetail(generics.RetrieveAPIView):
     def retrieve(self, request, *args, **kwargs):
         """
         Overrides the default retrieval method
-        to return a redirect to the manuscript list
-        page if the manuscript is not found. Implemented
-        to prevent 404 errors from links to specific manuscripts
+        to return a custom 404 page if the manuscript
+        is not found. Implemented to prevent generic 
+        404 errors from links to specific manuscripts
         made before manuscript ids were stable.
         """
 
