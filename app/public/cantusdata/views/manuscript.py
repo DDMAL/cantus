@@ -29,7 +29,7 @@ class ManuscriptDetail(generics.RetrieveAPIView):
         """
         Overrides the default retrieval method
         to return a custom 404 page if the manuscript
-        is not found. Implemented to prevent generic 
+        is not found. Implemented to prevent generic
         404 errors from links to specific manuscripts
         made before manuscript ids were stable.
         """
