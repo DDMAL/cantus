@@ -33,7 +33,7 @@ class ManuscriptViewTestCase(APITransactionTestCase):
         if not manuscript:
             self.fail("No manuscripts loading!")
         response = self.client.get("/manuscript/{0}/".format(manuscript.id))
-        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def tearDown(self):
         Chant.objects.all().delete()

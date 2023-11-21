@@ -5,9 +5,9 @@ from cantusdata.serializers.manuscript import (
     ManuscriptListSerializer,
 )
 from cantusdata.renderers import templated_view_renderers
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseNotFound
+from django.shortcuts import render
 from rest_framework.response import Response
-from django.urls import reverse
 
 
 class ManuscriptList(generics.ListAPIView):
@@ -39,4 +39,6 @@ class ManuscriptDetail(generics.RetrieveAPIView):
             serializer = self.get_serializer(instance)
             return Response(serializer.data)
         except Http404:
-            return HttpResponseRedirect(reverse("manuscript-list"))
+            return HttpResponseNotFound(
+                render(request, "missing_manuscript_redirect.html")
+            )
