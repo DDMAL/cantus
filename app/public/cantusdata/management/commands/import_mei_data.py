@@ -8,6 +8,11 @@ import progressbar
 from django.core.management.base import BaseCommand
 from django.conf import settings
 
+from cantusdata.helpers.mei_indexing import (
+        MEIConverter,
+        StGallenMEIConverter,
+    )
+
 
 UPLOAD_POLL_WAIT_SECS = 0.25
 UPLOAD_PROGRESS_STEP = 5
@@ -16,15 +21,23 @@ UPLOAD_PROGRESS_STEP = 5
 class Command(BaseCommand):
     args = "mode manuscript"
 
-    def handle(self, *args, **kwargs):
-        if args and args[0] and args[1]:
-            mode = args[0]
-            manuscript = args[1]
-        else:
-            raise Exception(
-                "Please provide arguments for processing" " mode and manuscript name."
-            )
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "mode",
+            nargs="?",
+            type=str,
+            help="The mode to run in. Options are: mei_to_csv, mei_to_solr, csv_to_solr",
+        )
+        parser.add_argument(
+            "manuscript",
+            nargs="?",
+            type=str,
+            help="The manuscript to process. Options are: salzinnes, st_gallen_390, st_gallen_391",
+        )
 
+    def handle(self, *args, **kwargs):
+        mode = kwargs["mode"]
+        manuscript = kwargs["manuscript"]
         # Make sure we're working with the right manuscript
         if manuscript == "salzinnes":
             self.stdout.write("Salzinnes manuscript selected.")
@@ -142,10 +155,6 @@ def convert_mei(mei_location, siglum, id):
 
 
 def get_converter(siglum):
-    from cantusdata.helpers.mei_conversion import (
-        MEIConverter,
-        StGallenMEIConverter,
-    )
 
     if siglum == "ch-sgs-390" or siglum == "ch-sgs-391":
         return StGallenMEIConverter
