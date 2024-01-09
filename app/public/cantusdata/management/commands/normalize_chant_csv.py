@@ -25,7 +25,6 @@ class Command(BaseCommand):
         # Rename fields
         rename_field(fields, rows, "", "Incipit")
         rename_field(fields, rows, "Full text (MS spelling)", "Fulltext")
-        rename_field(fields, rows, "CAO Concordances", "Concordances")
 
         # Strip trailing underscore from the Cantus ID
         for row in rows:

@@ -3,7 +3,6 @@ from django.conf import settings
 from django.db import transaction
 from cantusdata.models.chant import Chant
 from cantusdata.models.folio import Folio
-from cantusdata.models.concordance import Concordance
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.helpers import expandr
 from cantusdata.signals.solr_sync import solr_synchronizer
@@ -92,15 +91,7 @@ class ChantImporter:
             folio = None
         if folio:
             chant.folio = folio
-        # Concordances
-        concordances = []
-        for c in list(row["cao_concordances"]):
-            matching_concordance = Concordance.objects.filter(letter_code=c)
-            if matching_concordance:
-                concordances.append(matching_concordance[0])
-        # Along with the unsaved chant, store the concordances to add to it, and the
-        # folio to add if it still needs to be created
-        self.new_chant_info.append((chant, concordances, None if folio else folio_code))
+        self.new_chant_info.append((chant, None if folio else folio_code))
 
     def add_folio(self, folio_code, manuscript, image_link):
         folio = Folio()
@@ -133,16 +124,11 @@ class ChantImporter:
                 # Keep track of the new folios so that we can add them to the chant field
                 new_folio_map[folio.number] = folio
             total_chants = len(self.new_chant_info)
-            for index, (chant, concordances, folio_code) in enumerate(
-                self.new_chant_info
-            ):
+            for index, (chant, folio_code) in enumerate(self.new_chant_info):
                 # We can now safely reference newly created folios
                 if folio_code is not None:
                     chant.folio = new_folio_map[folio_code]
                 chant.save()
-                # Now that the chant is saved, add the concordances
-                if concordances:
-                    chant.concordances.add(*concordances)
                 # Tracking
                 if task:
                     task.update_state(

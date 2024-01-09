@@ -15,7 +15,7 @@ class IsMapped(models.TextChoices):
 class Manuscript(models.Model):
     """The top-level model, representing a particular manuscript
 
-    Folios, chants, feasts, concordances and plugins all belong to a manuscript
+    Folios, chants, feasts and plugins all belong to a manuscript
     (with some shared among different manuscripts).
     """
 

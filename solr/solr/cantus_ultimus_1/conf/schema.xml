@@ -59,7 +59,6 @@
     <field name="full_text_ms" type="text_general" indexed="true" stored="true" multiValued="false" />
     <field name="volpiano" type="volpiano_general" indexed="true" stored="true" multiValued="false" />
     <field name="volpiano_literal" type="volpiano_literal" indexed="true" stored="false" multiValued="false" />
-    <field name="concordances" type="string" indexed="true" stored="true" multiValued="true" />
     <!-- Fields related to OMR Data -->
     <field name="pagen" type="int" indexed="true" stored="true" required="false" />
     <field name="pnames" type="string" indexed="true" stored="true" required="false" />

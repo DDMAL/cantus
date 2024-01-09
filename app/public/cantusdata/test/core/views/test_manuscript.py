@@ -1,7 +1,7 @@
 from rest_framework.test import APITransactionTestCase
 from rest_framework import status
 
-from cantusdata.models import Manuscript, Folio, Chant, Concordance
+from cantusdata.models import Manuscript, Folio, Chant
 
 # Refer to http://www.django-rest-framework.org/api-guide/testing
 
@@ -38,5 +38,4 @@ class ManuscriptViewTestCase(APITransactionTestCase):
     def tearDown(self):
         Chant.objects.all().delete()
         Folio.objects.all().delete()
-        Concordance.objects.all().delete()
         Manuscript.objects.all().delete()
