@@ -89,8 +89,8 @@ class Command(BaseCommand):
                 # Getting the fields from the scraper
                 id = source.get("id")
                 name = source.get("name")
-                cantus_url = f"{cdb_base_url}source/{id}"
-                csv_export_url = f"{cdb_base_url}sites/default/files/csv/{id}.csv"
+                cantus_url = f"{cdb_base_url}/source/{id}"
+                csv_export_url = f"{cdb_base_url}/sites/default/files/csv/{id}.csv"
                 siglum = source.get("siglum")
                 date = source.get("date")
                 provenance = source.get("provenance")
