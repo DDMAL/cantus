@@ -104,22 +104,15 @@ Using your admin credentials, verify that you are able to log into the admin dja
 
 ![image](https://user-images.githubusercontent.com/7258463/101060564-8be1e500-355d-11eb-887f-5af65b50ba13.png)
 
-When navigating through any of the tables in the admin interface (e.g., Manuscripts, Concordances, and Chants), they will appear to be empty.
+When navigating through any of the tables in the admin interface (e.g., Manuscripts,  and Chants), they will appear to be empty.
 
-We can pre-populate the Concordances, Manuscripts, and Chants from the information available in the [Cantus Database](https://cantusdatabase.org/).
+We can pre-populate the Manuscripts and Chants from the information available in the [Cantus Database](https://cantusdatabase.org/).
 
 The scripts to populate the database are included in the repository. Head back to the terminal where you created the admin user account.
 
-Import the concordances, manuscripts, and chants
+Import the manuscripts and chants
 
 ```sh
-# Import the concordances
-$ docker-compose exec app python manage.py import_data concordances
-Deleting old concordances data...
-Successfully imported 12 concordances into database.
-Waiting for Solr to finish...
-Done.
-
 # Import the manuscripts
 $ docker-compose exec app python manage.py import_data manuscripts
 Deleting old manuscripts data...

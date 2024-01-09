@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from cantusdata.models.chant import Chant
 from cantusdata.models.folio import Folio
-from cantusdata.models.concordance import Concordance
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.signals.solr_sync import solr_synchronizer
 from cantusdata.helpers.chant_importer import ChantImporter
@@ -16,14 +15,12 @@ import csv
 
 
 class Command(BaseCommand):
-    """Imports Manuscripts, Concordances, and Chants from Cantus Database."""
+    """Imports Manuscripts and Chants from Cantus Database."""
 
-    help = "Populates Manuscript, Concordance, and Chant django models"
+    help = "Populates Manuscript and Chant django models"
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            "type", choices=["chants", "concordances", "manuscripts", "iiif"]
-        )
+        parser.add_argument("type", choices=["chants", "manuscripts", "iiif"])
         parser.add_argument(
             "--manuscript-id",
             type=int,
@@ -59,9 +56,6 @@ class Command(BaseCommand):
                         manuscript__id=options["manuscript_id"]
                     ).delete()
                     self.import_chant_data(**options)
-            elif options["type"] == "concordances":
-                Concordance.objects.all().delete()
-                self.import_concordance_data(**options)
             elif options["type"] == "manuscripts":
                 Manuscript.objects.all().delete()
                 self.import_manuscript_data(**options)
@@ -115,33 +109,6 @@ class Command(BaseCommand):
                 else:
                     self.stdout.write(f"FAILED: {source_id}")
         self.stdout.write(f"Successfully imported {i} manuscripts into database.")
-
-    @transaction.atomic
-    def import_concordance_data(self, **options):
-        """
-        Reads concordances from data_dumps/concordances.csv and
-        creates a Concordance object in the database for each
-        concordance.
-        """
-        with open(
-            f"{BASE_DIR}/data_dumps/concordances.csv", "r", encoding="utf-8"
-        ) as file:
-            concord_reader = csv.DictReader(file)
-            concord_count = 0
-            for c in concord_reader:
-                concordance = Concordance()
-                concordance.letter_code = c["letter_code"]
-                concordance.institution_city = c["institution_city"]
-                concordance.institution_name = c["institution_name"]
-                concordance.library_manuscript_name = c["library_manuscript_name"]
-                concordance.date = c["date"]
-                concordance.location = c["location"]
-                concordance.rism_code = c["rism_code"]
-                concordance.save()
-                concord_count += 1
-        self.stdout.write(
-            f"Successfully imported {concord_count} concordances into database."
-        )
 
     def import_chant_data(self, **options):
         mobj = Manuscript.objects.get(id=options["manuscript_id"])

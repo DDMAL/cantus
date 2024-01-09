@@ -10,6 +10,5 @@ def browse_view(request, format=None):
             "manuscripts": reverse("manuscript-list", request=request, format=format),
             "chants": reverse("chant-list", request=request, format=format),
             "folios": reverse("folio-list", request=request, format=format),
-            "concordances": reverse("concordance-list", request=request, format=format),
         }
     )

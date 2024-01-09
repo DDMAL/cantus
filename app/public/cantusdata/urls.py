@@ -6,7 +6,6 @@ from cantusdata.views.browse import browse_view
 from cantusdata.views.manuscript import ManuscriptList, ManuscriptDetail
 from cantusdata.views.chant import ChantList, ChantDetail
 from cantusdata.views.folio import FolioList, FolioDetail
-from cantusdata.views.concordance import ConcordanceList, ConcordanceDetail
 from cantusdata.views.search import SearchView
 from cantusdata.views.suggestion import SuggestionView
 from cantusdata.views.search_notation import SearchNotationView
@@ -55,12 +54,6 @@ urlpatterns = [
     path("folio/<int:pk>/", FolioDetail.as_view(), name="folio-detail"),
     path("chants/", ChantList.as_view(), name="chant-list"),
     path("chant/<int:pk>/", ChantDetail.as_view(), name="chant-detail"),
-    path("concordances/", ConcordanceList.as_view(), name="concordance-list"),
-    path(
-        "concordance/<int:pk>/",
-        ConcordanceDetail.as_view(),
-        name="concordance-detail",
-    ),
     #######################
     # Direct Solr queries #
     #######################

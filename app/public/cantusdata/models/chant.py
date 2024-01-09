@@ -5,9 +5,8 @@ class Chant(models.Model):
     """
     A Chant belongs to a image page (or a chant can appear
     on multiple pages?)
-    Feast and Concordances belong to a Chant
-    (assuming a chant corresponds to exactly one feast(many-to-one)
-    and many-to-many relationship between chants and concordances)
+    Feast belongs to a Chant
+    (assuming a chant corresponds to exactly one feast(many-to-one))
     """
 
     class Meta:
@@ -30,23 +29,12 @@ class Chant(models.Model):
     incipit = models.TextField(blank=True, null=True)
     full_text = models.TextField(blank=True, null=True)
     full_text_ms = models.TextField(blank=True, null=True)
-    concordances = models.ManyToManyField(
-        "cantusdata.Concordance", related_name="concordances", blank=True
-    )
     volpiano = models.TextField(blank=True, null=True)
     manuscript = models.ForeignKey("Manuscript", on_delete=models.CASCADE)
     cdb_uri = models.PositiveIntegerField("Cantus DB URI", null=True)
 
     def __str__(self):
         return "{0} - {1}".format(self.cantus_id, self.incipit)
-
-    @property
-    def concordance_citation_list(self):
-        output = []
-        for concordance in self.concordances.all():
-            output.append(concordance.unicode_citation)
-        output.sort()
-        return output
 
     def create_solr_record(self):
         """Return a dict representing a new Solr record for this object"""
@@ -77,7 +65,6 @@ class Chant(models.Model):
             "full_text": self.full_text,
             "full_text_ms": self.full_text_ms,
             "volpiano": self.volpiano,
-            "concordances": self.concordance_citation_list,
             "cdb_uri": self.cdb_uri,
         }
 

@@ -74,12 +74,6 @@ export default Backbone.Model.extend({
                     "&chant=" + result.sequence;
                 break;
 
-            case "concordance":
-                newElement.name = result.name;
-                // Build the url
-                newElement.url = "/" + newElement.model + "/" + result.item_id + "/";
-                break;
-
             case "folio":
                 newElement.name = result.name;
                 // Build the url

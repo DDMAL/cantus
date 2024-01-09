@@ -1,13 +1,10 @@
 from django.contrib import admin
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.chant import Chant
-from cantusdata.models.concordance import Concordance
 from cantusdata.models.folio import Folio
 from cantusdata.models.plugin import Plugin
 from cantusdata.models.neume_exemplar import NeumeExemplar
 from cantusdata.tasks import chant_import_task
-from django.core.management import call_command
-from django.http import HttpResponseRedirect
 from django_celery_results.models import TaskResult
 from django_celery_results.admin import TaskResultAdmin
 
@@ -81,11 +78,6 @@ class FolioAdmin(admin.ModelAdmin):
     readonly_fields = ("chant_count",)
 
 
-class ConcordanceAdmin(admin.ModelAdmin):
-    actions = [reindex_in_solr]
-    readonly_fields = ("citation",)
-
-
 class PluginAdmin(admin.ModelAdmin):
     readonly_fields = ("slug",)
 
@@ -115,7 +107,6 @@ class NewTaskResultAdmin(TaskResultAdmin):
 
 admin.site.register(Manuscript, ManuscriptAdmin)
 admin.site.register(Chant, ChantAdmin)
-admin.site.register(Concordance, ConcordanceAdmin)
 admin.site.register(Folio, FolioAdmin)
 admin.site.register(Plugin, PluginAdmin)
 admin.site.register(NeumeExemplar, NeumeExemplarAdmin)
