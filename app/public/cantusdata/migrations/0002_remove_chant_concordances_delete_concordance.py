@@ -4,17 +4,16 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('cantusdata', '0001_initial'),
+        ("cantusdata", "0001_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='chant',
-            name='concordances',
+            model_name="chant",
+            name="concordances",
         ),
         migrations.DeleteModel(
-            name='Concordance',
+            name="Concordance",
         ),
     ]
