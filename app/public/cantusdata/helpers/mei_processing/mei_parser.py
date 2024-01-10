@@ -141,7 +141,6 @@ class MEIParser:
         (-1,-1,-1,-1) if none are found.
 
         :param element: An ElementTree element
-        :param zones: Dictionary of zones from the MEI file
         :return: Tuple of coordinates of the element
         """
         facs = element.get("facs")
@@ -157,7 +156,6 @@ class MEIParser:
         Parse a syllable element from an MEI file into a dictionary.
 
         :param syllable: An ElementTree element of a syllable
-        :param zones: Dictionary of zones from the MEI file
         :return: Dictionary of syllable data
         """
         # <syl> elements contain the text of the syllable.
@@ -220,7 +218,7 @@ def get_interval_between_neume_components(
     neume_component_2: NeumeComponent,
 ) -> int:
     """
-    Computes the interval (in semitones) between two
+    Compute the interval (in semitones) between two
     pitches. Does this by converting the pitches to MIDI note
     numbers and then subtracting to get difference in semitones.
     Note: All B's, whether they would be performed as Bb or B,
@@ -240,7 +238,7 @@ def get_interval_between_neume_components(
 
 def get_contour_from_interval(interval: int) -> Literal["u", "d", "s"]:
     """
-    Computes the contour of an interval.
+    Compute the contour of an interval.
 
     :param interval: The size of the interval in semitones
     :return: The contour of the interval ("u"[p], "d"[own], or "s"[tay])

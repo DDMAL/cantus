@@ -56,30 +56,34 @@ class MEIParserTestCase(TestCase):
         self.assertEqual(get_contour_from_interval(-3), "d")
 
     def test_get_interval_between_neume_components(self):
-        self.assertEqual(
-            get_interval_between_neume_components(
-                self.neume_component_g3, self.neume_component_d4
-            ),
-            7,
-        )
-        self.assertEqual(
-            get_interval_between_neume_components(
-                self.neume_component_d4, self.neume_component_g3
-            ),
-            -7,
-        )
-        self.assertEqual(
-            get_interval_between_neume_components(
-                self.neume_component_g3, self.neume_component_d3
-            ),
-            -5,
-        )
-        self.assertEqual(
-            get_interval_between_neume_components(
-                self.neume_component_g3, self.neume_component_b2
-            ),
-            -8,
-        )
+        with self.subTest("Interval test 1"):
+            self.assertEqual(
+                get_interval_between_neume_components(
+                    self.neume_component_g3, self.neume_component_d4
+                ),
+                7,
+            )
+        with self.subTest("Interval test 2"):
+            self.assertEqual(
+                get_interval_between_neume_components(
+                    self.neume_component_d4, self.neume_component_g3
+                ),
+                -7,
+            )
+        with self.subTest("Interval test 3"):
+            self.assertEqual(
+                get_interval_between_neume_components(
+                    self.neume_component_g3, self.neume_component_d3
+                ),
+                -5,
+            )
+        with self.subTest("Interval test 4"):
+            self.assertEqual(
+                get_interval_between_neume_components(
+                    self.neume_component_g3, self.neume_component_b2
+                ),
+                -8,
+            )
 
     def test_analyze_neume(self):
         neume_components_1 = [self.neume_component_d3, self.neume_component_g3]
@@ -95,12 +99,17 @@ class MEIParserTestCase(TestCase):
             self.neume_component_b2,
         ]
         neume_components_5 = [self.neume_component_d4]
-        self.assertEqual(analyze_neume(neume_components_1), ("Pes", [5], ["u"]))
-        self.assertEqual(
-            analyze_neume(neume_components_2), ("Torculus", [5, -5], ["u", "d"])
-        )
-        self.assertEqual(analyze_neume(neume_components_3), ("Clivis", [-7], ["d"]))
-        self.assertEqual(
-            analyze_neume(neume_components_4), ("Tristopha", [0, 0], ["s", "s"])
-        )
-        self.assertEqual(analyze_neume(neume_components_5), ("Punctum", [], []))
+        with self.subTest("Analyze neume test 1"):
+            self.assertEqual(analyze_neume(neume_components_1), ("Pes", [5], ["u"]))
+        with self.subTest("Analyze neume test 2"):
+            self.assertEqual(
+                analyze_neume(neume_components_2), ("Torculus", [5, -5], ["u", "d"])
+            )
+        with self.subTest("Analyze neume test 3"):
+            self.assertEqual(analyze_neume(neume_components_3), ("Clivis", [-7], ["d"]))
+        with self.subTest("Analyze neume test 4"):
+            self.assertEqual(
+                analyze_neume(neume_components_4), ("Tristopha", [0, 0], ["s", "s"])
+            )
+        with self.subTest("Analyze neume test 5"):
+            self.assertEqual(analyze_neume(neume_components_5), ("Punctum", [], []))
