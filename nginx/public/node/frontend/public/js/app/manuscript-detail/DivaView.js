@@ -27,7 +27,8 @@ export default Marionette.ItemView.extend({
     {
         _.bindAll(this, 'propagateFolioChange', 'onViewerLoad', 'setImageURI',
             'paintBoxes', 'updatePageAlias', 'gotoInputPage',
-            'getPageWhichMatchesAlias', 'onDocLoad', 'showPageSuggestions');
+            'getPageWhichMatchesAlias', 'onDocLoad', 'showPageSuggestions', 
+            'onManifestLoad');
 
         this.divaEventHandles = [];
 
@@ -108,6 +109,7 @@ export default Marionette.ItemView.extend({
         this.onDivaEvent("ViewerDidLoad", this.propagateFolioChange);
         this.onDivaEvent("VisiblePageDidChange", this.propagateFolioChange);
         this.onDivaEvent("DocumentDidLoad", this.onDocLoad);
+        this.onDivaEvent("ManifestDidLoad", this.onManifestLoad);
     },
 
     /**
@@ -309,6 +311,32 @@ export default Marionette.ItemView.extend({
 
         // Change initial view to document view
         this.divaInstance.changeView('document');
+    },
+
+    /**
+     * Once the manifest is loaded, grab any attribution and rights information
+     * contained in the manifest and update the DOM to display it.
+     * NOTE: Diva contains a plug-in ("IIIFMetadata") that could theoretically
+     * be used to collect and show this data, but it errors if this data is
+     * improperly formatted in the IIIF, so we introduce this here to tolerate
+     * these cases.
+     * NOTE: At the moment, we only support the IIIF 2 API, since Diva only
+     * supports that version.
+     **/
+    onManifestLoad: function (manifest){
+        var attribution = manifest.attribution;
+        var logo = manifest.logo;
+        if (typeof logo === "object") {
+            var logo_url = logo['@id'];
+        } else {
+            var logo_url = logo;
+        }
+        var licence = manifest.license;
+        this.imageAttributionMetadata = {
+            imageAttribution: attribution,
+            imageLogoUrl: logo_url,
+            imageLicence: licence
+        };
     },
 
     /** Do some awkward manual manipulation of the toolbar */
