@@ -9,8 +9,8 @@
         <dt>Provenance</dt>
         <dd><%= provenance %></dd>
         <% if (description) { %>
-        <dt>Description</dt>
-        <dd><pre class="preformatted-text"><%= description %></pre></dd>
+            <dt>Description</dt>
+            <dd><pre class="preformatted-text"><%= description %></pre></dd>
         <% } %>
     </dl>
 
@@ -18,19 +18,18 @@
         <h3 class="h4">Image Rights</h3>
         <% if (imageAttribution ) { %>
             <div>
-            <%= imageAttribution %></dd>
+                <%= imageAttribution %>
             </div>
         <% } %>
         <% if (imageLogoUrl) { %>
             <div>
-            <img src="<%= imageLogoUrl %>" alt="Logo of the image source institution" style="max-width: 300px; max-height: 100px; margin-top: 8px; margin-bottom: 8px;"/>
+                <img src="<%= imageLogoUrl %>" alt="Logo of the image source institution" style="max-width: 300px; max-height: 100px; margin-top: 8px; margin-bottom: 8px;"/>
             </div>
         <% } %>
         <% if (imageLicence) { %>
             <div>
-            <a href="<%= imageLicence %>" target="_blank">Click for licence information.</a>
-        </div>
+                <a href="<%= imageLicence %>" target="_blank">Click for licence information.</a>
+            </div>
         <% } %>
     <% } %>
-
 </div>
