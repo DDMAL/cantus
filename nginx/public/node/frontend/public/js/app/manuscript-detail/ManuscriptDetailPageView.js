@@ -133,6 +133,8 @@ export default Marionette.LayoutView.extend({
 
             $(manuscriptInfoButton).on('click', this._showInfoSidenav.bind(this));
             manuscriptInfo.appendTo(this.ui.toolbarRow.find('.diva-tools-right'));
+
+            this.model.set(divaView.imageAttributionMetadata);
         });
 
         // Initialize the search view
