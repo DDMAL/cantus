@@ -83,7 +83,7 @@ class Command(BaseCommand):
                 # Getting the fields from the scraper
                 id = source.get("id")
                 name = source.get("name")
-                cantus_url = f"{cdb_base_url}/source/{id}"
+                cantusdb_url = f"{cdb_base_url}/source/{id}"
                 csv_export_url = f"{cdb_base_url}/sites/default/files/csv/{id}.csv"
                 siglum = source.get("siglum")
                 date = source.get("date")
@@ -93,7 +93,7 @@ class Command(BaseCommand):
                 manuscript = Manuscript()
                 manuscript.id = int(id)
                 manuscript.name = name
-                manuscript.cantus_url = cantus_url
+                manuscript.cantus_url = cantusdb_url
                 manuscript.csv_export_url = csv_export_url
                 manuscript.siglum = siglum
                 manuscript.date = date
