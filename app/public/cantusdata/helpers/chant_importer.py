@@ -65,6 +65,7 @@ class ChantImporter:
         chant.genre = expandr.expand_genre(row["genre"].strip())
         chant.mode = expandr.expand_mode(row["mode"].strip())
         chant.differentia = expandr.expand_differentia(row["differentia"].strip())
+        chant.differentiae_database = row["differentiae_database"].strip()
         chant.finalis = row["finalis"].strip()
         chant.incipit = row["incipit"].strip()
         chant.full_text = row["fulltext_standardized"].strip()
