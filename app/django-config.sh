@@ -1,7 +1,5 @@
 #!/bin/bash
 
-python manage.py makemigrations
-python manage.py migrate &
 python manage.py clear_session_data
 
 if [[ $APP_PORT = 80 ]]; then
