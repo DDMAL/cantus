@@ -25,6 +25,7 @@ class Chant(models.Model):
     lit_position = models.CharField(max_length=255, blank=True, null=True)
     mode = models.CharField(max_length=255, blank=True, null=True)
     differentia = models.CharField(max_length=255, blank=True, null=True)
+    differentiae_database = models.CharField(max_length=255, blank=True)
     finalis = models.CharField(max_length=255, blank=True, null=True)
     incipit = models.TextField(blank=True, null=True)
     full_text = models.TextField(blank=True, null=True)
