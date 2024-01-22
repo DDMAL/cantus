@@ -94,3 +94,19 @@ services:
       - RABBIT_PASSWORD=${RABBIT_PASSWORD}
       - RABBIT_VHOST=${RABBIT_VHOST}
     restart: always
+
+  cantaloupe:
+    build: ./cantaloupe
+    container_name: cantus-cantaloupe-1
+    ports:
+      - "8182:8182"
+    volumes:
+      - ./cantaloupe/interim_files/images:/srv/images
+    command:
+      [
+        "java",
+        "-Dcantaloupe.config=/etc/cantaloupe/cantaloupe.properties",
+        "-Xmx2g",
+        "-jar",
+        "/opt/cantaloupe/cantaloupe-5.0.5/cantaloupe-5.0.5.jar"
+      ]
