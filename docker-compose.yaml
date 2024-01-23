@@ -44,6 +44,8 @@ services:
       - "${PORT}:80"
     depends_on:
       - app
+    volumes:
+      - ./cantaloupe/interim_files/manifests:/code/manifests
 
   solr:
     build: ./solr
@@ -98,8 +100,6 @@ services:
   cantaloupe:
     build: ./cantaloupe
     container_name: cantus-cantaloupe-1
-    ports:
-      - "8182:8182"
     volumes:
       - ./cantaloupe/interim_files/images:/srv/images
     command:
