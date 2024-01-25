@@ -28,7 +28,7 @@ The build process relies on environment variables specified in an `.env` file lo
 
 Make a copy of `.env.sample` and name it `.env`. You must make two modifications to this file before the docker containers will build.  Both `POSTGRES_PASSWORD` and `RABBIT_PASSWORD` should be uncommented and set with secure passwords.
 
-Before launching the site, ensure that the `PORT` variable is set correctly. For development, it should be set to `8000`; for deployment, it should be `80`. This variable not only sets the port the server listens on, it also configures the application's debug settings. Deploying the website with `PORT=8000` would leak debugging information on a live server and must be avoided.
+Before launching the site, ensure that the `DEVELOPMENT` variable is set correctly. For development, it should be set to `True`; for deployment, it should be `False`. This variable configures the application's debug settings. Deploying the website with `DEVELOPMENT=True` would leak debugging information on a live server and use Django's development server rather than gunicorn and must be avoided.
 
 #### Handling `postgres` authentication issues
 
@@ -41,7 +41,7 @@ rm -r data
 
 ### Launch in development
 
-In the `.env` file, the `PORT` variable is set to `8000` (development) by default. This will turn on Django's debug mode, showing detailed traces when Django encounters errors, as well as turn off security settings that might stop you from accessing the site locally. For deployment on a server, this should be set to `80`.
+In the `.env.sample` file, the `DEVELOPMENT` variable is set to `False` by default. For local development, set this to `True` to turn on Django's debug mode, which allows you to access detailed traces when Django encounters errors. For deployment on a server, this should remain set to `False`.
 
 > **Windows Users:** Make sure `/app/django-config.sh` has `LF` line endings before launching. This file gets copied over into an Ubuntu container and will break the process if git automatically checked out the file using Windows (`CRLF`) line endings.
 
@@ -65,7 +65,7 @@ By default, Cantus Ultimus works in the following way:
 
 ```mermaid
 stateDiagram-v2
-[*] --> nginx: Any HTTP request
+[*] --> nginx: Any request to port 8000
 nginx --> StaticFile: Serve static files directly
 nginx --> gunicorn: Forward webapp requests to port 8001
 gunicorn --> django: Serve content from webapp
@@ -102,7 +102,7 @@ Note that migrations will also need to be applied to a newly instantiated databa
 
 ### Launch in production
 
-From the Compute Canada VM, follow the same instructions as above, making sure `PORT=80` is in the `.env` file.
+From the Compute Canada VM, follow the same instructions as above, making sure `DEVELOPMENT=False` is in the `.env` file.
 
 ## Initialize a newly launched website (for development or deployment)
 
