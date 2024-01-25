@@ -61,6 +61,7 @@ class Chant(models.Model):
             "position": self.lit_position,
             "mode": self.mode,
             "differentia": self.differentia,
+            "differentiae_database": self.differentiae_database,
             "finalis": self.finalis,
             "incipit": self.incipit,
             "full_text": self.full_text,

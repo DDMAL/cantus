@@ -53,6 +53,7 @@
     <field name="position" type="string" indexed="true" stored="true" multiValued="false" />
     <field name="mode" type="string" indexed="true" stored="true" multiValued="false" />
     <field name="differentia" type="string" indexed="true" stored="true" multiValued="false" />
+    <field name="differentiae_database" type="string" indexed="true" stored="true" multiValued="false" />
     <field name="finalis" type="string" indexed="true" stored="true" multiValued="false" />
     <field name="incipit" type="string" indexed="true" stored="true" multiValued="false" />
     <field name="full_text" type="text_general" indexed="true" stored="true" multiValued="false" />
@@ -114,6 +115,8 @@
     <copyField source="full_text_ms" dest="text" />
     <copyField source="folio" dest="text" />
     <copyField source="genre" dest="text" />
+    <copyField source="differentia" dest="text" />
+    <copyField source="differentiae_database" dest="text" />
 
     <!-- Copy string fields we want to search by into dynamic text fields -->
     <copyField source="feast" dest="feast_t_hidden" />
@@ -122,6 +125,7 @@
     <copyField source="position" dest="position_t_hidden" />
     <copyField source="mode" dest="mode_t_hidden" />
     <copyField source="differentia" dest="differentia_t_hidden" />
+    <copyField source="differentiae_database" dest="differentiae_database_t_hidden" />
     <copyField source="finalis" dest="finalis_t_hidden" />
     <copyField source="folio" dest="folio_t_hidden" />
     <copyField source="incipit" dest="incipit_t_hidden" />
