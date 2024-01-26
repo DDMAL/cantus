@@ -1,4 +1,5 @@
 """Customizations for certain IIIF manifests that will not work as provided"""
+
 import urllib
 
 
