@@ -129,7 +129,7 @@ Using your admin credentials, verify that you are able to log into the admin dja
 
 ![image](https://user-images.githubusercontent.com/7258463/101060564-8be1e500-355d-11eb-887f-5af65b50ba13.png)
 
-When initializing the site, remember to apply migrations to the database (see )
+When initializing the site, remember to apply migrations to the database (see the "Database Migrations" section above).
 
 When navigating through any of the tables in the admin interface (e.g., Manuscripts,  and Chants), they will appear to be empty.
 
