@@ -4,11 +4,15 @@ ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # Install various dependencies:
+# - unzip for unpacking the Cantaloupe jars
+# - wget for downloading the OpenJPEG + Cantaloupe files
 RUN apt-get update && apt-get install -y \
     unzip \
     wget
 
-# Download OpenJPEG binaries and unpack them:
+# Download OpenJPEG binaries and unpack them.
+# OpenJPEG is a dependency when we want Cantaloup
+# to server jpeg and jpeg2000 images.
 RUN mkdir /opt/openjpeg && mkdir /opt/openjpeg/openjpeg-2.5.0
 WORKDIR /opt/openjpeg
 RUN wget https://github.com/uclouvain/openjpeg/releases/download/v2.5.0/openjpeg-v2.5.0-linux-x86_64.tar.gz && \
