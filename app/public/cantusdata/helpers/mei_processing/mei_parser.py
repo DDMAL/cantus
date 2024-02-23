@@ -15,6 +15,7 @@ Defines associated types for the data structures used by the parser.
 
 from xml.etree import ElementTree as ET
 from typing import Tuple, Dict, List, TypedDict, Literal, Iterator, Optional
+from typing_extensions import TypeAlias
 
 # Mapping from pitch names to integer pitch class where C = 0
 PITCH_CLASS = {"c": 0, "d": 2, "e": 4, "f": 5, "g": 7, "a": 9, "b": 11}
@@ -41,20 +42,23 @@ NEUME_GROUPS = {
 }
 
 # A type for coordinates of bounding boxes
-CoordinatesType = Tuple[int, int, int, int]
+CoordinatesType: TypeAlias = Tuple[int, int, int, int]
+"""
+A type for coordinates of bounding boxes. The coordinates
+of the box are given as four integers designating, in order:
+    - the x-coordinate of the upper-left corner of the box
+    - the y-coordinate of the upper-left corner of the box
+    - the x-coordinate of the lower-right corner of the box
+    - the y-coordinate of the lower-right corner of the box
+"""
 
 
 class Zone(TypedDict):
     """A type for zones (bounding boxes) in MEI files.
 
-    coordinates: The location of the bouding box as
-        defined in MEI 'zone' elements. The coordinates
-        of the box are given as four integers designating,
-        in order:
-            - the x-coordinate of the upper-left corner of the box
-            - the y-coordinate of the upper-left corner of the box
-            - the x-coordinate of the lower-right corner of the box
-            - the y-coordinate of the lower-right corner of the box
+    coordinates: The location of the bounding box as
+        defined in MEI 'zone' elements as a tuple of
+        type CoordinatesType.
     rotate: The rotation of the zone in degrees.
     """
 
@@ -74,6 +78,9 @@ class NeumeComponent(TypedDict):
     pname: str
     octave: int
     bounding_box: Zone
+
+
+ContourType = Literal["u", "d", "s"]
 
 
 class Neume(TypedDict):
@@ -97,7 +104,7 @@ class Neume(TypedDict):
     neume_type: str
     neume_components: List[NeumeComponent]
     intervals: List[int]
-    contours: List[str]
+    contours: List[ContourType]
 
 
 class SyllableText(TypedDict):
@@ -374,7 +381,7 @@ def get_interval_between_neume_components(
     return pitch_2 - pitch_1
 
 
-def get_contour_from_interval(interval: int) -> Literal["u", "d", "s"]:
+def get_contour_from_interval(interval: int) -> ContourType:
     """
     Compute the contour of an interval.
 
@@ -388,7 +395,9 @@ def get_contour_from_interval(interval: int) -> Literal["u", "d", "s"]:
     return "s"
 
 
-def analyze_neume(neume: List[NeumeComponent]) -> Tuple[str, List[int], List[str]]:
+def analyze_neume(
+    neume: List[NeumeComponent],
+) -> Tuple[str, List[int], List[ContourType]]:
     """
     Analyze a neume (a list of neume components) to determine:
     - Neume type
@@ -405,6 +414,6 @@ def analyze_neume(neume: List[NeumeComponent]) -> Tuple[str, List[int], List[str
         get_interval_between_neume_components(nc1, nc2)
         for nc1, nc2 in zip(neume[:-1], neume[1:])
     ]
-    contours: List[str] = [get_contour_from_interval(i) for i in intervals]
+    contours: List[ContourType] = [get_contour_from_interval(i) for i in intervals]
     neume_type: str = NEUME_GROUPS.get("".join(contours), "Compound")
     return neume_type, intervals, contours
