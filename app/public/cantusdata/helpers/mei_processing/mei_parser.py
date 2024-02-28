@@ -45,7 +45,18 @@ CoordinatesType = Tuple[int, int, int, int]
 
 
 class Zone(TypedDict):
-    """A type for zones (bounding boxes) in MEI files"""
+    """A type for zones (bounding boxes) in MEI files.
+
+    coordinates: The location of the bouding box as 
+        defined in MEI 'zone' elements. The coordinates
+        of the box are given as four integers designating,
+        in order: 
+            - the x-coordinate of the upper-left corner of the box
+            - the y-coordinate of the upper-left corner of the box
+            - the x-coordinate of the lower-right corner of the box
+            - the y-coordinate of the lower-right corner of the box
+    rotate: The rotation of the zone in degrees.
+    """
 
     coordinates: CoordinatesType
     rotate: float
@@ -55,7 +66,8 @@ class NeumeComponent(TypedDict):
     """A type for neume components
 
     pname: The pitch name of the neume component (ie. "c", "d", "e", etc.)
-    octave: The octave of the neume component (as an integer, in SPN)
+    octave: The octave of the neume component (as an integer, in scientific
+        pitch notation; e.g. middle c has octave "4")
     bounding_box: The bounding box of the neume component
     """
 
