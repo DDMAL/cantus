@@ -47,10 +47,10 @@ CoordinatesType = Tuple[int, int, int, int]
 class Zone(TypedDict):
     """A type for zones (bounding boxes) in MEI files.
 
-    coordinates: The location of the bouding box as 
+    coordinates: The location of the bouding box as
         defined in MEI 'zone' elements. The coordinates
         of the box are given as four integers designating,
-        in order: 
+        in order:
             - the x-coordinate of the upper-left corner of the box
             - the y-coordinate of the upper-left corner of the box
             - the x-coordinate of the lower-right corner of the box
@@ -231,40 +231,40 @@ class MEIParser:
         Gets a Neume dictionary from a series of 'nc' elements (including
         the first neume component of the following neume, if it exists)
 
-        :param neurme_components: A list of 'nc' elements in a given 'neume' element
+        :param neume_components: A list of 'nc' elements in a given 'neume' element
         :param next_neume_component: The first 'nc' element of the next neume
         :return: A list of neume dictionaries (see Neume for structure)
         """
-        neume_component_dicts: List[NeumeComponent] = []
+        parsed_neume_components: List[NeumeComponent] = []
         for neume_comp in neume_components:
-            neume_component_dict: Optional[NeumeComponent] = (
+            parsed_neume_component: Optional[NeumeComponent] = (
                 self._parse_neume_component(neume_comp)
             )
-            if neume_component_dict:
-                neume_component_dicts.append(neume_component_dict)
-        neume_type, intervals, contours = analyze_neume(neume_component_dicts)
+            if parsed_neume_component:
+                parsed_neume_components.append(parsed_neume_component)
+        neume_type, intervals, contours = analyze_neume(parsed_neume_components)
         # If the first neume component of the next syllable can be parsed,
         # add the interval and contour between the final neume component of
         # the current syllable and the first neume component of the next syllable.
         if next_neume_component is not None:
-            next_neume_comp_dict: Optional[NeumeComponent] = (
+            parsed_next_neume_comp: Optional[NeumeComponent] = (
                 self._parse_neume_component(next_neume_component)
             )
-            if next_neume_comp_dict:
-                last_neume_comp = neume_component_dicts[-1]
+            if parsed_next_neume_comp:
+                last_neume_comp = parsed_neume_components[-1]
                 intervals.append(
                     get_interval_between_neume_components(
-                        last_neume_comp, next_neume_comp_dict
+                        last_neume_comp, parsed_next_neume_comp
                     )
                 )
             contours.append(get_contour_from_interval(intervals[-1]))
-        neume_dict: Neume = {
+        parsed_neume: Neume = {
             "neume_type": neume_type,
-            "neume_components": neume_component_dicts,
+            "neume_components": parsed_neume_components,
             "intervals": intervals,
             "contours": contours,
         }
-        return neume_dict
+        return parsed_neume
 
     def _neume_iterator(
         self,
