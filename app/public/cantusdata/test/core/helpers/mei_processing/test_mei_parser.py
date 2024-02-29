@@ -110,6 +110,11 @@ class MEIParserTestCase(TestCase):
                         ],
                         "intervals": [0],
                         "contours": ["s"],
+                        "bounding_box": {
+                            "coordinates": (2608, 2399, 2678, 2448),
+                            "rotate": 0.0,
+                        },
+                        "system": 1,
                     }
                 ],
             }
@@ -158,6 +163,11 @@ class MEIParserTestCase(TestCase):
                         ],
                         "intervals": [-2],
                         "contours": ["d"],
+                        "bounding_box": {
+                            "coordinates": (5037, 7724, 5175, 7824),
+                            "rotate": 0.0,
+                        },
+                        "system": 10,
                     }
                 ],
             }
