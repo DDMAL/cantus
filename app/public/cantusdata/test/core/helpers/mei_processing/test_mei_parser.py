@@ -6,9 +6,8 @@ from cantusdata.helpers.mei_processing.mei_parser import (
     get_contour_from_interval,
     get_interval_between_neume_components,
     analyze_neume,
-    NeumeComponent,
-    Zone,
 )
+from cantusdata.helpers.mei_processing.mei_parsing_types import NeumeComponent, Zone
 
 
 class MEIParserTestCase(TestCase):
