@@ -13,9 +13,17 @@ file:
 Defines associated types for the data structures used by the parser.
 """
 
-from xml.etree import ElementTree as ET
-from typing import Tuple, Dict, List, TypedDict, Literal, Iterator, Optional
-from typing_extensions import TypeAlias
+from typing import Tuple, Dict, List, Iterator, Optional
+from lxml import etree
+from .mei_parsing_types import (
+    Zone,
+    SyllableText,
+    NeumeComponent,
+    ContourType,
+    Neume,
+    Syllable,
+)
+from .bounding_box_utils import combine_bounding_boxes_single_system
 
 # Mapping from pitch names to integer pitch class where C = 0
 PITCH_CLASS = {"c": 0, "d": 2, "e": 4, "f": 5, "g": 7, "a": 9, "b": 11}
@@ -41,85 +49,6 @@ NEUME_GROUPS = {
     "dudd": "Porrectus subpunctis",
 }
 
-# A type for coordinates of bounding boxes
-CoordinatesType: TypeAlias = Tuple[int, int, int, int]
-"""
-A type for coordinates of bounding boxes. The coordinates
-of the box are given as four integers designating, in order:
-    - the x-coordinate of the upper-left corner of the box
-    - the y-coordinate of the upper-left corner of the box
-    - the x-coordinate of the lower-right corner of the box
-    - the y-coordinate of the lower-right corner of the box
-"""
-
-
-class Zone(TypedDict):
-    """A type for zones (bounding boxes) in MEI files.
-
-    coordinates: The location of the bounding box as
-        defined in MEI 'zone' elements as a tuple of
-        type CoordinatesType.
-    rotate: The rotation of the zone in degrees.
-    """
-
-    coordinates: CoordinatesType
-    rotate: float
-
-
-class NeumeComponent(TypedDict):
-    """A type for neume components
-
-    pname: The pitch name of the neume component (ie. "c", "d", "e", etc.)
-    octave: The octave of the neume component (as an integer, in scientific
-        pitch notation; e.g. middle c has octave "4")
-    bounding_box: The bounding box of the neume component
-    """
-
-    pname: str
-    octave: int
-    bounding_box: Zone
-
-
-ContourType = Literal["u", "d", "s"]
-
-
-class Neume(TypedDict):
-    """A type for neumes
-
-    neume_type: The name of the neume (ie. "Punctum", "Pes", "Clivis", etc.)
-    neume_components: A list of neume components (containing pitch infomation)
-    intervals: A list of intervals (in semitones) between neume components.
-        In most cases, the length of this list is the same as the number of neume
-        components in the neume, with the final element being the interval between
-        the final component of the current neume and the first component of the
-        following neume. When there is no following neume (at the end of the mei
-        file), the list is one element shorter than the number of neume components
-        (this final element is omitted).
-    contours: A list of contours ("u"[p], "d"[own], or "s"[tay]) for each interval.
-        As with the "intervals" list, the length of this list usually includes a final
-        element that stores the contour between the final component of the current neume
-        and the first component of the following neume.
-    """
-
-    neume_type: str
-    neume_components: List[NeumeComponent]
-    intervals: List[int]
-    contours: List[ContourType]
-
-
-class SyllableText(TypedDict):
-    """A type for the text of a syllable"""
-
-    text: str
-    bounding_box: Zone
-
-
-class Syllable(TypedDict):
-    """A type for syllables"""
-
-    text: SyllableText
-    neumes: List[Neume]
-
 
 class MEIParser:
     """
@@ -143,7 +72,7 @@ class MEIParser:
 
     def __init__(self, mei_file: str):
         self.mei_file = mei_file
-        self.mei = ET.parse(self.mei_file)
+        self.mei = etree.parse(self.mei_file)
         self.zones = self.parse_zones()
         self.syllables = self.parse_mei()
 
@@ -174,7 +103,7 @@ class MEIParser:
             zones[f"#{zone_id}"] = zone_dict
         return zones
 
-    def _get_element_zone(self, element: ET.Element) -> Zone:
+    def _get_element_zone(self, element: etree._Element) -> Zone:
         """
         Get the coordinates of an element, returning
         (-1,-1,-1,-1) if none are found.
@@ -190,7 +119,7 @@ class MEIParser:
             return zone
         return {"coordinates": (-1, -1, -1, -1), "rotate": 0.0}
 
-    def _parse_syllable_text(self, syl_elem: Optional[ET.Element]) -> SyllableText:
+    def _parse_syllable_text(self, syl_elem: Optional[etree.Element]) -> SyllableText:
         """
         Get the text of a syllable and its associated bounding box from
         a 'syl' element.
@@ -211,7 +140,7 @@ class MEIParser:
         return text_dict
 
     def _parse_neume_component(
-        self, neume_comp: ET.Element
+        self, neume_comp: etree._Element
     ) -> Optional[NeumeComponent]:
         """
         Parses an 'nc' element into a NeumeComponent dictionary.
@@ -231,14 +160,16 @@ class MEIParser:
 
     def _parse_neume(
         self,
-        neume_components: List[ET.Element],
-        next_neume_component: Optional[ET.Element],
+        neume_components: List[etree._Element],
+        neume_system: int,
+        next_neume_component: Optional[etree._Element],
     ) -> Neume:
         """
         Gets a Neume dictionary from a series of 'nc' elements (including
         the first neume component of the following neume, if it exists)
 
         :param neume_components: A list of 'nc' elements in a given 'neume' element
+        :param neume_system: The system number that the neume is on
         :param next_neume_component: The first 'nc' element of the next neume
         :return: A list of neume dictionaries (see Neume for structure)
         """
@@ -265,19 +196,26 @@ class MEIParser:
                     )
                 )
             contours.append(get_contour_from_interval(intervals[-1]))
+        # Get a bounding box for the neume by combining bounding boxes of
+        # its components. Note that a single neume does not span multiple
+        # systems, so the combined bounding box will be a single zone.
+        nc_zones = [nc["bounding_box"] for nc in parsed_neume_components]
+        combined_bounding_box = combine_bounding_boxes_single_system(nc_zones)
         parsed_neume: Neume = {
             "neume_type": neume_type,
             "neume_components": parsed_neume_components,
             "intervals": intervals,
             "contours": contours,
+            "bounding_box": combined_bounding_box,
+            "system": neume_system,
         }
         return parsed_neume
 
     def _neume_iterator(
         self,
-        neumes: List[ET.Element],
-        next_syllable_1st_nc: Optional[ET.Element],
-    ) -> Iterator[Tuple[List[ET.Element], Optional[ET.Element]]]:
+        neumes: List[Tuple[etree._Element, int]],
+        next_syllable_1st_nc: Optional[etree._Element],
+    ) -> Iterator[Tuple[List[etree._Element], int, Optional[etree._Element]]]:
         """
         Convenience generator for iterating over a syllable's neumes.
         At each iteration step, the generator provides the 'nc' elements
@@ -296,18 +234,27 @@ class MEIParser:
         neume_iterator = iter(neumes)
         current_neume = next(neume_iterator, None)
         while current_neume:
-            neume_components = current_neume.findall(f"{self.MEINS}nc")
+            current_neume_elem = current_neume[0]
+            current_neume_system = current_neume[1]
+            neume_components = current_neume_elem.findall(f"{self.MEINS}nc")
             next_neume = next(neume_iterator, None)
             if next_neume:
-                next_neume_component = next_neume.find(f"{self.MEINS}nc")
+                next_neume_elem = next_neume[0]
+                next_neume_component = next_neume_elem.find(f"{self.MEINS}nc")
             else:
                 next_neume_component = next_syllable_1st_nc
-            yield neume_components, next_neume_component
+            yield neume_components, current_neume_system, next_neume_component
             current_neume = next_neume
 
     def _syllable_iterator(
         self,
-    ) -> Iterator[Tuple[Optional[ET.Element], List[ET.Element], Optional[ET.Element]]]:
+    ) -> Iterator[
+        Tuple[
+            Optional[etree._Element],
+            List[Tuple[etree._Element, int]],
+            Optional[etree._Element],
+        ]
+    ]:
         """
         Convenience generator for iterating over syllables in an MEI file. At each
         iteration step, the generator provides all data for the current syllable
@@ -318,23 +265,51 @@ class MEIParser:
         The generator yields a tuple of:
             - The 'syl' element of the current syllable (containing text information),
                 if it exists.
-            - A list of 'neume' elements for the current syllable (containing musical
-                information), if they exist.
+            - A list of 'neume' tuples, each containing:
+                - The 'neume' element of the current neume.
+                - The system number that the neume is on.
             - The first 'nc' element (neume component) of the next syllable (if it exists).
                 If there is no next syllable, this value is None.
         """
-        syllable_iterator = self.mei.iter(f"{self.MEINS}syllable")
-        current_syllable = next(syllable_iterator, None)
-        while current_syllable:
-            current_syl = current_syllable.find(f"{self.MEINS}syl")
-            current_neumes = current_syllable.findall(f"{self.MEINS}neume")
-            next_syllable = next(syllable_iterator, None)
-            next_neume = (
-                next_syllable.find(f"{self.MEINS}neume") if next_syllable else None
+        system = 1
+        # Find the first syllable in the file, and iterate through
+        # all its 'syllable' and 'sb' siblings.
+        first_syllable = self.mei.find(f".//{self.MEINS}syllable")
+        if first_syllable is not None:
+            elem_iterator = first_syllable.itersiblings(
+                tag=[f"{self.MEINS}syllable", f"{self.MEINS}sb"]
             )
-            next_nc = next_neume.find(f"{self.MEINS}nc") if next_neume else None
-            yield current_syl, current_neumes, next_nc
-            current_syllable = next_syllable
+            current_elem = first_syllable
+            while current_elem is not None:
+                if current_elem.tag == f"{self.MEINS}syllable":
+                    current_syl = current_elem.find(f"{self.MEINS}syl")
+                    syllable_neumes_list: List[Tuple[etree._Element, int]] = []
+                    # Iterate through the syllable's neumes and any
+                    # sb tags that may be contained by the syllable.
+                    # If an sb tag, increment
+                    # the system counter.
+                    # If a neume, add it to the list of syllable neumes
+                    # to pass out of the iterator.
+                    neume_sb_iterator = current_elem.iter(
+                        f"{self.MEINS}neume", f"{self.MEINS}sb"
+                    )
+                    for neume_or_sb_elem in neume_sb_iterator:
+                        if neume_or_sb_elem.tag == f"{self.MEINS}sb":
+                            system += 1
+                        else:
+                            syllable_neumes_list.append((neume_or_sb_elem, system))
+                    next_syllable = next(
+                        current_elem.itersiblings(tag=f"{self.MEINS}syllable"), None
+                    )
+                    next_nc = None
+                    if next_syllable is not None:
+                        next_neume = next_syllable.find(f"{self.MEINS}neume")
+                        if next_neume is not None:
+                            next_nc = next_neume.find(f"{self.MEINS}nc")
+                    yield current_syl, syllable_neumes_list, next_nc
+                elif current_elem.tag == f"{self.MEINS}sb":
+                    system += 1
+                current_elem = next(elem_iterator, None)
 
     def parse_mei(self) -> List[Syllable]:
         """
@@ -343,13 +318,19 @@ class MEIParser:
         :return: A list of syllables
         """
         syllables: List[Syllable] = []
-        for text_elem, syllable_neumes, next_neume_comp in self._syllable_iterator():
+        for (
+            text_elem,
+            syllable_neumes,
+            next_neume_comp,
+        ) in self._syllable_iterator():
             syllable_text: SyllableText = self._parse_syllable_text(text_elem)
             neumes_list: List[Neume] = []
-            for neume, next_neume_1st_nc in self._neume_iterator(
+            for neume, neume_system, next_neume_1st_nc in self._neume_iterator(
                 syllable_neumes, next_neume_comp
             ):
-                neumes_list.append(self._parse_neume(neume, next_neume_1st_nc))
+                neumes_list.append(
+                    self._parse_neume(neume, neume_system, next_neume_1st_nc)
+                )
             syllable_dict: Syllable = {
                 "text": syllable_text,
                 "neumes": neumes_list,
