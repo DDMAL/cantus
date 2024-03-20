@@ -14,12 +14,14 @@ markdown = "3.4.3"
 psycopg = "3.1.8"
 requests = "2.31.0"
 solrpy = "0.9.9"
+Werkzeug = "3.0.1"
 
+[tool.poetry.group.dev]
+optional = true
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.1.0"
 mypy = "^1.9.0"
-Werkzeug = "3.0.1"
 pylint = "^3.1.0"
 
 [build-system]
