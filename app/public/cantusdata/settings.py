@@ -48,7 +48,6 @@ INSTALLED_APPS = (
     "rest_framework.authtoken",
     "cantusdata.CantusdataConfig",
     "django_extensions",
-    "coverage",
 )
 
 MIDDLEWARE = (
