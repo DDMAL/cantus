@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 from pathlib import Path
 import os
 
-is_development = os.environ.get("APP_PORT") == "8000"
+is_development = os.environ.get("DEVELOPMENT")
 is_production = not is_development
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
