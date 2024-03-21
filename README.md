@@ -71,6 +71,10 @@ django --> postgres: Use as default database backend
 django --> solr: Bind django database "signals" to solr
 ```
 
+Python dependencies are managed with the `poetry` package. Although you don't necessarily need to create a local environment with these dependencies (they are installed inside the `app` container during the build process), it may nevertheless be useful (for example, for type checking). To do so, install [`poetry`](https://python-poetry.org/) on your development machine and use it to install the project's dependencies into a virtual environment.
+
+Cantus Ultimus has a few python dependencies that are for development only (for example, the code formatter `black`). These are located in the `dev` group (see the `pyproject.toml` file). To install these for local development, use command: `poetry install --with dev`.
+
 #### Enabling live changes with django's `runserver`
 
 During development, it is often useful to replace `gunicorn` with the default `django` web server, so that modifying the source code results in live changes in the website. This is done by default in `django-config.sh`. If you need to test `gunicorn` during development, edit the if statement in this file.
