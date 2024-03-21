@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: ./app/Dockerfile
     container_name: cantus-app-1
-    command: poetry run /code/django-config.sh
+    command: /code/django-config.sh
     volumes:
       - ./app/public:/code/public
     depends_on:
@@ -75,9 +75,6 @@ services:
       - ./app/public:/code/public
     command:
       [
-        "poetry",
-        "run",
-        "-n",
         "celery",
         "-A",
         "cantusdata",
