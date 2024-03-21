@@ -75,7 +75,8 @@ services:
       - ./app/public:/code/public
     command:
       [
-        "celery",
+        "/code/.venv/bin/python",
+        "/code/.venv/bin/celery",
         "-A",
         "cantusdata",
         "worker",
