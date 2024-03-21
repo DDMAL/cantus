@@ -1,17 +1,22 @@
 # syntax=docker/dockerfile:1
+# Download and install python dependencies in a container
+FROM python:3.8.17 as dependency-install-container
+COPY ./poetry.lock ./pyproject.toml ./app/install-packages.sh /code/
+WORKDIR /code
+RUN chmod u+x /code/install-packages.sh && \
+    /code/install-packages.sh
+
 FROM python:3.8.17
-RUN pip install poetry==1.8.2
 COPY app/django-config.sh /code/
-COPY poetry.lock /code/
-COPY pyproject.toml /code/
 COPY app/cantus-staticpages/ /code/cantus-staticpages/
 EXPOSE 8001
 
 RUN chmod u+x /code/django-config.sh
-
 RUN echo $(tr -dc A-Za-z0-9 </dev/urandom | head -c 64) >> /etc/key.txt
-
-WORKDIR /code
-RUN poetry install
+# Copy environment dependencies, but not poetry, to the django container
+COPY --from=dependency-install-container /code/.venv /code/.venv
+# Add our python environment binaries and package files to the path
+ENV PATH="$PATH:/code/.venv/bin/" \
+    PYTHONPATH="$PYTHONPATH:/code/.venv/lib/python3.8/site-packages/"
 
 WORKDIR /code/public
