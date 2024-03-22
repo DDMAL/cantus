@@ -137,7 +137,7 @@ MEDIA_URL = "/media/"
 MEDIA_URL_NEUMEEDITOR = "/neumeeditor/media/"
 
 # This needs to be an absolute path to the file system location
-STATIC_ROOT = BASE_DIR / "cantusdata/static"
+STATIC_ROOT = BASE_DIR / "../static"
 MEDIA_ROOT = BASE_DIR / "media/"
 
 REST_FRAMEWORK = {

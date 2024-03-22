@@ -8,6 +8,7 @@ services:
     command: /code/django-config.sh
     volumes:
       - ./app/public:/code/public
+      - static_volume:/code/static
     depends_on:
       postgres:
         condition: service_healthy
@@ -48,6 +49,7 @@ services:
       - app
     volumes:
       - ./cantaloupe/interim_files/manifests:/code/manifests
+      - static_volume:/code/static
 
   solr:
     build: ./solr
@@ -109,3 +111,6 @@ services:
         "-jar",
         "/opt/cantaloupe/cantaloupe-5.0.5/cantaloupe-5.0.5.jar"
       ]
+
+volumes:
+  static_volume:
