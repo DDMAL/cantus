@@ -3,6 +3,7 @@ from typing import List, Tuple
 from cantusdata.helpers.mei_processing.bounding_box_utils import (
     combine_bounding_boxes,
     combine_bounding_boxes_single_system,
+    stringify_bounding_boxes,
 )
 from cantusdata.helpers.mei_processing.mei_parsing_types import Zone
 
@@ -34,3 +35,15 @@ class TestBoundingBoxUtils(TestCase):
             {"coordinates": (8, 8, 9, 10), "rotate": 0.0},
         ]
         self.assertEqual(combined_boxes, expected_combined_boxes)
+
+    def test_stringify_bounding_boxes(self) -> None:
+        bounding_boxes: List[Zone] = [
+            {"coordinates": (0, 0, 1, 1), "rotate": 0},
+            {"coordinates": (2, 3, 5, 8), "rotate": 0.123},
+        ]
+        stringified_boxes = stringify_bounding_boxes(bounding_boxes)
+        expected_stringified_boxes = (
+            '[{"ulx": 0, "uly": 0, "width": 1, "height": 1}, '
+            '{"ulx": 2, "uly": 3, "width": 3, "height": 5}]'
+        )
+        self.assertEqual(stringified_boxes, expected_stringified_boxes)
