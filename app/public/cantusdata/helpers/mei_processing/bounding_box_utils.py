@@ -4,6 +4,7 @@ obtained from MEI files.
 """
 
 from typing import List, Tuple, Dict
+import json
 from .mei_parsing_types import Zone
 
 
@@ -60,3 +61,30 @@ def combine_bounding_boxes(bounding_boxes: List[Tuple[Zone, int]]) -> List[Zone]
         combined_boxes.append(combine_bounding_boxes_single_system(boxes))
 
     return combined_boxes
+
+
+def stringify_bounding_boxes(bounding_boxes: List[Zone]) -> str:
+    """
+    Convert a list of bounding box types to a string for indexing. The
+    string encodes some JSON, an array of objects, each of which
+    represents a bounding box:
+
+        [
+            {"ulx":  , # X-coordinate of upper left corner of box
+            "uly":  , # Y-coordinate of upper left corner of box
+            "width": , # Height of the box
+            "height":  }, # Width of the box
+            ...
+        ]
+
+    :param bounding_box: A list of bounding boxes (Zone type)
+    :return: A string representation of the bounding boxes
+    """
+    bbox_strings: List[Dict[str, int]] = []
+    for box in bounding_boxes:
+        ulx = box["coordinates"][0]
+        uly = box["coordinates"][1]
+        width = box["coordinates"][2] - box["coordinates"][0]  # lrx - ulx
+        height = box["coordinates"][3] - box["coordinates"][1]  # uly - lry
+        bbox_strings.append({"ulx": ulx, "uly": uly, "width": width, "height": height})
+    return json.dumps(bbox_strings)
