@@ -2,7 +2,7 @@
 Contains type definitions used in the MEI parsing process.
 """
 
-from typing import Tuple, TypedDict, Literal, List
+from typing import Tuple, TypedDict, Literal, List, Optional
 from typing_extensions import TypeAlias
 
 # A type for coordinates of bounding boxes
@@ -30,8 +30,14 @@ class Zone(TypedDict):
     rotate: float
 
 
-class NeumeComponent(TypedDict):
-    """A type for neume components
+ContourType = Literal["u", "d", "s"]
+
+
+class NeumeComponentElementData(TypedDict):
+    """
+    A type containing information extracted from
+    an MEI neume component element.
+
 
     pname: The pitch name of the neume component (ie. "c", "d", "e", etc.)
     octave: The octave of the neume component (as an integer, in scientific
@@ -44,7 +50,19 @@ class NeumeComponent(TypedDict):
     bounding_box: Zone
 
 
-ContourType = Literal["u", "d", "s"]
+class NeumeComponent(NeumeComponentElementData):
+    """A type extending NeumeComponentElementData with interval and contour information.
+
+
+    interval: The interval (in semitones) between the neume component and the
+        following neume component. If there is no following neume component,
+        this is None.
+    contour: The contour ("u"[p], "d"[own], or "s"[tay]) of 'interval'. If there is no
+        following neume component, this is None.
+    """
+
+    interval: Optional[int]
+    contour: Optional[ContourType]
 
 
 class Neume(TypedDict):
@@ -52,25 +70,12 @@ class Neume(TypedDict):
 
     neume_type: The name of the neume (ie. "Punctum", "Pes", "Clivis", etc.)
     neume_components: A list of neume components (containing pitch infomation)
-    intervals: A list of intervals (in semitones) between neume components.
-        In most cases, the length of this list is the same as the number of neume
-        components in the neume, with the final element being the interval between
-        the final component of the current neume and the first component of the
-        following neume. When there is no following neume (at the end of the mei
-        file), the list is one element shorter than the number of neume components
-        (this final element is omitted).
-    contours: A list of contours ("u"[p], "d"[own], or "s"[tay]) for each interval.
-        As with the "intervals" list, the length of this list usually includes a final
-        element that stores the contour between the final component of the current neume
-        and the first component of the following neume.
     bounding_box: The bounding box of the neume
     system: The system number that the neume is on
     """
 
     neume_type: str
     neume_components: List[NeumeComponent]
-    intervals: List[int]
-    contours: List[ContourType]
     bounding_box: Zone
     system: int
 
