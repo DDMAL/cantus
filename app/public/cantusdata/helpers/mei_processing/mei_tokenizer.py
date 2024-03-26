@@ -5,6 +5,7 @@ can then be indexed by a search engine (i.e. for this project, Solr).
 """
 
 from typing import List, Iterator, Any, TypedDict, Literal
+from typing_extensions import NotRequired
 from .mei_parser import MEIParser
 from .mei_parsing_types import Neume, NeumeComponent
 from .bounding_box_utils import combine_bounding_boxes, stringify_bounding_boxes
@@ -20,10 +21,16 @@ class NgramDocument(TypedDict):
     ngram_unit: The unit of the n-gram
     location: The location of the n-gram in the MEI file (MEI Zones
         converted to JSON strings according to bounding_box_utils.stringify_bounding_boxes)
+
+    The following may be part of an NgramDocument, but are not required:
+        manuscript_id: The ID of the manuscript the n-gram belongs to.
+        folio_number: The number of the folio on which the n-gram exists.
     """
 
     ngram_unit: NgramUnitType
     location: str
+    manuscript_id: NotRequired[str]
+    folio: NotRequired[str]
 
 
 class NeumeNgramDocument(NgramDocument):
@@ -51,7 +58,7 @@ class NeumeComponentNgramDocument(NgramDocument):
 
     pitch_names: str
     intervals: str
-    contours: str
+    contour: str
 
 
 def generate_ngrams(sequence: List[Any], min_n: int, max_n: int) -> Iterator[List[Any]]:
@@ -136,7 +143,7 @@ class MEITokenizer(MEIParser):
             # neume components, and not the interval and contour following
             # the last pitch in the ngram).
             intervals = [str(comp["interval"]) for comp in ngram[:-1]]
-            contours = [comp["contour"] for comp in ngram[:-1]]
+            contour = [comp["contour"] for comp in ngram[:-1]]
             bounding_boxes = [(comp["bounding_box"], neume["system"]) for comp in ngram]
             document_location = combine_bounding_boxes(bounding_boxes)
             neume_component_documents.append(
@@ -145,7 +152,7 @@ class MEITokenizer(MEIParser):
                     "location": stringify_bounding_boxes(document_location),
                     "pitch_names": pitch_names,
                     "intervals": "_".join(intervals),
-                    "contours": "_".join(contours),
+                    "contour": "_".join(contour),
                 }
             )
         return neume_component_documents
