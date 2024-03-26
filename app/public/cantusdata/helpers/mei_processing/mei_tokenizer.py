@@ -6,39 +6,51 @@ can then be indexed by a search engine (i.e. for this project, Solr).
 
 from typing import List, Iterator, Any, TypedDict, Literal
 from .mei_parser import MEIParser
-from .mei_parsing_types import ContourType
+from .mei_parsing_types import Neume, NeumeComponent
+from .bounding_box_utils import combine_bounding_boxes, stringify_bounding_boxes
 
-
-class MusicalSequencesDict(TypedDict):
-    """
-    Type definition for a dictionary containing a sequence of musical data.
-    """
-
-    neume_names: List[str]
-    pitch_names: List[str]
-    intervals: List[str]
-    contours: List[ContourType]
+NgramUnitType = Literal["neume", "neume_component"]
 
 
 class NgramDocument(TypedDict):
-    id: str
-    type: str
+    """
+    A generic type for documents containing n-grams
+    of information extracted from MEI files.
+
+    ngram_unit: The unit of the n-gram
+    location: The location of the n-gram in the MEI file (MEI Zones
+        converted to JSON strings according to bounding_box_utils.stringify_bounding_boxes)
+    """
+
+    ngram_unit: NgramUnitType
     location: str
 
 
-class NeumeNamesNgramDocument(NgramDocument):
+class NeumeNgramDocument(NgramDocument):
+    """
+    A type for documents containing n-grams of neume-level information.
+
+    neume_names: A string containing the names of the neumes in the n-gram,
+        separated by underscores.
+    """
+
     neume_names: str
 
 
-class PitchNamesNgramDocument(NgramDocument):
+class NeumeComponentNgramDocument(NgramDocument):
+    """
+    A type for documents containing n-grams of neume component-level information.
+
+    pitch_names: A string containing the pitch names of the neume components in the n-gram,
+        separated by underscores.
+    intervals: A string containing the intervals between the neume components in the n-gram,
+        separated by underscores.
+    contours: A string containing the contours of the neume components in the n-gram, separated
+        by underscores.
+    """
+
     pitch_names: str
-
-
-class IntervalsNgramDocument(NgramDocument):
     intervals: str
-
-
-class ContoursNgramDocument(NgramDocument):
     contours: str
 
 
@@ -61,68 +73,79 @@ def generate_ngrams(sequence: List[Any], min_n: int, max_n: int) -> Iterator[Lis
 
 class MEITokenizer(MEIParser):
     """
-
-
     An MEITokenizer object is initialized with an MEI file and a set of
     parameters that define how the MEI file should be tokenized. These
     parameters are:
-
+    - min_ngram: The minimum length of n-grams to generate.
+    - max_ngram: The maximum length of n-grams to generate.
     """
 
-    def __init__(
-        self, mei_file: str, min_neume_ngram: int, max_neume_ngram: int
-    ) -> None:
+    def __init__(self, mei_file: str, min_ngram: int, max_ngram: int) -> None:
         super().__init__(mei_file)
-        self.min_neume_ngram = min_neume_ngram
-        self.max_neume_ngram = max_neume_ngram
-        self.sequences = self._get_musical_sequences()
+        self.min_ngram = min_ngram
+        self.max_ngram = max_ngram
 
-    def _get_musical_sequences(self) -> MusicalSequencesDict:
+    def get_neume_ngram_docs(self) -> List[NeumeNgramDocument]:
         """
-        Get sequences of musical data from the entire MEI file.
+        Generate neume-level documents for search, containing
+        n-grams of neume names.
 
-        :return: A dictionary containing the following sequences of
-            musical data (all sequences in the form of lists of strings):
-            - "neume_names": A list of neume names in the file.
-            - "pitch_names": A list of pitch names in the file.
-            - "intervals": A list of intervals in the file.
-            - "contours": A list of contours in the file.
-            - "semitones": A list of semitones in the file.
+        :return: A list of dictionaries containing the n-grams
+            of neume names.
         """
-        neume_names = []
-        pitch_names = []
-        intervals = []
-        contours = []
+        neumes_sequence: List[Neume] = []
+        for syllable in self.syllables:
+            neumes_sequence.extend(syllable["neumes"])
+        neume_documents: List[NeumeNgramDocument] = []
+        for ngram in generate_ngrams(neumes_sequence, self.min_ngram, self.max_ngram):
+            bounding_boxes = [
+                (neume["bounding_box"], neume["system"]) for neume in ngram
+            ]
+            document_location = combine_bounding_boxes(bounding_boxes)
+            neume_names = "_".join([neume["neume_type"] for neume in ngram])
+            neume_documents.append(
+                {
+                    "ngram_unit": "neume",
+                    "location": stringify_bounding_boxes(document_location),
+                    "neume_names": neume_names,
+                }
+            )
+        return neume_documents
+
+    def get_neume_component_ngram_docs(self) -> List[NeumeComponentNgramDocument]:
+        """
+        Generate neume component-level documents for search, containing
+        n-grams of pitch names, intervals, and contours.
+
+        :return: A list of dictionaries containing the n-grams
+            of pitch names, intervals, and contours.
+        """
+        neume_components: List[NeumeComponent] = []
         for syllable in self.syllables:
             for neume in syllable["neumes"]:
-                neume_names.append(neume["neume_type"])
-                contours.extend(neume["contours"])
-                intervals.extend([str(interval) for interval in neume["intervals"]])
-                for component in neume["neume_components"]:
-                    pitch_names.append(component["pname"] + str(component["octave"]))
-        return {
-            "neume_names": neume_names,
-            "pitch_names": pitch_names,
-            "intervals": intervals,
-            "contours": contours,
-        }
-
-    def _get_ngrams(
-        self, ngram_type: Literal["neume_names", "pitch_names", "intervals", "contours"]
-    ) -> List[str]:
-        """
-        Get n-grams of a particular type from the MEI file.
-
-        :param ngram_type: The type of n-gram to generate. Must be one of
-            "neume_names", "pitch_names", "intervals", or "contours".
-        :return: A list of n-grams represented as strings of space-separated
-            items of the specified type.
-        """
-        return [
-            " ".join(ngram)
-            for ngram in generate_ngrams(
-                self.sequences[ngram_type],
-                self.min_neume_ngram,
-                self.max_neume_ngram,
+                neume_components.extend(neume["neume_components"])
+        neume_component_documents: List[NeumeComponentNgramDocument] = []
+        for ngram in generate_ngrams(
+            neume_components,
+            self.min_ngram,
+            self.max_ngram,
+        ):
+            pitch_names = "_".join([comp["pname"] for comp in ngram])
+            # Keep "internal" intervals and contours (in other words,
+            # the intevals and countours between the pitches in these
+            # neume components, and not the interval and contour following
+            # the last pitch in the ngram).
+            intervals = [str(comp["interval"]) for comp in ngram[:-1]]
+            contours = [comp["contour"] for comp in ngram[:-1]]
+            bounding_boxes = [(comp["bounding_box"], neume["system"]) for comp in ngram]
+            document_location = combine_bounding_boxes(bounding_boxes)
+            neume_component_documents.append(
+                {
+                    "ngram_unit": "neume_component",
+                    "location": stringify_bounding_boxes(document_location),
+                    "pitch_names": pitch_names,
+                    "intervals": "_".join(intervals),
+                    "contours": "_".join(contours),
+                }
             )
-        ]
+        return neume_component_documents
