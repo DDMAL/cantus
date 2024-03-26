@@ -18,6 +18,7 @@ from lxml import etree
 from .mei_parsing_types import (
     Zone,
     SyllableText,
+    NeumeComponentElementData,
     NeumeComponent,
     ContourType,
     Neume,
@@ -139,9 +140,9 @@ class MEIParser:
             }
         return text_dict
 
-    def _parse_neume_component(
+    def _parse_neume_component_element(
         self, neume_comp: etree._Element
-    ) -> Optional[NeumeComponent]:
+    ) -> Optional[NeumeComponentElementData]:
         """
         Parses an 'nc' element into a NeumeComponent dictionary.
 
@@ -173,23 +174,23 @@ class MEIParser:
         :param next_neume_component: The first 'nc' element of the next neume
         :return: A list of neume dictionaries (see Neume for structure)
         """
-        parsed_neume_components: List[NeumeComponent] = []
+        parsed_nc_elements: List[NeumeComponentElementData] = []
         for neume_comp in neume_components:
-            parsed_neume_component: Optional[NeumeComponent] = (
-                self._parse_neume_component(neume_comp)
+            parsed_neume_component: Optional[NeumeComponentElementData] = (
+                self._parse_neume_component_element(neume_comp)
             )
             if parsed_neume_component:
-                parsed_neume_components.append(parsed_neume_component)
-        neume_type, intervals, contours = analyze_neume(parsed_neume_components)
+                parsed_nc_elements.append(parsed_neume_component)
+        neume_type, intervals, contours = analyze_neume(parsed_nc_elements)
         # If the first neume component of the next syllable can be parsed,
         # add the interval and contour between the final neume component of
         # the current syllable and the first neume component of the next syllable.
         if next_neume_component is not None:
-            parsed_next_neume_comp: Optional[NeumeComponent] = (
-                self._parse_neume_component(next_neume_component)
+            parsed_next_neume_comp: Optional[NeumeComponentElementData] = (
+                self._parse_neume_component_element(next_neume_component)
             )
             if parsed_next_neume_comp:
-                last_neume_comp = parsed_neume_components[-1]
+                last_neume_comp = parsed_nc_elements[-1]
                 intervals.append(
                     get_interval_between_neume_components(
                         last_neume_comp, parsed_next_neume_comp
@@ -199,13 +200,23 @@ class MEIParser:
         # Get a bounding box for the neume by combining bounding boxes of
         # its components. Note that a single neume does not span multiple
         # systems, so the combined bounding box will be a single zone.
-        nc_zones = [nc["bounding_box"] for nc in parsed_neume_components]
+        nc_zones = [nc["bounding_box"] for nc in parsed_nc_elements]
         combined_bounding_box = combine_bounding_boxes_single_system(nc_zones)
+        # Add interval and countour information to neume components
+        parsed_neume_components: List[NeumeComponent] = []
+        for i, nc in enumerate(parsed_nc_elements):
+            parsed_neume_components.append(
+                {
+                    "pname": nc["pname"],
+                    "octave": nc["octave"],
+                    "bounding_box": nc["bounding_box"],
+                    "interval": intervals[i] if i < len(intervals) else None,
+                    "contour": contours[i] if i < len(contours) else None,
+                }
+            )
         parsed_neume: Neume = {
             "neume_type": neume_type,
             "neume_components": parsed_neume_components,
-            "intervals": intervals,
-            "contours": contours,
             "bounding_box": combined_bounding_box,
             "system": neume_system,
         }
@@ -340,8 +351,8 @@ class MEIParser:
 
 
 def get_interval_between_neume_components(
-    neume_component_1: NeumeComponent,
-    neume_component_2: NeumeComponent,
+    neume_component_1: NeumeComponentElementData,
+    neume_component_2: NeumeComponentElementData,
 ) -> int:
     """
     Compute the interval (in semitones) between two
@@ -377,7 +388,7 @@ def get_contour_from_interval(interval: int) -> ContourType:
 
 
 def analyze_neume(
-    neume: List[NeumeComponent],
+    neume: List[NeumeComponentElementData],
 ) -> Tuple[str, List[int], List[ContourType]]:
     """
     Analyze a neume (a list of neume components) to determine:

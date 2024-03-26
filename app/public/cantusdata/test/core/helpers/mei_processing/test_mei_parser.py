@@ -7,27 +7,30 @@ from cantusdata.helpers.mei_processing.mei_parser import (
     get_interval_between_neume_components,
     analyze_neume,
 )
-from cantusdata.helpers.mei_processing.mei_parsing_types import NeumeComponent, Zone
+from cantusdata.helpers.mei_processing.mei_parsing_types import (
+    NeumeComponentElementData,
+    Zone,
+)
 
 
 class MEIParserTestCase(TestCase):
     default_bounding_box: Zone = {"coordinates": (-1, -1, -1, -1), "rotate": 0.0}
-    neume_component_g3: NeumeComponent = {
+    nc_elem_g3: NeumeComponentElementData = {
         "pname": "g",
         "octave": 3,
         "bounding_box": default_bounding_box,
     }
-    neume_component_d4: NeumeComponent = {
+    nc_elem_d4: NeumeComponentElementData = {
         "pname": "d",
         "octave": 4,
         "bounding_box": default_bounding_box,
     }
-    neume_component_d3: NeumeComponent = {
+    nc_elem_d3: NeumeComponentElementData = {
         "pname": "d",
         "octave": 3,
         "bounding_box": default_bounding_box,
     }
-    neume_component_b2: NeumeComponent = {
+    nc_elem_b2: NeumeComponentElementData = {
         "pname": "b",
         "octave": 2,
         "bounding_box": default_bounding_box,
@@ -105,10 +108,10 @@ class MEIParserTestCase(TestCase):
                                     "coordinates": (2608, 2399, 2678, 2448),
                                     "rotate": 0.0,
                                 },
+                                "interval": 0,
+                                "contour": "s",
                             }
                         ],
-                        "intervals": [0],
-                        "contours": ["s"],
                         "bounding_box": {
                             "coordinates": (2608, 2399, 2678, 2448),
                             "rotate": 0.0,
@@ -150,6 +153,8 @@ class MEIParserTestCase(TestCase):
                                     "coordinates": (5037, 7724, 5108, 7774),
                                     "rotate": 0.0,
                                 },
+                                "interval": -2,
+                                "contour": "d",
                             },
                             {
                                 "pname": "d",
@@ -158,10 +163,10 @@ class MEIParserTestCase(TestCase):
                                     "coordinates": (5104, 7774, 5175, 7824),
                                     "rotate": 0.0,
                                 },
+                                "interval": None,
+                                "contour": None,
                             },
                         ],
-                        "intervals": [-2],
-                        "contours": ["d"],
                         "bounding_box": {
                             "coordinates": (5037, 7724, 5175, 7824),
                             "rotate": 0.0,
@@ -180,47 +185,39 @@ class MEIParserTestCase(TestCase):
     def test_get_interval_between_neume_components(self) -> None:
         with self.subTest("Interval test 1"):
             self.assertEqual(
-                get_interval_between_neume_components(
-                    self.neume_component_g3, self.neume_component_d4
-                ),
+                get_interval_between_neume_components(self.nc_elem_g3, self.nc_elem_d4),
                 7,
             )
         with self.subTest("Interval test 2"):
             self.assertEqual(
-                get_interval_between_neume_components(
-                    self.neume_component_d4, self.neume_component_g3
-                ),
+                get_interval_between_neume_components(self.nc_elem_d4, self.nc_elem_g3),
                 -7,
             )
         with self.subTest("Interval test 3"):
             self.assertEqual(
-                get_interval_between_neume_components(
-                    self.neume_component_g3, self.neume_component_d3
-                ),
+                get_interval_between_neume_components(self.nc_elem_g3, self.nc_elem_d3),
                 -5,
             )
         with self.subTest("Interval test 4"):
             self.assertEqual(
-                get_interval_between_neume_components(
-                    self.neume_component_g3, self.neume_component_b2
-                ),
+                get_interval_between_neume_components(self.nc_elem_g3, self.nc_elem_b2),
                 -8,
             )
 
     def test_analyze_neume(self) -> None:
-        neume_components_1 = [self.neume_component_d3, self.neume_component_g3]
+        neume_components_1 = [self.nc_elem_d3, self.nc_elem_g3]
         neume_components_2 = [
-            self.neume_component_d3,
-            self.neume_component_g3,
-            self.neume_component_d3,
+            self.nc_elem_d3,
+            self.nc_elem_g3,
+            self.nc_elem_d3,
         ]
-        neume_components_3 = [self.neume_component_d4, self.neume_component_g3]
+        neume_components_3 = [self.nc_elem_d4, self.nc_elem_g3]
         neume_components_4 = [
-            self.neume_component_b2,
-            self.neume_component_b2,
-            self.neume_component_b2,
+            self.nc_elem_b2,
+            self.nc_elem_b2,
+            self.nc_elem_b2,
         ]
-        neume_components_5 = [self.neume_component_d4]
+        neume_components_5 = [self.nc_elem_d4]
         with self.subTest("Analyze neume test 1"):
             self.assertEqual(analyze_neume(neume_components_1), ("Pes", [5], ["u"]))
         with self.subTest("Analyze neume test 2"):
