@@ -183,22 +183,22 @@ class MEIParserTestCase(TestCase):
         self.assertEqual(get_contour_from_interval(-3), "d")
 
     def test_get_interval_between_neume_components(self) -> None:
-        with self.subTest("Interval test 1"):
+        with self.subTest("Interval test: ascending P5"):
             self.assertEqual(
                 get_interval_between_neume_components(self.nc_elem_g3, self.nc_elem_d4),
                 7,
             )
-        with self.subTest("Interval test 2"):
+        with self.subTest("Interval test: descending P5"):
             self.assertEqual(
                 get_interval_between_neume_components(self.nc_elem_d4, self.nc_elem_g3),
                 -7,
             )
-        with self.subTest("Interval test 3"):
+        with self.subTest("Interval test: descending P4"):
             self.assertEqual(
                 get_interval_between_neume_components(self.nc_elem_g3, self.nc_elem_d3),
                 -5,
             )
-        with self.subTest("Interval test 4"):
+        with self.subTest("Interval test: descending m6"):
             self.assertEqual(
                 get_interval_between_neume_components(self.nc_elem_g3, self.nc_elem_b2),
                 -8,
@@ -218,17 +218,17 @@ class MEIParserTestCase(TestCase):
             self.nc_elem_b2,
         ]
         neume_components_5 = [self.nc_elem_d4]
-        with self.subTest("Analyze neume test 1"):
+        with self.subTest("Analyze Pes"):
             self.assertEqual(analyze_neume(neume_components_1), ("Pes", [5], ["u"]))
-        with self.subTest("Analyze neume test 2"):
+        with self.subTest("Analyze Torculus"):
             self.assertEqual(
                 analyze_neume(neume_components_2), ("Torculus", [5, -5], ["u", "d"])
             )
-        with self.subTest("Analyze neume test 3"):
+        with self.subTest("Analyze Clivis"):
             self.assertEqual(analyze_neume(neume_components_3), ("Clivis", [-7], ["d"]))
-        with self.subTest("Analyze neume test 4"):
+        with self.subTest("Analyze Tristropha"):
             self.assertEqual(
                 analyze_neume(neume_components_4), ("Tristopha", [0, 0], ["s", "s"])
             )
-        with self.subTest("Analyze neume test 5"):
+        with self.subTest("Analyze Punctum"):
             self.assertEqual(analyze_neume(neume_components_5), ("Punctum", [], []))
