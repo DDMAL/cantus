@@ -5,6 +5,7 @@ obtained from MEI files.
 
 from typing import List, Tuple, Dict
 import json
+from collections import defaultdict
 from .mei_parsing_types import Zone
 
 
@@ -17,14 +18,17 @@ def combine_bounding_boxes_single_system(bounding_boxes: List[Zone]) -> Zone:
     has a rotation != 0. The rotation is currently ignored, but Issue #834 has
     been created to rectify this.
 
-    :param bounding_boxes: A list of bounding boxes
+    :param bounding_boxes: A list of bounding boxes. See mei_parsing_types.Zone for
+        the structure of a bounding box.
     :return: A single bounding box that contains the contents of all the given
         bounding boxes and has rotation = 0.
     """
-    ulx_list = []
-    uly_list = []
-    lrx_list = []
-    lry_list = []
+    # Collect the upper-left ("ulx", "uly") and lower-right ("lrx", "lry") vertex
+    # coordinates of each bounding box
+    ulx_list: List[int] = []
+    uly_list: List[int] = []
+    lrx_list: List[int] = []
+    lry_list: List[int] = []
     for box in bounding_boxes:
         ulx_list.append(box["coordinates"][0])
         uly_list.append(box["coordinates"][1])
@@ -49,10 +53,8 @@ def combine_bounding_boxes(bounding_boxes: List[Tuple[Zone, int]]) -> List[Zone]
     :return: A list of bounding boxes, one for each system.
     """
     # Create a dictionary to store the bounding boxes for each system
-    system_boxes: Dict[int, List[Zone]] = {}
+    system_boxes: Dict[int, List[Zone]] = defaultdict(list)
     for box, system in bounding_boxes:
-        if system not in system_boxes:
-            system_boxes[system] = []
         system_boxes[system].append(box)
 
     # Combine the bounding boxes for each system, in system order

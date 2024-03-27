@@ -10,10 +10,10 @@ CoordinatesType: TypeAlias = Tuple[int, int, int, int]
 """
 A type for coordinates of bounding boxes. The coordinates
 of the box are given as four integers designating, in order:
-    - the x-coordinate of the upper-left corner of the box
-    - the y-coordinate of the upper-left corner of the box
-    - the x-coordinate of the lower-right corner of the box
-    - the y-coordinate of the lower-right corner of the box
+    - the x-coordinate of the upper-left corner of the box ("ulx")
+    - the y-coordinate of the upper-left corner of the box ("uly")
+    - the x-coordinate of the lower-right corner of the box ("lrx")
+    - the y-coordinate of the lower-right corner of the box ("lry")
 """
 
 
