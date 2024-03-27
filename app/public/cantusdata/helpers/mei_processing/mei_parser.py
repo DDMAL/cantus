@@ -366,8 +366,11 @@ def get_interval_between_neume_components(
     :param neume_component_2: A dictionary containing neume component information
     :return: The interval between the two pitches (in semitones)
     """
-    pc1 = PITCH_CLASS[neume_component_1["pname"]]
-    pc2 = PITCH_CLASS[neume_component_2["pname"]]
+    try:
+        pc1 = PITCH_CLASS[neume_component_1["pname"]]
+        pc2 = PITCH_CLASS[neume_component_2["pname"]]
+    except KeyError:
+        raise ValueError("Invalid pitch name in neume component.")
     # In MIDI note numbers, C0 = 12.
     pitch_1 = pc1 + (12 * (neume_component_1["octave"] + 1))
     pitch_2 = pc2 + (12 * (neume_component_2["octave"] + 1))
