@@ -31,6 +31,26 @@ class Zone(TypedDict):
 
 
 ContourType = Literal["u", "d", "s"]
+NeumeType = Literal[
+    "Punctum",
+    "Pes",
+    "Clivis",
+    "Scandicus",
+    "Torculus",
+    "Porrectus",
+    "Distropha",
+    "Tristopha",
+    "Pressus",
+    "Climacus",
+    "Climacus resupinus",
+    "Torculus resupinus",
+    "Porrectus flexus",
+    "Pes subpunctis",
+    "Scandicus flexus",
+    "Scandicus subpunctis",
+    "Porrectus subpunctis",
+    "Compound",
+]
 
 
 class NeumeComponentElementData(TypedDict):
@@ -74,7 +94,7 @@ class Neume(TypedDict):
     system: The system number that the neume is on
     """
 
-    neume_type: str
+    neume_type: NeumeType
     neume_components: List[NeumeComponent]
     bounding_box: Zone
     system: int
