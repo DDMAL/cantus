@@ -39,18 +39,18 @@ class TestBoundingBoxUtils(TestCase):
             self.assertEqual(combined_boxes_one_sys, expected_combined_boxes_one_sys)
         with self.subTest("Test combining bounding boxes from multiple systems"):
             bounding_boxes_multi_sys: List[Tuple[Zone, int]] = [
-                ({"coordinates": (0, 0, 1, 1), "rotate": 0.0}, 1),
-                ({"coordinates": (4, 3, 5, 6), "rotate": 0.0}, 2),
-                ({"coordinates": (8, 8, 9, 10), "rotate": 0.0}, 3),
-                ({"coordinates": (1, 1, 2, 2), "rotate": 0.0}, 1),
-                ({"coordinates": (2, 1, 3, 2), "rotate": 0.0}, 2),
-                ({"coordinates": (3, 3, 4, 4), "rotate": 0.0}, 2),
+                ({"coordinates": (0, 0, 1, 1), "rotate": 0.0}, 2),
+                ({"coordinates": (4, 3, 5, 6), "rotate": 0.0}, 3),
+                ({"coordinates": (8, 8, 9, 10), "rotate": 0.0}, 1),
+                ({"coordinates": (1, 1, 2, 2), "rotate": 0.0}, 2),
+                ({"coordinates": (2, 1, 3, 2), "rotate": 0.0}, 3),
+                ({"coordinates": (3, 3, 4, 4), "rotate": 0.0}, 3),
             ]
             combined_boxes_multi_sys = combine_bounding_boxes(bounding_boxes_multi_sys)
             expected_combined_boxes_multi_sys = [
+                {"coordinates": (8, 8, 9, 10), "rotate": 0.0},
                 {"coordinates": (0, 0, 2, 2), "rotate": 0.0},
                 {"coordinates": (2, 1, 5, 6), "rotate": 0.0},
-                {"coordinates": (8, 8, 9, 10), "rotate": 0.0},
             ]
             self.assertEqual(
                 combined_boxes_multi_sys, expected_combined_boxes_multi_sys
