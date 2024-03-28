@@ -62,12 +62,13 @@
     <field name="volpiano_literal" type="volpiano_literal" indexed="true" stored="false" multiValued="false" />
     <!-- Fields related to OMR Data -->
     <field name="pagen" type="int" indexed="true" stored="true" required="false" />
-    <field name="pnames" type="string" indexed="true" stored="true" required="false" />
-    <field name="neumes" type="string" indexed="true" stored="true" required="false" />
+    <field name="pitch_names" type="string" indexed="true" stored="true" required="false" />
+    <field name="neume_names" type="string" indexed="true" stored="true" required="false" />
     <field name="contour" type="string" indexed="true" stored="true" required="false" />
     <field name="semitones" type="string" indexed="true" stored="true" required="false" />
     <field name="intervals" type="string" indexed="true" stored="true" required="false" />
     <field name="location" type="string" indexed="false" stored="true" required="false" />
+    <field name="ngram_unit" type="string" indexed="false" stored="true" />
     <dynamicField name="*_strm" type="string" indexed="true" stored="true" multiValued="true" />
     <dynamicField name="*_stored" type="string" indexed="false" stored="true" />
     <!-- Some fields I made up to match the python file output -->
