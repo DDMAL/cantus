@@ -75,7 +75,7 @@ class MEIParser:
     def __init__(self, mei_file: str):
         self.mei_file = mei_file
         self.mei = etree.parse(self.mei_file)
-        self._remove_empty_neumes()
+        self._remove_empty_neumes_and_syllables()
         self.zones = self.parse_zones()
         self.syllables = self.parse_mei()
 
@@ -324,11 +324,12 @@ class MEIParser:
                     system += 1
                 current_elem = next(elem_iterator, None)
 
-    def _remove_empty_neumes(self) -> None:
+    def _remove_empty_neumes_and_syllables(self) -> None:
         """
         Apparently, for a while Rodan was creating invalid MEI files that
-        contained empty neumes (i.e., neumes with no neume components).
-        This method removes those empty neumes from the MEI being parsed;
+        contained empty neumes (i.e., neumes with no neume components) and
+        empty syllables (i.e., syllables with no neumes or only empty neumes).
+        This method removes those empty neumes and syllables from the MEI being parsed;
         it was added as a preprocessing step so that it can, once the base
         MEI files are corrected, be removed.
         """
@@ -337,6 +338,11 @@ class MEIParser:
                 # Ignoring type because we know that getparent() will
                 # return an element in this case.
                 neume.getparent().remove(neume)  # type: ignore
+        for syllable in self.mei.iter(f"{self.MEINS}syllable"):
+            if len(syllable.findall(f"{self.MEINS}neume")) == 0:
+                # Ignoring type because we know that getparent() will
+                # return an element in this case.
+                syllable.getparent().remove(syllable)  # type: ignore
 
     def parse_mei(self) -> List[Syllable]:
         """
