@@ -25,12 +25,16 @@ class NgramDocument(TypedDict):
     The following may be part of an NgramDocument, but are not required:
         manuscript_id: The ID of the manuscript the n-gram belongs to.
         folio_number: The number of the folio on which the n-gram exists.
+        id: The unique ID of the document (corresponds to solr schema's id field)
+        type: The type of the document (corresponds to solr schema's type field)
     """
 
     ngram_unit: NgramUnitType
     location: str
     manuscript_id: NotRequired[str]
     folio: NotRequired[str]
+    id: NotRequired[str]
+    type: NotRequired[Literal["omr_ngram"]]
 
 
 class NeumeNgramDocument(NgramDocument):
