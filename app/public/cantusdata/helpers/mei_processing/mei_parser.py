@@ -411,5 +411,5 @@ def analyze_neume(
         for nc1, nc2 in zip(neume[:-1], neume[1:])
     ]
     contours: List[ContourType] = [get_contour_from_interval(i) for i in intervals]
-    neume_type = NEUME_GROUPS.get("".join(contours), "Compound")
+    neume_type: NeumeType = NEUME_GROUPS.get("".join(contours), "Compound")
     return neume_type, intervals, contours
