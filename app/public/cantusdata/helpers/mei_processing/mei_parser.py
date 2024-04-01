@@ -8,7 +8,7 @@ file:
         between two neume components.
     - get_contour_from_interval: Computes the contour of an interval.
     - analyze_neume: Analyzes a neume (a list of neume components) to determine its
-        neume type, its intervals, and its contour.
+        neume name, its intervals, and its contour.
 
 Defines associated types for the data structures used by the parser.
 """
@@ -31,24 +31,24 @@ from .bounding_box_utils import combine_bounding_boxes_single_system
 PITCH_CLASS = {"c": 0, "d": 2, "e": 4, "f": 5, "g": 7, "a": 9, "b": 11}
 
 # Mapping from neume contours to neume names
-NEUME_GROUPS: Dict[str, NeumeType] = {
-    "": "Punctum",
-    "u": "Pes",
-    "d": "Clivis",
-    "uu": "Scandicus",
-    "ud": "Torculus",
-    "du": "Porrectus",
-    "s": "Distropha",
-    "ss": "Tristopha",
-    "sd": "Pressus",
-    "dd": "Climacus",
-    "ddu": "Climacus resupinus",
-    "udu": "Torculus resupinus",
-    "dud": "Porrectus flexus",
-    "udd": "Pes subpunctis",
-    "uud": "Scandicus flexus",
-    "uudd": "Scandicus subpunctis",
-    "dudd": "Porrectus subpunctis",
+NEUME_GROUPS = {
+    "": "punctum",
+    "u": "pes",
+    "d": "clivis",
+    "uu": "scandicus",
+    "ud": "torculus",
+    "du": "porrectus",
+    "s": "distropha",
+    "ss": "tristopha",
+    "sd": "pressus",
+    "dd": "climacus",
+    "ddu": "climacus_resupinus",
+    "udu": "torculus_resupinus",
+    "dud": "porrectus_flexus",
+    "udd": "pes_subpunctis",
+    "uud": "scandicus_flexus",
+    "uudd": "scandicus_subpunctis",
+    "dudd": "porrectus_subpunctis",
 }
 
 
@@ -183,7 +183,7 @@ class MEIParser:
             )
             if parsed_neume_component:
                 parsed_nc_elements.append(parsed_neume_component)
-        neume_type, intervals, contours = analyze_neume(parsed_nc_elements)
+        neume_name, intervals, contours = analyze_neume(parsed_nc_elements)
         # If the first neume component of the next syllable can be parsed,
         # add the interval and contour between the final neume component of
         # the current syllable and the first neume component of the next syllable.
@@ -217,7 +217,7 @@ class MEIParser:
                 }
             )
         parsed_neume: Neume = {
-            "neume_type": neume_type,
+            "neume_name": neume_name,
             "neume_components": parsed_neume_components,
             "bounding_box": combined_bounding_box,
             "system": neume_system,
@@ -417,13 +417,13 @@ def analyze_neume(
 ) -> Tuple[NeumeType, List[int], List[ContourType]]:
     """
     Analyze a neume (a list of neume components) to determine:
-    - Neume type
+    - Neume name
     - Neume intervals
     - Neume contour
 
     :param neume: A list of neume components (a list of NeumeComponentsType dictionaries)
     :return: A tuple of information about the neume:
-                - Neume type (str)
+                - Neume name (str)
                 - Neume intervals (list of ints)
                 - Neume contour (list of "u"[p], "d"[own], or "s"[tay])
     """

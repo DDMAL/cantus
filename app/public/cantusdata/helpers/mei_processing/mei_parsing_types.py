@@ -94,7 +94,7 @@ class Neume(TypedDict):
     system: The system number that the neume is on
     """
 
-    neume_type: NeumeType
+    neume_name: str
     neume_components: List[NeumeComponent]
     bounding_box: Zone
     system: int
