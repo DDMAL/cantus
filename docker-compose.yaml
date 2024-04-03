@@ -8,7 +8,7 @@ services:
     command: /code/django-config.sh
     volumes:
       - ./app/public:/code/public
-      - static_volume:/code/static
+      - django_static_volume:/code/static
     depends_on:
       postgres:
         condition: service_healthy
@@ -49,7 +49,7 @@ services:
       - app
     volumes:
       - ./cantaloupe/interim_files/manifests:/code/manifests
-      - static_volume:/code/static
+      - django_static_volume:/code/static/django
 
   solr:
     build: ./solr
@@ -58,6 +58,8 @@ services:
       - "8983:8983"
     environment:
       - SOLR_SECURITY_MANAGER_ENABLED=false
+    volumes:
+      - solr_volume:/var/solr
 
   rabbitmq:
     build: ./rabbitmq
@@ -113,4 +115,5 @@ services:
       ]
 
 volumes:
-  static_volume:
+  django_static_volume:
+  solr_volume:
