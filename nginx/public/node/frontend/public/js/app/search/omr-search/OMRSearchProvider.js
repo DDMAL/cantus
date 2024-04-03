@@ -68,16 +68,33 @@ export default Marionette.Object.extend({
 
         var manuscriptModel = options.manuscript;
 
-        this.manuscript = manuscriptModel.get('siglum_slug');
-        this.neumeExemplars = new Backbone.Collection(manuscriptModel.get('neume_exemplars'));
+        this.manuscript = manuscriptModel.get('id');
+        // this.neumeExemplars = new Backbone.Collection(manuscriptModel.get('neume_exemplars'));
 
-        this.fields = [];
+        this.fields = [
+            {
+                name: 'Neume',
+                type: 'neume_names'
+            },
+            {
+                name: 'Pitch',
+                type: 'pitch_names'
+            },
+            {
+                name: 'Contour',
+                type: 'contour'
+            },
+            {
+                name: 'Interval',
+                type: 'intervals'
+            }
+        ];
 
-        _.forEach(this.searchPlugins, function (plugin)
-        {
-            if (manuscriptModel.isPluginActivated(plugin.name))
-                this.fields.push.apply(this.fields, plugin.fields);
-        }, this);
+        // _.forEach(this.searchPlugins, function (plugin)
+        // {
+        //     if (manuscriptModel.isPluginActivated(plugin.name))
+        //         this.fields.push.apply(this.fields, plugin.fields);
+        // }, this);
 
         // The diva view which we will act upon!
         this.divaView = options.divaView;
@@ -146,9 +163,16 @@ export default Marionette.Object.extend({
 
     getSearchMetadata: function ()
     {
+        if (this.results.numFound !== undefined){
+            var numFound = this.results.numFound;
+        } else {
+            var numFound = 0;
+        }
         return {
             fieldName: this.field.name,
-            query: this.query
+            query: this.query,
+            displayedQuery: this.query,
+            numFound: numFound,
         };
     },
 
@@ -162,32 +186,33 @@ export default Marionette.Object.extend({
         var inputView = new InputView({initialQuery: this.query});
         regions.searchInput.show(inputView);
 
+        // Search Helper Field currently disabled
         // Neume gallery
-        if (field.type === 'neumes' && this.neumeExemplars.length > 0)
-        {
-            var gallery = new NeumeGalleryView({
-                collection: this.neumeExemplars
-            });
+        // if (field.type === 'neume_names' && this.neumeExemplars.length > 0)
+        // {
+        //     var gallery = new NeumeGalleryView({
+        //         collection: this.neumeExemplars
+        //     });
 
-            inputView.listenTo(gallery, 'use:neume', function(newQuery)
-            {
-                inputView.insertSearchString(newQuery, true);
-            });
-            regions.searchHelper.show(gallery);
-        }
-        else if (field.type === 'contour')
-        {
-            var contourChoices = new ContourChoiceView();
-            inputView.listenTo(contourChoices, 'use:contour', function(newQuery)
-            {
-                inputView.insertSearchString(newQuery, false);
-            });
-            regions.searchHelper.show(contourChoices);
-        }
-        else
-        {
-            regions.searchHelper.empty();
-        }
+        //     inputView.listenTo(gallery, 'use:neume', function(newQuery)
+        //     {
+        //         inputView.insertSearchString(newQuery, true);
+        //     });
+        //     regions.searchHelper.show(gallery);
+        // }
+        // else if (field.type === 'contour')
+        // {
+        //     var contourChoices = new ContourChoiceView();
+        //     inputView.listenTo(contourChoices, 'use:contour', function(newQuery)
+        //     {
+        //         inputView.insertSearchString(newQuery, false);
+        //     });
+        //     regions.searchHelper.show(contourChoices);
+        // }
+        // else
+        // {
+        // regions.searchHelper.empty();
+        // }
 
         // Result heading
         regions.searchResultHeading.show(new SearchResultHeadingView({

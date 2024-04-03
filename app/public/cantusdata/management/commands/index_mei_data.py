@@ -1,12 +1,12 @@
 from typing import Any, List
 from os import path, listdir
-import uuid
 
 from django.core.management.base import BaseCommand, CommandParser
 from django.conf import settings
 from solr.core import SolrConnection  # type: ignore
 
 from cantusdata.helpers.mei_processing.mei_tokenizer import MEITokenizer, NgramDocument
+from cantusdata.models.folio import Folio
 
 MEI4_DIR = path.join(settings.BASE_DIR, "data_dumps", "mei4")
 
@@ -37,6 +37,14 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         solr_conn = SolrConnection(settings.SOLR_SERVER)
         manuscript_id = str(options["manuscript_id"][0])
+        # Delete any existing OMR documents for this manuscript
+        solr_conn.delete_query(f"type:omr_ngram AND manuscript_id:{manuscript_id}")
+        solr_conn.commit()
+        folio_map = dict(
+            Folio.objects.filter(manuscript_id=manuscript_id).values_list(
+                "number", "image_uri"
+            )
+        )
         manuscript_mei_path = path.join(MEI4_DIR, manuscript_id)
         manuscript_mei_files = [
             f for f in listdir(manuscript_mei_path) if f.endswith(".mei")
@@ -46,15 +54,10 @@ class Command(BaseCommand):
             tokenizer = MEITokenizer(
                 path.join(manuscript_mei_path, mei_file), min_ngram=1, max_ngram=5
             )
-            docs_to_commit: List[NgramDocument] = []
-            neume_docs = tokenizer.get_neume_ngram_docs()
-            neume_component_docs = tokenizer.get_neume_component_ngram_docs()
-            docs_to_commit.extend(neume_docs)
-            docs_to_commit.extend(neume_component_docs)
-            for doc in docs_to_commit:
+            ngram_docs = tokenizer.get_ngram_documents()
+            for doc in ngram_docs:
                 doc["manuscript_id"] = manuscript_id
                 doc["folio"] = folio_number
-                doc["id"] = str(uuid.uuid4())
-                doc["type"] = "omr_ngram"
-            solr_conn.add_many(docs_to_commit)
+                doc["image_uri"] = folio_map.get(folio_number, "")
+            solr_conn.add_many(ngram_docs)
             solr_conn.commit()

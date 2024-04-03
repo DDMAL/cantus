@@ -3,11 +3,12 @@ from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
+from rest_framework.request import Request
 
 from cantusdata.helpers import search_utils
-import solr
+from solr.core import SolrConnection  # type: ignore
 import json
-import types
+from typing import Any, Tuple, List, Dict, Union
 from operator import itemgetter
 
 
@@ -21,51 +22,56 @@ class SearchNotationView(APIView):
     Search algorithm adapted from the Liber Usualis code
     """
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         q = request.GET.get("q", None)
         stype = request.GET.get("type", None)
         manuscript = request.GET.get("manuscript", None)
-        rows = request.GET.get("rows", "100")
-        start = request.GET.get("start", "0")
 
-        # Give a 400 if there's a notation exception, and let
-        # anything else give a 500
-        results = self.do_query(manuscript, stype, q)
+        if q and stype and manuscript:
+            results, numFound = self.do_query(manuscript, stype, q)
+        else:
+            results = []
 
-        return Response({"numFound": len(results), "results": results})
+        return Response({"numFound": numFound, "results": results})
 
-    def do_query(self, manuscript, qtype, query):
+    def do_query(
+        self, manuscript: str, qtype: str, query: str
+    ) -> Tuple[List[Dict[str, Union[str, List[str]]]], int]:
         # This will be appended to the search query so that we only get
         # data from the manuscript that we want!
-        manuscript_query = ' AND siglum_slug:"{0}"'.format(manuscript)
+        manuscript_query = " AND manuscript_id:{0}".format(manuscript)
 
-        solrconn = solr.SolrConnection(settings.SOLR_SERVER)
+        solrconn = SolrConnection(settings.SOLR_SERVER)
 
         # Normalize case and whitespace
         query = " ".join(elem for elem in query.lower().split())
 
-        if qtype == "neumes":
-            query_stmt = "neumes:{0}".format(
+        if qtype == "neume_names":
+            query_stmt = "neume_names:{0}".format(
                 # query
                 query.replace(" ", "_")
             )
-        elif qtype == "pnames" or qtype == "pnames-invariant":
-            if not search_utils.valid_pitch_sequence(query):
-                raise NotationException(
-                    "The query you provided is not a valid pitch sequence"
-                )
-            real_query = (
-                query
-                if qtype == "pnames"
-                else " OR ".join(search_utils.get_transpositions(query))
-            )
-            query_stmt = "pnames:({0})".format(real_query)
+        elif qtype == "pitch_names" or qtype == "pnames-invariant":
+            # TODO: Implement a pitch validity check and
+            # transposition for pitch names
+            # if not search_utils.valid_pitch_sequence(query):
+            #     raise NotationException(
+            #         "The query you provided is not a valid pitch sequence"
+            #     )
+            # real_query = (
+            #     query
+            #     if qtype == "pnames"
+            #     else " OR ".join(search_utils.get_transpositions(query))
+            # )
+            formatted_query = "_".join(query.split())
+            query_stmt = f"pitch_names:({formatted_query})"
         elif qtype == "contour":
-            query_stmt = "contour:{0}".format(query)
+            formatted_query = "_".join(query.split())
+            query_stmt = f"contour:{formatted_query}"
         elif qtype == "text":
             query_stmt = "text:{0}".format(query)
         elif qtype == "intervals":
-            query_stmt = "intervals:{0}".format(query.replace(" ", "_"))
+            query_stmt = f"intervals:{query.replace(' ', '_')}"
         elif qtype == "incipit":
             query_stmt = "incipit:{0}*".format(query)
         else:
@@ -86,23 +92,10 @@ class SearchNotationView(APIView):
                 query_stmt + manuscript_query,
                 score=False,
                 sort="folio asc",
-                rows=1000000,
+                rows=100,
             )
 
         results = []
-
-        # get only the longest ngram in the results, for results which are associated with
-        # a pitch sequence
-        if qtype == "neumes":
-            if manuscript == "ch-sgs-390":
-                pass
-            else:
-                notegrams_num = search_utils.get_neumes_length(query)
-                response = [
-                    r
-                    for r in response
-                    if not r.get("pnames") or len(r["pnames"]) == notegrams_num
-                ]
 
         box_sort_key = itemgetter("p", "y")
 
@@ -147,30 +140,35 @@ class SearchNotationView(APIView):
 
                 boxes.sort(key=box_sort_key)
 
-            results.append(
-                {
-                    "boxes": boxes,
-                    "contour": get_value(d, "contour", list),
-                    "intervals": get_value(d, "intervals", lambda i: i.split("_")),
-                    "neumes": get_value(d, "neumes", lambda i: i.split("_")),
-                    "pnames": get_value(d, "pnames", list),
-                    "semitones": get_value(
-                        d,
-                        "semitones",
-                        lambda tones: [int(s) for s in tones.split("_")],
-                    ),
-                }
-            )
+            if qtype == "neume_names":
+                results.append(
+                    {
+                        "boxes": boxes,
+                        "contour": d["contour"].split("_"),
+                        "neumes": d["neume_names"].split("_"),
+                        "pnames": d["pitch_names"].split("_"),
+                        "semitones": [int(x) for x in d["semitones"].split("_")],
+                    }
+                )
+            else:
+                results.append(
+                    {
+                        "boxes": boxes,
+                        "contour": d["contour"].split("_"),
+                        "pnames": d["pitch_names"].split("_"),
+                        "semitones": [int(x) for x in d["semitones"].split("_")],
+                    }
+                )
 
         results.sort(key=lambda result: [box_sort_key(box) for box in result["boxes"]])
 
-        return results
+        return results, response.numFound
 
 
-def get_value(d, key, transform):
-    try:
-        value = d[key]
-    except KeyError:
-        return None
+# def get_value(d, key, transform):
+#     try:
+#         value = d[key]
+#     except KeyError:
+#         return None
 
-    return transform(value)
+#     return transform(value)

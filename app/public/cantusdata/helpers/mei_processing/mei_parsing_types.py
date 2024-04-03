@@ -30,26 +30,26 @@ class Zone(TypedDict):
     rotate: float
 
 
-ContourType = Literal["u", "d", "s"]
+ContourType = Literal["u", "d", "r"]
 NeumeType = Literal[
-    "Punctum",
-    "Pes",
-    "Clivis",
-    "Scandicus",
-    "Torculus",
-    "Porrectus",
-    "Distropha",
-    "Tristopha",
-    "Pressus",
-    "Climacus",
-    "Climacus resupinus",
-    "Torculus resupinus",
-    "Porrectus flexus",
-    "Pes subpunctis",
-    "Scandicus flexus",
-    "Scandicus subpunctis",
-    "Porrectus subpunctis",
-    "Compound",
+    "punctum",
+    "pes",
+    "clivis",
+    "scandicus",
+    "torculus",
+    "porrectus",
+    "distropha",
+    "tristopha",
+    "pressus",
+    "climacus",
+    "climacus_resupinus",
+    "torculus_resupinus",
+    "porrectus_flexus",
+    "pes_subpunctis",
+    "scandicus_flexus",
+    "scandicus_subpunctis",
+    "porrectus_subpunctis",
+    "compound",
 ]
 
 
@@ -77,11 +77,11 @@ class NeumeComponent(NeumeComponentElementData):
     interval: The interval (in semitones) between the neume component and the
         following neume component. If there is no following neume component,
         this is None.
-    contour: The contour ("u"[p], "d"[own], or "s"[tay]) of 'interval'. If there is no
+    contour: The contour ("u"[p], "d"[own], or "r"[epeat]) of 'interval'. If there is no
         following neume component, this is None.
     """
 
-    interval: Optional[int]
+    semitones: Optional[int]
     contour: Optional[ContourType]
 
 
