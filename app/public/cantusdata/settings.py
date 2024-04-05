@@ -132,7 +132,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
-STATIC_URL = "/static/django/"
+STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
 MEDIA_URL_NEUMEEDITOR = "/neumeeditor/media/"
 
