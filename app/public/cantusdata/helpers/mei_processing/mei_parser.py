@@ -14,7 +14,7 @@ Defines associated types for the data structures used by the parser.
 """
 
 from typing import Tuple, Dict, List, Iterator, Optional
-from lxml import etree
+from lxml import etree  # pylint: disable=no-name-in-module
 from .mei_parsing_types import (
     Zone,
     SyllableText,
@@ -31,16 +31,16 @@ from .bounding_box_utils import combine_bounding_boxes_single_system
 PITCH_CLASS = {"c": 0, "d": 2, "e": 4, "f": 5, "g": 7, "a": 9, "b": 11}
 
 # Mapping from neume contours to neume names
-NEUME_GROUPS = {
+NEUME_GROUPS: Dict[str, NeumeType] = {
     "": "punctum",
     "u": "pes",
     "d": "clivis",
     "uu": "scandicus",
     "ud": "torculus",
     "du": "porrectus",
-    "s": "distropha",
-    "ss": "tristopha",
-    "sd": "pressus",
+    "r": "distropha",
+    "rr": "tristopha",
+    "rd": "pressus",
     "dd": "climacus",
     "ddu": "climacus_resupinus",
     "udu": "torculus_resupinus",
@@ -194,7 +194,7 @@ class MEIParser:
             if parsed_next_neume_comp:
                 last_neume_comp = parsed_nc_elements[-1]
                 intervals.append(
-                    get_interval_between_neume_components(
+                    get_semitones_between_neume_components(
                         last_neume_comp, parsed_next_neume_comp
                     )
                 )
@@ -212,7 +212,7 @@ class MEIParser:
                     "pname": nc["pname"],
                     "octave": nc["octave"],
                     "bounding_box": nc["bounding_box"],
-                    "interval": intervals[i] if i < len(intervals) else None,
+                    "semitone_interval": intervals[i] if i < len(intervals) else None,
                     "contour": contours[i] if i < len(contours) else None,
                 }
             )
@@ -372,7 +372,7 @@ class MEIParser:
         return syllables
 
 
-def get_interval_between_neume_components(
+def get_semitones_between_neume_components(
     neume_component_1: NeumeComponentElementData,
     neume_component_2: NeumeComponentElementData,
 ) -> int:
@@ -390,8 +390,8 @@ def get_interval_between_neume_components(
     try:
         pc1 = PITCH_CLASS[neume_component_1["pname"]]
         pc2 = PITCH_CLASS[neume_component_2["pname"]]
-    except KeyError:
-        raise ValueError("Invalid pitch name in neume component.")
+    except KeyError as err:
+        raise ValueError("Invalid pitch name in neume component.") from err
     # In MIDI note numbers, C0 = 12.
     pitch_1 = pc1 + (12 * (neume_component_1["octave"] + 1))
     pitch_2 = pc2 + (12 * (neume_component_2["octave"] + 1))
@@ -403,13 +403,13 @@ def get_contour_from_interval(interval: int) -> ContourType:
     Compute the contour of an interval.
 
     :param interval: The size of the interval in semitones
-    :return: The contour of the interval ("u"[p], "d"[own], or "s"[tay])
+    :return: The contour of the interval ("u"[p], "d"[own], or "r"[epeat])
     """
     if interval < 0:
         return "d"
     if interval > 0:
         return "u"
-    return "s"
+    return "r"
 
 
 def analyze_neume(
@@ -417,20 +417,22 @@ def analyze_neume(
 ) -> Tuple[NeumeType, List[int], List[ContourType]]:
     """
     Analyze a neume (a list of neume components) to determine:
-    - Neume name
-    - Neume intervals
-    - Neume contour
+    - The neume type (e.g., punctum, pes, clivis, etc.)
+    - The intervals in the neume in semitones
+    - The contour of the nueme
 
     :param neume: A list of neume components (a list of NeumeComponentsType dictionaries)
     :return: A tuple of information about the neume:
-                - Neume name (str)
-                - Neume intervals (list of ints)
-                - Neume contour (list of "u"[p], "d"[own], or "s"[tay])
+                - Neume type (str)
+                - Neume intervals in semitones (list of ints)
+                - Neume contour (list of "u"[p], "d"[own], or "r"[epeat])
     """
-    intervals: List[int] = [
-        get_interval_between_neume_components(nc1, nc2)
+    semitone_intervals: List[int] = [
+        get_semitones_between_neume_components(nc1, nc2)
         for nc1, nc2 in zip(neume[:-1], neume[1:])
     ]
-    contours: List[ContourType] = [get_contour_from_interval(i) for i in intervals]
-    neume_type: NeumeType = NEUME_GROUPS.get("".join(contours), "Compound")
-    return neume_type, intervals, contours
+    contours: List[ContourType] = [
+        get_contour_from_interval(i) for i in semitone_intervals
+    ]
+    neume_type: NeumeType = NEUME_GROUPS.get("".join(contours), "compound")
+    return neume_type, semitone_intervals, contours
