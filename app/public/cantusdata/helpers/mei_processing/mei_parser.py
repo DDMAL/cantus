@@ -21,7 +21,7 @@ from .mei_parsing_types import (
     NeumeComponentElementData,
     NeumeComponent,
     ContourType,
-    NeumeType,
+    NeumeName,
     Neume,
     Syllable,
 )
@@ -31,7 +31,7 @@ from .bounding_box_utils import combine_bounding_boxes_single_system
 PITCH_CLASS = {"c": 0, "d": 2, "e": 4, "f": 5, "g": 7, "a": 9, "b": 11}
 
 # Mapping from neume contours to neume names
-NEUME_GROUPS: Dict[str, NeumeType] = {
+NEUME_GROUPS: Dict[str, NeumeName] = {
     "": "punctum",
     "u": "pes",
     "d": "clivis",
@@ -415,7 +415,7 @@ def get_contour_from_interval(interval: int) -> ContourType:
 
 def analyze_neume(
     neume: List[NeumeComponentElementData],
-) -> Tuple[NeumeType, List[int], List[ContourType]]:
+) -> Tuple[NeumeName, List[int], List[ContourType]]:
     """
     Analyze a neume (a list of neume components) to determine:
     - The neume type (e.g., punctum, pes, clivis, etc.)
@@ -435,5 +435,5 @@ def analyze_neume(
     contours: List[ContourType] = [
         get_contour_from_interval(i) for i in semitone_intervals
     ]
-    neume_type: NeumeType = NEUME_GROUPS.get("".join(contours), "compound")
+    neume_type: NeumeName = NEUME_GROUPS.get("".join(contours), "compound")
     return neume_type, semitone_intervals, contours
