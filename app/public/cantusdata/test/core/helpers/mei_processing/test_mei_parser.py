@@ -111,6 +111,7 @@ class MEIParserTestCase(TestCase):
                                 },
                                 "semitone_interval": 0,
                                 "contour": "r",
+                                "system": 1,
                             }
                         ],
                         "bounding_box": {
@@ -156,6 +157,7 @@ class MEIParserTestCase(TestCase):
                                 },
                                 "semitone_interval": -2,
                                 "contour": "d",
+                                "system": 10,
                             },
                             {
                                 "pname": "d",
@@ -166,6 +168,7 @@ class MEIParserTestCase(TestCase):
                                 },
                                 "semitone_interval": None,
                                 "contour": None,
+                                "system": 10,
                             },
                         ],
                         "bounding_box": {

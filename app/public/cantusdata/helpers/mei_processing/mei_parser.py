@@ -214,6 +214,7 @@ class MEIParser:
                     "bounding_box": nc["bounding_box"],
                     "semitone_interval": intervals[i] if i < len(intervals) else None,
                     "contour": contours[i] if i < len(contours) else None,
+                    "system": neume_system,
                 }
             )
         parsed_neume: Neume = {

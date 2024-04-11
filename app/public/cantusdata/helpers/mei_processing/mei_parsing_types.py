@@ -31,7 +31,7 @@ class Zone(TypedDict):
 
 
 ContourType = Literal["u", "d", "r"]
-NeumeType = Literal[
+NeumeName = Literal[
     "punctum",
     "pes",
     "clivis",
@@ -79,10 +79,12 @@ class NeumeComponent(NeumeComponentElementData):
         this is None.
     contour: The contour ("u"[p], "d"[own], or "r"[epeat]) of 'interval'. If there is no
         following neume component, this is None.
+    system: The system number that the neume component is on
     """
 
     semitone_interval: Optional[int]
     contour: Optional[ContourType]
+    system: int
 
 
 class Neume(TypedDict):
@@ -94,7 +96,7 @@ class Neume(TypedDict):
     system: The system number that the neume is on
     """
 
-    neume_name: str
+    neume_name: NeumeName
     neume_components: List[NeumeComponent]
     bounding_box: Zone
     system: int
