@@ -14,6 +14,7 @@ TEST_MEI_FILE = path.join(
     "helpers",
     "mei_processing",
     "test_mei_files",
+    "123723",
     "cdn-hsmu-m2149l4_001r.mei",
 )
 

@@ -47,6 +47,7 @@ class MEIParserTestCase(TestCase):
                 "helpers",
                 "mei_processing",
                 "test_mei_files",
+                "123723",
                 "cdn-hsmu-m2149l4_001r.mei",
             )
         )
