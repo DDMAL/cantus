@@ -153,7 +153,7 @@ class MEITokenizerTestCase(TestCase):
                 "neume_names": "punctum",
             }
             self.assertEqual(expected_1gram, ngram_docs_1_2[0])
-        with self.subTest("Second 3-gram"):
+        with self.subTest("Ngram of first 3 neumes"):
             expected_3gram: NgramDocument = {
                 "location": json.dumps(
                     [{"ulx": 2608, "uly": 2292, "width": 477, "height": 201}]
@@ -164,6 +164,7 @@ class MEITokenizerTestCase(TestCase):
                 "semitone_intervals": "0_-2_5",
             }
             self.assertEqual(expected_3gram, ngram_docs_3_5[1])
+            self.assertEqual(expected_3gram, ngram_docs_2_3[2])
         with self.subTest("Pitch 3-gram: second three pitches"):
             # This 3-gram is constructed from the second three
             # pitches of the sample above.

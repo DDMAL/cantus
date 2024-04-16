@@ -224,6 +224,8 @@ class MEITokenizer(MEIParser):
                         ) is not None and len(ngram_neume_names) < wanted_ngram_length:
                             ngram_neume_names.append(name_at_pitch)
                         ngram_num_pitches += 1
+                        if len(ngram_neume_names) == wanted_ngram_length:
+                            break
                     # We'll only add this ngram if we've actually gotten to
                     # the desired number of neumes (if we didn't, it means
                     # we reached the end of the file)
