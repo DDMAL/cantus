@@ -8,7 +8,7 @@ from cantusdata.models.folio import Folio
 
 from solr.core import SolrConnection  # type: ignore
 
-MEI4_DIR = path.join("code", "production-mei-files")
+MEI4_DIR = path.join("/code", "production-mei-files")
 
 
 class Command(BaseCommand):
@@ -35,7 +35,7 @@ class Command(BaseCommand):
             default=MEI4_DIR,
             help=(
                 "The directory containing the MEI files to be indexed."
-                "Defaults to 'code/production-mei-files'."
+                "Defaults to '/code/production-mei-files'."
             ),
         )
         parser.add_argument(
