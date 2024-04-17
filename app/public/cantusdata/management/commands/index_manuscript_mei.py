@@ -58,20 +58,9 @@ class Command(BaseCommand):
                 "documents for the specified manuscript before indexing the new data."
             ),
         )
-        parser.add_argument(
-            "--test-core",
-            action="store_true",
-            help=(
-                "Use the test core for indexing. Used when running unittests on this"
-                "command. Defaults to False."
-            ),
-        )
 
     def handle(self, *args: Any, **options: Any) -> None:
-        if options["test_core"]:
-            solr_conn = SolrConnection(settings.SOLR_TEST_SERVER)
-        else:
-            solr_conn = SolrConnection(settings.SOLR_SERVER)
+        solr_conn = SolrConnection(settings.SOLR_SERVER)
         manuscript_id = options["manuscript_id"][0]
         if options.get("flush_index"):
             self.flush_manuscript_ngrams_from_index(solr_conn, manuscript_id)
