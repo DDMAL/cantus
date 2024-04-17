@@ -17,6 +17,7 @@ jobs:
       RABBIT_VHOST: test_cu
       RABBIT_USER: admin
       RABBIT_PASSWORD: supersecurepassword99
+      PORT: "8000"
     steps:
       - uses: actions/checkout@v3
       - run: docker compose build
