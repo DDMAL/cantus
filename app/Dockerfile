@@ -5,7 +5,7 @@ ARG APP_PORT
 COPY ./poetry.lock ./pyproject.toml ./app/install-packages.sh /code/
 WORKDIR /code
 RUN chmod u+x /code/install-packages.sh && \
-    /code/install-packages.sh
+    /code/install-packages.sh $APP_PORT
 
 FROM python:3.12.3
 COPY app/django-config.sh /code/
