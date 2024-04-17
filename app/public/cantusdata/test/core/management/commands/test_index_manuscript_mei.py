@@ -34,7 +34,6 @@ class IndexManuscriptMeiTestCase(TestCase):
             "5",
             "--mei-dir",
             TEST_MEI_FILES_PATH,
-            "--test-core",
         )
         results = self.solr_conn.query("*:*", fq="type:omr_ngram")
         with self.subTest("Test total number of indexed documents"):
@@ -54,16 +53,12 @@ class IndexManuscriptMeiTestCase(TestCase):
             "123723",
             "--mei-dir",
             TEST_MEI_FILES_PATH,
-            "--test-core",
         )
-
         with self.subTest("Check index is not empty before test"):
             results = self.solr_conn.query("*:*", fq="type:omr_ngram")
             self.assertGreater(len(results), 0)
 
         with self.subTest("Test flush option"):
-            call_command(
-                "index_manuscript_mei", "123723", "--flush-index", "--test-core"
-            )
+            call_command("index_manuscript_mei", "123723", "--flush-index")
             results = self.solr_conn.query("*:*", fq="type:omr_ngram")
             self.assertEqual(len(results), 0)
