@@ -57,6 +57,11 @@ export default Marionette.CompositeView.extend({
 
         this.listenTo(this.searchParameters, 'change:sortBy change:reverseSort', this._triggerSortingChanged);
         this.listenTo(this.searchParameters, 'change:query change:field', this._resetScrolling);
+
+        // Show manuscript column if additional fields requested in search
+        // includes the manuscript (in other words, if we are doing a 
+        // cross-manuscript search)
+        this.showManuscript = _.some(this.getOption("infoFields"), field => field.type === 'manuscript');
     },
 
     childViewOptions: function ()
@@ -64,7 +69,8 @@ export default Marionette.CompositeView.extend({
         return {
             searchType: this.searchParameters.get('field'),
             query: this.searchParameters.get('query'),
-            infoFields: this.getOption('infoFields')
+            infoFields: this.getOption('infoFields'),
+            showManuscript: this.showManuscript
         };
     },
 
@@ -215,7 +221,8 @@ export default Marionette.CompositeView.extend({
     templateHelpers: function()
     {
         return {
-            infoFields: _.toArray(this.getOption('infoFields'))
+            infoFields: _.toArray(this.getOption('infoFields')),
+            showManuscript: this.showManuscript
         };
     }
 });
