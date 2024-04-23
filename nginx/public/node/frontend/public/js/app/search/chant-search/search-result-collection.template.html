@@ -2,6 +2,12 @@
     <table class="table table-condensed result-list child-container">
         <thead>
             <tr>
+                <% if (showManuscript) { %>
+                <th> 
+                    <a href="#">Manuscript</a>
+                    <span class="search-caret"></span>
+                </th>
+                <% } %>
                 <th>
                     <a href="#">Folio</a>
                     <span class="search-caret"></span>
@@ -13,10 +19,12 @@
                 </th>
 
                 <% _.forEach(infoFields, function (field) { %>
+                <% if (field.type != 'manuscript') { %>
                 <th>
                     <a href="#"><%= field.name %></a>
                     <span class="search-caret"></span>
                 </th>
+                <% } %>
                 <% }); %>
             </tr>
         </thead>
