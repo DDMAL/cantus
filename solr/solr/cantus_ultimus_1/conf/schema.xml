@@ -40,7 +40,7 @@
     <field name="folio_id" type="int" indexed="true" stored="true" />
     <field name="image_uri" type="string" indexed="true" stored="true"/>
     <field name="sequence" type="int" indexed="true" stored="true" />
-    <field name="cantus_id" type="text_general" indexed="true" stored="true" />
+    <field name="cantus_id" type="string" indexed="true" stored="true" />
     <field name="cdb_uri" type="text_general" indexed="true" stored="true" />
     <field name="feast" type="string" indexed="true" stored="true" />
     <field name="feast_date" type="text_general" indexed="true" stored="true" multiValued="false" />
@@ -130,6 +130,7 @@
     <copyField source="folio" dest="folio_t_hidden" />
     <copyField source="incipit" dest="incipit_t_hidden" />
     <copyField source="volpiano" dest="volpiano_literal" />
+    <copyField source="cantus_id" dest="cantus_id_t_hidden" />
 
     <fieldType name="string" class="solr.StrField" sortMissingLast="true" />
     <fieldType name="boolean" class="solr.BoolField" sortMissingLast="true" />
