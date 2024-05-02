@@ -610,16 +610,17 @@ test = ["coverage[toml] (>=7.2.5)", "mypy (>=1.2.0)", "pytest (>=7.3.0)", "pytes
 
 [[package]]
 name = "markdown"
-version = "3.4.3"
+version = "3.6"
 description = "Python implementation of John Gruber's Markdown."
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "Markdown-3.4.3-py3-none-any.whl", hash = "sha256:065fd4df22da73a625f14890dd77eb8040edcbd68794bcd35943be14490608b2"},
-    {file = "Markdown-3.4.3.tar.gz", hash = "sha256:8bf101198e004dc93e84a12a7395e31aac6a9c9942848ae1d99b9d72cf9b3520"},
+    {file = "Markdown-3.6-py3-none-any.whl", hash = "sha256:48f276f4d8cfb8ce6527c8f79e2ee29708508bf4d40aa410fbc3b4ee832c850f"},
+    {file = "Markdown-3.6.tar.gz", hash = "sha256:ed4f41f6daecbeeb96e576ce414c41d2d876daa9a16cb35fa8ed8c2ddfad0224"},
 ]
 
 [package.extras]
+docs = ["mdx-gh-links (>=0.2)", "mkdocs (>=1.5)", "mkdocs-gen-files", "mkdocs-literate-nav", "mkdocs-nature (>=0.6)", "mkdocs-section-index", "mkdocstrings[python]"]
 testing = ["coverage", "pyyaml"]
 
 [[package]]
@@ -1036,4 +1037,4 @@ watchdog = ["watchdog (>=2.3)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "1bf92fa3758ce6bbf5711bfb303c3c822bda8c868de79e8ea8284b04a46d8fbc"
+content-hash = "2a6707191c17f7ed0d1c3cdcaae2619662a32a922bdfe36fbcb28f48c9a83c27"
