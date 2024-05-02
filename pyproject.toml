@@ -4,30 +4,30 @@ name = "cantus-ultimus"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-celery = "5.3.1"
-django = "4.2.11"
+celery = "5.4.0"
+django = "5.0.4"
 django-celery-results = "2.5.1"
-djangorestframework = "3.14.0"
+djangorestframework = "3.15.1"
 gunicorn = "22.0.0"
-lxml = "5.1.0"
-markdown = "3.4.3"
-psycopg = "3.1.8"
+lxml = "5.2.1"
+markdown = "3.6"
+psycopg = "3.1.18"
 requests = "2.31.0"
-solrpy = "0.9.9"
+solrpy = "1.0.0"
 
 [tool.poetry.group.debug]
 optional = true
 
 [tool.poetry.group.debug.dependencies]
 django-extensions = "3.2.3"
-Werkzeug = "3.0.1"
+Werkzeug = "3.0.2"
 
 [tool.poetry.group.dev]
 optional = true
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"
-mypy = "^1.9.0"
+mypy = "^1.10.0"
 pylint = "^3.1.0"
 lxml-stubs = "^0.5.1"
 
