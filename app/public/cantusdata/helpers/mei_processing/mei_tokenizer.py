@@ -5,7 +5,7 @@ can then be indexed by a search engine (i.e. for this project, Solr).
 """
 
 import uuid
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Never, Union
 from .mei_parser import MEIParser
 from .mei_parsing_types import (
     Neume,
@@ -13,6 +13,7 @@ from .mei_parsing_types import (
     ContourType,
     NeumeName,
     NgramDocument,
+    Zone,
 )
 from .bounding_box_utils import combine_bounding_boxes, stringify_bounding_boxes
 
@@ -82,8 +83,10 @@ class MEITokenizer(MEIParser):
         pitch_names, contour, intervals = self._stringify_neume_component_data(
             neume_components
         )
-        zones_with_sys = [(nc["bounding_box"], nc["system"]) for nc in neume_components]
-        location = stringify_bounding_boxes(combine_bounding_boxes(zones_with_sys))
+        zones_with_sys: List[Tuple[Zone, int]] = [
+            (nc["bounding_box"], nc["system"]) for nc in neume_components
+        ]
+        location: str = stringify_bounding_boxes(combine_bounding_boxes(zones_with_sys))
         return {
             "location": location,
             "pitch_names": pitch_names,
