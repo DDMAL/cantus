@@ -5,49 +5,16 @@ can then be indexed by a search engine (i.e. for this project, Solr).
 """
 
 import uuid
-from typing import List, TypedDict, Literal, Tuple, Optional
-from typing_extensions import NotRequired
+from typing import List, Tuple, Optional
 from .mei_parser import MEIParser
-from .mei_parsing_types import Neume, NeumeComponent, ContourType, NeumeName
+from .mei_parsing_types import (
+    Neume,
+    NeumeComponent,
+    ContourType,
+    NeumeName,
+    NgramDocument,
+)
 from .bounding_box_utils import combine_bounding_boxes, stringify_bounding_boxes
-
-
-class NgramDocument(TypedDict):
-    """
-    A generic type for documents containing n-grams
-    of information extracted from MEI files.
-
-    ngram_unit: The unit of the n-gram
-    location: The location of the n-gram in the MEI file (MEI Zones
-        converted to JSON strings according to bounding_box_utils.stringify_bounding_boxes)
-    pitch_names: A string containing the pitch names of the neume components in the n-gram,
-        separated by underscores.
-    contour: A string containing the contours of the neume components in the n-gram, separated
-        by underscores.
-    semitone_interval: A string containing the semitone intervals between the neume components
-        in the n-gram, separated by underscores.
-    neume_names: A string containing the names of the neumes in the n-gram,
-        separated by underscores. This field is not required, and is only present when
-        the n-gram contains complete neumes.
-
-    The following may be part of an NgramDocument, but are optional because
-    they will be added when the document is indexed:
-        manuscript_id: The ID of the manuscript the n-gram belongs to.
-        folio_number: The number of the folio on which the n-gram exists.
-        id: The unique ID of the document (corresponds to solr schema's id field)
-        type: The type of the document (corresponds to solr schema's type field)
-    """
-
-    location: str
-    pitch_names: str
-    contour: str
-    semitone_intervals: str
-    neume_names: NotRequired[str]
-    manuscript_id: NotRequired[str]
-    folio: NotRequired[str]
-    id: NotRequired[str]
-    type: NotRequired[Literal["omr_ngram"]]
-    image_uri: NotRequired[str]
 
 
 class MEITokenizer(MEIParser):
