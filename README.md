@@ -74,6 +74,13 @@ django --> solr: Bind django database "signals" to solr
 ```
 
 
+Python dependencies are managed with the `poetry` package. Although you don't necessarily need to create a local environment with these dependencies (they are installed inside the `app` container during the build process), it may nevertheless be useful (for example, for type checking). To do so, install [`poetry`](https://python-poetry.org/) on your development machine and use it to install the project's dependencies into a virtual environment.
+
+Cantus Ultimus has a few python dependencies that are for development only (for example, the code formatter `black`). These are located in the `dev` group (see the `pyproject.toml` file). To install these for local development, use command: `poetry install --with dev`.
+
+#### Enabling live changes with django's `runserver`
+
+
 ### Database migrations
 
 Whenever changes are made to database models, they need to be applied to the PostgreSQL database. This occurs through Django's migrations.

@@ -1,4 +1,8 @@
 <tr>
+    <% if (showManuscript) { %>
+    <td><%= result.manuscript %></td>
+    <% } %>
+    
     <td><%= result.folio %></td>
 
     <td>
@@ -9,7 +13,9 @@
     </td>
 
     <% _.forEach(infoFields, function (field) { %>
+    <% if (field.type != 'manuscript') { %>
     <td><%= result[field.type] %></td>
+    <% } %>
     <% }); %>
 </tr>
 

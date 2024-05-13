@@ -1,11 +1,16 @@
 version: '3.7'
 services:
   app:
-    build: ./app
+    build:
+      context: .
+      dockerfile: ./app/Dockerfile
+      args:
+        APP_PORT: ${PORT}
     container_name: cantus-app-1
     command: /code/django-config.sh
     volumes:
       - ./app/public:/code/public
+      - django_static_volume:/code/static
     depends_on:
       postgres:
         condition: service_healthy
@@ -44,6 +49,9 @@ services:
       - "8000:8000"
     depends_on:
       - app
+    volumes:
+      - ./cantaloupe/interim_files/manifests:/code/manifests
+      - django_static_volume:/code/static/django
 
   solr:
     build: ./solr
@@ -52,6 +60,8 @@ services:
       - "8983:8983"
     environment:
       - SOLR_SECURITY_MANAGER_ENABLED=false
+    volumes:
+      - solr_volume:/var/solr
 
   rabbitmq:
     build: ./rabbitmq
@@ -71,11 +81,8 @@ services:
       - ./app/public:/code/public
     command:
       [
-        "runuser",
-        "-u",
-        "daemon",
-        "--",
-        "celery",
+        "/code/.venv/bin/python",
+        "/code/.venv/bin/celery",
         "-A",
         "cantusdata",
         "worker",
@@ -94,3 +101,21 @@ services:
       - RABBIT_PASSWORD=${RABBIT_PASSWORD}
       - RABBIT_VHOST=${RABBIT_VHOST}
     restart: always
+
+  cantaloupe:
+    build: ./cantaloupe
+    container_name: cantus-cantaloupe-1
+    volumes:
+      - ./cantaloupe/interim_files/images:/srv/images
+    command:
+      [
+        "java",
+        "-Dcantaloupe.config=/etc/cantaloupe/cantaloupe.properties",
+        "-Xmx2g",
+        "-jar",
+        "/opt/cantaloupe/cantaloupe-5.0.5/cantaloupe-5.0.5.jar"
+      ]
+
+volumes:
+  django_static_volume:
+  solr_volume:

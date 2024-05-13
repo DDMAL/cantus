@@ -25,6 +25,7 @@ CHANT_FIELDS = [
     "position",
     "mode",
     "differentia",
+    "differentiae_database",
     "finalis",
     "incipit",
     "full_text",

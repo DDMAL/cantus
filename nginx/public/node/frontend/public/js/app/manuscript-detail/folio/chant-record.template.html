@@ -2,7 +2,7 @@
 <p>
 <% } %>
 <% if (cantus_id) { %>
-<b>Cantus ID:</b> <%= cantus_id %>
+<b>Cantus ID:</b> <a href = "https://cantusindex.org/id/<%= cantus_id %>" target = "_blank"><%= cantus_id %></a>
 <% } %>
 <% if (cdb_link_url) { %>
 (<a href = <%= cdb_link_url %> target = "_blank" rel = "noopener noreferrer">Visit record in Cantus Database</a>)
@@ -30,6 +30,9 @@
 <% } %>
 <% if (differentia) { %>
 <p><b>Differentia: </b> <%= differentia.replace('w', 'ω') %></p>
+<% } %>
+<% if (differentiae_database) { %>
+    <p><b>Differentiae Database: </b> <%= differentiae_database %></p>
 <% } %>
 <% if (finalis) { %>
 <p><b>Finalis: </b> <%= finalis %></p>

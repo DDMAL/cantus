@@ -117,6 +117,7 @@ export default Marionette.ItemView.extend({
 
         return {
             infoFields: infoFields,
+            showManuscript: this.getOption('showManuscript'),
             searchType: searchType,
             result: this.model.getFormattedData(searchType, query),
             isVolpianoSearch: searchType === 'volpiano' || searchType === 'volpiano_literal',

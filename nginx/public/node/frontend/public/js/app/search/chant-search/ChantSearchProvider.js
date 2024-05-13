@@ -21,7 +21,10 @@ var KNOWN_FIELDS = [
     {type: "mode", "name": "Mode"},
     {type: "feast", "name": "Feast"},
     {type: "genre", "name": "Genre"},
-    {type: "office", "name": "Office"}
+    {type: "office", "name": "Office"},
+    {type: "differentia", "name": "Differentia"},
+    {type: "differentiae_database", "name": "Differentiae Database"},
+    {type: "cantus_id", "name": "Cantus ID"},
 ];
 
 var INITIAL_LOAD_CUTOFF = 100;
@@ -53,7 +56,9 @@ export default Marionette.Object.extend({
         "incipit",
         "differentia",
         "finalis",
-        "folio"
+        "folio",
+        "differentiae_database",
+        "cantus_id"
     ],
 
     /**
