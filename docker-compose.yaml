@@ -18,7 +18,7 @@ services:
         condition: service_started
     environment:
       - APP_VERSION=${APP_VERSION}
-      - APP_PORT=${PORT}
+      - DEVELOPMENT=${DEVELOPMENT}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -46,7 +46,7 @@ services:
     container_name: cantus-nginx-1
     build: ./nginx
     ports:
-      - "${PORT}:80"
+      - "8000:8000"
     depends_on:
       - app
     volumes:
@@ -93,7 +93,7 @@ services:
       ]
     environment:
       - APP_VERSION=${APP_VERSION}
-      - APP_PORT=${PORT}
+      - DEVELOPMENT=${DEVELOPMENT}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
