@@ -4,71 +4,18 @@ used to create json documents from an MEI file. These json documents
 can then be indexed by a search engine (i.e. for this project, Solr). 
 """
 
-from typing import List, Iterator, Any, TypedDict, Literal
+import uuid
+from typing import List, Tuple, Optional, Never, Union
 from .mei_parser import MEIParser
-from .mei_parsing_types import Neume, NeumeComponent
+from .mei_parsing_types import (
+    Neume,
+    NeumeComponent,
+    ContourType,
+    NeumeName,
+    NgramDocument,
+    Zone,
+)
 from .bounding_box_utils import combine_bounding_boxes, stringify_bounding_boxes
-
-NgramUnitType = Literal["neume", "neume_component"]
-
-
-class NgramDocument(TypedDict):
-    """
-    A generic type for documents containing n-grams
-    of information extracted from MEI files.
-
-    ngram_unit: The unit of the n-gram
-    location: The location of the n-gram in the MEI file (MEI Zones
-        converted to JSON strings according to bounding_box_utils.stringify_bounding_boxes)
-    """
-
-    ngram_unit: NgramUnitType
-    location: str
-
-
-class NeumeNgramDocument(NgramDocument):
-    """
-    A type for documents containing n-grams of neume-level information.
-
-    neume_names: A string containing the names of the neumes in the n-gram,
-        separated by underscores.
-    """
-
-    neume_names: str
-
-
-class NeumeComponentNgramDocument(NgramDocument):
-    """
-    A type for documents containing n-grams of neume component-level information.
-
-    pitch_names: A string containing the pitch names of the neume components in the n-gram,
-        separated by underscores.
-    intervals: A string containing the intervals between the neume components in the n-gram,
-        separated by underscores.
-    contours: A string containing the contours of the neume components in the n-gram, separated
-        by underscores.
-    """
-
-    pitch_names: str
-    intervals: str
-    contours: str
-
-
-def generate_ngrams(sequence: List[Any], min_n: int, max_n: int) -> Iterator[List[Any]]:
-    """
-    Generate n-grams from a sequence (list) of items.
-
-    :param sequence: A list of items to generate n-grams from.
-    :param min_gram: The minimum length of n-grams to generate.
-    :param max_gram: The maximum length of n-grams to generate.
-    :yield: A list containing the subset of consecutive items
-        that make up an n-gram.
-    """
-    # Iterate through all desired n-gram lengths
-    for i in range(min_n, max_n + 1):
-        # Iterate through all n-grams of "sequence" of length "i"
-        for j in range(0, len(sequence) - i + 1):
-            yield sequence[j : j + i]
 
 
 class MEITokenizer(MEIParser):
@@ -85,67 +32,178 @@ class MEITokenizer(MEIParser):
         self.min_ngram = min_ngram
         self.max_ngram = max_ngram
 
-    def get_neume_ngram_docs(self) -> List[NeumeNgramDocument]:
+    @property
+    def flattened_neumes(self) -> List[Neume]:
         """
-        Generate neume-level documents for search, containing
-        n-grams of neume names.
+        Flatten the neumes contained in the syllables of the MEI file.
 
-        :return: A list of dictionaries containing the n-grams
-            of neume names.
+        :return: A list of neumes.
         """
-        neumes_sequence: List[Neume] = []
+        neumes: List[Neume] = []
         for syllable in self.syllables:
-            neumes_sequence.extend(syllable["neumes"])
-        neume_documents: List[NeumeNgramDocument] = []
-        for ngram in generate_ngrams(neumes_sequence, self.min_ngram, self.max_ngram):
-            bounding_boxes = [
-                (neume["bounding_box"], neume["system"]) for neume in ngram
-            ]
-            document_location = combine_bounding_boxes(bounding_boxes)
-            neume_names = "_".join([neume["neume_type"] for neume in ngram])
-            neume_documents.append(
-                {
-                    "ngram_unit": "neume",
-                    "location": stringify_bounding_boxes(document_location),
-                    "neume_names": neume_names,
-                }
-            )
-        return neume_documents
+            neumes.extend(syllable["neumes"])
+        return neumes
 
-    def get_neume_component_ngram_docs(self) -> List[NeumeComponentNgramDocument]:
+    def _stringify_neume_component_data(
+        self,
+        neume_components: List[NeumeComponent],
+    ) -> Tuple[str, str, str]:
         """
-        Generate neume component-level documents for search, containing
-        n-grams of pitch names, intervals, and contours.
+        Convert pitch, contour, and interval information from a list of
+        neume components into strings.
 
-        :return: A list of dictionaries containing the n-grams
-            of pitch names, intervals, and contours.
+        :param neume_components: A list of neumes or neume components to convert into strings.
+        :return: A tuple containing the pitch names, contours, and intervals
+            of the neumes or neume components as strings, separated by underscores.
         """
-        neume_components: List[NeumeComponent] = []
-        for syllable in self.syllables:
-            for neume in syllable["neumes"]:
-                neume_components.extend(neume["neume_components"])
-        neume_component_documents: List[NeumeComponentNgramDocument] = []
-        for ngram in generate_ngrams(
-            neume_components,
-            self.min_ngram,
-            self.max_ngram,
-        ):
-            pitch_names = "_".join([comp["pname"] for comp in ngram])
-            # Keep "internal" intervals and contours (in other words,
-            # the intevals and countours between the pitches in these
-            # neume components, and not the interval and contour following
-            # the last pitch in the ngram).
-            intervals = [str(comp["interval"]) for comp in ngram[:-1]]
-            contours = [comp["contour"] for comp in ngram[:-1]]
-            bounding_boxes = [(comp["bounding_box"], neume["system"]) for comp in ngram]
-            document_location = combine_bounding_boxes(bounding_boxes)
-            neume_component_documents.append(
-                {
-                    "ngram_unit": "neume_component",
-                    "location": stringify_bounding_boxes(document_location),
-                    "pitch_names": pitch_names,
-                    "intervals": "_".join(intervals),
-                    "contours": "_".join(contours),
-                }
+        pnames: List[str] = []
+        contours: List[ContourType] = []
+        semitone_intervals: List[str] = []
+        for idx, nc in enumerate(neume_components):
+            pnames.append(nc["pname"])
+            # The interval is None if and only if the countour is None,
+            # so we can safely do this single check.
+            if nc["contour"] is not None and idx != len(neume_components) - 1:
+                contours.append(nc["contour"])
+                semitone_intervals.append(str(nc["semitone_interval"]))
+        return "_".join(pnames), "_".join(contours), "_".join(semitone_intervals)
+
+    def _create_document_from_neume_components(
+        self,
+        neume_components: List[NeumeComponent],
+    ) -> NgramDocument:
+        """
+        Create an NgramDocument from a list of neume components and
+        their corresponding system numbers.
+
+        :param ncs_with_sys: A list of tuples, each containing a neume component
+            and the system number of that neume component.
+        :return: An NgramDocument containing the information from the neume components.
+        """
+        pitch_names, contour, intervals = self._stringify_neume_component_data(
+            neume_components
+        )
+        zones_with_sys: List[Tuple[Zone, int]] = [
+            (nc["bounding_box"], nc["system"]) for nc in neume_components
+        ]
+        location: str = stringify_bounding_boxes(combine_bounding_boxes(zones_with_sys))
+        return {
+            "location": location,
+            "pitch_names": pitch_names,
+            "contour": contour,
+            "semitone_intervals": intervals,
+            "id": str(uuid.uuid4()),
+            "type": "omr_ngram",
+        }
+
+    def _create_pitch_sequences(
+        self,
+    ) -> Tuple[List[NeumeComponent], List[Optional[NeumeName]]]:
+        """
+        Create two lists of equal length: one containing
+        the pitches (neume components) contained in the parsed file,
+        and the other containing the names of the neumes that begin
+        at each pitch (or None if no neume begins at that pitch).
+
+        :return: A tuple containing the list of pitches and the list of neume names.
+        """
+        neume_sequence = self.flattened_neumes
+        neume_names: List[Optional[NeumeName]] = []
+        ncs: List[NeumeComponent] = []
+        for neume in neume_sequence:
+            ncs.extend(neume["neume_components"])
+            flattened_neume_names = [neume["neume_name"]] + [None] * (
+                len(neume["neume_components"]) - 1
             )
-        return neume_component_documents
+            neume_names.extend(flattened_neume_names)
+        return ncs, neume_names
+
+    def create_ngram_documents(self) -> List[NgramDocument]:
+        """
+        Create a list of ngram documents from the MEI file,
+        ensuring that we have ngrams that contain n pitches
+        and n neumes for all n in the range min_ngram to max_ngram.
+
+        In broad strokes, the function:
+            - Iterates through the pitches in the document, and creates ngrams
+               of pitches with n = min_ngram, min_ngram + 1, ..., max_ngram.
+               When an ngram corresponds to a set of complete neumes, neume
+               names are included in the ngram document. When it doesn't,
+               no neume names are added.
+            - Checks whether this has created ngrams of length up to max_ngram
+                of complete neumes starting at the current pitch.
+                (Note: this will only be the case if the
+                current pitch begins a sequence of max_ngram consecutive single-
+                pitch neumes).
+            - If this check fails, the function creates remaining ngrams of complete
+                neumes up to max_ngram of complete neumes.
+
+        :return: A list of NgramDocuments.
+        """
+        pitches, neume_names = self._create_pitch_sequences()
+        ngram_docs: List[NgramDocument] = []
+        num_pitches = len(pitches)
+        # At each pitch in the file, we'll generate all the necessary
+        # ngrams that start with that pitch.
+        for start_idx in range(num_pitches):
+            largest_num_neumes = 0
+            for ngram_length in range(self.min_ngram, self.max_ngram + 1):
+                # Collect the pitches for an ngram of ngram_length
+                # pitches starting at start_idx, if we haven't reached the
+                # end of the pitches.
+                end_idx = start_idx + ngram_length
+                if end_idx > num_pitches:
+                    break
+                nc_ngram = pitches[start_idx:end_idx]
+                doc = self._create_document_from_neume_components(nc_ngram)
+                # If the pitch at start_idx is the beginning of a neume
+                # and the pitch following this ngram is also the beginning
+                # of a neume (or we've reached the end of the file),
+                # then our current ngram of pitches overlaps
+                # with some number of complete neumes.
+                neume_start = neume_names[start_idx] is not None
+                if neume_start:
+                    if end_idx == num_pitches or neume_names[end_idx] is not None:
+                        neume_name_list = [
+                            nn
+                            for nn in neume_names[start_idx:end_idx]
+                            if nn is not None
+                        ]
+                        doc["neume_names"] = "_".join(neume_name_list)
+                        largest_num_neumes = len(neume_name_list)
+                ngram_docs.append(doc)
+            # If the current neume component starts a neume and we
+            # haven't reached the maximum ngram length of neumes
+            # in our existing documents, generate documents containing
+            # larger ngrams of neumes until we reach the maximum ngram length.
+            if neume_start and largest_num_neumes < self.max_ngram:
+                min_wanted_ngram_length = max(largest_num_neumes + 1, self.min_ngram)
+                for wanted_ngram_length in range(
+                    min_wanted_ngram_length, self.max_ngram + 1
+                ):
+                    ngram_neume_names: List[NeumeName] = []
+                    ngram_num_pitches = 0
+                    # We'll add pitches to our ngram until we have the
+                    # number of neumes we want in our ngram or we reach
+                    # the end of the file.
+                    while (len(ngram_neume_names) <= wanted_ngram_length) and (
+                        start_idx + ngram_num_pitches < len(pitches)
+                    ):
+                        if (
+                            name_at_pitch := neume_names[start_idx + ngram_num_pitches]
+                        ) is not None and len(ngram_neume_names) < wanted_ngram_length:
+                            ngram_neume_names.append(name_at_pitch)
+                        ngram_num_pitches += 1
+                        if len(ngram_neume_names) == wanted_ngram_length:
+                            break
+                    # We'll only add this ngram if we've actually gotten to
+                    # the desired number of neumes (if we didn't, it means
+                    # we reached the end of the file)
+                    if len(ngram_neume_names) == wanted_ngram_length:
+                        ngram_pitches = pitches[
+                            start_idx : start_idx + ngram_num_pitches
+                        ]
+                        doc = self._create_document_from_neume_components(ngram_pitches)
+                        doc["neume_names"] = "_".join(ngram_neume_names)
+                        ngram_docs.append(doc)
+        return ngram_docs

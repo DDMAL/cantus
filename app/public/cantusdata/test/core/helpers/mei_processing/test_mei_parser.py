@@ -4,12 +4,13 @@ from cantusdata.settings import BASE_DIR
 from cantusdata.helpers.mei_processing.mei_parser import (
     MEIParser,
     get_contour_from_interval,
-    get_interval_between_neume_components,
+    get_semitones_between_neume_components,
     analyze_neume,
 )
 from cantusdata.helpers.mei_processing.mei_parsing_types import (
     NeumeComponentElementData,
     Zone,
+    Syllable,
 )
 
 
@@ -89,7 +90,7 @@ class MEIParserTestCase(TestCase):
             # Relevant zones (for first syllable and the single neume component in that syllable):
             ## <zone xml:id="zone-0000001663913937" ulx="2426" uly="2451" lrx="2639" lry="2651"/>
             ## <zone xml:id="zone-0000001993884372" ulx="2608" uly="2399" lrx="2678" lry="2448"/>
-            expected_first_syllable = {
+            expected_first_syllable: Syllable = {
                 "text": {
                     "text": "Ec",
                     "bounding_box": {
@@ -99,7 +100,7 @@ class MEIParserTestCase(TestCase):
                 },
                 "neumes": [
                     {
-                        "neume_type": "Punctum",
+                        "neume_name": "punctum",
                         "neume_components": [
                             {
                                 "pname": "d",
@@ -108,8 +109,9 @@ class MEIParserTestCase(TestCase):
                                     "coordinates": (2608, 2399, 2678, 2448),
                                     "rotate": 0.0,
                                 },
-                                "interval": 0,
-                                "contour": "s",
+                                "semitone_interval": 0,
+                                "contour": "r",
+                                "system": 1,
                             }
                         ],
                         "bounding_box": {
@@ -134,7 +136,7 @@ class MEIParserTestCase(TestCase):
             ## <zone xml:id="zone-0000001876581719" ulx="4933" uly="7834" lrx="5265" lry="8034"/>
             ## <zone xml:id="zone-0000001183492561" ulx="5037" uly="7724" lrx="5108" lry="7774"/>
             ## <zone xml:id="zone-0000002089367816" ulx="5104" uly="7774" lrx="5175" lry="7824"/>
-            expected_last_syllable = {
+            expected_last_syllable: Syllable = {
                 "text": {
                     "text": "gil",
                     "bounding_box": {
@@ -144,7 +146,7 @@ class MEIParserTestCase(TestCase):
                 },
                 "neumes": [
                     {
-                        "neume_type": "Clivis",
+                        "neume_name": "clivis",
                         "neume_components": [
                             {
                                 "pname": "e",
@@ -153,8 +155,9 @@ class MEIParserTestCase(TestCase):
                                     "coordinates": (5037, 7724, 5108, 7774),
                                     "rotate": 0.0,
                                 },
-                                "interval": -2,
+                                "semitone_interval": -2,
                                 "contour": "d",
+                                "system": 10,
                             },
                             {
                                 "pname": "d",
@@ -163,8 +166,9 @@ class MEIParserTestCase(TestCase):
                                     "coordinates": (5104, 7774, 5175, 7824),
                                     "rotate": 0.0,
                                 },
-                                "interval": None,
+                                "semitone_interval": None,
                                 "contour": None,
+                                "system": 10,
                             },
                         ],
                         "bounding_box": {
@@ -178,29 +182,37 @@ class MEIParserTestCase(TestCase):
             self.assertEqual(syllables[-1], expected_last_syllable)
 
     def test_get_contour_from_interval(self) -> None:
-        self.assertEqual(get_contour_from_interval(0), "s")
+        self.assertEqual(get_contour_from_interval(0), "r")
         self.assertEqual(get_contour_from_interval(1), "u")
         self.assertEqual(get_contour_from_interval(-3), "d")
 
-    def test_get_interval_between_neume_components(self) -> None:
+    def test_get_semitones_between_neume_components(self) -> None:
         with self.subTest("Interval test: ascending P5"):
             self.assertEqual(
-                get_interval_between_neume_components(self.nc_elem_g3, self.nc_elem_d4),
+                get_semitones_between_neume_components(
+                    self.nc_elem_g3, self.nc_elem_d4
+                ),
                 7,
             )
         with self.subTest("Interval test: descending P5"):
             self.assertEqual(
-                get_interval_between_neume_components(self.nc_elem_d4, self.nc_elem_g3),
+                get_semitones_between_neume_components(
+                    self.nc_elem_d4, self.nc_elem_g3
+                ),
                 -7,
             )
         with self.subTest("Interval test: descending P4"):
             self.assertEqual(
-                get_interval_between_neume_components(self.nc_elem_g3, self.nc_elem_d3),
+                get_semitones_between_neume_components(
+                    self.nc_elem_g3, self.nc_elem_d3
+                ),
                 -5,
             )
         with self.subTest("Interval test: descending m6"):
             self.assertEqual(
-                get_interval_between_neume_components(self.nc_elem_g3, self.nc_elem_b2),
+                get_semitones_between_neume_components(
+                    self.nc_elem_g3, self.nc_elem_b2
+                ),
                 -8,
             )
 
@@ -219,16 +231,16 @@ class MEIParserTestCase(TestCase):
         ]
         neume_components_5 = [self.nc_elem_d4]
         with self.subTest("Analyze Pes"):
-            self.assertEqual(analyze_neume(neume_components_1), ("Pes", [5], ["u"]))
+            self.assertEqual(analyze_neume(neume_components_1), ("pes", [5], ["u"]))
         with self.subTest("Analyze Torculus"):
             self.assertEqual(
-                analyze_neume(neume_components_2), ("Torculus", [5, -5], ["u", "d"])
+                analyze_neume(neume_components_2), ("torculus", [5, -5], ["u", "d"])
             )
         with self.subTest("Analyze Clivis"):
-            self.assertEqual(analyze_neume(neume_components_3), ("Clivis", [-7], ["d"]))
+            self.assertEqual(analyze_neume(neume_components_3), ("clivis", [-7], ["d"]))
         with self.subTest("Analyze Tristropha"):
             self.assertEqual(
-                analyze_neume(neume_components_4), ("Tristopha", [0, 0], ["s", "s"])
+                analyze_neume(neume_components_4), ("tristopha", [0, 0], ["r", "r"])
             )
         with self.subTest("Analyze Punctum"):
-            self.assertEqual(analyze_neume(neume_components_5), ("Punctum", [], []))
+            self.assertEqual(analyze_neume(neume_components_5), ("punctum", [], []))

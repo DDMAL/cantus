@@ -2,7 +2,7 @@
 Contains type definitions used in the MEI parsing process.
 """
 
-from typing import Tuple, TypedDict, Literal, List, Optional
+from typing import Tuple, TypedDict, Literal, List, Optional, NotRequired
 from typing_extensions import TypeAlias
 
 # A type for coordinates of bounding boxes
@@ -30,26 +30,26 @@ class Zone(TypedDict):
     rotate: float
 
 
-ContourType = Literal["u", "d", "s"]
-NeumeType = Literal[
-    "Punctum",
-    "Pes",
-    "Clivis",
-    "Scandicus",
-    "Torculus",
-    "Porrectus",
-    "Distropha",
-    "Tristopha",
-    "Pressus",
-    "Climacus",
-    "Climacus resupinus",
-    "Torculus resupinus",
-    "Porrectus flexus",
-    "Pes subpunctis",
-    "Scandicus flexus",
-    "Scandicus subpunctis",
-    "Porrectus subpunctis",
-    "Compound",
+ContourType = Literal["u", "d", "r"]
+NeumeName = Literal[
+    "punctum",
+    "pes",
+    "clivis",
+    "scandicus",
+    "torculus",
+    "porrectus",
+    "distropha",
+    "tristopha",
+    "pressus",
+    "climacus",
+    "climacus_resupinus",
+    "torculus_resupinus",
+    "porrectus_flexus",
+    "pes_subpunctis",
+    "scandicus_flexus",
+    "scandicus_subpunctis",
+    "porrectus_subpunctis",
+    "compound",
 ]
 
 
@@ -74,27 +74,29 @@ class NeumeComponent(NeumeComponentElementData):
     """A type extending NeumeComponentElementData with interval and contour information.
 
 
-    interval: The interval (in semitones) between the neume component and the
+    semitone_interval: The interval in semitones between the neume component and the
         following neume component. If there is no following neume component,
         this is None.
-    contour: The contour ("u"[p], "d"[own], or "s"[tay]) of 'interval'. If there is no
+    contour: The contour ("u"[p], "d"[own], or "r"[epeat]) of 'interval'. If there is no
         following neume component, this is None.
+    system: The system number that the neume component is on
     """
 
-    interval: Optional[int]
+    semitone_interval: Optional[int]
     contour: Optional[ContourType]
+    system: int
 
 
 class Neume(TypedDict):
     """A type for neumes
 
-    neume_type: The name of the neume (ie. "Punctum", "Pes", "Clivis", etc.)
+    neume_name: The name of the neume (ie. "punctum", "pes", "clivis", etc.)
     neume_components: A list of neume components (containing pitch infomation)
     bounding_box: The bounding box of the neume
     system: The system number that the neume is on
     """
 
-    neume_type: NeumeType
+    neume_name: NeumeName
     neume_components: List[NeumeComponent]
     bounding_box: Zone
     system: int
@@ -112,3 +114,41 @@ class Syllable(TypedDict):
 
     text: SyllableText
     neumes: List[Neume]
+
+
+class NgramDocument(TypedDict):
+    """
+    A generic type for documents containing n-grams
+    of information extracted from MEI files.
+
+    ngram_unit: The unit of the n-gram
+    location: The location of the n-gram in the MEI file (MEI Zones
+        converted to JSON strings according to bounding_box_utils.stringify_bounding_boxes)
+    pitch_names: A string containing the pitch names of the neume components in the n-gram,
+        separated by underscores.
+    contour: A string containing the contours of the neume components in the n-gram, separated
+        by underscores.
+    semitone_interval: A string containing the semitone intervals between the neume components
+        in the n-gram, separated by underscores.
+    neume_names: A string containing the names of the neumes in the n-gram,
+        separated by underscores. This field is not required, and is only present when
+        the n-gram contains complete neumes.
+
+    The following may be part of an NgramDocument, but are optional because
+    they will be added when the document is indexed:
+        manuscript_id: The ID of the manuscript the n-gram belongs to.
+        folio_number: The number of the folio on which the n-gram exists.
+        id: The unique ID of the document (corresponds to solr schema's id field)
+        type: The type of the document (corresponds to solr schema's type field)
+    """
+
+    location: str
+    pitch_names: str
+    contour: str
+    semitone_intervals: str
+    neume_names: NotRequired[str]
+    manuscript_id: NotRequired[str]
+    folio: NotRequired[str]
+    id: NotRequired[str]
+    type: NotRequired[Literal["omr_ngram"]]
+    image_uri: NotRequired[str]
