@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: ./app/Dockerfile
       args:
-        APP_PORT: ${PORT}
+        DEVELOPMENT: ${DEVELOPMENT}
     container_name: cantus-app-1
     command: /code/django-config.sh
     volumes:
