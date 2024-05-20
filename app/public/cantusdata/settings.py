@@ -18,8 +18,7 @@ is_production = not is_development
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
-with open("/etc/key.txt", "r") as f:
-    SECRET_KEY = f.read().strip()
+SECRET_KEY = os.environ.get("DJANO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = is_development
