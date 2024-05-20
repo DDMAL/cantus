@@ -1,82 +1,67 @@
-import re
+# Contains the words that are allowed
+# in a neume_name query
+VALID_NEUME_NAME_WORDS = {
+    "punctum",
+    "pes",
+    "clivis",
+    "scandicus",
+    "torculus",
+    "porrectus",
+    "distropha",
+    "tristopha",
+    "pressus",
+    "climacus",
+    "resupinus",
+    "flexus",
+    "subpunctis",
+    "compound",
+}
 
 
-def get_transpositions(sequence):
-    """Given a series of pitch names (no flats or sharps - just abcdefg),
-    return a list of the 7 possible transpositions of the melody. This is used
-    when generating an elastic search query to look for all transpositions of a
-    user specified pitch sequence.
+def validate_query(q: list[str], q_type: str) -> bool:
+    """
+    Depending on the type of the query, returns True if the query is valid
+    """
+    match q_type:
+        case "neume_names":
+            return all(neume in VALID_NEUME_NAME_WORDS for neume in q)
+        case "pitch_names" | "pitch_names_invariant":
+            return all(pitch in "abcdefg" for pitch in q)
+        case "contour":
+            return all(contour in "udr" for contour in q)
+        case _:
+            return False
 
-    The URL for the query will include 'q=pnames:' followed by the returned
-    transpositions seperated by commas.
 
-    e.g. getTranspositions('cece') returns ['cece', 'dfdf', 'egeg', 'fafa',
+def transpose_up_unicode(x: int) -> int:
+    """
+    Transpose up the unicode decimal for a pitch
+    name up 1 step. The unicode decimal for "g" is 103,
+    so to transpose up from "g" to "a", we need to subtract 6.
+    We can transpose up all other pitch names by adding 1.
+    """
+    # x is the unicode decimal for "a-f"
+    if x < 103:
+        return x + 1
+    # x is the unicode decimal for "g"
+    return x - 6
+
+
+def get_transpositions(sequence: list[str]) -> list[list[str]]:
+    """
+    Given a series of pitch names (no flats or sharps - just abcdefg),
+    return a list of the 7 possible transpositions of the melody.
+
+    e.g. get_transpositions('cece') returns ['cece', 'dfdf', 'egeg', 'fafa',
     'gbgb', 'acac', 'bdbd']
     """
-    sequence = str(sequence)
+    # Get the unicode decimal for each character in the sequence
     asciinum = list(map(ord, sequence))
-
-    def transposeUp(x):
-        if x < 103:
-            return x + 1
-        else:
-            return x - 6
 
     transpositions = [sequence]
 
-    for i in range(1, 7):
-        asciinum = list(map(transposeUp, asciinum))
-        transposed = "".join(chr(i) for i in asciinum)  # convert to string
-        transpositions = transpositions + [transposed]
+    for _ in range(1, 7):
+        asciinum = list(map(transpose_up_unicode, asciinum))
+        transposed_chars = list(map(chr, asciinum))
+        transpositions.append(transposed_chars)
     return transpositions
-
-
-def get_neumes_length(neumes):
-    lengths = {
-        "punctum": 1,
-        "virga": 1,
-        "bivirga": 2,
-        "podatus": 2,
-        "pes": 2,
-        "clivis": 2,
-        "epiphonus": 2,
-        "cephalicus": 2,
-        "scandicus": 3,
-        "salicus": 3,
-        "ancus": 3,
-        "torculus": 3,
-        "porrectus": 3,
-        # Treat flexus as a different one so we can have porrectus flexus, etc
-        "resupinus": 1,
-        "flexus": 1,
-        "cavum": 1,
-    }
-
-    neumes = neumes.lower().split(" ")
-    length = 0
-    for neume in neumes:
-        if neume in lengths:
-            length += lengths[neume]
-        else:
-            # In case their is a type of neume that we don't recognize!
-            length += 1
-
-    return length
-
-
-def valid_pitch_sequence(sequence):
-    # Should already be lowercase
-    pattern = re.compile("[^a-g]")
-    if pattern.search(sequence) is not None:
-        return False
-    else:
-        return True
-
-
-def valid_contour_sequence(sequence):
-    # Already lowercase
-    pattern = re.compile("[^rud]")
-    if pattern.search(sequence) is not None:
-        return False
-    else:
-        return True
