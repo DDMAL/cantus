@@ -7,7 +7,7 @@ poetry config virtualenvs.options.always-copy true
 poetry config virtualenvs.options.no-pip true
 poetry config virtualenvs.options.no-setuptools true
 
-if [ $1 = "8000" ]; then
+if [ $1 = "True" ]; then
     poetry install --no-cache --with debug
 else
     poetry install --no-cache
