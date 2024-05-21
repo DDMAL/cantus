@@ -70,12 +70,23 @@ class Command(BaseCommand):
                     "number", "image_uri"
                 )
             )
+            folio_numbers = folio_map.keys()
+            if not folio_map:
+                raise ValueError(f"No folios found for manuscript {manuscript_id}.")
             manuscript_mei_path = path.join(options["mei_dir"], str(manuscript_id))
+            if not path.exists(manuscript_mei_path):
+                raise FileNotFoundError(f"--mei-dir path does not exist.")
             manuscript_mei_files = [
                 f for f in listdir(manuscript_mei_path) if f.endswith(".mei")
             ]
+            if len(manuscript_mei_files) == 0:
+                raise FileNotFoundError(f"No MEI files found in {manuscript_mei_path}.")
             for mei_file in manuscript_mei_files:
                 folio_number: str = mei_file.split("_")[-1].split(".")[0]
+                if not folio_number in folio_numbers:
+                    raise ValueError(
+                        f"Folio number {folio_number} in MEI file {mei_file} does not exist in the database."
+                    )
                 tokenizer = MEITokenizer(
                     path.join(manuscript_mei_path, mei_file),
                     min_ngram=options["min_ngram"],
