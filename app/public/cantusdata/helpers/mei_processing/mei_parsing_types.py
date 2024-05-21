@@ -142,7 +142,7 @@ class NgramDocument(TypedDict):
         type: The type of the document (corresponds to solr schema's type field)
     """
 
-    location: str
+    location_json: str
     pitch_names: str
     contour: str
     semitone_intervals: str

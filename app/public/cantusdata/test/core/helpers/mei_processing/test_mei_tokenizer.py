@@ -145,7 +145,7 @@ class MEITokenizerTestCase(TestCase):
         # <zone xml:id="zone-0000002089367816" ulx="5104" uly="7774" lrx="5175" lry="7824"/>
         with self.subTest("First 1-gram"):
             expected_1gram: NgramDocument = {
-                "location": json.dumps(
+                "location_json": json.dumps(
                     [{"ulx": 2608, "uly": 2399, "width": 70, "height": 49}]
                 ),
                 "pitch_names": "d",
@@ -156,7 +156,7 @@ class MEITokenizerTestCase(TestCase):
             self.assertEqual(expected_1gram, ngram_docs_1_2[0])
         with self.subTest("Ngram of first 3 neumes"):
             expected_3gram: NgramDocument = {
-                "location": json.dumps(
+                "location_json": json.dumps(
                     [{"ulx": 2608, "uly": 2292, "width": 477, "height": 201}]
                 ),
                 "neume_names": "punctum_clivis_punctum",
@@ -170,7 +170,7 @@ class MEITokenizerTestCase(TestCase):
             # This 3-gram is constructed from the second three
             # pitches of the sample above.
             pitch_3gram: NgramDocument = {
-                "location": json.dumps(
+                "location_json": json.dumps(
                     [{"ulx": 2725, "uly": 2292, "width": 360, "height": 201}]
                 ),
                 "pitch_names": "d_c_f",
@@ -190,7 +190,7 @@ class MEITokenizerTestCase(TestCase):
             # This 4-gram is constructed from the last three
             # pitches of the test document.
             pitch_3gram_1: NgramDocument = {
-                "location": json.dumps(
+                "location_json": json.dumps(
                     [{"ulx": 4811, "uly": 7724, "width": 364, "height": 150}]
                 ),
                 "pitch_names": "c_e_d",
@@ -209,7 +209,7 @@ class MEITokenizerTestCase(TestCase):
             # This 4-gram is constructed from the last four
             # pitches of the test document.
             pitch_4gram: NgramDocument = {
-                "location": json.dumps(
+                "location_json": json.dumps(
                     [{"ulx": 4750, "uly": 7724, "width": 425, "height": 150}]
                 ),
                 "pitch_names": "d_c_e_d",

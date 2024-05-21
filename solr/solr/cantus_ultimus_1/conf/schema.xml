@@ -67,7 +67,7 @@
     <field name="contour" type="string" indexed="true" stored="true" required="false" />
     <field name="semitone_intervals" type="string" indexed="true" stored="true" required="false" />
     <field name="intervals" type="string" indexed="true" stored="true" required="false" />
-    <field name="location" type="string" indexed="false" stored="true" required="false" />
+    <field name="location_json" type="string" indexed="false" stored="true" required="false" />
     <dynamicField name="*_strm" type="string" indexed="true" stored="true" multiValued="true" />
     <dynamicField name="*_stored" type="string" indexed="false" stored="true" />
     <!-- Some fields I made up to match the python file output -->
