@@ -70,7 +70,6 @@ class Command(BaseCommand):
                     "number", "image_uri"
                 )
             )
-            folio_numbers = folio_map.keys()
             if not folio_map:
                 raise ValueError(f"No folios found for manuscript {manuscript_id}.")
             manuscript_mei_path = path.join(options["mei_dir"], str(manuscript_id))
@@ -83,7 +82,7 @@ class Command(BaseCommand):
                 raise FileNotFoundError(f"No MEI files found in {manuscript_mei_path}.")
             for mei_file in manuscript_mei_files:
                 folio_number: str = mei_file.split("_")[-1].split(".")[0]
-                if not folio_number in folio_numbers:
+                if not folio_number in folio_map:
                     raise ValueError(
                         f"Folio number {folio_number} in MEI file {mei_file} does not exist in the database."
                     )
