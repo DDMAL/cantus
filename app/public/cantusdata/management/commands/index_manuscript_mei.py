@@ -55,7 +55,7 @@ class Command(BaseCommand):
             action="store_true",
             help=(
                 "If this flag is set, the command will delete all existing OMR"
-                "documents for the specified manuscript before indexing the new data."
+                "documents for the specified manuscript."
             ),
         )
 
@@ -64,40 +64,40 @@ class Command(BaseCommand):
         manuscript_id = options["manuscript_id"][0]
         if options.get("flush_index"):
             self.flush_manuscript_ngrams_from_index(solr_conn, manuscript_id)
-        else:
-            folio_map: Dict[str, str] = dict(
-                Folio.objects.filter(manuscript_id=manuscript_id).values_list(
-                    "number", "image_uri"
-                )
+            return None
+        folio_map: Dict[str, str] = dict(
+            Folio.objects.filter(manuscript_id=manuscript_id).values_list(
+                "number", "image_uri"
             )
-            if not folio_map:
-                raise ValueError(f"No folios found for manuscript {manuscript_id}.")
-            manuscript_mei_path = path.join(options["mei_dir"], str(manuscript_id))
-            if not path.exists(manuscript_mei_path):
-                raise FileNotFoundError(f"--mei-dir path does not exist.")
-            manuscript_mei_files = [
-                f for f in listdir(manuscript_mei_path) if f.endswith(".mei")
-            ]
-            if len(manuscript_mei_files) == 0:
-                raise FileNotFoundError(f"No MEI files found in {manuscript_mei_path}.")
-            for mei_file in manuscript_mei_files:
-                folio_number: str = mei_file.split("_")[-1].split(".")[0]
-                if not folio_number in folio_map:
-                    raise ValueError(
-                        f"Folio number {folio_number} in MEI file {mei_file} does not exist in the database."
-                    )
-                tokenizer = MEITokenizer(
-                    path.join(manuscript_mei_path, mei_file),
-                    min_ngram=options["min_ngram"],
-                    max_ngram=options["max_ngram"],
+        )
+        if not folio_map:
+            raise ValueError(f"No folios found for manuscript {manuscript_id}.")
+        manuscript_mei_path = path.join(options["mei_dir"], str(manuscript_id))
+        if not path.exists(manuscript_mei_path):
+            raise FileNotFoundError(f"--mei-dir path does not exist.")
+        manuscript_mei_files = [
+            f for f in listdir(manuscript_mei_path) if f.endswith(".mei")
+        ]
+        if len(manuscript_mei_files) == 0:
+            raise FileNotFoundError(f"No MEI files found in {manuscript_mei_path}.")
+        for mei_file in manuscript_mei_files:
+            folio_number: str = mei_file.split("_")[-1].split(".")[0]
+            if not folio_number in folio_map:
+                raise ValueError(
+                    f"Folio number {folio_number} in MEI file {mei_file} does not exist in the database."
                 )
-                ngram_docs = tokenizer.create_ngram_documents()
-                for doc in ngram_docs:
-                    doc["manuscript_id"] = manuscript_id
-                    doc["folio"] = folio_number
-                    doc["image_uri"] = folio_map.get(folio_number, "")
-                solr_conn.add_many(ngram_docs)
-                solr_conn.commit()
+            tokenizer = MEITokenizer(
+                path.join(manuscript_mei_path, mei_file),
+                min_ngram=options["min_ngram"],
+                max_ngram=options["max_ngram"],
+            )
+            ngram_docs = tokenizer.create_ngram_documents()
+            for doc in ngram_docs:
+                doc["manuscript_id"] = manuscript_id
+                doc["folio"] = folio_number
+                doc["image_uri"] = folio_map.get(folio_number, "")
+            solr_conn.add_many(ngram_docs)
+            solr_conn.commit()
 
     def flush_manuscript_ngrams_from_index(
         self, solr_conn: SolrConnection, manuscript_id: int
