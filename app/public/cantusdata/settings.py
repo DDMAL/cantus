@@ -18,7 +18,7 @@ is_production = not is_development
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
-SECRET_KEY = os.environ.get("DJANO_SECRET_KEY")
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = is_development
@@ -46,8 +46,10 @@ INSTALLED_APPS = (
     "rest_framework",
     "rest_framework.authtoken",
     "cantusdata.CantusdataConfig",
-    "django_extensions",
 )
+
+if DEBUG:
+    INSTALLED_APPS += ("django_extensions",)
 
 MIDDLEWARE = (
     "django.middleware.security.SecurityMiddleware",  # Migration: + django 3.1
@@ -171,7 +173,7 @@ SECURE_HSTS_SECONDS = 86400
 SECURE_HSTS_INCLUDE_SUBDOMAINS = is_production
 SECURE_HSTS_PRELOAD = is_production
 
-CELERY_BROKER_URL = f"amqp://{os.environ['RABBIT_USER']}:{os.environ['RABBIT_PASSWORD']}@cantus-rabbitmq-1:5672/{os.environ['RABBIT_VHOST']}"
+CELERY_BROKER_URL = f"amqp://{os.environ.get('RABBIT_USER')}:{os.environ.get('RABBIT_PASSWORD')}@cantus-rabbitmq-1:5672/{os.environ.get('RABBIT_VHOST')}"
 CELERY_RESULT_BACKEND = "django-db"
 CELERY_RESULT_PERSISTENT = False
 CELERY_RESULT_EXTENDED = True

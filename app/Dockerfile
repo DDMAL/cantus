@@ -18,6 +18,7 @@ RUN chmod u+x /code/django-config.sh
 COPY --from=dependency-install-container /code/.venv /code/.venv
 # Add our python environment binaries and package files to the path
 ENV PATH="$PATH:/code/.venv/bin/" \
-    PYTHONPATH="$PYTHONPATH:/code/.venv/lib/python3.12/site-packages/"
+    PYTHONPATH="$PYTHONPATH:/code/.venv/lib/python3.12/site-packages/" \
+    DJANGO_SETTINGS_MODULE="cantusdata.settings"
 
 WORKDIR /code/public
