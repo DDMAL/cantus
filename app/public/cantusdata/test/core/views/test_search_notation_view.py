@@ -1,14 +1,37 @@
-from rest_framework.test import APITransactionTestCase
+from rest_framework.test import APITestCase
 from django.core.management import call_command
 from django.urls import reverse
 
 from cantusdata.views.search_notation import SearchNotationView, NotationSearchException
+from cantusdata.models import Manuscript, Folio
 
 TEST_MEI_FILES_PATH = "cantusdata/test/core/helpers/mei_processing/test_mei_files"
 
 
-class TestSearchNotationView(APITransactionTestCase):
+class TestSearchNotationView(APITestCase):
     search_notation_view = SearchNotationView()
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        """
+        In order for the index_manuscript_mei command
+        to run successfully, we need to create a Manuscript
+        and two Folio objects for the two folios for which
+        we have test data.
+        """
+        source = Manuscript.objects.create(
+            id=123723, name="Test Manuscript", siglum="TEST"
+        )
+        Folio.objects.create(
+            manuscript=source,
+            number="001r",
+            image_uri="test_001r.jpg",
+        )
+        Folio.objects.create(
+            manuscript=source,
+            number="001v",
+            image_uri="test_001r.jpg",
+        )
 
     def setUp(self) -> None:
         call_command(
