@@ -48,6 +48,7 @@ export default Backbone.Collection.extend({
      */
     parse: function (response)
     {
+        this.numFound = response && response.numFound || 0;
         return response && response.results || [];
     }
 });
