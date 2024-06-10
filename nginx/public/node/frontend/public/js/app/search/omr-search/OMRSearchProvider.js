@@ -184,7 +184,7 @@ export default Marionette.Object.extend({
             var contourChoices = new ContourChoiceView();
             inputView.listenTo(contourChoices, 'use:contour', function(newQuery)
             {
-                inputView.insertSearchString(newQuery, false);
+                inputView.insertSearchString(newQuery, true);
             });
             regions.searchHelper.show(contourChoices);
         }
