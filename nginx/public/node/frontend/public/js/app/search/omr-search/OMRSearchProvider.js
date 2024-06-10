@@ -68,7 +68,7 @@ export default Marionette.Object.extend({
 
         var manuscriptModel = options.manuscript;
 
-        this.manuscript = manuscriptModel.get('siglum_slug');
+        this.manuscript = manuscriptModel.get('id');
         this.neumeExemplars = new Backbone.Collection(manuscriptModel.get('neume_exemplars'));
 
         this.fields = [];
