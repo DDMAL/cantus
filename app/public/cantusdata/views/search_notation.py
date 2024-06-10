@@ -134,7 +134,9 @@ class SearchNotationView(APIView):
             result: NotationSearchResultItem = {
                 "boxes": boxes,
                 "contour": d["contour"].split("_"),
-                "semitones": [int(st) for st in d["semitone_intervals"].split("_")],
+                "semitones": [
+                    int(st) for st in d["semitone_intervals"].split("_") if len(st) > 0
+                ],
                 "pnames": d["pitch_names"].split("_"),
             }
             neume_names: Optional[str] = d.get("neume_names")
