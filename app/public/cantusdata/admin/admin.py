@@ -43,7 +43,15 @@ class ManuscriptAdmin(admin.ModelAdmin):
         ),
         (
             "Status",
-            {"fields": ["public", "chants_loaded", "is_mapped", "dbl_folio_img"]},
+            {
+                "fields": [
+                    "public",
+                    "chants_loaded",
+                    "is_mapped",
+                    "dbl_folio_img",
+                    "plugins",
+                ]
+            },
         ),
     ]
     readonly_fields = (
