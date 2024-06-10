@@ -35,7 +35,7 @@ export default Marionette.Object.extend({
             fields: [
                 {
                     name: 'Neume',
-                    type: 'neumes'
+                    type: 'neume_names'
                 }
             ]
         },
@@ -44,20 +44,21 @@ export default Marionette.Object.extend({
             fields: [
                 {
                     name: 'Pitch',
-                    type: 'pnames'
+                    type: 'pitch_names'
                 },
                 {
                     name: 'Pitch (invariant)',
-                    type: 'pnames-invariant'
+                    type: 'pitch_names_invariant'
                 },
                 {
                     name: 'Contour',
                     type: 'contour'
                 },
-                {
-                    name: 'Interval',
-                    type: 'intervals'
-                }
+                // TODO: Implement interval search (see #875)
+                // {
+                //     name: 'Interval',
+                //     type: 'intervals'
+                // }
             ]
         }
     ],
