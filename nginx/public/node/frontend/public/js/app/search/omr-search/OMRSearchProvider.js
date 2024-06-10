@@ -147,9 +147,12 @@ export default Marionette.Object.extend({
 
     getSearchMetadata: function ()
     {
+        var numFound = this.results.numFound || 0;
         return {
             fieldName: this.field.name,
-            query: this.query
+            query: this.query,
+            displayedQuery: this.query,
+            numFound: numFound
         };
     },
 
