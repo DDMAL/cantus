@@ -59,12 +59,12 @@ class TestSearchNotationView(APITestCase):
             )
             expected_query_string = "contour:u_d_u_r"
             self.assertEqual(query_string, expected_query_string)
-        # We add a separate subtest for a "pitch_names_invariant" query since it
+        # We add a separate subtest for a "pitch_names_transposed" query since it
         # has a slightly different logic (we get transpositions and chain them
         # together with ORs).
-        with self.subTest("Test pitch_names_invariant query"):
+        with self.subTest("Test pitch_names_transposed query"):
             query = "c d e"
-            query_type = "pitch_names_invariant"
+            query_type = "pitch_names_transposed"
             query_string = self.search_notation_view.create_query_string(
                 query, query_type
             )

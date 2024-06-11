@@ -25,7 +25,7 @@ def validate_query(q: list[str], q_type: str) -> bool:
     match q_type:
         case "neume_names":
             return all(neume in VALID_NEUME_NAME_WORDS for neume in q)
-        case "pitch_names" | "pitch_names_invariant":
+        case "pitch_names" | "pitch_names_transposed":
             return all(pitch in "abcdefg" for pitch in q)
         case "contour":
             return all(contour in "udr" for contour in q)

@@ -81,7 +81,7 @@ class SearchNotationView(APIView):
         q_valid = validate_query(normalized_q_elems, q_type)
         if not q_valid:
             raise NotationSearchException("Invalid query.")
-        if q_type == "pitch_names_invariant":
+        if q_type == "pitch_names_transposed":
             transpositions = get_transpositions(normalized_q_elems)
             # Create a query string for the tranpositions:
             # e.g. if transpositions are [["a", "b" , "c"], "b","c","d"], etc.]
