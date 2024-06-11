@@ -15,9 +15,9 @@ class SearchUtilsTestCase(TestCase):
             invalid_pitch_names = ["d", "e", "x", "f"]
             self.assertTrue(validate_query(valid_pitch_names, "pitch_names"))
             self.assertFalse(validate_query(invalid_pitch_names, "pitch_names"))
-            self.assertTrue(validate_query(valid_pitch_names, "pitch_names_invariant"))
+            self.assertTrue(validate_query(valid_pitch_names, "pitch_names_transposed"))
             self.assertFalse(
-                validate_query(invalid_pitch_names, "pitch_names_invariant")
+                validate_query(invalid_pitch_names, "pitch_names_transposed")
             )
         with self.subTest("contour validation"):
             valid_contour = ["u", "d", "r"]
