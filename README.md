@@ -265,6 +265,17 @@ The user will be able to know when that process has concluded by revisiting the 
 
 At this point, the manuscript should be searchable within the main website.
 
+### Indexing MEI and activating OMR search
+
+To add OMR search functionality to a manuscript, a set of MEI 5 files for the manuscript needs to be added to the [production MEI files repository](https://github.com/DDMAL/production_mei_files). Add these files in a folder named with the Cantus Database source ID for the manuscript. The mei files must be named by the following convention: *_[folio_number].mei. Once these are committed to the main branch of the production MEI files repo, they can be pulled with the rest of the Cantus Ultimus code base (the production MEI files repository is a submodule of the CU repo).
+
+In the running `app` container, run the `index_manuscript_mei` command with the first command line argument being the source ID of the manuscript. Additional command line options can be found in that command's help text. Once this command has completed, the manuscript MEI has been indexed in Solr.
+
+Go to the Cantus Ultimus admin page and ensure that the "Neume Search" and "Pitch Search" plugins exist in the database. If they do not, simply create new plugins with those names. Then, find the manuscript whose MEI you are adding in the admin panel. On that manuscript's admin page, select either the "Neume Search" plugin (if the manuscript's neumes are unpitched) or both the "Neume Search" and "Pitch Search" plugin (if the manuscript's neumes are pitched). Save the manuscript form.
+
+When you navigate to that manuscript's detail view, OMR search should be available in the search panel.
+
+
 ## Manuscript Inventory
 
 | Name                                                                                                       | Provenance         | Siglum                         | Cantus DB Record | IIIF Manifest | Supported | Served on cantus.simssa.ca | Notes                                                 |
