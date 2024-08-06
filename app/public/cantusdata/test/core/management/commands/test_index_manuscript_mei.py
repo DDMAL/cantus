@@ -27,6 +27,10 @@ class IndexManuscriptMeiTestCase(TestCase):
         Folio.objects.create(number="001v", manuscript=manuscript)
 
     def test_index_manuscript_mei(self) -> None:
+        # Assert that prior to the command run, the folio "999r" does not
+        # exist in the database
+        with self.assertRaises(Folio.DoesNotExist):
+            Folio.objects.get(manuscript_id=123723, number="999r")
         call_command(
             "index_manuscript_mei",
             "123723",
@@ -37,6 +41,10 @@ class IndexManuscriptMeiTestCase(TestCase):
             "--mei-dir",
             TEST_MEI_FILES_PATH,
         )
+        # Assert that the folio "999r" now exists in the database
+        # (will raise exception if it does not)
+        with self.subTest("Test creation of non-existent folio"):
+            Folio.objects.get(manuscript_id=123723, number="999r")
         results = self.solr_conn.query("*:*", fq="type:omr_ngram")
         with self.subTest("Test total number of indexed documents"):
             total_exp_ngrams_001r = calculate_expected_total_ngrams(
@@ -45,8 +53,12 @@ class IndexManuscriptMeiTestCase(TestCase):
             total_exp_ngrams_001v = calculate_expected_total_ngrams(
                 f"{TEST_MEI_FILES_PATH}/123723/cdn-hsmu-m2149l4_001v.mei", 1, 5
             )
+            total_exp_ngrams_999r = calculate_expected_total_ngrams(
+                f"{TEST_MEI_FILES_PATH}/123723/cdn-hsmu-m2149l4_999r.mei", 1, 5
+            )
             self.assertEqual(
-                results.numFound, total_exp_ngrams_001r + total_exp_ngrams_001v
+                results.numFound,
+                total_exp_ngrams_001r + total_exp_ngrams_001v + total_exp_ngrams_999r,
             )
 
     def test_flush_option(self) -> None:
