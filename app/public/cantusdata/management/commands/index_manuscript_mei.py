@@ -95,7 +95,7 @@ class Command(BaseCommand):
                 raise ValueError(
                     f"MEI file {mei_file} does not match the expected format."
                 )
-            if not folio_number in folio_map:
+            if not folio_number in folio_map or folio_map[folio_number] == "":
                 self.stdout.write(
                     self.style.WARNING(
                         f"Folio number {folio_number} in MEI file "
