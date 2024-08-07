@@ -34,7 +34,7 @@ export default Backbone.Collection.extend({
         var manuscript = _.result(this.parameters, 'manuscript');
 
         if (manuscript)
-            queryParams.manuscript = manuscript;
+            queryParams.manuscript_id = manuscript;
 
         return GlobalVars.siteUrl + "notation-search/?" + Qs.stringify(queryParams);
     },
