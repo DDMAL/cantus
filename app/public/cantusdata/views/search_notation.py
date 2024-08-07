@@ -35,7 +35,7 @@ class SolrQueryResultItem(TypedDict):
 class NotationSearchResultItem(TypedDict):
     boxes: list[dict[str, Union[int, str]]]
     contour: list[str]
-    semitones: list[str]
+    semitones: list[int]
     pnames: list[str]
     neumes: NotRequired[list[str]]
 
@@ -53,7 +53,7 @@ class SearchNotationView(APIView):
     def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         q = request.GET.get("q", None)
         stype = request.GET.get("type", None)
-        manuscript_param = request.GET.get("manuscript", None)
+        manuscript_param = request.GET.get("manuscript_id", None)
         rows_param = request.GET.get("rows", "100")
         start_param = request.GET.get("start", "0")
 
@@ -134,7 +134,9 @@ class SearchNotationView(APIView):
             result: NotationSearchResultItem = {
                 "boxes": boxes,
                 "contour": d["contour"].split("_"),
-                "semitones": d["semitone_intervals"].split("_"),
+                "semitones": [
+                    int(st) for st in d["semitone_intervals"].split("_") if len(st) > 0
+                ],
                 "pnames": d["pitch_names"].split("_"),
             }
             neume_names: Optional[str] = d.get("neume_names")

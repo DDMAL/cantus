@@ -129,12 +129,15 @@ class TestSearchNotationView(APITestCase):
             }
             response_no_manuscript = self.client.get(url, params_no_manuscript)
             self.assertEqual(response_no_manuscript.status_code, 400)
-            params_no_type: dict[str, str | int] = {"q": "u d u", "manuscript": 123723}
+            params_no_type: dict[str, str | int] = {
+                "q": "u d u",
+                "manuscript_id": 123723,
+            }
             response_no_type = self.client.get(url, params_no_type)
             self.assertEqual(response_no_type.status_code, 400)
             params_no_q: dict[str, str | int] = {
                 "type": "contour",
-                "manuscript": 123723,
+                "manuscript_id": 123723,
             }
             response_no_q = self.client.get(url, params_no_q)
             self.assertEqual(response_no_q.status_code, 400)
@@ -142,7 +145,7 @@ class TestSearchNotationView(APITestCase):
             params: dict[str, str | int] = {
                 "q": "u d u",
                 "type": "contour",
-                "manuscript": 123723,
+                "manuscript_id": 123723,
             }
             response = self.client.get(url, params)
             self.assertEqual(response.status_code, 200)
