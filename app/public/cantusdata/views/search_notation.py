@@ -20,6 +20,7 @@ RETURNED_FIELDS = [
     "pitch_names",
     "contour",
     "semitone_intervals",
+    "intervals",
     "neume_names",
     "location_json",
 ]
@@ -33,6 +34,7 @@ class SolrQueryResultItem(TypedDict):
     contour: str
     semitone_intervals: str
     neume_names: str
+    intervals: str
     location_json: list[dict[str, int]]
 
 
@@ -40,6 +42,7 @@ class NotationSearchResultItem(TypedDict):
     boxes: list[dict[str, Union[int, str]]]
     contour: list[str]
     semitones: list[int]
+    intervals: list[int]
     pnames: list[str]
     neumes: NotRequired[list[str]]
 
@@ -143,6 +146,7 @@ class SearchNotationView(APIView):
                 "semitones": [
                     int(st) for st in d["semitone_intervals"].split("_") if len(st) > 0
                 ],
+                "intervals": [int(i) for i in d["intervals"].split("_") if len(i) > 0],
                 "pnames": d["pitch_names"].split("_"),
             }
             neume_names: Optional[str] = d.get("neume_names")
