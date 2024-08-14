@@ -1,3 +1,8 @@
+"""
+A collection of functions used by search views to validate and process
+queries.
+"""
+
 # Contains the words that are allowed
 # in a neume_name query
 VALID_NEUME_NAME_WORDS = {
@@ -18,6 +23,22 @@ VALID_NEUME_NAME_WORDS = {
 }
 
 
+def validate_intervals_query_word(word: str) -> bool:
+    """
+    Returns True if the "word" is valid in an intervals query.
+
+    Valid words are one of the letters "u"[p], "d"[own], "r"[epeat].
+    A "u" or "d" must be followed by a positive integer > 1.
+    """
+    if word == "r":
+        return True
+    if word[0] in {"u", "d"}:
+        interval_mag = word[1:]
+        if interval_mag.isdigit() and interval_mag != "1":
+            return True
+    return False
+
+
 def validate_query(q: list[str], q_type: str) -> bool:
     """
     Depending on the type of the query, returns True if the query is valid
@@ -29,6 +50,8 @@ def validate_query(q: list[str], q_type: str) -> bool:
             return all(pitch in "abcdefg" for pitch in q)
         case "contour":
             return all(contour in "udr" for contour in q)
+        case "intervals":
+            return all(validate_intervals_query_word(word) for word in q)
         case _:
             return False
 
@@ -65,3 +88,33 @@ def get_transpositions(sequence: list[str]) -> list[list[str]]:
         transposed_chars = list(map(chr, asciinum))
         transpositions.append(transposed_chars)
     return transpositions
+
+
+def translate_interval_query_direction(query_terms: list[str]) -> list[str]:
+    """
+    Translate the terms of an interval query (alphanumeric strings; e.g. "u3", "d2", "r")
+    as entered by a user into the format that is used in the Solr query (integer strings;
+    e.g. "3", "-2", "1").
+
+    Terms are translated as follows:
+    - "r" translates to "1"
+    -  a "u" indicates an ascending interval, and it translated to a positive
+        integer
+    -  a "d" indicates a descending interval, and it translated to a negative
+        integer
+
+    :param query_terms: a list of strings representing the terms of the interval query;
+        it is assumed that these have already been validated by validate_intervals_query_word
+
+    :return: a list of strings representing the terms of the interval query in the format
+        used in the Solr query
+    """
+    solr_query: list[str] = []
+    for term in query_terms:
+        if term == "r":
+            solr_query.append("1")
+        else:
+            direction = "-" if term[0] == "d" else ""
+            magnitude = term[1:]
+            solr_query.append(f"{direction}{magnitude}")
+    return solr_query

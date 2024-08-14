@@ -47,7 +47,7 @@ class MEITokenizer(MEIParser):
     def _stringify_neume_component_data(
         self,
         neume_components: List[NeumeComponent],
-    ) -> Tuple[str, str, str]:
+    ) -> Tuple[str, str, str, str]:
         """
         Convert pitch, contour, and interval information from a list of
         neume components into strings.
@@ -59,14 +59,26 @@ class MEITokenizer(MEIParser):
         pnames: List[str] = []
         contours: List[ContourType] = []
         semitone_intervals: List[str] = []
+        intervals: List[str] = []
         for idx, nc in enumerate(neume_components):
             pnames.append(nc["pname"])
-            # The interval is None if and only if the countour is None,
+            # The semitone_interval is None if and only if the countour is None,
             # so we can safely do this single check.
-            if nc["contour"] is not None and idx != len(neume_components) - 1:
-                contours.append(nc["contour"])
-                semitone_intervals.append(str(nc["semitone_interval"]))
-        return "_".join(pnames), "_".join(contours), "_".join(semitone_intervals)
+            # Collect one fewer contour/interval than the number of pitches so
+            # that the pitches and contours/intervals are aligned (number of intervals/
+            # contours = number of pitches - 1).
+            if idx != len(neume_components) - 1:
+                if nc["contour"] is not None:
+                    contours.append(nc["contour"])
+                    semitone_intervals.append(str(nc["semitone_interval"]))
+                if nc["interval"] is not None:
+                    intervals.append(str(nc["interval"]))
+        return (
+            "_".join(pnames),
+            "_".join(contours),
+            "_".join(semitone_intervals),
+            "_".join(intervals),
+        )
 
     def _create_document_from_neume_components(
         self,
@@ -80,8 +92,8 @@ class MEITokenizer(MEIParser):
             and the system number of that neume component.
         :return: An NgramDocument containing the information from the neume components.
         """
-        pitch_names, contour, intervals = self._stringify_neume_component_data(
-            neume_components
+        pitch_names, contour, semitone_intervals, intervals = (
+            self._stringify_neume_component_data(neume_components)
         )
         zones_with_sys: List[Tuple[Zone, int]] = [
             (nc["bounding_box"], nc["system"]) for nc in neume_components
@@ -91,7 +103,8 @@ class MEITokenizer(MEIParser):
             "location_json": location,
             "pitch_names": pitch_names,
             "contour": contour,
-            "semitone_intervals": intervals,
+            "semitone_intervals": semitone_intervals,
+            "intervals": intervals,
             "id": str(uuid.uuid4()),
             "type": "omr_ngram",
         }

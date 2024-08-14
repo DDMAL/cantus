@@ -9,7 +9,6 @@ from solr.core import SolrConnection  # type: ignore[import-untyped]
 from cantusdata.helpers.mei_processing.mei_tokenizer import MEITokenizer
 from cantusdata.models.folio import Folio
 
-
 MEI4_DIR = path.join("/code", "production-mei-files")
 FOLIO_NUMBER_REGEX = re.compile(r"[a-zA-Z]?\d+[a-z]?")
 
@@ -93,7 +92,8 @@ class Command(BaseCommand):
             folio_number: str = mei_file.split("_")[-1].split(".")[0]
             if not FOLIO_NUMBER_REGEX.match(folio_number):
                 raise ValueError(
-                    f"MEI file {mei_file} does not match the expected format."
+                    f"Folio number {folio_number} in MEI file {mei_file}"
+                    "does not exist in the database."
                 )
             if not folio_number in folio_map or folio_map[folio_number] == "":
                 self.stdout.write(

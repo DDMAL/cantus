@@ -1,6 +1,10 @@
 from unittest import TestCase
 
-from cantusdata.helpers.search_utils import validate_query, get_transpositions
+from cantusdata.helpers.search_utils import (
+    validate_query,
+    get_transpositions,
+    translate_interval_query_direction,
+)
 
 
 class SearchUtilsTestCase(TestCase):
@@ -24,6 +28,11 @@ class SearchUtilsTestCase(TestCase):
             invalid_contour = ["u", "d", "s", "r"]
             self.assertTrue(validate_query(valid_contour, "contour"))
             self.assertFalse(validate_query(invalid_contour, "contour"))
+        with self.subTest("intervals validation"):
+            valid_intervals = ["u2", "d3", "r", "d14", "u12"]
+            invalid_intervals = ["u2", "d3", "r", "d14", "u12", "r8"]
+            self.assertTrue(validate_query(valid_intervals, "intervals"))
+            self.assertFalse(validate_query(invalid_intervals, "intervals"))
         with self.subTest("invalid query type"):
             self.assertFalse(validate_query(["a", "b", "c"], "not_a_query_type"))
 
@@ -52,3 +61,9 @@ class SearchUtilsTestCase(TestCase):
                 ["e", "f", "g", "d"],
             ]
             self.assertEqual(transpositions, expected_transpositions)
+
+    def test_translate_interval_query_direction(self) -> None:
+        query_elems = ["u2", "d3", "r", "d14", "u12"]
+        expected_translated_query = ["2", "-3", "1", "-14", "12"]
+        translated_query = translate_interval_query_direction(query_elems)
+        self.assertEqual(translated_query, expected_translated_query)

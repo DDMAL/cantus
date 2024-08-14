@@ -13,7 +13,7 @@ file:
 Defines associated types for the data structures used by the parser.
 """
 
-from typing import Tuple, Dict, List, Iterator, Optional
+from typing import Tuple, Dict, List, Iterator, Optional, Literal
 from lxml import etree  # pylint: disable=no-name-in-module
 from .mei_parsing_types import (
     Zone,
@@ -130,8 +130,10 @@ class MEIParser:
         :param syllable: A syllable element from an MEI file
         :return: Dictionary of syllable text data
         """
-        if syl_elem is not None and syl_elem.text:
-            text_dict: SyllableText = {
+        # Ignoring type of next two expressions because for some reason
+        # mypy thinks they are unreachable, but we know they are not.
+        if syl_elem is not None and syl_elem.text:  # type: ignore
+            text_dict: SyllableText = {  # type: ignore
                 "text": syl_elem.text.strip(),
                 "bounding_box": self._get_element_zone(syl_elem),
             }
@@ -183,9 +185,11 @@ class MEIParser:
             )
             if parsed_neume_component:
                 parsed_nc_elements.append(parsed_neume_component)
-        neume_name, intervals, contours = analyze_neume(parsed_nc_elements)
+        neume_name, semitone_intervals, contours, intervals = analyze_neume(
+            parsed_nc_elements
+        )
         # If the first neume component of the next syllable can be parsed,
-        # add the interval and contour between the final neume component of
+        # add intervals and contour between the final neume component of
         # the current syllable and the first neume component of the next syllable.
         if next_neume_component is not None:
             parsed_next_neume_comp: Optional[NeumeComponentElementData] = (
@@ -193,12 +197,17 @@ class MEIParser:
             )
             if parsed_next_neume_comp:
                 last_neume_comp = parsed_nc_elements[-1]
-                intervals.append(
+                semitone_intervals.append(
                     get_semitones_between_neume_components(
                         last_neume_comp, parsed_next_neume_comp
                     )
                 )
-            contours.append(get_contour_from_interval(intervals[-1]))
+                contours.append(get_contour_from_interval(semitone_intervals[-1]))
+                intervals.append(
+                    get_melodic_interval(
+                        semitone_intervals[-1], last_neume_comp["pname"]
+                    )
+                )
         # Get a bounding box for the neume by combining bounding boxes of
         # its components. Note that a single neume does not span multiple
         # systems, so the combined bounding box will be a single zone.
@@ -212,8 +221,11 @@ class MEIParser:
                     "pname": nc["pname"],
                     "octave": nc["octave"],
                     "bounding_box": nc["bounding_box"],
-                    "semitone_interval": intervals[i] if i < len(intervals) else None,
+                    "semitone_interval": (
+                        semitone_intervals[i] if i < len(semitone_intervals) else None
+                    ),
                     "contour": contours[i] if i < len(contours) else None,
+                    "interval": intervals[i] if i < len(intervals) else None,
                     "system": neume_system,
                 }
             )
@@ -403,7 +415,7 @@ def get_contour_from_interval(interval: int) -> ContourType:
     """
     Compute the contour of an interval.
 
-    :param interval: The size of the interval in semitones
+    :param interval: The size of the interval in semitones or steps
     :return: The contour of the interval ("u"[p], "d"[own], or "r"[epeat])
     """
     if interval < 0:
@@ -413,20 +425,81 @@ def get_contour_from_interval(interval: int) -> ContourType:
     return "r"
 
 
+INTERVAL_TO_STEP_MAP: Dict[int, int] = {
+    0: 1,  # unison
+    1: 2,  # minor 2nd
+    2: 2,  # major 2nd
+    3: 3,  # minor 3rd
+    4: 3,  # major 3rd
+    5: 4,  # perfect 4th
+    # we handle 6 semitones separately below
+    # b/c we'll treat it as a 4th or 5th depending
+    # on the starting pitch and direction of the interval
+    7: 5,  # perfect 5th
+    8: 6,  # minor 6th
+    9: 6,  # major 6th
+    10: 7,  # minor 7th
+    11: 7,  # major 7th
+}
+
+
+def get_melodic_interval(semitone_interval: int, starting_pitch_name: str) -> int:
+    """
+    Uses the semitone size of an interval and the starting pitch
+    name to determine the size of a melodic interval.
+    In most cases, the interval is determined by the number of
+    semitones between the pitches. However, in the case of a 6-semitone
+    interval, the interval is determined by the starting pitch name
+    and the contour of the interval.
+
+    :param semitone_interval: The size of the interval in semitones
+    :param starting_pitch_name: The pitch name of the starting pitch
+
+    :return: A integer representing the size of the interval in steps,
+        a positive integer for an ascending interval and a negative
+        integer for a descending interval.
+    """
+    if semitone_interval == 0:
+        return 1
+    interval_magnitude = abs(semitone_interval)
+    interval_direction = semitone_interval // interval_magnitude
+    interval_octaves = interval_magnitude // 12
+    interval_mod_12 = interval_magnitude % 12
+    interval: int
+    if interval_mod_12 == 6:
+        # Note: Since we don't currently handle any accidentals,
+        # intervals between b's and f's are the only place we'll
+        # see a 6-semitone interval.
+        match (starting_pitch_name, interval_direction > 0):
+            case ("b", True):  # b up to f is a 5th
+                interval = 5
+            case ("b", False):  # b down to f is a 4th
+                interval = 4
+            case ("f", True):  # f up to b is a 4th
+                interval = 4
+            case ("f", False):  # f down to b is a 5th
+                interval = 5
+    else:
+        interval = INTERVAL_TO_STEP_MAP[interval_mod_12]
+    return (interval + 7 * interval_octaves) * interval_direction
+
+
 def analyze_neume(
     neume: List[NeumeComponentElementData],
-) -> Tuple[NeumeName, List[int], List[ContourType]]:
+) -> Tuple[NeumeName, List[int], List[ContourType], List[int]]:
     """
     Analyze a neume (a list of neume components) to determine:
     - The neume type (e.g., punctum, pes, clivis, etc.)
     - The intervals in the neume in semitones
     - The contour of the nueme
+    - The intervals in the neume in steps ("3rd", "4th")
 
     :param neume: A list of neume components (a list of NeumeComponentsType dictionaries)
     :return: A tuple of information about the neume:
                 - Neume type (str)
                 - Neume intervals in semitones (list of ints)
                 - Neume contour (list of "u"[p], "d"[own], or "r"[epeat])
+                - Neume intervals in steps (list of ints)
     """
     semitone_intervals: List[int] = [
         get_semitones_between_neume_components(nc1, nc2)
@@ -435,5 +508,8 @@ def analyze_neume(
     contours: List[ContourType] = [
         get_contour_from_interval(i) for i in semitone_intervals
     ]
+    intervals: List[int] = [
+        get_melodic_interval(i, nc["pname"]) for i, nc in zip(semitone_intervals, neume)
+    ]
     neume_type: NeumeName = NEUME_GROUPS.get("".join(contours), "compound")
-    return neume_type, semitone_intervals, contours
+    return neume_type, semitone_intervals, contours, intervals
