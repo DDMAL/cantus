@@ -7,7 +7,11 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.exceptions import APIException
 
-from cantusdata.helpers.search_utils import validate_query, get_transpositions
+from cantusdata.helpers.search_utils import (
+    validate_query,
+    get_transpositions,
+    translate_interval_query_direction,
+)
 
 RETURNED_FIELDS = [
     "manuscript_id",
@@ -93,6 +97,8 @@ class SearchNotationView(APIView):
             )
             q_str = f"({q_str})"
             q_type = "pitch_names"
+        elif q_type == "intervals":
+            q_str = "_".join(translate_interval_query_direction(normalized_q_elems))
         else:
             q_str = "_".join(normalized_q_elems)
         return f"{q_type}:{q_str}"

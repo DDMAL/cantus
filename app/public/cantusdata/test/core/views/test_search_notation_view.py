@@ -70,6 +70,16 @@ class TestSearchNotationView(APITestCase):
             )
             expected_query_string = "pitch_names:(c_d_e OR d_e_f OR e_f_g OR f_g_a OR g_a_b OR a_b_c OR b_c_d)"
             self.assertEqual(query_string, expected_query_string)
+        # An intervals query translates interval directions before joining them
+        # with underscores.
+        with self.subTest("Test intervals query"):
+            query = "u2 d3 r u12"
+            query_type = "intervals"
+            query_string = self.search_notation_view.create_query_string(
+                query, query_type
+            )
+            expected_query_string = "intervals:2_-3_1_12"
+            self.assertEqual(query_string, expected_query_string)
 
     def test_do_query(self) -> None:
         with self.subTest("Test fields returned"):

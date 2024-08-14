@@ -79,11 +79,14 @@ class NeumeComponent(NeumeComponentElementData):
         this is None.
     contour: The contour ("u"[p], "d"[own], or "r"[epeat]) of 'interval'. If there is no
         following neume component, this is None.
+    interval: The interval (2nd, 5th, etc) between the neume component and the following
+        neume component. If there is no following neume component, this is None.
     system: The system number that the neume component is on
     """
 
     semitone_interval: Optional[int]
     contour: Optional[ContourType]
+    interval: Optional[int]
     system: int
 
 
@@ -130,6 +133,8 @@ class NgramDocument(TypedDict):
         by underscores.
     semitone_interval: A string containing the semitone intervals between the neume components
         in the n-gram, separated by underscores.
+    intervals: A string containing the intervals between the neume components in the n-gram,
+        separated by underscores.
     neume_names: A string containing the names of the neumes in the n-gram,
         separated by underscores. This field is not required, and is only present when
         the n-gram contains complete neumes.
@@ -146,6 +151,7 @@ class NgramDocument(TypedDict):
     pitch_names: str
     contour: str
     semitone_intervals: str
+    intervals: str
     neume_names: NotRequired[str]
     manuscript_id: NotRequired[str]
     folio: NotRequired[str]

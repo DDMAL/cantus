@@ -3,8 +3,8 @@ from os import path
 import json
 from typing import List
 from cantusdata.settings import BASE_DIR
-from cantusdata.helpers.mei_processing.mei_tokenizer import MEITokenizer, NgramDocument
-
+from cantusdata.helpers.mei_processing.mei_tokenizer import MEITokenizer
+from cantusdata.helpers.mei_processing.mei_parsing_types import NgramDocument
 
 TEST_MEI_FILE = path.join(
     BASE_DIR,
@@ -151,6 +151,7 @@ class MEITokenizerTestCase(TestCase):
                 "pitch_names": "d",
                 "contour": "",
                 "semitone_intervals": "",
+                "intervals": "",
                 "neume_names": "punctum",
             }
             self.assertEqual(expected_1gram, ngram_docs_1_2[0])
@@ -163,6 +164,7 @@ class MEITokenizerTestCase(TestCase):
                 "pitch_names": "d_d_c_f",
                 "contour": "r_d_u",
                 "semitone_intervals": "0_-2_5",
+                "intervals": "1_-2_4",
             }
             self.assertEqual(expected_3gram, ngram_docs_3_5[1])
             self.assertEqual(expected_3gram, ngram_docs_2_3[2])
@@ -177,6 +179,7 @@ class MEITokenizerTestCase(TestCase):
                 "semitone_intervals": "-2_5",
                 "contour": "d_u",
                 "neume_names": "clivis_punctum",
+                "intervals": "-2_4",
             }
             self.assertEqual(
                 pitch_3gram,
@@ -196,6 +199,7 @@ class MEITokenizerTestCase(TestCase):
                 "pitch_names": "c_e_d",
                 "semitone_intervals": "4_-2",
                 "contour": "u_d",
+                "intervals": "3_-2",
             }
             self.assertIn(
                 pitch_3gram_1,
@@ -216,6 +220,7 @@ class MEITokenizerTestCase(TestCase):
                 "semitone_intervals": "-2_4_-2",
                 "contour": "d_u_d",
                 "neume_names": "clivis_clivis",
+                "intervals": "-2_3_-2",
             }
             self.assertIn(
                 pitch_4gram,

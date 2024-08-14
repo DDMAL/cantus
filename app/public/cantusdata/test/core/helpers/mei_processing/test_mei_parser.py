@@ -6,6 +6,7 @@ from cantusdata.helpers.mei_processing.mei_parser import (
     get_contour_from_interval,
     get_semitones_between_neume_components,
     analyze_neume,
+    get_melodic_interval,
 )
 from cantusdata.helpers.mei_processing.mei_parsing_types import (
     NeumeComponentElementData,
@@ -112,6 +113,7 @@ class MEIParserTestCase(TestCase):
                                 },
                                 "semitone_interval": 0,
                                 "contour": "r",
+                                "interval": 1,
                                 "system": 1,
                             }
                         ],
@@ -158,6 +160,7 @@ class MEIParserTestCase(TestCase):
                                 },
                                 "semitone_interval": -2,
                                 "contour": "d",
+                                "interval": -2,
                                 "system": 10,
                             },
                             {
@@ -169,6 +172,7 @@ class MEIParserTestCase(TestCase):
                                 },
                                 "semitone_interval": None,
                                 "contour": None,
+                                "interval": None,
                                 "system": 10,
                             },
                         ],
@@ -188,34 +192,50 @@ class MEIParserTestCase(TestCase):
         self.assertEqual(get_contour_from_interval(-3), "d")
 
     def test_get_semitones_between_neume_components(self) -> None:
-        with self.subTest("Interval test: ascending P5"):
+        with self.subTest("Semitone interval test: ascending P5"):
             self.assertEqual(
                 get_semitones_between_neume_components(
                     self.nc_elem_g3, self.nc_elem_d4
                 ),
                 7,
             )
-        with self.subTest("Interval test: descending P5"):
+        with self.subTest("Semitone interval test: descending P5"):
             self.assertEqual(
                 get_semitones_between_neume_components(
                     self.nc_elem_d4, self.nc_elem_g3
                 ),
                 -7,
             )
-        with self.subTest("Interval test: descending P4"):
+        with self.subTest("Semitone interval test: descending P4"):
             self.assertEqual(
                 get_semitones_between_neume_components(
                     self.nc_elem_g3, self.nc_elem_d3
                 ),
                 -5,
             )
-        with self.subTest("Interval test: descending m6"):
+        with self.subTest("Semitone interval test: descending m6"):
             self.assertEqual(
                 get_semitones_between_neume_components(
                     self.nc_elem_g3, self.nc_elem_b2
                 ),
                 -8,
             )
+
+    def test_get_melodic_interval(self) -> None:
+        with self.subTest("Interval test: ascending 3rd"):
+            self.assertEqual(get_melodic_interval(4, "c"), 3)
+        with self.subTest("Interval test: ascending 'dim5'"):
+            self.assertEqual(get_melodic_interval(6, "b"), 5)
+        with self.subTest("Interval test: descending 'aug4'"):
+            self.assertEqual(get_melodic_interval(-6, "b"), -4)
+        with self.subTest("Interval test: unison"):
+            self.assertEqual(get_melodic_interval(0, "b"), 1)
+        with self.subTest("Interval test: descending octave"):
+            self.assertEqual(get_melodic_interval(-12, "f"), -8)
+        with self.subTest("Interval test: ascending 12th"):
+            self.assertEqual(get_melodic_interval(19, "f"), 12)
+        with self.subTest("Interval test: descending 16th"):
+            self.assertEqual(get_melodic_interval(-25, "a"), -16)
 
     def test_analyze_neume(self) -> None:
         neume_components_1 = [self.nc_elem_d3, self.nc_elem_g3]
@@ -232,16 +252,22 @@ class MEIParserTestCase(TestCase):
         ]
         neume_components_5 = [self.nc_elem_d4]
         with self.subTest("Analyze Pes"):
-            self.assertEqual(analyze_neume(neume_components_1), ("pes", [5], ["u"]))
+            self.assertEqual(
+                analyze_neume(neume_components_1), ("pes", [5], ["u"], [4])
+            )
         with self.subTest("Analyze Torculus"):
             self.assertEqual(
-                analyze_neume(neume_components_2), ("torculus", [5, -5], ["u", "d"])
+                analyze_neume(neume_components_2),
+                ("torculus", [5, -5], ["u", "d"], [4, -4]),
             )
         with self.subTest("Analyze Clivis"):
-            self.assertEqual(analyze_neume(neume_components_3), ("clivis", [-7], ["d"]))
+            self.assertEqual(
+                analyze_neume(neume_components_3), ("clivis", [-7], ["d"], [-5])
+            )
         with self.subTest("Analyze Tristropha"):
             self.assertEqual(
-                analyze_neume(neume_components_4), ("tristopha", [0, 0], ["r", "r"])
+                analyze_neume(neume_components_4),
+                ("tristopha", [0, 0], ["r", "r"], [1, 1]),
             )
         with self.subTest("Analyze Punctum"):
-            self.assertEqual(analyze_neume(neume_components_5), ("punctum", [], []))
+            self.assertEqual(analyze_neume(neume_components_5), ("punctum", [], [], []))
