@@ -4,7 +4,7 @@ import re
 
 from django.core.management.base import BaseCommand, CommandParser
 from django.conf import settings
-from solr.core import SolrConnection  # type: ignore
+from solr.core import SolrConnection  # type: ignore[import-untyped]
 
 from cantusdata.helpers.mei_processing.mei_tokenizer import MEITokenizer
 from cantusdata.models.folio import Folio
