@@ -8,6 +8,7 @@ import IncrementalClientSideLoader from "utils/IncrementalClientSideLoader";
 import SearchResultHeadingView from "../SearchResultHeadingView";
 import NeumeGalleryView from "./NeumeGalleryView";
 import ContourChoiceView from "./ContourChoiceView";
+import IntervalChoiceView from "./IntervalChoiceView";
 import InputView from "./InputView";
 import ResultView from "./ResultView";
 
@@ -54,11 +55,10 @@ export default Marionette.Object.extend({
                     name: 'Contour',
                     type: 'contour'
                 },
-                // TODO: Implement interval search (see #875)
-                // {
-                //     name: 'Interval',
-                //     type: 'intervals'
-                // }
+                {
+                    name: 'Interval',
+                    type: 'intervals'
+                }
             ]
         }
     ],
@@ -187,6 +187,14 @@ export default Marionette.Object.extend({
                 inputView.insertSearchString(newQuery, true);
             });
             regions.searchHelper.show(contourChoices);
+        }
+        else if (field.type === 'intervals'){
+            var intervalChoices = new IntervalChoiceView();
+            inputView.listenTo(intervalChoices, 'use:interval', function(newQuery)
+            {
+                inputView.insertSearchString(newQuery, true);
+            });
+            regions.searchHelper.show(intervalChoices);
         }
         else
         {
