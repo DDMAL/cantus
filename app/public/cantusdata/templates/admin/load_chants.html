@@ -1,7 +1,6 @@
 {% extends "base.html" %}
-
 {% block head %}
-<style>
+    <style>
     h2, h5 {
         width: 100%;
         text-align: center;
@@ -21,12 +20,14 @@
         margin: 0 auto;
         display: block
     }
-</style>
+    </style>
 {% endblock %}
 {% block body %}
-<h2>Chants are being loaded for these manuscripts.</h2>
-<h5>The changes are currently being applied to the database. They should appear in a few minutes.</h5>
-<form action="/admin/cantusdata/manuscript/">
-    <input class="blue-button horizontal-center" type="submit" value="Return to Admin Page">
-</form>
+    <h2>Chants are being loaded for these manuscripts.</h2>
+    <h5>The changes are currently being applied to the database. They should appear in a few minutes.</h5>
+    <form action="/admin/cantusdata/manuscript/">
+        <input class="blue-button horizontal-center"
+               type="submit"
+               value="Return to Admin Page">
+    </form>
 {% endblock %}
