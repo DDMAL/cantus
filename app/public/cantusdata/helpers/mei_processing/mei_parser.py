@@ -42,13 +42,13 @@ NEUME_GROUPS: Dict[str, NeumeName] = {
     "rr": "tristopha",
     "rd": "pressus",
     "dd": "climacus",
-    "ddu": "climacus_resupinus",
-    "udu": "torculus_resupinus",
-    "dud": "porrectus_flexus",
-    "udd": "pes_subpunctis",
-    "uud": "scandicus_flexus",
-    "uudd": "scandicus_subpunctis",
-    "dudd": "porrectus_subpunctis",
+    "ddu": "climacus-resupinus",
+    "udu": "torculus-resupinus",
+    "dud": "porrectus-flexus",
+    "udd": "pes-subpunctis",
+    "uud": "scandicus-flexus",
+    "uudd": "scandicus-subpunctis",
+    "dudd": "porrectus-subpunctis",
 }
 
 
