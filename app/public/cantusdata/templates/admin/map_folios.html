@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block head %}
-<style>
+    <style>
     form.paths, h2, h5 {
         width: 100%;
         text-align: center;
@@ -111,121 +111,131 @@
         top: 40%;
         right: 25px;
     }
-</style>
+    </style>
 {% endblock %}
-
 {% block body %}
-
-{% if error %}
-<h2 class="error-message">{{ error }}</h2>
-
-{% elif manuscript_ids %}
-<table>
-    <tr>
-      <th>Manuscript</th>
-      <th>Status</th>
-      <th>Mapping</th>
-    </tr>
-    {% for m_id, m_str, is_mapped in manuscript_ids %}
-    <tr>
-        <td>{{ m_str }}</td>
-            {% if is_mapped == "MAPPED" %}
-            <td class="folio-mapped">Already mapped</td>
-            {% elif is_mapped == "PENDING" %}
-            <td class="folio-pending">Map pending</td>
-            {% else %}
-            <td class="folio-unmapped">Not mapped</td>
-            {% endif %}
-        <td>
-            {% if is_mapped == "MAPPED" %}
-            <a href="/admin/map_folios/?manuscript_id={{ m_id }}" class="table-link">Edit map</a>
-            {% elif is_mapped == "PENDING" %}
-            <span>Wait for mapping to process</span>
-            {% else %}
-            <a href="/admin/map_folios/?manuscript_id={{ m_id }}" class="table-link">Map now</a>
-            {% endif %}
-        </td>
-    </tr>
-    {% endfor %}
-</table>
-
-{% elif manuscript_id and uris and folios and manuscript_mapping_state %}
-
-<h5><br><em>Tip: Use 'Tab' and 'Shift+Tab' to navigate the input fields.</em></h5>
-
-
-
-<form class="mapping-column" action="/admin/map_folios/" method="post">
-    {% csrf_token %}
-    <input type="hidden" name="manuscript_id" value="{{ manuscript_id }}" />
-    <div class="two-folio-checkbox">
-        {% if not dbl_folio_img %}
-            <input type="checkbox" id="two-folio-images" name="two_folio_images"
-                   unchecked>
-        {% else %}
-            <input type="checkbox" id="two-folio-images" name="two_folio_images"
-                checked>
-        {% endif %}
-            <label for="two-folio-images">Images have two folios?</label>
-    </div>
-    <ul>
-        <li><h4>Pages from the manifest:</h4></li>
-        <!-- Manuscripts are assumed by default to have only one folio per image. In this case, 
+    {% if error %}
+        <h2 class="error-message">{{ error }}</h2>
+    {% elif manuscript_ids %}
+        <table>
+            <tr>
+                <th>Manuscript</th>
+                <th>Status</th>
+                <th>Mapping</th>
+            </tr>
+            {% for m_id, m_str, is_mapped in manuscript_ids %}
+                <tr>
+                    <td>{{ m_str }}</td>
+                    {% if is_mapped == "MAPPED" %}
+                        <td class="folio-mapped">Already mapped</td>
+                    {% elif is_mapped == "PENDING" %}
+                        <td class="folio-pending">Map pending</td>
+                    {% else %}
+                        <td class="folio-unmapped">Not mapped</td>
+                    {% endif %}
+                    <td>
+                        {% if is_mapped == "MAPPED" %}
+                            <a href="/admin/map_folios/?manuscript_id={{ m_id }}" class="table-link">Edit map</a>
+                        {% elif is_mapped == "PENDING" %}
+                            <span>Wait for mapping to process</span>
+                        {% else %}
+                            <a href="/admin/map_folios/?manuscript_id={{ m_id }}" class="table-link">Map now</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% elif manuscript_id and uris and folios and manuscript_mapping_state %}
+        <h5>
+            <br>
+            <em>Tip: Use 'Tab' and 'Shift+Tab' to navigate the input fields.</em>
+        </h5>
+        <form class="mapping-column" action="/admin/map_folios/" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="manuscript_id" value="{{ manuscript_id }}" />
+            <div class="two-folio-checkbox">
+                {% if not dbl_folio_img %}
+                    <input type="checkbox"
+                           id="two-folio-images"
+                           name="two_folio_images"
+                           unchecked>
+                {% else %}
+                    <input type="checkbox" id="two-folio-images" name="two_folio_images" checked>
+                {% endif %}
+                <label for="two-folio-images">Images have two folios?</label>
+            </div>
+            <ul>
+                <li>
+                    <h4>Pages from the manifest:</h4>
+                </li>
+                <!-- Manuscripts are assumed by default to have only one folio per image. In this case,
             or if the manuscript has previously been mapped with only one folio per image,
             the input boxes with second-folio-input are created hidden. If the manuscript has
             previously been mapped with two folios per image, this mapping is shown intially (ie.
             the second-folio-input boxes are visible). -->
-        {% for uri in uris %}
-        <li>
-            <a href={{ uri.large }} target="_blank"><img src={{ uri.thumbnail }} /></a>
-            {{ uri.id }}
-            {% if not dbl_folio_img %}
-                {% if uri.folio %}
-                    <input type="text" class="folio-mapping first-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio.0 }} />
-                {% else %}
-                    <input type="text" class="folio-mapping first-folio-input" name={{ uri.full }} onchange="checkMappedFolios()"/>
-                {% endif %}
-                <input hidden type="text" class="folio-mapping second-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" />      
+                {% for uri in uris %}
+                    <li>
+                        <a href={{ uri.large }} target="_blank"><img src={{ uri.thumbnail }} /></a>
+                        {{ uri.id }}
+                        {% if not dbl_folio_img %}
+                            {% if uri.folio %}
+                                <input type="text" class="folio-mapping first-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio.0 }} />
+                            {% else %}
+                                <input type="text" class="folio-mapping first-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" />
+                            {% endif %}
+                            <input hidden type="text" class="folio-mapping second-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" />
+                        {% else %}
+                            {% if uri.folio %}
+                                <input type="text" class="folio-mapping first-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio.0 }} />
+                                {% if uri.folio.1 %}
+                                    <input type="text" class="folio-mapping second-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio.1 }} />
+                                {% else %}
+                                    <input type="text" class="folio-mapping second-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" />
+                                {% endif %}
+                            {% else %}
+                                <input type="text" class="folio-mapping first-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" />
+                                <input type="text" class="folio-mapping second-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" />
+                            {% endif %}
+                        {% endif %}
+                        <div class="button"
+                             onclick="onMoveUp({{ forloop.counter0 }})"
+                             tabindex="-1">Up</div>
+                        <div class="button"
+                             onclick="onMoveDown({{ forloop.counter0 }})"
+                             tabindex="-1">Down</div>
+                    </li>
+                {% endfor %}
+            </ul>
+            {% if manuscript_mapping_state == "PENDING" %}
+                <div class="final-submit">
+                    <input class="grey-button"
+                           type="button"
+                           value="Mapping in Progress. Try again later.">
+                </div>
             {% else %}
-                {% if uri.folio %}
-                    <input type="text" class="folio-mapping first-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio.0 }} />
-                    {% if uri.folio.1 %}
-                        <input type="text" class="folio-mapping second-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" value={{ uri.folio.1 }} />
-                    {% else %}
-                        <input type="text" class="folio-mapping second-folio-input" name={{ uri.full }} onchange="checkMappedFolios()" />
-                    {% endif %}
-                {% else %}
-                    <input type="text" class="folio-mapping first-folio-input" name={{ uri.full }} onchange="checkMappedFolios()"/>
-                    <input type="text" class="folio-mapping second-folio-input" name={{ uri.full }} onchange="checkMappedFolios()"/>
-                {% endif %}
+                <div class="final-submit">
+                    <input class="blue-button" type="submit" value="Submit this Mapping">
+                </div>
             {% endif %}
-            <div class="button" onclick="onMoveUp({{ forloop.counter0 }})" tabindex="-1">Up</div>
-            <div class="button" onclick="onMoveDown({{ forloop.counter0 }})" tabindex="-1">Down</div>
-        </li>
-        {% endfor %}
-    </ul>
-    {% if manuscript_mapping_state == "PENDING" %}
-    <div class="final-submit">
-        <input class="grey-button" type="button" value="Mapping in Progress. Try again later.">
-    </div>
-    {% else %}
-    <div class="final-submit">
-        <input class="blue-button" type="submit" value="Submit this Mapping">
-    </div>
-    {% endif %}
-</form>
-<div class="backup-options">
-    <div class="blue-button" onclick="onSaveBackup()">Save Backup</div>
-    <h6><em>Drag and drop a CSV file anywhere<br>on the page to import it.</em></h6>
-</div>
-<ul class="mapping-column">
-    <li><h4>Folio names from the data:</h4></li>
-    {% for folio in folios %}
-    <li class="folio-name folio-unmapped" id={{ folio }} >{{ folio }}</li>
-    {% endfor %}
-</ul>
-
-<script>
+        </form>
+        <div class="backup-options">
+            <div class="blue-button" onclick="onSaveBackup()">Save Backup</div>
+            <h6>
+                <em>Drag and drop a CSV file anywhere
+                    <br>
+                on the page to import it.</em>
+            </h6>
+        </div>
+        <ul class="mapping-column">
+            <li>
+                <h4>Folio names from the data:</h4>
+            </li>
+            {% for folio in folios %}
+                <li class="folio-name folio-unmapped" id={{ folio }}>{{ folio }}
+                </li>
+            {% endfor %}
+        </ul>
+        <script>
     var folios = document.getElementsByClassName('folio-name');
     var inputs = document.getElementsByClassName('folio-mapping');
     var firstFolioInputs = document.getElementsByClassName('first-folio-input');
@@ -386,6 +396,6 @@
 
         document.body.removeChild(element);
     }
-</script>
-{% endif %}
+        </script>
+    {% endif %}
 {% endblock %}

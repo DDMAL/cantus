@@ -1,25 +1,20 @@
 {% extends "base.html" %}
-
 {% block body %}
-
-<div class="container">
-    <div class="row" style="padding-top:20vh;padding-bottom:20vh">
-        <div class="col-lg-12">
-            <p class="text-center">This manuscript has been moved.</p>
-            <p class="text-center">You can find it on the <a href="{% url 'manuscript-list' %}">Manuscripts</a> page.</p>
+    <div class="container">
+        <div class="row" style="padding-top:20vh;padding-bottom:20vh">
+            <div class="col-lg-12">
+                <p class="text-center">This manuscript has been moved.</p>
+                <p class="text-center">
+                    You can find it on the <a href="{% url 'manuscript-list' %}">Manuscripts</a> page.
+                </p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <img class="center-block logos"
+                     alt="Combined logos: Social Sciences and Humanities Research Council of Canada; Schulich School of Music, McGill University; Distributed Digital Music Archives and Libraries Lab; Centre for Interdisciplinary Research in Music Media and Technology; Fonds de recherche du Québec – Société et culture"
+                     src="/static/img/all_logos_sm.png">
+            </div>
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-lg-12">
-            <img class="center-block logos"
-                 alt="Combined logos: Social Sciences and Humanities Research Council of Canada;
-                 Schulich School of Music, McGill University; Distributed Digital Music Archives and Libraries Lab;
-                 Centre for Interdisciplinary Research in Music Media and Technology; Fonds de recherche du Québec
-                 – Société et culture" src="/static/img/all_logos_sm.png">
-        </div>
-
-    </div>
-</div>
-    
 {% endblock %}

@@ -1,30 +1,26 @@
 {% extends "base.html" %}
-
 {% block body %}
-<noscript class="no-js-message">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12">
-                <p>We're sorry, but JavaScript is required to browse the Cantus Ultimus manuscripts. For instructions on how to enable JavaScript, <a href="http://www.enable-javascript.com/" target="_blank">see here</a>. To learn more about the Cantus Ultimus project, visit the <a href="/">home page</a>.</p>
+    <noscript class="no-js-message">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <p>
+                        We're sorry, but JavaScript is required to browse the Cantus Ultimus manuscripts. For instructions on how to enable JavaScript, <a href="http://www.enable-javascript.com/" target="_blank">see here</a>. To learn more about the Cantus Ultimus project, visit the <a href="/">home page</a>.
+                    </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <img class="center-block logos"
+                         alt="Combined logos: Social Sciences and Humanities Research Council of Canada; Schulich School of Music, McGill University; Distributed Digital Music Archives and Libraries Lab; Centre for Interdisciplinary Research in Music Media and Technology; Fonds de recherche du Québec – Société et culture"
+                         src="/static/img/all_logos_sm.png">
+                </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-lg-12">
-                <img class="center-block logos"
-                     alt="Combined logos: Social Sciences and Humanities Research Council of Canada;
-                     Schulich School of Music, McGill University; Distributed Digital Music Archives and Libraries Lab;
-                     Centre for Interdisciplinary Research in Music Media and Technology; Fonds de recherche du Québec
-                     – Société et culture" src="/static/img/all_logos_sm.png">
-            </div>
-        </div>
-    </div>
-</noscript>
-
-<div id="content-root"></div>
-
-<script src="/static/js/app/cantus-min.js"></script>
-
-<script>
+    </noscript>
+    <div id="content-root"></div>
+    <script src="/static/js/app/cantus-min.js"></script>
+    <script>
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
         (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
             m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
@@ -33,5 +29,5 @@
     ga('create', 'UA-2371659-10', 'auto');
     ga('send', 'pageview');
 
-</script>
+    </script>
 {% endblock %}
