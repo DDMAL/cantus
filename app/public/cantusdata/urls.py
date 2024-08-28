@@ -1,5 +1,6 @@
 # from django.conf.urls import patterns, include, url
 from django.contrib import admin
+from django.conf import settings
 from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
 from cantusdata.views.browse import browse_view
@@ -110,5 +111,9 @@ urlpatterns = [
 # Disambiguates json/html/browsable-api urls
 urlpatterns = format_suffix_patterns(urlpatterns)
 
+if settings.DEBUG:
+    from debug_toolbar.toolbar import debug_toolbar_urls  # type: ignore
+
+    urlpatterns += debug_toolbar_urls()
 
 admin.site.site_header = "Cantus Ultimus Admin"

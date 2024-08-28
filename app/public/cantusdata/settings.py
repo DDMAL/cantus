@@ -33,7 +33,7 @@ ALLOWED_HOSTS = [
 
 # Application definition
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     # Template apps
     "django.contrib.admin",
     "django.contrib.auth",
@@ -46,12 +46,12 @@ INSTALLED_APPS = (
     "rest_framework",
     "rest_framework.authtoken",
     "cantusdata.CantusdataConfig",
-)
+]
 
 if DEBUG:
-    INSTALLED_APPS += ("django_extensions",)
+    INSTALLED_APPS.extend(["django_extensions", "debug_toolbar"])
 
-MIDDLEWARE = (
+MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",  # Migration: + django 3.1
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -59,7 +59,10 @@ MIDDLEWARE = (
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-)
+]
+
+if DEBUG:
+    MIDDLEWARE.insert(0, "debug_toolbar.middleware.DebugToolbarMiddleware")
 
 ROOT_URLCONF = "cantusdata.urls"
 
@@ -179,3 +182,9 @@ CELERY_RESULT_PERSISTENT = False
 CELERY_RESULT_EXTENDED = True
 CELERY_APP = "cantusdata"
 CELERY_TASK_TRACK_STARTED = True
+
+DEBUG_TOOLBAR_CONFIG = {
+    "SHOW_TOOLBAR_CALLBACK": lambda request: (
+        False if request.headers.get("x-requested-with") == "XMLHttpRequest" else True
+    ),
+}
