@@ -269,7 +269,7 @@ export default Marionette.ItemView.extend({
 		var volArr = parse_volpiano(this.ui.volpianoSyllables);
 		this.ui.btnPlay.html("Playing...");
 		this.ui.btnPlay.attr("disabled", true);
-		volpiano2midi(volArr, .6), this.treble_voice;
+		volpiano2midi(volArr, .6, this.treble_voice);
 	},
 	stop: function(){
 		audioStopReset(MIDI);
