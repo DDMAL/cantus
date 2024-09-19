@@ -3,24 +3,7 @@ A collection of functions used by search views to validate and process
 queries.
 """
 
-# Contains the words that are allowed
-# in a neume_name query
-VALID_NEUME_NAME_WORDS = {
-    "punctum",
-    "pes",
-    "clivis",
-    "scandicus",
-    "torculus",
-    "porrectus",
-    "distropha",
-    "tristopha",
-    "pressus",
-    "climacus",
-    "resupinus",
-    "flexus",
-    "subpunctis",
-    "compound",
-}
+from cantusdata.helpers.neume_helpers import NEUME_NAMES
 
 
 def validate_intervals_query_word(word: str) -> bool:
@@ -45,7 +28,7 @@ def validate_query(q: list[str], q_type: str) -> bool:
     """
     match q_type:
         case "neume_names":
-            return all(neume in VALID_NEUME_NAME_WORDS for neume in q)
+            return all(neume in NEUME_NAMES for neume in q)
         case "pitch_names" | "pitch_names_transposed":
             return all(pitch in "abcdefg" for pitch in q)
         case "contour":
