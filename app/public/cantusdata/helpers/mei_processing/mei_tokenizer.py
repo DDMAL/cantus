@@ -6,12 +6,12 @@ can then be indexed by a search engine (i.e. for this project, Solr).
 
 import uuid
 from typing import List, Tuple, Optional
+from cantusdata.helpers.neume_helpers import NeumeName
 from .mei_parser import MEIParser
 from .mei_parsing_types import (
     Neume,
     NeumeComponent,
     ContourType,
-    NeumeName,
     NgramDocument,
     Zone,
 )

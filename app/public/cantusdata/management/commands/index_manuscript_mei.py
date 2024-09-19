@@ -74,7 +74,7 @@ class Command(BaseCommand):
             self.flush_manuscript_ngrams_from_index(solr_conn, manuscript_id)
             return None
         folio_map: Dict[str, str] = dict(
-            Folio.objects.filter(manuscript_id=manuscript_id).values_list(
+            Folio.objects.filter(manuscript_id=manuscript_id).values_list(  # type: ignore[arg-type]
                 "number", "image_uri"
             )
         )

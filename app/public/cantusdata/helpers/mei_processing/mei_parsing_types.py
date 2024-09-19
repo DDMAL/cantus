@@ -5,6 +5,8 @@ Contains type definitions used in the MEI parsing process.
 from typing import Tuple, TypedDict, Literal, List, Optional, NotRequired
 from typing_extensions import TypeAlias
 
+from cantusdata.helpers.neume_helpers import NeumeName
+
 # A type for coordinates of bounding boxes
 CoordinatesType: TypeAlias = Tuple[int, int, int, int]
 """
@@ -31,26 +33,6 @@ class Zone(TypedDict):
 
 
 ContourType = Literal["u", "d", "r"]
-NeumeName = Literal[
-    "punctum",
-    "pes",
-    "clivis",
-    "scandicus",
-    "torculus",
-    "porrectus",
-    "distropha",
-    "tristopha",
-    "pressus",
-    "climacus",
-    "climacus-resupinus",
-    "torculus-resupinus",
-    "porrectus-flexus",
-    "pes-subpunctis",
-    "scandicus-flexus",
-    "scandicus-subpunctis",
-    "porrectus-subpunctis",
-    "compound",
-]
 
 
 class NeumeComponentElementData(TypedDict):
