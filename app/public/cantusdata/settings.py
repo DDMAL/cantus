@@ -12,8 +12,6 @@ from pathlib import Path
 import os
 
 is_development = os.environ.get("DEVELOPMENT") == "True"
-is_production = not is_development
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,7 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = is_development
+DEBUG = False
 
 ALLOWED_HOSTS = [
     "cantus.simssa.ca",
@@ -48,9 +46,6 @@ INSTALLED_APPS = [
     "cantusdata.CantusdataConfig",
 ]
 
-if DEBUG:
-    INSTALLED_APPS.extend(["django_extensions", "debug_toolbar"])
-
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",  # Migration: + django 3.1
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -61,8 +56,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-if DEBUG:
-    MIDDLEWARE.insert(0, "debug_toolbar.middleware.DebugToolbarMiddleware")
 
 ROOT_URLCONF = "cantusdata.urls"
 
@@ -168,13 +161,13 @@ MAX_TOKEN_AGE_DAYS = 3
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-SESSION_COOKIE_SECURE = is_production
-CSRF_COOKIE_SECURE = is_production
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 CSRF_TRUSTED_ORIGINS = ["https://cantus.simssa.ca", "https://cantus.staging.simssa.ca"]
 
 SECURE_HSTS_SECONDS = 86400
-SECURE_HSTS_INCLUDE_SUBDOMAINS = is_production
-SECURE_HSTS_PRELOAD = is_production
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
 
 CELERY_BROKER_URL = f"amqp://{os.environ.get('RABBIT_USER')}:{os.environ.get('RABBIT_PASSWORD')}@cantus-rabbitmq-1:5672/{os.environ.get('RABBIT_VHOST')}"
 CELERY_RESULT_BACKEND = "django-db"
@@ -182,9 +175,3 @@ CELERY_RESULT_PERSISTENT = False
 CELERY_RESULT_EXTENDED = True
 CELERY_APP = "cantusdata"
 CELERY_TASK_TRACK_STARTED = True
-
-DEBUG_TOOLBAR_CONFIG = {
-    "SHOW_TOOLBAR_CALLBACK": lambda request: (
-        False if request.headers.get("x-requested-with") == "XMLHttpRequest" else True
-    ),
-}

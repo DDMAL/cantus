@@ -28,7 +28,7 @@ The build process relies on environment variables specified in an `.env` file lo
 
 Make a copy of `.env.sample` and name it `.env`. You must make two modifications to this file before the docker containers will build.  Both `POSTGRES_PASSWORD` and `RABBIT_PASSWORD` should be uncommented and set with secure passwords.
 
-Before launching the site, ensure that the `DEVELOPMENT` variable is set correctly. For development, it should be set to `True`; for deployment, it should be `False`. This variable configures the application's debug settings. Deploying the website with `DEVELOPMENT=True` would leak debugging information on a live server and use Django's development server rather than gunicorn and must be avoided.
+Before launching the site, ensure that the `DEVELOPMENT` and `DJANGO_SETTINGS_MODULE` variables are set correctly. For development, `DEVELOPMENT` should be set to `True`; for deployment, it should be `False`. Deploying the website with `DEVELOPMENT=True` would leak debugging information on a live server and use Django's development server rather than gunicorn and must be avoided. `DJANGO_SETTINGS_MODULE` defaults to `cantusdata.settings`, which has the `DEBUG` setting set to `False` and does not include various debugging settings. To take advantage of those debugging applications, like `django_debug_toolbar`, uncomment `DJANGO_SETTINGS_MODULE` in the `.env` file and set to `
 
 #### Handling `postgres` authentication issues
 
@@ -41,7 +41,7 @@ rm -r data
 
 ### Launch in development
 
-In the `.env.sample` file, the `DEVELOPMENT` variable is set to `False` by default. For local development, set this to `True` to turn on Django's debug mode, which allows you to access detailed traces when Django encounters errors. For deployment on a server, this should remain set to `False`.
+In the `.env.sample` file, the `DEVELOPMENT` variable is set to `False` by default. For local development, set this to `True` in your local `.env` file to install development dependencies and run the development server using Django and django-extensions. For deployment on a server, this should remain set to `False`. You should also uncomment the `DJANGO_SETTINGS_MODULE` variable and set to `cantusdata.debug_settings`.
 
 > **Windows Users:** Make sure `/app/django-config.sh` has `LF` line endings before launching. This file gets copied over into an Ubuntu container and will break the process if git automatically checked out the file using Windows (`CRLF`) line endings.
 
@@ -49,14 +49,14 @@ Execute the following commands from the root directory of the repo:
 
 ```sh
 # Build the images and launch the containers (this will take a while)
-$ docker compose build
-$ docker compose up -d  
+$ docker compose -f compose-dev.yaml build
+$ docker compose -f compose-dev.yaml up -d  
 ```
 
 When testing subsequent changes, you can do this in one step by including the `--build` flag:
 
 ```
-docker compose up --build -d
+docker compose -f compose-dev.yaml up --build -d
 ```
 
 After the build process completes, the site should be available on http://localhost:8000/ in your host machine.
@@ -88,7 +88,7 @@ Whenever changes are made to database models, they need to be applied to the Pos
 If, during development, you make a change to any models, build and run the containers, as above. Then, enter the command line in the `app` container:
 
 ```sh
-$ docker compose exec -it app bash
+$ docker compose -f compose-dev.yaml exec -it app bash
 ```
 
 Then, run the `makemigrations` command:

@@ -15,9 +15,12 @@ services:
         condition: service_healthy
       solr:
         condition: service_started
+    ports:
+      - "3000:3000"
     environment:
       - APP_VERSION=${APP_VERSION}
       - DEVELOPMENT=${DEVELOPMENT}
+      - DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
@@ -35,6 +38,8 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
     healthcheck:
       test: "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"
       interval: 30s
@@ -56,6 +61,8 @@ services:
   solr:
     build: ./solr
     container_name: cantus-solr-1
+    ports:
+      - "8983:8983"
     environment:
       - SOLR_SECURITY_MANAGER_ENABLED=false
     volumes:
@@ -68,6 +75,8 @@ services:
       - RABBITMQ_DEFAULT_USER=${RABBIT_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBIT_PASSWORD}
       - RABBITMQ_DEFAULT_VHOST=${RABBIT_VHOST}
+    ports:
+      - "5672:5672"
     restart: always
 
   celery:
