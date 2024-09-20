@@ -22,6 +22,7 @@ optional = true
 django-extensions = "3.2.3"
 Werkzeug = "3.0.3"
 django-debug-toolbar = "^4.4.6"
+debugpy = { git = "https://github.com/microsoft/debugpy", rev = "a2f80817a168e1ed6cc60b4f1c70fdb24e40bca5"}
 
 [tool.poetry.group.dev]
 optional = true
@@ -30,11 +31,11 @@ optional = true
 black = "^24.4.2"
 mypy = "^1.11.0"
 pylint = "^3.2.6"
-lxml-stubs = "^0.5.1"
 django-stubs = "^5.0.4"
 pylint-django = "^2.5.5"
 djangorestframework-stubs = "^3.15.0"
 djlint = "^1.34.1"
+types-lxml = "^2024.9.16"
 
 [build-system]
 requires = ["poetry-core"]
