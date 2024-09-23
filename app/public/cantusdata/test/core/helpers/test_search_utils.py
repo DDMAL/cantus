@@ -10,7 +10,7 @@ from cantusdata.helpers.search_utils import (
 class SearchUtilsTestCase(TestCase):
     def test_validate_query(self) -> None:
         with self.subTest("neume_names validation"):
-            valid_neume_names = ["punctum", "flexus", "porrectus"]
+            valid_neume_names = ["punctum", "scandicus-flexus", "porrectus"]
             invalid_neume_names = ["punctum", "flexus", "not_a_neume_name"]
             self.assertTrue(validate_query(valid_neume_names, "neume_names"))
             self.assertFalse(validate_query(invalid_neume_names, "neume_names"))
