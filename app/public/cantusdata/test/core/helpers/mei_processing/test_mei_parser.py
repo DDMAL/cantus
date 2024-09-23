@@ -89,9 +89,9 @@ class MEIParserTestCase(TestCase):
             ##         <nc xml:id="nc-0000000472608670" facs="#zone-0000000528011450" oct="3" pname="c"/>
             ##     </neume>
             ## </syllable>
-            # Relevant zones (for first syllable and the single neume component in that syllable):
-            ## <zone xml:id="zone-0000001663913937" ulx="2426" uly="2451" lrx="2639" lry="2651"/>
-            ## <zone xml:id="zone-0000001993884372" ulx="2608" uly="2399" lrx="2678" lry="2448"/>
+            ## Relevant zones (for first syllable and the single neume component in that syllable):
+            ## <zone xml:id="zone-0000001663913937" lrx="2639" lry="2651" ulx="2426" uly="2451"/>
+            ## <zone xml:id="zone-0000001993884372" lrx="2678" lry="2448" ulx="2608" uly="2399"/>
             expected_first_syllable: Syllable = {
                 "text": {
                     "text": "Ec",
@@ -127,18 +127,18 @@ class MEIParserTestCase(TestCase):
             }
             self.assertEqual(syllables[0], expected_first_syllable)
         with self.subTest("Test last syllable"):
-            # Last syllable:
+            # Last syllable
             ## <syllable xml:id="syllable-0000001099935725">
             ##     <syl xml:id="syl-0000001384779917" facs="#zone-0000001876581719">gil</syl>
             ##     <neume xml:id="neume-0000001160139058">
             ##         <nc xml:id="nc-0000000858715089" facs="#zone-0000001183492561" oct="2" pname="e"/>
-            ##         <nc xml:id="nc-0000001382334633" facs="#zone-0000002089367816" oct="2" pname="d" tilt="n"/>
+            ##         <nc xml:id="nc-0000001382334633" facs="#zone-0000002089367816" oct="2" pname="d" tilt="s"/>
             ##     </neume>
             ## </syllable>
             # Relevant zones (for last syllable and the two neume components in that syllable):
-            ## <zone xml:id="zone-0000001876581719" ulx="4933" uly="7834" lrx="5265" lry="8034"/>
-            ## <zone xml:id="zone-0000001183492561" ulx="5037" uly="7724" lrx="5108" lry="7774"/>
-            ## <zone xml:id="zone-0000002089367816" ulx="5104" uly="7774" lrx="5175" lry="7824"/>
+            ## <zone xml:id="zone-0000001876581719" lrx="5265" lry="8034" ulx="4933" uly="7834"/>
+            ## <zone xml:id="zone-0000001183492561" lrx="5108" lry="7774" ulx="5037" uly="7724"/>
+            ## <zone xml:id="zone-0000002089367816" lrx="5175" lry="7824" ulx="5104" uly="7774"/>
             expected_last_syllable: Syllable = {
                 "text": {
                     "text": "gil",
