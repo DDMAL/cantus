@@ -5,12 +5,12 @@ name = "cantus-ultimus"
 [tool.poetry.dependencies]
 python = "^3.12"
 celery = "5.4.0"
-django = "5.0.7"
+django = "5.1.1"
 django-celery-results = "2.5.1"
 djangorestframework = "3.15.2"
-gunicorn = "22.0.0"
-lxml = "5.2.2"
-markdown = "3.6"
+gunicorn = "23.0.0"
+lxml = "5.3.0"
+markdown = "3.7"
 psycopg = {extras = ["binary"], version = "^3.2.1"}
 requests = "2.32.3"
 solrpy = { git = "https://github.com/search5/solrpy", tag = "rel-1-0-0"}
@@ -20,7 +20,7 @@ optional = true
 
 [tool.poetry.group.debug.dependencies]
 django-extensions = "3.2.3"
-Werkzeug = "3.0.3"
+Werkzeug = "3.0.4"
 django-debug-toolbar = "^4.4.6"
 debugpy = { git = "https://github.com/microsoft/debugpy", rev = "a2f80817a168e1ed6cc60b4f1c70fdb24e40bca5"}
 
