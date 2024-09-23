@@ -2,19 +2,13 @@ from unittest import TestCase
 from os import path
 import json
 from typing import List, cast
-from cantusdata.settings import BASE_DIR
+from django.conf import settings
 from cantusdata.helpers.mei_processing.mei_tokenizer import MEITokenizer
 from cantusdata.helpers.mei_processing.mei_parsing_types import NgramDocument
 from cantusdata.helpers.neume_helpers import NEUME_GROUPS, NeumeName
 
 TEST_MEI_FILE = path.join(
-    BASE_DIR,
-    "cantusdata",
-    "test",
-    "core",
-    "helpers",
-    "mei_processing",
-    "test_mei_files",
+    settings.TEST_MEI_FILES_PATH,
     "123723",
     "cdn-hsmu-m2149l4_001r.mei",
 )
