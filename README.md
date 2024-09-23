@@ -28,7 +28,7 @@ The build process relies on environment variables specified in an `.env` file lo
 
 Make a copy of `.env.sample` and name it `.env`. You must make two modifications to this file before the docker containers will build.  Both `POSTGRES_PASSWORD` and `RABBIT_PASSWORD` should be uncommented and set with secure passwords.
 
-Before launching the site, ensure that the `DEVELOPMENT` and `DJANGO_SETTINGS_MODULE` variables are set correctly. For development, `DEVELOPMENT` should be set to `True`; for deployment, it should be `False`. Deploying the website with `DEVELOPMENT=True` would leak debugging information on a live server and use Django's development server rather than gunicorn and must be avoided. `DJANGO_SETTINGS_MODULE` defaults to `cantusdata.settings`, which has the `DEBUG` setting set to `False` and does not include various debugging settings. To take advantage of those debugging applications, like `django_debug_toolbar`, uncomment `DJANGO_SETTINGS_MODULE` in the `.env` file and set to `
+Before launching the site, ensure that the `DEVELOPMENT` and `DJANGO_SETTINGS_MODULE` variables are set correctly. For development, `DEVELOPMENT` should be set to `True`; for deployment, it should be `False`. Deploying the website with `DEVELOPMENT=True` would leak debugging information on a live server and use Django's development server rather than gunicorn and must be avoided. `DJANGO_SETTINGS_MODULE` defaults to `cantusdata.settings`, which has the `DEBUG` setting set to `False` and does not include various debugging settings. To take advantage of those debugging applications, like `django_debug_toolbar`, uncomment `DJANGO_SETTINGS_MODULE` in the `.env` file and set to `cantusdata.debug_settings`.
 
 #### Handling `postgres` authentication issues
 
