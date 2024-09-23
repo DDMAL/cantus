@@ -159,6 +159,8 @@ class MEITokenizer(MEIParser):
         # At each pitch in the file, we'll generate all the necessary
         # ngrams that start with that pitch.
         for start_idx in range(num_pitches):
+            # Start by collecting ngrams of pitches of lengths min_ngram
+            # to max_ngram.
             largest_num_neumes = 0
             for ngram_length in range(self.min_ngram, self.max_ngram + 1):
                 # Collect the pitches for an ngram of ngram_length
@@ -167,8 +169,9 @@ class MEITokenizer(MEIParser):
                 end_idx = start_idx + ngram_length
                 if end_idx > num_pitches:
                     break
-                nc_ngram = pitches[start_idx:end_idx]
-                doc = self._create_document_from_neume_components(nc_ngram)
+                doc = self._create_document_from_neume_components(
+                    pitches[start_idx:end_idx]
+                )
                 # If the pitch at start_idx is the beginning of a neume
                 # and the pitch following this ngram is also the beginning
                 # of a neume (or we've reached the end of the file),
@@ -204,11 +207,15 @@ class MEITokenizer(MEIParser):
                     ):
                         if (
                             name_at_pitch := neume_names[start_idx + ngram_num_pitches]
-                        ) is not None and len(ngram_neume_names) < wanted_ngram_length:
+                        ) is not None:
+                            # If we've reached a new neume name, but we already
+                            # have the desired number of neumes in our ngram,
+                            # we've added all the required pitches for this ngram
+                            # to ngram_num_pitches and can break the while loop.
+                            if len(ngram_neume_names) == wanted_ngram_length:
+                                break
                             ngram_neume_names.append(name_at_pitch)
                         ngram_num_pitches += 1
-                        if len(ngram_neume_names) == wanted_ngram_length:
-                            break
                     # We'll only add this ngram if we've actually gotten to
                     # the desired number of neumes (if we didn't, it means
                     # we reached the end of the file)
