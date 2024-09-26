@@ -213,7 +213,7 @@ Of all the manuscripts in the list displayed in the admin interface, only a hand
 
 IIIF Manifest files can be found within libraries such as [Gallica](https://gallica.bnf.fr/accueil/en/content/accueil-en?mode=desktop), [e-codices](https://www.e-codices.unifr.ch/en), and others.
 
-A list of known manifests is maintained in `app/data_dumps/manifests.csv` and is automatically applied to the database by running `import_data iiif`. When a IIIF Manifest is located for a specific manuscript, the URL can be included in the manuscript's metadata manually:
+A list of known manifests is maintained in `app/public/data_dumps/manifests.csv` and is automatically applied to the database by running `import_data iiif`. When a IIIF Manifest is located for a specific manuscript, the URL can be included in the manuscript's metadata manually:
 
 Click on the Manuscript's entry.
 
