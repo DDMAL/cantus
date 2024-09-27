@@ -167,7 +167,7 @@ export default Marionette.Object.extend({
         regions.searchInput.show(inputView);
 
         // Neume gallery
-        if (field.type === 'neumes' && this.neumeExemplars.length > 0)
+        if (field.type === 'neume_names' && this.neumeExemplars.length > 0)
         {
             var gallery = new NeumeGalleryView({
                 collection: this.neumeExemplars
