@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.query import QuerySet
 from django.core.management import call_command
 from django.utils.text import slugify
 import threading
@@ -82,7 +83,7 @@ class Manuscript(models.Model):
         return slugify(self.siglum)
 
     @property
-    def neume_exemplars(self):
+    def neume_exemplars(self) -> QuerySet[NeumeExemplar]:
         return NeumeExemplar.objects.filter(folio__manuscript=self)
 
     def create_solr_record(self):

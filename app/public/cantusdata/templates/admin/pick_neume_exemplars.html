@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block head %}
+    <style>
+    .neume-exemplar-tbl{
+        table-layout: fixed;
+    }
+    .neume-exemplar-image-box {
+        overflow: auto;
+        white-space: nowrap;
+    }
+    .neume-exemplar-tbl-fixed-col{
+        width: 15%;
+        vertical-align:middle !important;
+        text-align:center;
+    }
+    .neume-exemplar-image {
+        margin: 10px;
+    }
+    .current-exemplar-image{
+        border: solid 1px #4e30d2;
+    }
+    .selected-exemplar-image{
+        border: solid 4px #ef16ec;
+    }
+    </style>
+    <script>
+    function fetchNeumeExemplars(neumeName, exemplarStartIndex) {
+        const request = new XMLHttpRequest();
+        request.open("GET", `{% url 'neume-set-view' manuscript.id %}?neume_name=${neumeName}&start=${exemplarStartIndex}`);
+        request.setRequestHeader("Content-Type", "application/json");
+        request.onload = function () {
+            const response = JSON.parse(request.responseText);
+            const exemplarImages = response.neume_exemplars;
+            const imageSideLength = response.exemplar_image_side_length;
+            const exemplarTable = document.getElementById(`neume-exemplar-table-${response.neume_name}`);
+            const exemplarImageBox = exemplarTable.getElementsByClassName("neume-exemplar-image-box")[0];
+            exemplarImages.forEach((exemplar) => {
+                const newImage = new Image();
+                newImage.src = exemplar.image_url;
+                newImage.alt = `Exemplar for ${response.neume_name} on folio ${exemplar.folio}`;
+                newImage.classList.add("neume-exemplar-image");
+                newImage.width = imageSideLength;
+                newImage.height = imageSideLength;
+                newImage.addEventListener("click", imageClickCallback.bind(null, newImage, exemplarTable));
+                exemplarImageBox.appendChild(newImage);
+            });
+        };
+        request.send();
+    }
+
+    function throttleFetchNeumeExemplarsAtScrollEnd() {
+        let timerFlag = null; 
+        return (neumeName, event) => {
+            const numExemplarsShown = event.target.getElementsByClassName("neume-exemplar-image").length;
+            const scrollLeft = event.target.scrollLeft;
+            const scrollWidth = event.target.scrollWidth;
+            const clientWidth = event.target.clientWidth;
+            if (scrollLeft + clientWidth >= scrollWidth - 50) {
+                if (timerFlag === null) { 
+                    fetchNeumeExemplars(neumeName, numExemplarsShown);
+                    timerFlag = setTimeout(() => { 
+                        timerFlag = null; 
+                    }, 1000);
+                }
+            }
+        };
+    }
+
+    // This function is called when an image is clicked in the neume exemplar table.
+    // It changes the styling on the image (adds a border) and adds the image URL
+    // to the hidden input field for the neume.
+    function imageClickCallback(image, table){
+        var neumeName = table.getAttribute("data-neume-name");
+        var hiddenInput = document.getElementById(neumeName + "-exemplar-input");
+        var currentExemplarImage = table.getElementsByClassName("selected-exemplar-image")[0];
+        if (currentExemplarImage){
+            currentExemplarImage.classList.remove("selected-exemplar-image");
+        }
+        image.classList.add("selected-exemplar-image");
+        hiddenInput.value = image.src;
+    }
+
+    function validateForm(event){
+        var exemplarInputs = document.getElementsByClassName("neume-exemplar-input");
+        for (var i = 0; i < exemplarInputs.length; i++){
+            if (exemplarInputs[i].value === ""){
+                event.preventDefault();
+                alert("Please select an exemplar for each neume.");
+                return false;
+            }
+        }
+        var form = document.getElementById("neume-exemplars-form");
+        form.submit();
+    }
+
+
+    document.addEventListener("DOMContentLoaded", function(event) { 
+        const neumeExemplarTables = document.getElementsByClassName("neume-exemplar-tbl");
+        for (let i = 0; i < neumeExemplarTables.length; i++) {
+            const neumeName = neumeExemplarTables[i].getAttribute("data-neume-name");
+            fetchNeumeExemplars(neumeName, 0);
+            const neumeExemplarImageBox = neumeExemplarTables[i].getElementsByClassName("neume-exemplar-image-box")[0];
+            neumeExemplarImageBox.addEventListener("scroll", throttleFetchNeumeExemplarsAtScrollEnd().bind(neumeExemplarImageBox, neumeName));
+            };
+        const saveExemplarsButton = document.getElementById("save-exemplars");
+        saveExemplarsButton.addEventListener("click", validateForm);
+        }
+    );
+
+    </script>
+{% endblock %}
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Neume Exemplars: {{ manuscript.name }}</h1>
+                {% if not ngrams_indexed %}
+                    <p>
+                        It looks like this manuscript does not have any indexed MEI. Please index MEI for this manuscript using the index_manuscript_mei command before choosing neume exemplars.
+                    </p>
+                {% else %}
+                    <p>Choose an exemplar for each neume.</p>
+                    <form id="neume-exemplars-form"
+                          method="post"
+                          action="{% url 'neume-exemplars-view' manuscript.id %}"
+                          onsubmit="validateForm()">
+                        {% csrf_token %}
+                        {% for neume_name, initial_exemplar_data in neume_data.items %}
+                            <div>
+                                <table id="neume-exemplar-table-{{ neume_name }}"
+                                       class="neume-exemplar-tbl table"
+                                       data-neume-name="{{ neume_name }}">
+                                    <tr {% if not initial_exemplar_data.current_neume_exemplar %}class="warning" {% else %} class="success"{% endif %}>
+                                        <td class="neume-exemplar-tbl-fixed-col">
+                                            <p>
+                                                <b>{{ neume_name }}</b>
+                                            </p>
+                                            <p>({{ initial_exemplar_data.neume_count }} in manuscript)</p>
+                                        </td>
+                                        <td class="neume-exemplar-tbl-fixed-col">
+                                            {% if initial_exemplar_data.current_neume_exemplar %}
+                                                <img src="{{ initial_exemplar_data.current_neume_exemplar }}"
+                                                     alt="Current exemplar for {{ neume.name }}"
+                                                     class="current-exemplar-image"
+                                                     width="{{ exemplar_image_side_length }}px"
+                                                     height="{{ exemplar_image_side_length }}px">
+                                            {% else %}
+                                                No existing exemplar for this neume.
+                                            {% endif %}
+                                        </td>
+                                        <td class="neume-exemplar-image-box">
+                                            {% for exemplar_folio, exemplar_image in neume_data.exemplars %}
+                                                <img src="{{ exemplar_image }}"
+                                                     alt="Exemplar for {{ neume.name }} on folio {{ exemplar_folio }}"
+                                                     class="neume-exemplar-image"
+                                                     width="{{ exemplar_image_side_length }}px"
+                                                     height="{{ exemplar_image_side_length }}px">
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
+                                    <input id="{{ neume_name }}-exemplar-input"
+                                           class="neume-exemplar-input"
+                                           type="hidden"
+                                           name="{{ neume_name }}"
+                                           value="{{ initial_exemplar_data.current_neume_exemplar | default_if_none:'' }}">
+                                </table>
+                            </div>
+                        {% endfor %}
+                        <button id="save-exemplars" class="btn btn-primary" type="submit">Save Exemplars</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
