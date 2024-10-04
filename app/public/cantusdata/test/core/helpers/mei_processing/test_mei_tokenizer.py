@@ -1,22 +1,20 @@
 from unittest import TestCase
 from os import path
 import json
-from typing import List
-from cantusdata.settings import BASE_DIR
+from typing import List, cast
+from django.conf import settings
 from cantusdata.helpers.mei_processing.mei_tokenizer import MEITokenizer
 from cantusdata.helpers.mei_processing.mei_parsing_types import NgramDocument
+from cantusdata.helpers.neume_helpers import NEUME_GROUPS, NeumeName
 
 TEST_MEI_FILE = path.join(
-    BASE_DIR,
-    "cantusdata",
-    "test",
-    "core",
-    "helpers",
-    "mei_processing",
-    "test_mei_files",
+    settings.TEST_MEI_FILES_PATH,
     "123723",
     "cdn-hsmu-m2149l4_001r.mei",
 )
+
+# Switch NEUME_GROUPS keys and values
+NEUME_NAME_CONTOUR_MAPPER = {v: k for k, v in NEUME_GROUPS.items()}
 
 
 def calculate_expected_total_ngrams(
@@ -78,7 +76,6 @@ def prepare_tokenizer_results(
 
 
 class MEITokenizerTestCase(TestCase):
-
     def test_mei_tokenizer(self) -> None:
         tokenizer_1_2 = MEITokenizer(
             TEST_MEI_FILE,
@@ -113,6 +110,34 @@ class MEITokenizerTestCase(TestCase):
                 TEST_MEI_FILE, 3, 5
             )
             self.assertEqual(len(ngram_docs_3_5), expected_num_ngrams_3_5)
+        with self.subTest("Test neume ngram pitch lengths"):
+            # Test that each ngram of neume names has the correct number of pitches
+            # For ngrams that don't include compound neumes, we test that the number
+            # of pitches is exactly the number expected given the neumes in the ngram.
+            # For ngrams thatinclude compound neumes, we test that the number of pitches
+            # is at least the number we would expect, given that a compound neueme will
+            # have at least three pitches.
+            for doc in ngram_docs_1_2:
+                if "neume_names" in doc:
+                    ngram_includes_compound = False
+                    pitches = doc["pitch_names"].split("_")
+                    neume_names = cast(list[NeumeName], doc["neume_names"].split("_"))
+                    num_expected_pitches = 0
+                    for neume_name in neume_names:
+                        if neume_name == "compound":
+                            num_expected_pitches += 3
+                            ngram_includes_compound = True
+                        else:
+                            # The number of expected pitches per neume are the number of
+                            # letters in the contour string plus one.
+                            num_expected_pitches += (
+                                len(NEUME_NAME_CONTOUR_MAPPER[neume_name]) + 1
+                            )
+                    with self.subTest(neume_names=neume_names):
+                        if ngram_includes_compound:
+                            self.assertGreaterEqual(len(pitches), num_expected_pitches)
+                        else:
+                            self.assertEqual(len(pitches), num_expected_pitches)
         # First three neumes in test file:
         # <neume xml:id="neume-0000001734946468">
         #     <nc xml:id="nc-0000000895518447" facs="#zone-0000001993884372" oct="3" pname="d"/>

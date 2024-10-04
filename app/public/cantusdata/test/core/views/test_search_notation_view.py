@@ -1,11 +1,10 @@
 from rest_framework.test import APITestCase
 from django.core.management import call_command
 from django.urls import reverse
+from django.conf import settings
 
 from cantusdata.views.search_notation import SearchNotationView, NotationSearchException
 from cantusdata.models import Manuscript, Folio
-
-TEST_MEI_FILES_PATH = "cantusdata/test/core/helpers/mei_processing/test_mei_files"
 
 
 class TestSearchNotationView(APITestCase):
@@ -33,7 +32,9 @@ class TestSearchNotationView(APITestCase):
             image_uri="test_001r.jpg",
         )
 
-    def setUp(self) -> None:
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
         call_command(
             "index_manuscript_mei",
             "123723",
@@ -42,7 +43,7 @@ class TestSearchNotationView(APITestCase):
             "--max-ngram",
             "5",
             "--mei-dir",
-            TEST_MEI_FILES_PATH,
+            settings.TEST_MEI_FILES_PATH,
         )
 
     def test_create_query_string(self) -> None:
@@ -163,5 +164,7 @@ class TestSearchNotationView(APITestCase):
             self.assertIn("results", response_data)
             self.assertIn("numFound", response_data)
 
-    def tearDown(self) -> None:
+    @classmethod
+    def tearDownClass(cls) -> None:
         call_command("index_manuscript_mei", "123723", "--flush-index")
+        super().tearDownClass()

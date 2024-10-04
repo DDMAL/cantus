@@ -175,3 +175,5 @@ CELERY_RESULT_PERSISTENT = False
 CELERY_RESULT_EXTENDED = True
 CELERY_APP = "cantusdata"
 CELERY_TASK_TRACK_STARTED = True
+
+TEST_MEI_FILES_PATH = "cantusdata/test/core/helpers/mei_processing/test_mei_files"

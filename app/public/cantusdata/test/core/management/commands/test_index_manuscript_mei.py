@@ -12,7 +12,7 @@ from cantusdata.test.core.helpers.mei_processing.test_mei_tokenizer import (
 from solr.core import SolrConnection  # type: ignore
 
 
-TEST_MEI_FILES_PATH = "cantusdata/test/core/helpers/mei_processing/test_mei_files"
+TEST_MEI_FILES_PATH = settings.TEST_MEI_FILES_PATH
 
 
 class IndexManuscriptMeiTestCase(TestCase):
@@ -25,6 +25,11 @@ class IndexManuscriptMeiTestCase(TestCase):
         # Create two folios
         Folio.objects.create(number="001r", manuscript=manuscript)
         Folio.objects.create(number="001v", manuscript=manuscript)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        call_command("index_manuscript_mei", "123723", "--flush-index")
+        super().tearDownClass()
 
     def test_index_manuscript_mei(self) -> None:
         # Assert that prior to the command run, the folio "999r" does not
@@ -123,3 +128,8 @@ class IndexManuscriptMeiExceptionsTestCase(TestCase):
         os.rmdir("/test-mei-dir/123723")
         os.rmdir("/test-mei-dir")
         os.rmdir("/empty-mei-dir")
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        call_command("index_manuscript_mei", "123723", "--flush-index")
+        super().tearDownClass()

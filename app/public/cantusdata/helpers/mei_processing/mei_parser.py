@@ -13,43 +13,23 @@ file:
 Defines associated types for the data structures used by the parser.
 """
 
-from typing import Tuple, Dict, List, Iterator, Optional, Literal
+from typing import Tuple, Dict, List, Iterator, Optional
 from lxml import etree  # pylint: disable=no-name-in-module
+from cantusdata.helpers.neume_helpers import NEUME_GROUPS, NeumeName
 from .mei_parsing_types import (
     Zone,
     SyllableText,
     NeumeComponentElementData,
     NeumeComponent,
     ContourType,
-    NeumeName,
     Neume,
     Syllable,
 )
 from .bounding_box_utils import combine_bounding_boxes_single_system
 
+
 # Mapping from pitch names to integer pitch class where C = 0
 PITCH_CLASS = {"c": 0, "d": 2, "e": 4, "f": 5, "g": 7, "a": 9, "b": 11}
-
-# Mapping from neume contours to neume names
-NEUME_GROUPS: Dict[str, NeumeName] = {
-    "": "punctum",
-    "u": "pes",
-    "d": "clivis",
-    "uu": "scandicus",
-    "ud": "torculus",
-    "du": "porrectus",
-    "r": "distropha",
-    "rr": "tristopha",
-    "rd": "pressus",
-    "dd": "climacus",
-    "ddu": "climacus_resupinus",
-    "udu": "torculus_resupinus",
-    "dud": "porrectus_flexus",
-    "udd": "pes_subpunctis",
-    "uud": "scandicus_flexus",
-    "uudd": "scandicus_subpunctis",
-    "dudd": "porrectus_subpunctis",
-}
 
 
 class MEIParser:
@@ -122,7 +102,7 @@ class MEIParser:
             return zone
         return {"coordinates": (-1, -1, -1, -1), "rotate": 0.0}
 
-    def _parse_syllable_text(self, syl_elem: Optional[etree.Element]) -> SyllableText:
+    def _parse_syllable_text(self, syl_elem: Optional[etree._Element]) -> SyllableText:
         """
         Get the text of a syllable and its associated bounding box from
         a 'syl' element.
@@ -132,8 +112,8 @@ class MEIParser:
         """
         # Ignoring type of next two expressions because for some reason
         # mypy thinks they are unreachable, but we know they are not.
-        if syl_elem is not None and syl_elem.text:  # type: ignore
-            text_dict: SyllableText = {  # type: ignore
+        if syl_elem is not None and syl_elem.text:
+            text_dict: SyllableText = {
                 "text": syl_elem.text.strip(),
                 "bounding_box": self._get_element_zone(syl_elem),
             }
@@ -305,7 +285,7 @@ class MEIParser:
             elem_iterator = first_syllable.itersiblings(
                 tag=[f"{self.MEINS}syllable", f"{self.MEINS}sb"]
             )
-            current_elem = first_syllable
+            current_elem: Optional[etree._Element] = first_syllable
             while current_elem is not None:
                 if current_elem.tag == f"{self.MEINS}syllable":
                     current_syl = current_elem.find(f"{self.MEINS}syl")

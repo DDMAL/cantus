@@ -1,23 +1,31 @@
 from django.contrib import admin
+from django.contrib.admin import ModelAdmin
+from django.db.models import Model
+from django.db.models.query import QuerySet
+from django.http import HttpRequest
+
+from django_celery_results.models import TaskResult  # type: ignore[import-untyped]
+from django_celery_results.admin import TaskResultAdmin  # type: ignore[import-untyped]
+
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.chant import Chant
 from cantusdata.models.folio import Folio
 from cantusdata.models.plugin import Plugin
 from cantusdata.models.neume_exemplar import NeumeExemplar
 from cantusdata.tasks import chant_import_task
-from django_celery_results.models import TaskResult
-from django_celery_results.admin import TaskResultAdmin
 
 
-def reindex_in_solr(modeladmin, request, queryset):
+@admin.action(description="ReIndex in Solr")
+def reindex_in_solr(
+    modeladmin: ModelAdmin,  # type: ignore[type-arg]
+    request: HttpRequest,
+    queryset: QuerySet[Model],
+) -> None:
     for item in queryset:
         item.save()
 
 
-reindex_in_solr.short_description = "ReIndex in Solr"
-
-
-class ManuscriptAdmin(admin.ModelAdmin):
+class ManuscriptAdmin(ModelAdmin):  # type: ignore[type-arg]
     actions = [reindex_in_solr, "load_chants"]
     ordering = ["-public", "name"]
     list_per_page = 200
@@ -49,6 +57,13 @@ class ManuscriptAdmin(admin.ModelAdmin):
                     "chants_loaded",
                     "is_mapped",
                     "dbl_folio_img",
+                ]
+            },
+        ),
+        (
+            "Search",
+            {
+                "fields": [
                     "plugins",
                 ]
             },
@@ -68,39 +83,43 @@ class ManuscriptAdmin(admin.ModelAdmin):
         description="Imports the chants associated \
         with the selected manuscript(s)"
     )
-    def load_chants(self, request, queryset):
+    def load_chants(self, request: HttpRequest, queryset: QuerySet[Manuscript]) -> None:
         for ms in queryset:
             chant_import_task.apply_async(kwargs={"manuscript_ids": [ms.pk]})
         self.message_user(
             request,
-            "Importing chants for the selected manuscripts. This may take a few minutes. Check status on the Task Results page.",
+            (
+                "Importing chants for the selected manuscripts. "
+                "This may take a few minutes. "
+                "Check status on the Task Results page."
+            ),
         )
 
 
-class ChantAdmin(admin.ModelAdmin):
+class ChantAdmin(ModelAdmin):  # type: ignore[type-arg]
     actions = [reindex_in_solr]
 
 
-class FolioAdmin(admin.ModelAdmin):
+class FolioAdmin(ModelAdmin):  # type: ignore[type-arg]
     actions = [reindex_in_solr]
     readonly_fields = ("chant_count",)
 
 
-class PluginAdmin(admin.ModelAdmin):
+class PluginAdmin(ModelAdmin):  # type: ignore[type-arg]
     readonly_fields = ("slug",)
 
 
-class NeumeExemplarAdmin(admin.ModelAdmin):
-    list_display = ("admin_image", "__str__")
+class NeumeExemplarAdmin(ModelAdmin):  # type: ignore[type-arg]
+    list_display = ("name", "folio")
     readonly_fields = ("admin_image",)
 
 
-class NewTaskResultAdmin(TaskResultAdmin):
+class NewTaskResultAdmin(TaskResultAdmin):  # type: ignore[misc]
     list_display = ("task_name", "date_done", "status", "get_task_manuscript_ids")
     list_filter = ("status", "date_done", "task_name")
 
     @admin.display(description="Manuscript(s)")
-    def get_task_manuscript_ids(self, obj):
+    def get_task_manuscript_ids(self, obj: TaskResult) -> list[Manuscript]:
         if obj.status == "RECEIVED":
             obj_man_ids = eval(obj.task_kwargs)["manuscript_ids"]
         else:
