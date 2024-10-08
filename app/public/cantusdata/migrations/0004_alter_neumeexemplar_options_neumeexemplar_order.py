@@ -6,17 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cantusdata', '0003_chant_differentiae_database'),
+        ("cantusdata", "0003_chant_differentiae_database"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='neumeexemplar',
-            options={'ordering': ['order']},
+            name="neumeexemplar",
+            options={"ordering": ["order"]},
         ),
         migrations.AddField(
-            model_name='neumeexemplar',
-            name='order',
-            field=models.IntegerField(default=1, help_text='A helper field used to order the exemplars.\n         See helpers/neume_helpers.py for an explanation of how this is used.'),
+            model_name="neumeexemplar",
+            name="order",
+            field=models.IntegerField(
+                default=1,
+                help_text="A helper field used to order the exemplars.\n         See helpers/neume_helpers.py for an explanation of how this is used.",
+            ),
         ),
     ]
