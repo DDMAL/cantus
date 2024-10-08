@@ -3,7 +3,6 @@ import _ from 'underscore';
 /**
  * Generate a IIIF URL for a snippet of a page
  *
- * @param {String} siglumSlug The siglum slug of the manuscript to search
  * @param {Object} location The location of the manuscript to search, with attributes
  *
  *   - p: folio number
@@ -13,7 +12,7 @@ import _ from 'underscore';
  * @param {Object} dimensions The dimensions of the image to output, with attributes
  *   width and height (both optional).
  */
-export default function pageSnippetUrl(siglumSlug, loc, dimens)
+export default function pageSnippetUrl(loc, dimens)
 {
     var filename = loc.p;
     var bounds = [loc.x, loc.y, loc.w, loc.h].join(',');

@@ -29,6 +29,7 @@ class ManuscriptAdmin(ModelAdmin):  # type: ignore[type-arg]
     actions = [reindex_in_solr, "load_chants"]
     ordering = ["-public", "name"]
     list_per_page = 200
+    change_form_template = "admin/manuscript_change_form.html"
     fieldsets = [
         (
             "Metadata",

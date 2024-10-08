@@ -19,6 +19,11 @@ from cantusdata.views.manuscript_glyph_set import ManuscriptGlyphSetView
 from cantusdata.views.map_folios import MapFoliosView
 from cantusdata.views.load_chants import LoadChantsView
 from cantusdata.views.manifest_proxy import ManifestProxyView
+from cantusdata.views.neume_exemplars import (
+    NeumeSetAPIView,
+    PickNeumeExemplarsView,
+    NeumeExemplarsAPIView,
+)
 from cantusdata.views import staticpages
 from django.contrib.admin.views.decorators import staff_member_required
 
@@ -35,6 +40,11 @@ urlpatterns = [
         "admin/cantusdata/manuscript/load_chants/",
         staff_member_required(LoadChantsView.as_view()),
         name="load-chants-view",
+    ),
+    path(
+        "admin/cantusdata/manuscript/<int:pk>/pick_neume_exemplars/",
+        staff_member_required(PickNeumeExemplarsView.as_view()),
+        name="pick-neume-exemplars-view",
     ),
     path("admin/", admin.site.urls),
     # Static pages
@@ -90,6 +100,17 @@ urlpatterns = [
         "folio-set/manuscript/<int:pk>/<path:image_uri>/",
         ManuscriptFolioSetView.as_view(),
         name="manuscript-folio-set-view-index",
+    ),
+    # Query neume images by manuscript and neume name
+    path(
+        "manuscript/<int:pk>/neume-set/",
+        NeumeSetAPIView.as_view(),
+        name="neume-set-view",
+    ),
+    path(
+        "manuscript/<int:pk>/neume-exemplars/",
+        NeumeExemplarsAPIView.as_view(),
+        name="neume-exemplars-view",
     ),
     # Search
     path("search/", SearchView.as_view(), name="search-view"),
