@@ -258,12 +258,12 @@ export default Marionette.ItemView.extend({
 		volpianoSyllables: ".volpiano-syllable",
 		btnPlay: ".btnPlay",
 		btnStop: ".btnStop",
-		btnTreble: ".btnTreble"
+		toggleTreble: ".toggleTreble"
 	},
 	events: {
 		"click .btnPlay": "submit",
 		"click .btnStop": "stop",
-		"click .btnTreble": "toggleTreble"
+		"change .toggleTreble": "toggleTreble"
 	},
 	submit: function mainPlay() {
 		var volArr = parse_volpiano(this.ui.volpianoSyllables);
@@ -275,8 +275,7 @@ export default Marionette.ItemView.extend({
 		audioStopReset(MIDI);
 	},
 	toggleTreble: function(){
-		this.treble_voice = !this.treble_voice;
-		this.ui.btnTreble.html(this.treble_voice ? "Treble On" : "Treble Off");
+		this.treble_voice = this.ui.toggleTreble.is(':checked');
 	},
 	stopChantAudio: function(){
 		if (MIDI.getContext().state === "running"){
