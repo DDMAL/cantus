@@ -694,6 +694,7 @@ html.js {
     display: inline-block;
     width: 34px;
     height: 20px;
+    margin-left: 15px;
 }
 
 .switch input {
@@ -727,7 +728,7 @@ html.js {
 }
 
 input:checked + .slider {
-    background-color: $brand-primary;
+    background-color: $gray-darker;
 }
 
 input:checked + .slider:before {
@@ -743,8 +744,10 @@ input:checked + .slider:before {
 }
 
 label[for="toggleTreble"] {
-    margin-left: 10px;
+    margin-left: 5px;
+    vertical-align: middle;
     font-weight: bold;
     font-size: 14px;
     color: $gray-dark;
+    line-height: 20px;
 }
