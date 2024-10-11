@@ -734,6 +734,14 @@ input:checked + .slider:before {
     transform: translateX(14px);
 }
 
+.slider.round {
+    border-radius: 20px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
 label[for="toggleTreble"] {
     margin-left: 10px;
     font-weight: bold;
