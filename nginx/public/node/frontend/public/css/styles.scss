@@ -695,6 +695,7 @@ html.js {
     width: 34px;
     height: 20px;
     margin-left: 15px;
+    vertical-align: middle;
 }
 
 .switch input {
@@ -744,9 +745,9 @@ input:checked + .slider:before {
 }
 
 label[for="toggleTreble"] {
-    margin-left: 5px;
+    margin-left: 8px;
     vertical-align: middle;
-    font-weight: bold;
+    font-weight: normal;
     font-size: 14px;
     color: $gray-dark;
     line-height: 20px;
