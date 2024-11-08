@@ -26,7 +26,7 @@ export default Marionette.CompositeView.extend({
             exemplarUrl: function ()
             {
                 // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
-                return pageSnippetUrl(this.siglum_slug, _.pick(this, ['p', 'x', 'y', 'w', 'h']), {height: 75});
+                return pageSnippetUrl(_.pick(this, ['p', 'x', 'y', 'w', 'h']), {height: 50});
                 // jscs enable
             }
         }

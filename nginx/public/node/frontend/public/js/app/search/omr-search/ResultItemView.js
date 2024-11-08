@@ -35,7 +35,7 @@ export default Marionette.ItemView.extend({
             return null;
         }
 
-        return pageSnippetUrl(this.siglumSlug, box, {height: this.neumeImageHeight});
+        return pageSnippetUrl(box, {height: this.neumeImageHeight});
     },
 
     templateHelpers: function ()

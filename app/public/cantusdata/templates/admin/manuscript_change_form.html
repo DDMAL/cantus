@@ -1,0 +1,9 @@
+{% extends "admin/change_form.html" %}
+{% block after_related_objects %}
+    <div class="module">
+        <h2 class="fieldset-heading">Neume Exemplars</h2>
+        <div class="flex-container">
+            <a href="{% url 'pick-neume-exemplars-view' object_id %}">Pick neume exemplars here.</a>
+        </div>
+    </div>
+{% endblock %}
