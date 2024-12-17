@@ -14,8 +14,9 @@ def expand_mode(mode_code: str) -> str:
     """
     mode_code_stripped = mode_code.strip()
     mode_output = []
+    mode_nums = {"1", "2", "3", "4", "5", "6", "7", "8"}
     for char in mode_code_stripped:
-        if char in "12345678":
+        if char in mode_nums:
             mode_output.append(char)
             continue
         match char:
@@ -63,14 +64,13 @@ class GenreExpander:
         """
         Gets the genre description based on the genre code.
         """
-        if genre_code in self.genre_data:
-            description = self.genre_data[genre_code]
-            # some extra stuff in parentheses is showing up
-            paren = description.find("(")
-            return description[: paren - 1] if paren != -1 else description
+        if not genre_code in self.genre_data:
+            return genre_code
 
-        # If nothing was found, return the original
-        return genre_code
+        description = self.genre_data[genre_code]
+        # some extra stuff in parentheses is showing up
+        paren = description.find("(")
+        return description[: paren - 1] if paren != -1 else description
 
 
 def expand_differentia(differentia_code: str) -> str:
