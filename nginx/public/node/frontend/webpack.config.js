@@ -2,25 +2,26 @@
 
 var path = require('path'),
     webpack = require('webpack'),
-    yargs = require('yargs').argv;
+    yargs = require('yargs').argv,
+    TerserPlugin = require("terser-webpack-plugin");
+
+module.exports = {
+    optimization: {
+        minimize: true,
+        minimizer: [new TerserPlugin()],
+    },
+};;
 
 var APP_BASE_DIR = path.resolve(__dirname, 'public/js'),
     APP_DIR = path.resolve(APP_BASE_DIR, 'app'),
     LIB_DIR = path.resolve(__dirname, 'public/node_modules'),
     TMP_DIR = path.resolve(__dirname, '.tmp');
 
-function configureBuildMode(config)
-{
-    if (yargs.release)
-    {
-        config.plugins.push(new webpack.optimize.UglifyJsPlugin({
-            compress: {
-                warnings: false
-            }
-        }));
+function configureBuildMode(config) {
+    if (yargs.release) {
+        config.mode = 'production';
     }
-    else
-    {
+    else {
         config.devtool = 'cheap-module-source-map';
     }
 
@@ -43,28 +44,33 @@ module.exports = configureBuildMode({
     },
 
     resolve: {
-        root: [APP_DIR, LIB_DIR, TMP_DIR],
+        modules: [APP_DIR, LIB_DIR, TMP_DIR],
 
         alias: {
             marionette: 'backbone.marionette',
 
             // Alias the Diva path to make it easier to access the plugins, etc.
-            diva: "diva.js/js"
-        }
+            diva: "diva.js/js/diva.js",
+            bootstrap: "bootstrap/dist/js/bootstrap",
+        },
+
     },
 
     module: {
-        loaders: [
+        rules: [
             {
                 test: /\.js$/,
                 include: [APP_BASE_DIR],
-                loader: 'babel-loader'
+                use: 'babel-loader'
             },
 
             {
                 test: /\.template\.html$/,
                 include: [APP_BASE_DIR],
-                loader: 'underscore-template-loader?engine=underscore'
+                loader: 'underscore-template-loader',
+                options: {
+                    engine: 'underscore'
+                }
             }
         ]
     },
@@ -79,14 +85,7 @@ module.exports = configureBuildMode({
             'window.jQuery': 'jquery',
             $: 'jquery'
         }),
+    ],
 
-        // Resolve main files which differ from the package.json entries
-        new webpack.ResolverPlugin([
-            // Bootstrap only has a main entry for jspm
-            new webpack.ResolverPlugin.FileAppendPlugin(['/dist/js/bootstrap.js']),
-
-            // We've aliased Diva's path so there's no main to look for
-            new webpack.ResolverPlugin.FileAppendPlugin(['/diva.js'])
-        ])
-    ]
+    mode: 'development',
 });
