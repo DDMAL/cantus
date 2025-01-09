@@ -15,23 +15,19 @@ import SearchPageView from "search/SearchPageView";
 var navChannel = Radio.channel('navigation');
 
 export default Marionette.Object.extend({
-    initialize: function(options)
-    {
+    initialize: function (options) {
         this.rootView = this.getOption('rootView', options);
 
         this.initialRouteComplete = false;
-        this.listenToOnce(Backbone.history, 'route', function ()
-        {
+        this.listenToOnce(Backbone.history, 'route', function () {
             this.initialRouteComplete = true;
         });
 
         // Maintain a manuscript state object that persists as long as the
         // route is the manuscript detail route
         this.manuscriptState = null;
-        this.listenTo(Backbone.history, 'route', function (router, route)
-        {
-            if (this.manuscriptState && route !== 'manuscriptSingle')
-            {
+        this.listenTo(Backbone.history, 'route', function (router, route) {
+            if (this.manuscriptState && route !== 'manuscriptSingle') {
                 this.manuscriptState.trigger('exiting:route');
                 this.manuscriptState = null;
             }
@@ -39,28 +35,24 @@ export default Marionette.Object.extend({
     },
 
     /** Initialize the layout for the application */
-    onBeforeStart: function()
-    {
+    onBeforeStart: function () {
         // The manuscripts page has no state, so we might as well instantiate it
         this.manuscriptListPage = new ManuscriptListPageView();
 
         // Navigate to clicked links
-        LinkWatcher.onLinkClicked(document.body, function (event, info)
-        {
-            if (info.isLocalNavigation && !info.isFragmentNavigation)
-            {
+        LinkWatcher.onLinkClicked(document.body, function (event, info) {
+            if (info.isLocalNavigation && !info.isFragmentNavigation) {
                 event.preventDefault();
-                Backbone.history.navigate(info.relativePath, {trigger: true});
+                Backbone.history.navigate(info.relativePath, { trigger: true });
             }
-        }, {rootHref: GlobalVars.siteUrl});
+        }, { rootHref: GlobalVars.siteUrl });
     },
 
     /**
      * Display the manuscripts list page
      */
-    manuscripts: function()
-    {
-        this.showContentView(this.manuscriptListPage, {title: 'Manuscripts'});
+    manuscripts: function () {
+        this.showContentView(this.manuscriptListPage, { title: 'Manuscripts' });
     },
 
     /**
@@ -69,20 +61,17 @@ export default Marionette.Object.extend({
      * @param id The manuscript ID
      * @param query The query string
      */
-    manuscriptSingle: function(id, query)
-    {
+    manuscriptSingle: function (id, query) {
         var params = Qs.parse(query);
-        var state = _.extend({manuscript: id}, _.pick(params, ['folio', 'chant', 'search','pageAlias']));
+        var state = _.extend({ manuscript: id }, _.pick(params, ['folio', 'chant', 'search', 'pageAlias']));
 
         // Update the manuscript state model if necessary; don't reload the whole
         // view if the manuscript has not changed
-        if (!this.manuscriptState)
-        {
+        if (!this.manuscriptState) {
             this.manuscriptState = new ManuscriptStateModel();
         }
-        else if (this.manuscriptState.get('manuscript') === id)
-        {
-            this.manuscriptState.set(state, {stateChangeParams: {replaceState: true}});
+        else if (this.manuscriptState.get('manuscript') === id) {
+            this.manuscriptState.set(state, { stateChangeParams: { replaceState: true } });
             return;
         }
 
@@ -96,15 +85,14 @@ export default Marionette.Object.extend({
          *
          * Fixing (1) probably isn't worth it, but fixing (2) might be
          */
-        this.listenToOnce(this.manuscriptState, 'load:manuscript', function (model)
-        {
-            this.showContentView(new ManuscriptDetailPageView({model: model}), {
+        this.listenToOnce(this.manuscriptState, 'load:manuscript', function (model) {
+            this.showContentView(new ManuscriptDetailPageView({ model: model }), {
                 title: `${model.get("provenance")}, ${model.get("siglum")}`,
                 navbarTitle: `${model.get("provenance")}, ${model.get("siglum")}`
             });
         });
 
-        this.manuscriptState.set(state, {stateChangeParams: {replaceState: true}});
+        this.manuscriptState.set(state, { stateChangeParams: { replaceState: true } });
     },
 
     /**
@@ -112,22 +100,19 @@ export default Marionette.Object.extend({
      *
      * @param queryString The query string
      */
-    search: function(queryString)
-    {
+    search: function (queryString) {
         var queryParams = Qs.parse(queryString);
 
         var query = queryParams.q;
 
         // FIXME: for now we just use the default search type
         this.showContentView(new SearchPageView({
-            searchTerm: {query: query}
-        }), {title: 'Search'});
+            searchTerm: { query: query }
+        }), { title: 'Search' });
     },
 
-    notFound: function()
-    {
-        if (!this.initialRouteComplete)
-        {
+    notFound: function () {
+        if (!this.initialRouteComplete) {
             // If this is the initial route then we've probably done something wrong.
             // We can't trigger a browser reload since that would probably kick off an
             // infinite loop.
@@ -137,13 +122,11 @@ export default Marionette.Object.extend({
                 Backbone.history.fragment);
             /* eslint-enable no-console */
         }
-        else if (Backbone.history._hasPushState)
-        {
+        else if (Backbone.history._hasPushState) {
             // Trigger a browser reload
             Backbone.history.location.href = Backbone.history.location.href;
         }
-        else
-        {
+        else {
             // Send the browser to the page for the current fragment
             window.location = GlobalVars.siteUrl + Backbone.history.fragment;
         }
@@ -155,9 +138,8 @@ export default Marionette.Object.extend({
      * @param newView
      * @param titleSettings
      */
-    showContentView: function(newView, titleSettings)
-    {
-        this.rootView.mainContent.show(newView, {preventDestroy: this.shouldDestroyMainContentView()});
+    showContentView: function (newView, titleSettings) {
+        this.rootView.mainContent.show(newView, { preventDestroy: this.shouldDestroyMainContentView() });
 
         navChannel.request('set:navbarTitle', titleSettings.navbarTitle || titleSettings.title);
         this.setDocumentTitle(titleSettings.title);
@@ -169,8 +151,7 @@ export default Marionette.Object.extend({
      *
      * @returns {boolean}
      */
-    shouldDestroyMainContentView: function()
-    {
+    shouldDestroyMainContentView: function () {
         return this.rootView.mainContent.currentView === this.manuscriptListPage;
     },
 
@@ -179,8 +160,7 @@ export default Marionette.Object.extend({
      *
      * @param title
      */
-    setDocumentTitle: function(title)
-    {
+    setDocumentTitle: function (title) {
         if (title)
             document.title = "Cantus Ultimus — " + title;
         else
