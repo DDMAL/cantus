@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Download and install python dependencies in a container
-FROM python:3.12.3 as dependency-install-container
+FROM python:3.12.3 AS dependency-install-container
 ARG DEVELOPMENT
 COPY ./poetry.lock ./pyproject.toml ./app/install-packages.sh /code/
 WORKDIR /code
