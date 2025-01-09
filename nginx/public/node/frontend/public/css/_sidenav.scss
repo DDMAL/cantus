@@ -2,7 +2,7 @@
     width: $width;
 
     // Hold the sidebar just out of view until it's triggered
-    @if ($position == left) {
+    @if ($position ==left) {
         transform: translate(-$width, 0);
     }
     @else {
@@ -22,8 +22,6 @@
 
     transition: transform 300ms ease-in-out;
 
-    display: none;
-
     position: absolute;
     top: 0;
     bottom: 0;
@@ -32,15 +30,12 @@
     overflow: auto;
 
     // Copied from the Bootstrap modal settings
-    box-shadow: 0 3px 9px rgba(0,0,0,.5);
+    box-shadow: 0 3px 9px rgba(0, 0, 0, .5);
     z-index: 1050;
 
     // FIXME: use variable?
     background: #fff;
 
-    &.in, &.sliding {
-        display: block;
-    }
 }
 
 // Hide the body's scroll bar while the sidenav enters and exits

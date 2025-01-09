@@ -8,24 +8,19 @@ import itemTemplate from './menu-sidenav-item.template.html';
 var navChannel = Radio.channel('navigation');
 
 export const SidenavContentItemView = Marionette.ItemView.extend({
-    tagName: 'li',
     template: itemTemplate,
 
     events: {
-        click: function (event)
-        {
-            if (!event.defaultPrevented)
-            {
+        click: function (event) {
+            if (!event.defaultPrevented) {
                 navChannel.request('collapse:menu');
             }
         }
     },
 
     templateHelpers: {
-        serializeAttributes: function (attr)
-        {
-            return _.map(attr, function (val, key)
-            {
+        serializeAttributes: function (attr) {
+            return _.map(attr, function (val, key) {
                 return key + '="' + _.escape(val) + '"';
             }).join(' ');
         }

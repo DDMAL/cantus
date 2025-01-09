@@ -7,8 +7,8 @@
 
     <td>
         <a href="<%= result.url %>" class="chant-link"><%= result.name %></a>
-        <a href="" class="quick-view" data-toggle="tooltip" title="Quick view">
-            <span class="glyphicon glyphicon-flash"></span>
+        <a href="" class="quick-view" data-bs-toggle="tooltip" title="Quick view">
+            ⚡︎
         </a>
     </td>
 
@@ -27,10 +27,10 @@
 </tr>
 <% } %>
 
-<tr class="full-result-record hidden">
+<tr class="full-result-record collapse well">
     <td colspan="<%- columnCount %>">
-        <div class="full-result-record-content well">
-            <dl>
+        <div class="full-result-record-content">
+            <dl class="p-2">
                 <dt>Cantus ID</dt>
                 <dd>
                     <p><%- result.cantus_id %></p>

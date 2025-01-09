@@ -1,35 +1,10 @@
 import _ from 'underscore';
-import $ from 'jquery';
 import Backbone from 'backbone';
 import Marionette from 'marionette';
-import afterTransition from 'utils/afterTransition';
+import { Collapse } from 'bootstrap';
 
 import template from './search-result-item.template.html';
 
-var FULL_RECORD_TRANSITION_MS = 600;
-
-function transitionWithClasses(jqElem, ms, baseClass, activeClass)
-{
-    var deferred = $.Deferred();
-
-    jqElem.addClass(baseClass);
-
-    // Force layout calculation
-    jqElem[0].offsetHeight;
-
-    jqElem.addClass(activeClass);
-
-    afterTransition(jqElem, ms, function ()
-    {
-        jqElem
-            .removeClass(baseClass)
-            .removeClass(activeClass);
-
-        deferred.resolve(jqElem);
-    });
-
-    return deferred;
-}
 
 var manuscriptChannel = Backbone.Radio.channel('manuscript');
 
@@ -49,7 +24,6 @@ export default Marionette.ItemView.extend({
         chantLink: '.chant-link',
         quickView: '.quick-view',
         fullRecord: '.full-result-record',
-        fullRecordContent: '.full-result-record-content'
     },
 
     events: {
@@ -57,60 +31,26 @@ export default Marionette.ItemView.extend({
         'click @ui.chantLink': '_onChantLinkClicked'
     },
 
-    _onQuickViewClicked: function (evt)
-    {
+    _onQuickViewClicked: function (evt) {
         evt.preventDefault();
 
-        if (this.ui.fullRecord.css('display') === 'none')
-            this._showFullRecord();
-        else
-            this._hideFullRecord();
+        this.ui.fullRecord.toggle();
     },
 
-    _onChantLinkClicked: function ()
-    {
-        manuscriptChannel.request('set:imageURI', this.model.get('image_uri'), {replaceState: true});
+    _onChantLinkClicked: function () {
+        manuscriptChannel.request('set:imageURI', this.model.get('image_uri'), { replaceState: true });
     },
 
-    _showFullRecord: function ()
-    {
-        this.ui.fullRecord.removeClass('hidden');
-
-        transitionWithClasses(
-            this.ui.fullRecordContent,
-            FULL_RECORD_TRANSITION_MS,
-            'content-enter',
-            'content-enter-active'
-        );
-    },
-
-    _hideFullRecord: function ()
-    {
-        var fullRecord = this.ui.fullRecord;
-
-        transitionWithClasses(
-            this.ui.fullRecordContent,
-            FULL_RECORD_TRANSITION_MS,
-            'content-exit',
-            'content-exit-active'
-        ).then(function ()
-        {
-            fullRecord.addClass('hidden');
-        });
-    },
-
-    _getFields: function ()
-    {
+    _getFields: function () {
         return _.toArray(this.getOption('infoFields'));
     },
 
-    onRender: function ()
-    {
-        this.$('[data-toggle=tooltip]').tooltip();
+    onRender: function () {
+        this.ui.quickView.tooltip();
+        new Collapse(this.ui.fullRecord, { toggle: false });
     },
 
-    serializeData: function()
-    {
+    serializeData: function () {
         var searchType = this.getOption('searchType');
         var query = this.getOption('query');
         var infoFields = this._getFields();

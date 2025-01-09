@@ -104,9 +104,8 @@ gulp.task('build:js', gulp.series('clean:js', 'bundle:js'), function (cb) {
 
 gulp.task('bundle:css', function () {
     var sources = [
-        './public/css/bootstrap-theme.min.css',
-        './public/css/diva.min.css',
-        './public/css/styles.scss'
+        './public/css/styles.scss',
+        './public/css/diva.min.css'
     ];
 
     var isScssFile = /\.scss$/;
@@ -115,7 +114,7 @@ gulp.task('bundle:css', function () {
 
     var compileScss = lazypipe()
         .pipe(function () {
-            return sass({ outputStyle: 'compressed' }).on('error', sass.logError);
+            return sass({ loadPaths: ["node_modules"] }).on('error', sass.logError);
         })
         .pipe(autoprefixer);
 

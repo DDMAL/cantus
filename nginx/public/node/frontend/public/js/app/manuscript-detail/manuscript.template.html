@@ -3,28 +3,46 @@
 </div>
 <div class="manuscript-columns propagate-height">
     <div id="diva-column" class="propagate-height"></div>
+    <div class="resizer">
+        <div class="prong"></div>
+        <div class="prong"></div>
+    </div>
     <div id="manuscript-data-column" class="propagate-height">
         <div id="manuscript-folio-advancer-container"></div>
         <div id="manuscript-nav-container">
-            <!-- Nav tabs -->
             <ul class="nav nav-tabs nav-justified">
-                <li class="active"><a id="manuscript-nav-folio-number" href="#manuscript-folio-pane" data-toggle="tab"></a></li>
-                <li><a href="#manuscript-search-pane" data-toggle="tab">Search Manuscript</a></li>
+                <li class="nav-item">
+                    <a id="manuscript-nav-folio-number"
+                       class="nav-link active"
+                       data-bs-target="#manuscript-folio-pane"
+                       data-bs-toggle="tab"
+                       type="button"
+                       role="tab"
+                       aria-controls="manuscript-folio-pane"
+                       aria-selected="true"></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" 
+                    data-bs-target="#manuscript-search-pane" 
+                    data-bs-toggle="tab" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="manuscript-search-pane" 
+                    aria-selected="false">Search Manuscript</a>
+                </li>
             </ul>
         </div>
         <div id="manuscript-data-container" class="propagate-height">
-            <div class="resizer">
-                <div class="prong"></div>
-                <div class="prong"></div>
-            </div>
-
-            <!-- Tab panes -->
-            <div class="tab-content propagate-height">
-                <div role="tabpanel" class="tab-pane col-md-12 active" id="manuscript-folio-pane" >
+            <div class="tab-content">
+                <div role="tabpanel"
+                    class="tab-pane active"
+                    id="manuscript-folio-pane">
                     <div id="folio"></div>
                 </div>
-                <div role="tabpanel" class="tab-pane col-md-12 propagate-height" id="manuscript-search-pane">
-                    <div id="manuscript-search" class="propagate-height"></div>
+                <div role="tabpanel"
+                    class="tab-pane"
+                    id="manuscript-search-pane">
+                    <div id="manuscript-search"></div>
                 </div>
             </div>
         </div>

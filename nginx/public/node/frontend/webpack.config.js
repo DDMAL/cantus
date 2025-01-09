@@ -2,15 +2,7 @@
 
 var path = require('path'),
     webpack = require('webpack'),
-    yargs = require('yargs').argv,
-    TerserPlugin = require("terser-webpack-plugin");
-
-module.exports = {
-    optimization: {
-        minimize: true,
-        minimizer: [new TerserPlugin()],
-    },
-};;
+    yargs = require('yargs').argv;
 
 var APP_BASE_DIR = path.resolve(__dirname, 'public/js'),
     APP_DIR = path.resolve(APP_BASE_DIR, 'app'),
@@ -44,14 +36,13 @@ module.exports = configureBuildMode({
     },
 
     resolve: {
-        modules: [APP_DIR, LIB_DIR, TMP_DIR],
+        modules: [APP_DIR, LIB_DIR, TMP_DIR, 'node_modules'],
 
         alias: {
             marionette: 'backbone.marionette',
 
             // Alias the Diva path to make it easier to access the plugins, etc.
             diva: "diva.js/js/diva.js",
-            bootstrap: "bootstrap/dist/js/bootstrap",
         },
 
     },

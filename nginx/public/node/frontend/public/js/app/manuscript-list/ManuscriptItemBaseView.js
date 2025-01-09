@@ -11,11 +11,10 @@ export default Marionette.ItemView.extend({
     tagName: 'tr',
 
     ui: {
-        tooltips: '[data-toggle=tooltip]'
+        tooltips: '[data-bs-toggle=tooltip]'
     },
 
-    onRender: function ()
-    {
+    onRender: function () {
         // Initialize tooltips
         this.ui.tooltips.tooltip();
     }

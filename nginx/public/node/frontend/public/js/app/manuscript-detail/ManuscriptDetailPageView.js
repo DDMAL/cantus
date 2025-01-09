@@ -43,7 +43,7 @@ export default Marionette.LayoutView.extend({
 
     ui: {
         toolbarRow: '#toolbar-row',
-        resizer: '#manuscript-data-container .resizer',
+        resizer: '.resizer',
         divaColumn: "#diva-column",
         manuscriptDataColumn: '#manuscript-data-column'
     },
@@ -52,14 +52,12 @@ export default Marionette.LayoutView.extend({
         'mousedown @ui.resizer': 'startResizing'
     },
 
-    initialize: function ()
-    {
+    initialize: function () {
         this._viewportContent = null;
     },
 
-    startResizing: function (event)
-    {
-        //Only resize if the resizer was left clicked
+    startResizing: function (event) {
+        // Only resize if the resizer was left clicked
         if (event.button !== 0)
             return;
 
@@ -71,22 +69,15 @@ export default Marionette.LayoutView.extend({
             initialX = event.clientX,
             initialWidth = panes.width();
 
-        // Support for the various event capture APIs is too spotty, so just throw an overlay
-        // over everything and capture events based on that; since the overlay should be above
-        // everything else, we should be able to ensure that events bubble up to the window.
         var $window = $(window);
-        var overlay = $('<div class="dragging-overlay col-resize-cursor">');
 
-        overlay.appendTo(document.body);
-
-        var executeResize = function (event)
-        {
+        var executeResize = function (event) {
             var difference = initialX - event.clientX;
             var newWidthPercentage = (initialWidth + difference) / (divaColumn.width() + panes.width()) * 100;
 
-            //Prevent one of the two elements to have a width smaller than 5%
-            newWidthPercentage = Math.max(newWidthPercentage, 5);
-            newWidthPercentage = Math.min(newWidthPercentage, 95);
+            // Prevent one of the two elements to have a width smaller than 25%
+            newWidthPercentage = Math.max(newWidthPercentage, 25);
+            newWidthPercentage = Math.min(newWidthPercentage, 75);
 
             divaColumn.css('width', (100 - newWidthPercentage) + '%');
             panes.css('width', newWidthPercentage + '%');
@@ -94,14 +85,11 @@ export default Marionette.LayoutView.extend({
             updateDivaSize(); // eslint-disable-line no-use-before-define
         };
 
-        var updateDivaSize = _.throttle(function ()
-        {
+        var updateDivaSize = _.throttle(function () {
             diva.Events.publish("PanelSizeDidChange");
         }, 250);
 
-        var stopResizing = function ()
-        {
-            overlay.remove();
+        var stopResizing = function () {
             $window.off('mousemove', executeResize);
         };
 
@@ -109,13 +97,11 @@ export default Marionette.LayoutView.extend({
         $window.one('mouseup', stopResizing);
     },
 
-    _showInfoSidenav()
-    {
+    _showInfoSidenav() {
         this._infoSidenav.show();
     },
 
-    onRender: function()
-    {
+    onRender: function () {
         this._configurePageLayout();
 
         // Initialize the Diva view
@@ -125,8 +111,7 @@ export default Marionette.LayoutView.extend({
         });
 
         // Create a "Manuscript Info" button in the Diva toolbar
-        this.listenToOnce(divaView, 'loaded:viewer', function ()
-        {
+        this.listenToOnce(divaView, 'loaded:viewer', function () {
             var manuscriptInfo = $('<div>').attr('id', 'manuscript-info-target');
             var manuscriptInfoButton = $('<button>').addClass('btn btn-link btn-sm').text('Manuscript info');
             manuscriptInfoButton.appendTo(manuscriptInfo);
@@ -156,12 +141,11 @@ export default Marionette.LayoutView.extend({
         });
 
         // Set the global search state when the search term changes
-        this.listenTo(searchView, 'search', function (search)
-        {
+        this.listenTo(searchView, 'search', function (search) {
             if (search.type === 'all' && search.query === '')
                 search = null;
 
-            manuscriptStateChannel.request('set:search', search, {replaceState: true});
+            manuscriptStateChannel.request('set:search', search, { replaceState: true });
         });
 
         // Render the subviews
@@ -176,7 +160,7 @@ export default Marionette.LayoutView.extend({
 
         this._infoSidenav = new SidenavView({
             el: this._infoSidenavParent,
-            content: () => new ManuscriptInfoView({model: this.model})
+            content: () => new ManuscriptInfoView({ model: this.model })
         });
 
         this._infoSidenav.render();
@@ -187,8 +171,7 @@ export default Marionette.LayoutView.extend({
         // FIXME: For reasons that aren't clear to me, onDomRefresh doesn't fire consistently
         // on initialization in the DivaView, so we wait for DOM Refresh before showing the
         // view here. Maybe check if that is resolved after updating Marionette?
-        this.once('dom:refresh', function ()
-        {
+        this.once('dom:refresh', function () {
             this.divaViewRegion.show(divaView);
 
             // Diva inserts its own viewport on initialization, so we need to reset it
@@ -198,14 +181,12 @@ export default Marionette.LayoutView.extend({
         });
     },
 
-    onDestroy()
-    {
+    onDestroy() {
         this._infoSidenav.destroy();
         this._infoSidenavParent.remove();
     },
 
-    _configurePageLayout: function ()
-    {
+    _configurePageLayout: function () {
         var html = $('html');
         var navbar = $('.navbar');
         var viewport = $('meta[name=viewport]');
@@ -223,8 +204,7 @@ export default Marionette.LayoutView.extend({
         this._updateViewport();
 
         // Restore original values on view destruction
-        this.once('destroy', function ()
-        {
+        this.once('destroy', function () {
             html.css('min-width', initialHtmlMinWidth);
             navbar.css('margin-bottom', initialNavbarMargin);
             this._setViewport(initialViewportContent);
@@ -235,8 +215,7 @@ export default Marionette.LayoutView.extend({
      * Update the viewport dynamically. We do this by removing the existing viewport
      * element and adding a new one to work around bugs on some mobile devices.
      */
-    _updateViewport: function ()
-    {
+    _updateViewport: function () {
         var viewportContent = document.documentElement.clientWidth <= 880 ?
             'width=880, user-scalable=no' : 'width=device-width';
 
@@ -252,10 +231,8 @@ export default Marionette.LayoutView.extend({
      *   https://miketaylr.com/posts/2014/02/dynamically-updating-meta-viewport.html
      *   https://miketaylr.com/posts/2015/08/dynamically-updating-meta-viewport-in-2015.html
      */
-    _setViewport: function (viewportContent)
-    {
-        if (viewportContent !== this._viewportContent)
-        {
+    _setViewport: function (viewportContent) {
+        if (viewportContent !== this._viewportContent) {
             this._viewportContent = viewportContent;
             var meta = document.createElement('meta');
             meta.setAttribute('name', 'viewport');
@@ -264,8 +241,7 @@ export default Marionette.LayoutView.extend({
         }
     },
 
-    onWindowResized: function ()
-    {
+    onWindowResized: function () {
         this._updateViewport();
     }
 });

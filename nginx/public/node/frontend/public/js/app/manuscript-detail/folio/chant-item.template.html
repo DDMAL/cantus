@@ -1,10 +1,16 @@
-<a data-toggle="collapse" data-parent=".accordion" href="#collapse-<%= item_id %>">
-    <div class="panel-heading">
-        <h4 class="panel-title">
+<div class="accordion-item m-1">
+    <h4 class="accordion-header">
+        <button data-bs-toggle="collapse"
+                data-bs-target="#collapse-<%= item_id %>"
+                class="accordion-button fw-lighter collapsed"
+                type="button"
+                aria-expanded="<%= isOpen() ? 'true' : 'false' %>"
+                aria-controls="collapse-<%= item_id %>">
             <%= incipit %>
-        </h4>
+        </button>
+    </h4>
+    <div id="collapse-<%= item_id %>"
+         class="accordion-collapse collapse <%= isOpen() ? 'show' : '' %>">
+        <div class="accordion-body"></div>
     </div>
-</a>
-<div id="collapse-<%= item_id %>" class="panel-collapse collapse <%= isOpen() ? 'in' : '' %>">
-    <div class="panel-body"></div>
 </div>
