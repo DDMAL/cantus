@@ -1,61 +1,77 @@
-// Hardcode some Bootstrap style variables here since our Bootstrap stuff
-// isn't pre-processed
-
-// Responsive breakpoints
-$screen-sm-min: 768px;
-$screen-md-min: 992px;
-$screen-lg-min: 1200px;
-$grid-float-breakpoint: $screen-sm-min;
+@use "sass:color";
 
 // Colors
-$gray-darker:            lighten(#000, 13.5%); // #222
-$gray-dark:              lighten(#000, 20%);   // #333
-$gray:                   #6f6f6f; // #555
-$gray-light:             lighten(#000, 60%);   // #999
-$gray-lighter:           lighten(#000, 93.5%); // #eee
+$gray-darker: color.adjust(#000, $lightness: 13.5%); // #222
+$gray-dark: color.adjust(#000, $lightness: 20%); // #333
+$gray: #6f6f6f; // #555
+$gray-light: color.adjust(#000, $lightness: 60%); // #999
+$gray-lighter: color.adjust(#000, $lightness: 93.5%); // #eee
 
-$brand-primary:         #c2342e;
-$brand-success:         #43ac6a;
-$brand-info:            #5bc0de;
-$brand-warning:         #E99002;
-$brand-danger:          #F04124;
+$brand-primary: #c2342e;
+$brand-success: #43ac6a;
+$brand-info: #5bc0de;
+$brand-warning: #E99002;
+$brand-danger: #F04124;
+
+// Override global font family
+$font-family-base: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
 
 //Bootstrap colors
-$bootstrap-blue:        #337ab7;
+$bootstrap-blue: #337ab7;
 
-//** Global textual link color.
-$link-color:            $brand-primary;
-$link-hover-color:      darken($link-color, 15%);
+// Global textual link color.
+$link-color: $brand-primary;
+$link-hover-color: color.adjust($link-color, $lightness: -15%);
+$link-decoration: none;
+$link-hover-decoration: underline;
+
+// Override default padding for the navbar
+$navbar-padding-y: 0em;
+$navbar-toggler-padding-y: 0rem;
+
+// Accordion variables
+$accordion-button-color: $gray-dark;
+$accordion-button-bg: #f5f5f5;
+$accordion-button-active-color: $accordion-button-color;
+$accordion-button-active-bg: $accordion-button-bg;
+$accordion-button-padding-y: .8rem;
+// Hover variables are used in class declaration below
+$accordion-button-hover-color: $brand-primary;
+$accordion-button-hover-bg: #fcfcfc;
+
+// Override accordion button styles
+$accordion-button-focus-border-color: none;
+$accordion-button-focus-box-shadow: none;
+$accordion-button-icon: none;
+$accordion-button-active-icon: none;
 
 // Color used for a lot of borders in the Bootstrap things
 $border-color: #ddd;
 
-$zindex-navbar:            1000;
-$zindex-dropdown:          1000;
-$zindex-popover:           1010;
-$zindex-tooltip:           1030;
-$zindex-navbar-fixed:      1030;
-$zindex-modal-background:  1040;
-$zindex-modal:             1050;
+$body-font-weight: 300;
 
-$zindex-diva-fullscreen:   $zindex-modal;
-$zindex-diva-canvas:       $zindex-diva-fullscreen + 5;
+$navbar-dark-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 
+@import "variables";
+@import "bootstrap/scss/bootstrap";
+@import "bootswatch";
 @import "sidenav";
+
+$zindex-diva-fullscreen: $zindex-modal;
+$zindex-diva-canvas: $zindex-diva-fullscreen + 5;
 
 // Volpiano font
 @font-face {
-  font-family: 'Volpiano';
-  src: url('/static/fonts/volpiano.eot'); // IE9 Compat Modes
-  src: url('/static/fonts/volpiano.eot?#iefix') format('embedded-opentype'), // IE6-IE8
-       url('/static/fonts/volpiano.woff') format('woff'), // Modern Browsers
-       url('/static/fonts/volpiano.ttf')  format('truetype'), // Safari, Android, iOS
-       url('/static/fonts/volpiano.svg#a7a4d8715938a922c6a8c6587abbdcd3') format('svg'); // Legacy iOS
+    font-family: 'Volpiano';
+    src: url('/static/fonts/volpiano.eot'); // IE9 Compat Modes
+    src: url('/static/fonts/volpiano.eot?#iefix') format('embedded-opentype'), // IE6-IE8
+        url('/static/fonts/volpiano.woff') format('woff'), // Modern Browsers
+        url('/static/fonts/volpiano.ttf') format('truetype'), // Safari, Android, iOS
+        url('/static/fonts/volpiano.svg#a7a4d8715938a922c6a8c6587abbdcd3') format('svg'); // Legacy iOS
 
-  font-style:   normal;
-  font-weight:  400;
+    font-style: normal;
+    font-weight: 400;
 }
-
 
 // This is textual information, so we want to make it resemble normal text as much as possible
 pre.preformatted-text {
@@ -74,7 +90,8 @@ pre.preformatted-text {
     color: inherit;
 }
 
-.no-js-message .container, .no-js-message .logos {
+.no-js-message .container,
+.no-js-message .logos {
     padding-top: 25px;
 }
 
@@ -110,7 +127,9 @@ pre.preformatted-text {
     margin-left: -1px;
 }
 
-.volpiano, .field-volpiano, .field-volpiano_literal {
+.volpiano,
+.field-volpiano,
+.field-volpiano_literal {
     font-family: 'Volpiano';
     font-size: 22pt;
     line-height: 2.5em;
@@ -150,7 +169,7 @@ pre.preformatted-text {
     left: 0;
 }
 
-.volpiano-text-serif{
+.volpiano-text-serif {
     font-family: "Georgia", serif;
     font-size: 15px;
     margin-top: 35px;
@@ -158,41 +177,29 @@ pre.preformatted-text {
     left: 0;
 }
 
-.field-volpiano, .field-volpiano_literal {
+.field-volpiano,
+.field-volpiano_literal {
     color: #333;
 }
 
-.field-volpiano.search-text-entered, .field-volpiano_literal.search-text-entered {
+.field-volpiano.search-text-entered,
+.field-volpiano_literal.search-text-entered {
     height: 2em;
     padding-top: 0;
     padding-bottom: 0;
 }
 
-.field-volpiano::placeholder, .field-volpiano_literal::placeholder {
+.field-volpiano::placeholder,
+.field-volpiano_literal::placeholder {
     font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 15px;
 }
 
 // We only need to set the line height on webkit, since it renders differently
 // than other browsers
-.field-volpiano::-webkit-input-placeholder, .field-volpiano_literal::-webkit-input-placeholder {
+.field-volpiano::-webkit-input-placeholder,
+.field-volpiano_literal::-webkit-input-placeholder {
     line-height: 1.42857143;
-}
-
-.chant-list-region .panel-heading {
-    color: #333333;
-    background-color: #f5f5f5;
-    border-color: #dddddd;
-    text-decoration: none;
-
-    &:hover{
-        background:#fcfcfc;
-        color:#c2342e;
-    }
-}
-
-.chant-list-region a:hover, a:focus{
-    text-decoration: none;
 }
 
 .result-list {
@@ -216,51 +223,16 @@ pre.preformatted-text {
     }
 }
 
-
-//Override bootstrap in order to align the folio navigation buttons on the right
-.pager.text-right {
-    text-align: right;
+.accordion-button:hover {
+    background-color: $accordion-button-hover-bg;
+    color: $accordion-button-hover-color;
 }
 
-.diva-folio-advancer-region .pager {
-    margin: 8px;
-}
-
-
-.full-result-record {
-    .content-enter,
-    .content-exit {
-        overflow: hidden;
-        min-height: 0;
-    }
-
-    .content-enter {
-        transition: max-height 600ms cubic-bezier(0.77, 0, 0.175, 1), padding 200ms;
-    }
-
-    .content-exit {
-        transition: max-height 600ms cubic-bezier(0.77, 0, 0.175, 1), padding 200ms 400ms;
-    }
-
-    .content-enter,
-    .content-exit.content-exit-active {
-        max-height: 0;
-    }
-
-    .content-enter.content-enter-active,
-    .content-exit {
-        max-height: 900px;
-    }
-
-    .content-enter:not(.content-enter-active),
-    .content-exit.content-exit-active {
-        padding-top: 0;
-        padding-bottom: 0;
-    }
-}
-
-.full-result-record-content.well {
-    padding-bottom: 0;
+.well {
+    background-color: #fafafa;
+    border: 1px solid #e8e8e8;
+    border-radius: 0;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
 }
 
 .result-table-wrapper {
@@ -276,28 +248,23 @@ pre.preformatted-text {
 
 // When applied to ancestors of a nested element, this class uses flexbox to set the height
 // of the element to the remaining height of the viewport.
-.propagate-height, .modal-content, .modal-body {
+.propagate-height,
+.modal-content,
+.modal-body {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
 
-    > .propagate-height, > .result-table-wrapper, > .modal-body {
+    > .propagate-height,
+    > .result-table-wrapper,
+    > .modal-body {
         flex-shrink: 1;
-        overflow:auto;
+        overflow: auto;
     }
 
     > .row {
         margin-right: 0px;
-        margin-left:0px;
-    }
-
-    // Workaround for Bootstrap tabs
-    .tab-content > &.tab-pane {
-            display: none;
-
-            &.active {
-                display: flex;
-            }
+        margin-left: 0px;
     }
 }
 
@@ -316,7 +283,7 @@ body.propagate-height {
         width: 50%;
     }
 
-    @media (min-width: $screen-lg-min) {
+    @include media-breakpoint-up(lg) {
         > :first-child {
             width: 60%;
         }
@@ -328,45 +295,47 @@ body.propagate-height {
 }
 
 .modal-dialog {
+    max-width: 90%;
     width: 50%;
     height: 90%;
 }
+
 .modal-content {
     height: 100%;
 }
-.modal-header{
-    min-height:auto;
+
+.modal-header {
+    min-height: auto;
 }
 
 #manuscript-data-container {
     // Relative-position the container so that percentage-based dimensions are calculated relative to it
     position: relative;
+}
 
-    .resizer {
-        position: absolute;
-        cursor: col-resize;
-        height: 100%;
-        width: 10px;
-        background-color: transparent;
+.resizer {
+    cursor: col-resize;
+    height: 100%;
+    width: 10px;
+    background-color: transparent;
 
-        // Kind of arbitrarily slot this into the Bootstrap hierarchy
-        z-index: $zindex-dropdown;
+    // Kind of arbitrarily slot this into the Bootstrap hierarchy
+    z-index: $zindex-dropdown;
 
-        .prong {
-            position: relative;
-            top: 45%;
-            float: left;
-            margin-left: 3px;
+    .prong {
+        position: relative;
+        top: 45%;
+        float: left;
+        margin-left: 3px;
 
-            height: 25px;
-            width: 2px;
+        height: 25px;
+        width: 2px;
 
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            background-color: #bbb;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        background-color: #bbb;
 
-            + .prong {
-                margin-left: 1px;
-            }
+        + .prong {
+            margin-left: 1px;
         }
     }
 }
@@ -379,7 +348,7 @@ body.propagate-height {
     bottom: 0;
     left: 0;
 
-    z-index: $zindex-modal-background;
+    z-index: $zindex-modal-backdrop;
 
     &.col-resize-cursor {
         cursor: col-resize;
@@ -408,13 +377,15 @@ body.propagate-height {
         }
     }
 
-    .diva-buttons-label, .diva-page-label {
+    .diva-buttons-label,
+    .diva-page-label {
         padding: 5px 10px !important;
         line-height: 1.5 !important;
         margin: 0;
     }
 
-    .diva-goto-form, .diva-input {
+    .diva-goto-form,
+    .diva-input {
         line-height: inherit;
     }
 
@@ -430,7 +401,9 @@ body.propagate-height {
     height: 120px;
     padding: 10px;
 
-    .diva-buttons-label, .diva-page-label, .diva-page-nav {
+    .diva-buttons-label,
+    .diva-page-label,
+    .diva-page-nav {
         padding-left: 0 !important;
         padding-right: 0 !important;
     }
@@ -451,25 +424,32 @@ body.propagate-height {
 .diva-outer.diva-fullscreen {
     z-index: $zindex-diva-fullscreen;
 }
-.diva-popup, .diva-tools.diva-fullscreen-tools {
+
+.diva-popup,
+.diva-tools.diva-fullscreen-tools {
     z-index: $zindex-diva-fullscreen + 1;
 }
 
 #diva-canvas-backdrop {
     z-index: $zindex-diva-canvas;
 }
+
 #diva-canvas-wrapper {
     z-index: $zindex-diva-canvas + 1;
 }
+
 #diva-canvas {
     z-index: $zindex-diva-canvas + 2;
 }
+
 #diva-canvas-tools {
     z-index: $zindex-diva-canvas + 3;
 }
+
 #diva-canvas-toolbar div {
     z-index: $zindex-diva-canvas + 4;
 }
+
 .canvas-throbber {
     z-index: $zindex-diva-canvas + 5;
 }
@@ -492,7 +472,8 @@ body.propagate-height {
     margin: 0;
 }
 
-.search-suggestions .list-group-item.active, .search-suggestions .list-group-item.active:hover{
+.search-suggestions .list-group-item.active,
+.search-suggestions .list-group-item.active:hover {
     background-color: $bootstrap-blue;
     border-color: $bootstrap-blue;
 }
@@ -515,41 +496,85 @@ body.propagate-height {
 }
 
 #menu-sidenav {
-    .sidenav a {
-        padding-left: 40px;
-    }
-
-    .nav li > a {
-        color: #333;
-    }
-}
-
-.sidenav-brand {
-    display: block;
-    margin-bottom: 22px;
     color: #333;
 
-    &:hover, &:active, &.active {
-        text-decoration: none;
-        color: #333;
+    .sidenav-brand {
+        display: block;
+        color: inherit;
+    }
+
+    li > a {
+        color: inherit;
+        font-size: 15px;
+    }
+
+    li:hover {
         background-color: #eee;
+        text-decoration: none;
+    }
+
+    .sidenav-brand:hover {
+        text-decoration: none;
     }
 }
 
-// Navbar styling
-// Select ancestors of .navbar-default to match the specificity of the Bootstrap styling
-// TODO(wabain): See if this can be done using Bootstrap variables. nav-link-padding?
+.navbar-default {
+    color: #fff;
 
-.navbar-default .navbar-brand, .sidenav-brand {
-    height: 50px;
-    padding: 15px 15px;
-    font-size: 20px;
-    line-height: 20px;
-
-    // Get anchor elements within a brand to be styled like the brand
-    a, a:hover, a:focus {
+    a {
         color: inherit;
-        text-decoration: none;
+
+        &:hover {
+            text-decoration: none;
+        }
+    }
+
+    .nav-link {
+        font-size: .95rem;
+        line-height: $navbar-brand-font-size * 1.5; // set this based on brand font-size so that
+        // nav-link text is vertically centered
+        // wrt the brand text
+    }
+
+    .nav-link:hover {
+        background-color: #272727;
+    }
+}
+
+.pager {
+    a {
+        font-size: 12px;
+        font-weight: 300;
+        padding-right: 1em;
+        padding-left: 1em;
+        border: 1px solid transparent;
+        border-radius: 3px;
+
+        &:hover {
+            text-decoration: none;
+            background-color: #eeeeee;
+        }
+    }
+}
+
+.nav-tabs.nav-justified {
+    li a {
+        background-color: #e7e7e7;
+        color: #222222;
+
+        .active {
+            background-color: #ffffff;
+            color: #6f6f6f;
+            border: 1px solid #dddddd;
+            border-bottom-color: #ffffff;
+            cursor: default;
+
+        }
+
+        &:hover:not(.active) {
+            background-color: #eeeeee;
+            color: $brand-primary;
+        }
     }
 }
 
@@ -560,7 +585,8 @@ body.propagate-height {
     padding-left: 15px;
 }
 
-@media (max-width: $screen-sm-min - 1) {
+@include media-breakpoint-down(sm) {
+
     // If there's a subhead and JS enhancements are supported then hide the
     // primary component on smaller screens
     html.js {
@@ -589,55 +615,13 @@ body.propagate-height {
     }
 }
 
-.navbar-default .navbar-nav > li > a {
-    padding-top: 15px;
-    padding-bottom: 15px;
-}
-
-// Alter the toggle so that it is permanently pinned to the left of the brand
-// TODO(wabain): use Bootstrap variables here
-.navbar-toggle {
-    display: block;
-    float: left;
-
-    // Margin equal to $navbar-padding-horizontal
-    margin-right: 0;
-    margin-left: 15px;//FIXME: use variable
-
-    padding-top: 11px;
-    padding-bottom: 11px;
-
-    @media (min-width: $grid-float-breakpoint) {
-        margin-right: 15px;
-        margin-left: 0;
-    }
-
-    // Hide the toggle if JS is disabled, since we won't be able to use it anyway
-    html.no-js & {
-        display: none;
-    }
-}
-
-// When JS is enabled, don't display the nav links on smaller screens
-html.js {
-    .navbar-nav {
-        display: none;
-    }
-
-    @media (min-width: $screen-md-min) {
-        .navbar-nav {
-            display: block;
-        }
-
-        .navbar-toggle {
-            display: none;
-        }
-    }
+.navbar-toggler {
+    border: none;
 }
 
 // Always display the collapse on smaller screens with no JS, rather than having it
 // toggle. Inelegant, but it should work.
-@media (max-width: $grid-float-breakpoint - 1) {
+@include media-breakpoint-down(sm) {
     html.no-js .navbar-collapse {
         display: block;
     }
@@ -663,7 +647,8 @@ html.js {
     padding: 5px;
     color: $gray-darker;
 
-    &:hover, &:focus {
+    &:hover,
+    &:focus {
         text-decoration: none;
         border-color: $link-color;
         color: $gray-darker;
@@ -689,7 +674,7 @@ html.js {
     }
 }
 
-.displayed-query{
+.displayed-query {
     color: #c2342e;
     font-weight: bold;
 }

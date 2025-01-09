@@ -1,21 +1,21 @@
 "use strict";
 
-var gulp = require('gulp');
-var eslint = require('gulp-eslint');
-var jscs = require('gulp-jscs');
-var concat = require('gulp-concat');
-var sass = require('gulp-sass')(require('sass'));
-var sourcemaps = require('gulp-sourcemaps');
-var gulpif = require('gulp-if');
-var autoprefixer = require('gulp-autoprefixer');
-var livereload = require('gulp-livereload');
+import gulp from 'gulp';
+import eslint from 'gulp-eslint-new';
+import concat from 'gulp-concat';
+import gulpSass from 'gulp-sass';
+import gulpif from 'gulp-if';
+import autoprefixer from 'gulp-autoprefixer';
+import livereload from 'gulp-livereload';
+import lazypipe from 'lazypipe';
+import yargs from 'yargs';
+import webpack from 'webpack';
+import { deleteSync } from 'del';
+import path from 'path';
+import webpackConfig from './webpack.config.js';
+import * as dartSass from 'sass';
 
-var lazypipe = require('lazypipe');
-var yargs = require('yargs').argv;
-var webpack = require('webpack');
-var del = require('del');
-var path = require('path');
-var fs = require('fs');
+const sass = gulpSass(dartSass);
 
 // Set path variables
 var sources = {
@@ -27,14 +27,12 @@ var sources = {
 
 sources.clientJS = ['public/node_modules'].concat(sources.appJS).concat(sources.templates);
 
-var getWebpackCompiler = (function ()
-{
+var getWebpackCompiler = (function () {
     var compiler = null;
 
-    return function ()
-    {
+    return function () {
         if (!compiler)
-            compiler = webpack(require('./webpack.config'));
+            compiler = webpack(webpackConfig);
 
         return compiler;
     };
@@ -44,15 +42,13 @@ var getWebpackCompiler = (function ()
  * JavaScript linting
  */
 
-gulp.task('lint:js', function ()
-{
+gulp.task('lint:js', function () {
     return lintJS()
         .pipe(jscs.reporter('fail'))
         .pipe(eslint.failAfterError());
 });
 
-gulp.task('lint-nofail:js', function ()
-{
+gulp.task('lint-nofail:js', function () {
     return lintJS();
 });
 
@@ -60,33 +56,26 @@ gulp.task('lint-nofail:js', function ()
  * JavaScript build tasks
  */
 
-gulp.task('bundle:js', function (cb)
-{
-    var onBundleComplete = function (err, stats)
-    {
+gulp.task('bundle:js', function (cb) {
+    var onBundleComplete = function (err, stats) {
         console.log(stats.toString({
             colors: true,
             hash: false,
             version: false
         }));
 
-        if (err)
-        {
+        if (err) {
             cb(err);
         }
-        else
-        {
+        else {
             var fullStats = stats.toJson();
 
             // Reload changed files
-            fullStats.assets.filter(function (asset)
-            {
+            fullStats.assets.filter(function (asset) {
                 return asset.emitted;
-            }).map(function (asset)
-            {
-                return fullStats.publicPath  + asset.name;
-            }).forEach(function (path)
-            {
+            }).map(function (asset) {
+                return fullStats.publicPath + asset.name;
+            }).forEach(function (path) {
                 livereload.changed(path);
             });
 
@@ -97,22 +86,15 @@ gulp.task('bundle:js', function (cb)
     getWebpackCompiler().run(onBundleComplete);
 });
 
-gulp.task('clean:js', function (cb)
-{
-    del(['../static/js/', './.tmp'], {force: true}, function (err)
-    {
-        if (err)
-            cb(err);
-        else
-            cb();
-    });
+gulp.task('clean:js', function (cb) {
+    deleteSync(['../static/js/', './.tmp'], { force: true }),
+        cb();
 });
 
 gulp.task('rebuild:js', gulp.series('bundle:js'));
 
-gulp.task('build:js', gulp.series('clean:js','bundle:js'), function (cb)
-{
-        cb();
+gulp.task('build:js', gulp.series('clean:js', 'bundle:js'), function (cb) {
+    cb();
 });
 
 /*
@@ -120,12 +102,10 @@ gulp.task('build:js', gulp.series('clean:js','bundle:js'), function (cb)
  */
 
 
-gulp.task('bundle:css', function ()
-{
+gulp.task('bundle:css', function () {
     var sources = [
-        './public/css/bootstrap-theme.min.css',
-        './public/css/diva.min.css',
-        './public/css/styles.scss'
+        './public/css/styles.scss',
+        './public/css/diva.min.css'
     ];
 
     var isScssFile = /\.scss$/;
@@ -133,37 +113,27 @@ gulp.task('bundle:css', function ()
     var isDevBuild = !yargs.release;
 
     var compileScss = lazypipe()
-        .pipe(function ()
-        {
-            return sass({outputStyle: 'compressed'}).on('error', sass.logError);
+        .pipe(function () {
+            return sass({ loadPaths: ["node_modules"] }).on('error', sass.logError);
         })
-        .pipe(autoprefixer, {browsers: ['> 1%', 'last 2 versions', 'Firefox ESR', 'Opera 12.1', 'ie >= 9']});
+        .pipe(autoprefixer);
 
-    return gulp.src(sources, {base: './public/css/'})
-        .pipe(gulpif(isDevBuild, sourcemaps.init()))
+    return gulp.src(sources, { base: './public/css/', sourcemaps: isDevBuild })
         .pipe(gulpif(isScssFile, compileScss()))
         .pipe(concat('cantus-min.css'))
-        .pipe(gulpif(isDevBuild, sourcemaps.write('.')))
-        .pipe(gulp.dest('../static/css'))
+        .pipe(gulp.dest('../static/css', { sourcemaps: '.' }))
         .pipe(gulpif(isCssFile, livereload())); // Don't reload for sourcemaps
 });
 
-gulp.task('clean:css', function (cb)
-{
-    del('../static/css/', {force: true}, function (err)
-    {
-        if (err)
-            cb(err);
-        else
-            cb();
-    });
+gulp.task('clean:css', function (cb) {
+    deleteSync('../static/css/', { force: true });
+    cb();
 });
 
 gulp.task('rebuild:css', gulp.series('bundle:css'));
 
-gulp.task('build:css', gulp.series('clean:css','bundle:css'), function (cb)
-{
-        cb();
+gulp.task('build:css', gulp.series('clean:css', 'bundle:css'), function (cb) {
+    cb();
 });
 /*
  * Watching
@@ -188,22 +158,18 @@ gulp.task('watch', function (cb) // eslint-disable-line no-unused-vars
  *
  * @param ev The change event
  */
-function logWatchedChange(ev)
-{
+function logWatchedChange(ev) {
     console.log("File '" + path.relative('.', ev.path) + "' was " + ev.type);
 }
 
-function lintJS()
-{
+function lintJS() {
     var testEslintConfig = {
         configFile: 'public/js/.eslintrc.test.json'
     };
 
     return gulp.src(sources.buildJS.concat('public/js/**/*.js'))
         .pipe(gulpif((/\.spec\.js$/), eslint(testEslintConfig), eslint()))
-        .pipe(eslint.format())
-        .pipe(jscs())
-        .pipe(jscs.reporter());
+        .pipe(eslint.format());
 }
 
 gulp.task('build', gulp.series('build:js', 'build:css'));
@@ -212,7 +178,6 @@ gulp.task('build', gulp.series('build:js', 'build:css'));
  * High-level tasks
  */
 
-gulp.task('default', gulp.series('lint-nofail:js','build','watch'), function (cb)
-{
+gulp.task('default', gulp.series('lint-nofail:js', 'build', 'watch'), function (cb) {
     cb();
 });

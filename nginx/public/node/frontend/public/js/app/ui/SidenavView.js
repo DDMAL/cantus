@@ -1,6 +1,5 @@
 import $ from "jquery";
 import Marionette from "marionette";
-import afterTransition from "utils/afterTransition";
 
 import template from './sidenav.template.html';
 
@@ -30,31 +29,30 @@ export default Marionette.LayoutView.extend({
         sidenav: '.sidenav'
     },
 
-    initialize()
-    {
+    initialize() {
         this._isExpanded = this._backdrop = null;
     },
 
-    onRender()
-    {
+    onRender() {
+        const $body = $(document.body);
         this._isExpanded = this.ui.sidenav.hasClass('in');
+        this.ui.sidenav.on('transitionend', () => {
+            $body.removeClass('sidenav-animating');
+        });
     },
 
-    onDestroy()
-    {
+    onDestroy() {
         if (this._backdrop)
             this._removeBackdrop();
     },
 
-    _removeBackdrop()
-    {
+    _removeBackdrop() {
         this._backdrop.remove();
         this._backdrop = null;
     },
 
     /** Toggle the side nav open or closed */
-    toggle()
-    {
+    toggle() {
         if (!this._isExpanded)
             this.show();
         else
@@ -62,19 +60,15 @@ export default Marionette.LayoutView.extend({
     },
 
     /** Expand the side nav */
-    show()
-    {
+    show() {
         if (this._isExpanded)
             return;
 
         this._renderContent();
 
-        this.triggerMethod('sidenav:show');
-
         this._isExpanded = true;
 
-        if (!this._backdrop)
-        {
+        if (!this._backdrop) {
             this._backdrop = $('<div class="sidenav-backdrop fade">');
             this._backdrop.on('click', () => this.hide());
         }
@@ -84,26 +78,13 @@ export default Marionette.LayoutView.extend({
         this._backdrop.appendTo($body);
 
         $body.addClass('sidenav-animating');
-        this.ui.sidenav.addClass('sliding');
-
-        afterTransition(this.ui.sidenav, SIDENAV_TRANSITION_MS, function ()
-        {
-            $body.removeClass('sidenav-animating');
-        }, this);
-
-        // Force a reflow
-        // The logic here follows Bootstrap's very closely
-        this._backdrop[0].offsetWidth;
 
         this._backdrop.addClass('in');
         this.ui.sidenav.addClass('in');
-        this.ui.sidenav.removeClass('sliding');
     },
 
-    _renderContent()
-    {
-        if (!this.content.currentView)
-        {
+    _renderContent() {
+        if (!this.content.currentView) {
             let contentView = this.getOption('content');
 
             if (typeof contentView === 'function')
@@ -115,28 +96,17 @@ export default Marionette.LayoutView.extend({
     },
 
     /** Collapse the side nav */
-    hide()
-    {
+    hide() {
         if (!this._isExpanded)
             return;
 
-        this.triggerMethod('sidenav:hide');
-
         this._isExpanded = false;
-
-        this.ui.sidenav.addClass('sliding');
 
         const $body = $(document.body);
         $body.addClass('sidenav-animating');
 
         this.ui.sidenav.removeClass('in');
-        afterTransition(this.ui.sidenav, SIDENAV_TRANSITION_MS, function ()
-        {
-            this.ui.sidenav.removeClass('sliding');
-            $body.removeClass('sidenav-animating');
-        }, this);
-
         this._backdrop.removeClass('in');
-        afterTransition(this._backdrop, BACKDROP_TRANSITION_MS, () => this._removeBackdrop());
+        this._removeBackdrop();
     }
 });

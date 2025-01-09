@@ -1,4 +1,4 @@
-FROM node:18.16 AS frontend
+FROM node:20.18 AS frontend
 COPY ./public/node/frontend/package.json /code/frontend/
 RUN npm install -g gulp
 
@@ -10,7 +10,7 @@ RUN unzip volpiano51_web.zip
 RUN rm volpiano51_web.zip
 RUN mv volpiano51_web/volpiano.woff ../static/fonts/volpiano.woff
 COPY ./public/node/ /code/
-RUN gulp build --release
+RUN gulp build
 
 FROM nginx:1.25
 COPY ./nginx.conf /etc/nginx/nginx.conf

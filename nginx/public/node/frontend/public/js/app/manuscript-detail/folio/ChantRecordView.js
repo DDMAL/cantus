@@ -5,24 +5,26 @@ import { parseVolpianoSyllables } from 'utils/VolpianoDisplayHelper';
 
 import template from './chant-record.template.html';
 
-import { MIDI }  from 'utils/midi-player/midiPlayer.js';
+import { MIDI } from 'utils/midi-player/midiPlayer.js';
 
 var manuscriptChannel = Backbone.Radio.channel('manuscript');
 
-MIDI.audioDetect(function (supports){
-	MIDI.supports = supports;
-	var soundfontUrl = "/static/soundfonts/";
-	var instrument = "vowels";
-	MIDI.loadPlugin({
-		soundfontUrl: soundfontUrl,
-		instrument: instrument,
-		onprogress: function (state, progress) {
-			console.log(state, progress);
-		}, onsuccess: function(){
-			MIDI.setVolume(0, 127);
-		}
-	});
-	MIDI.instrument = instrument;
+addEventListener("DOMContentLoaded", function () {
+	MIDI.audioDetect(function (supports) {
+		MIDI.supports = supports;
+		var soundfontUrl = "/static/soundfonts/";
+		var instrument = "vowels";
+		MIDI.loadPlugin({
+			soundfontUrl: soundfontUrl,
+			instrument: instrument,
+			onprogress: function (state, progress) {
+				console.log(state, progress);
+			}, onsuccess: function () {
+				MIDI.setVolume(0, 127);
+			}
+		});
+		MIDI.instrument = instrument;
+	})
 });
 
 //string length that can deal with null inputs
@@ -52,11 +54,11 @@ function CustomSplit(str, delimiter, removeEmptyItems) {
 	return result;
 }
 
-function audioStopReset(MIDI){
+function audioStopReset(MIDI) {
 	var audioCxt = MIDI.getContext();
 	audioCxt.close();
-	if (MIDI.sources != undefined){
-		for (var i = 0; i < MIDI.sources.length; i++){
+	if (MIDI.sources != undefined) {
+		for (var i = 0; i < MIDI.sources.length; i++) {
 			MIDI.sources[i].disconnect();
 		}
 	}
@@ -70,17 +72,17 @@ function audioStopReset(MIDI){
 // Flats are applied to B's that immediately follow a flat
 // along with any B's in the same text syllable, unless
 // a natural cancels it.
-function handleFlats (inputStr){
+function handleFlats(inputStr) {
 	var flatReplDict = {};
-	flatReplDict["y"] = ["b","t"]; // where flat is encoded as "y", change B3 to our make-shift encoding of Bb3
-	flatReplDict["i"] = ["j","u"]; // where flat is encoded as "i", change B4 to our make-shift encoding of Bb4
-	flatReplDict["z"] = ["q","v"]; // where flat is encoded as "z", change B5 to our make-shift encoding of Bb5
-	function applyFlat(inputStr, flatStr){
+	flatReplDict["y"] = ["b", "t"]; // where flat is encoded as "y", change B3 to our make-shift encoding of Bb3
+	flatReplDict["i"] = ["j", "u"]; // where flat is encoded as "i", change B4 to our make-shift encoding of Bb4
+	flatReplDict["z"] = ["q", "v"]; // where flat is encoded as "z", change B5 to our make-shift encoding of Bb5
+	function applyFlat(inputStr, flatStr) {
 		// find location of flat in syllable
 		var flatIndex = inputStr.indexOf(flatStr);
 		// find subsequent location of natural in syllable, if any
 		var natIndex = inputStr.indexOf(flatStr.toUpperCase(), flatIndex);
-		if (natIndex == -1){natIndex = inputStr.length}
+		if (natIndex == -1) { natIndex = inputStr.length }
 		var preString = inputStr.slice(0, flatIndex);
 		var toFlattenString = inputStr.slice(flatIndex, natIndex);
 		var postString = inputStr.slice(natIndex, inputStr.length);
@@ -89,9 +91,9 @@ function handleFlats (inputStr){
 	}
 	if (inputStr.includes("y")) {
 		var outputStr = applyFlat(inputStr, "y");
-	} else if (inputStr.includes("i")){
+	} else if (inputStr.includes("i")) {
 		var outputStr = applyFlat(inputStr, "i");
-	} else if (inputStr.includes("z")){
+	} else if (inputStr.includes("z")) {
 		var outputStr = applyFlat(inputStr, "z");
 	}
 	return outputStr
@@ -135,20 +137,20 @@ function volpiano2midi(input_arr, note_dur, treble_voice = false) {
 
 	// create array of volpiano characters representing barlines
 	// for purposes of midi playback, these are treated as rests
-	let rest_arr = ['3','4','5','6'];
+	let rest_arr = ['3', '4', '5', '6'];
 
 
 	//iterate through each syllable
-	
+
 	var notes_played = 0;
 	var sources = [];
 	for (var i = 0; i < input_arr.length; i++) {
 		var pitches = input_arr[i][0];
-		if (pitches.includes("y") || pitches.includes("i") || pitches.includes("z")){
+		if (pitches.includes("y") || pitches.includes("i") || pitches.includes("z")) {
 			pitches = handleFlats(pitches);
 		}
 		var vowel = input_arr[i][1];
-		if (MIDI.instrument == "vowels"){
+		if (MIDI.instrument == "vowels") {
 			MIDI.programChange(0, vowel);
 		}
 		//var notes_played = 0;
@@ -168,7 +170,7 @@ function volpiano2midi(input_arr, note_dur, treble_voice = false) {
 	}
 	MIDI.sources = sources;
 	// Clear sources and reset button after last note
-	MIDI.sources[MIDI.sources.length - 1].addEventListener("ended", function(event){
+	MIDI.sources[MIDI.sources.length - 1].addEventListener("ended", function (event) {
 		audioStopReset(MIDI);
 	})
 };
@@ -202,11 +204,11 @@ function get_vowel(syllStr) {
 	for (var x = 0; x < strLength(syllStr); x++) {
 		if (syllStr[x].toLowerCase() == "a") {
 			// Handle "ae" diphthong
-			if (x < strLength(syllStr) - 1){
-				if (syllStr[x+1].toLowerCase() == "e"){
+			if (x < strLength(syllStr) - 1) {
+				if (syllStr[x + 1].toLowerCase() == "e") {
 					return 1;
-			} 
-		}
+				}
+			}
 			return 0;
 		}
 		if (syllStr[x].toLowerCase() == "e") {
@@ -218,16 +220,16 @@ function get_vowel(syllStr) {
 		if (syllStr[x].toLowerCase() == "o") {
 			// Handle "oe" diphthong
 			if (x < strLength(syllStr) - 1) {
-				if (syllStr[x+1].toLowerCase() == "e"){
-				return 1;
+				if (syllStr[x + 1].toLowerCase() == "e") {
+					return 1;
 				}
 			}
 			return 3;
 		}
 		if (syllStr[x].toLowerCase() == "u") {
-		// Handle "Qu" combination
-			if (x > 0){
-				if (syllStr[x-1].toLowerCase() == "q"){
+			// Handle "Qu" combination
+			if (x > 0) {
+				if (syllStr[x - 1].toLowerCase() == "q") {
 					continue;
 				}
 			}
@@ -252,9 +254,9 @@ export default Marionette.ItemView.extend({
 		this.model.set('volpiano', formattedVolpiano);
 		var cdb_uri = this.model.get('cdb_uri');
 		this.model.set({ 'cdb_link_url': 'https://cantusdatabase.org/chant/' + cdb_uri });
-		manuscriptChannel.on('chantAccordion:click',this.stopChantAudio, this);
+		manuscriptChannel.on('chantAccordion:click', this.stopChantAudio, this);
 	},
-	ui : {
+	ui: {
 		volpianoSyllables: ".volpiano-syllable",
 		btnPlay: ".btnPlay",
 		btnStop: ".btnStop",
@@ -271,18 +273,18 @@ export default Marionette.ItemView.extend({
 		this.ui.btnPlay.attr("disabled", true);
 		volpiano2midi(volArr, .6, this.treble_voice);
 	},
-	stop: function(){
+	stop: function () {
 		audioStopReset(MIDI);
 	},
-	toggleTreble: function(){
+	toggleTreble: function () {
 		this.treble_voice = this.ui.toggleTreble.is(':checked');
 	},
-	stopChantAudio: function(){
-		if (MIDI.getContext().state === "running"){
+	stopChantAudio: function () {
+		if (MIDI.getContext().state === "running") {
 			audioStopReset(MIDI);
 		}
 	},
-	onDestroy: function(){
-		manuscriptChannel.off('chantAccordion:click',this.stopChantAudio, this);
+	onDestroy: function () {
+		manuscriptChannel.off('chantAccordion:click', this.stopChantAudio, this);
 	}
 });

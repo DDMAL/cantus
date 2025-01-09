@@ -30,17 +30,15 @@ export default Marionette.LayoutView.extend({
 
     ui: {
         siteBrand: '.navbar-brand',
-        navButton: '.navbar-toggle',
-        searchModalLink: '.search-modal-link',
-        navLinks: '#top-menu li > a'
+        navButton: '.navbar-toggler',
+        navLinks: '#top-menu > a'
     },
 
     events: {
         'click @ui.navButton': 'toggleNavigationDrawer'
     },
 
-    initialize: function()
-    {
+    initialize: function () {
         navChannel.reply('set:navbarTitle', this.updateNavbarTitle, this);
 
         // The search view that we will shove into the modal box
@@ -51,18 +49,17 @@ export default Marionette.LayoutView.extend({
         });
 
         // The modal box for the search pop-up
-        this.searchModalView = new ModalView({title: "Search", view: this.searchView, modalId: "searchModal"});
+        this.searchModalView = new ModalView({ title: "Search", view: this.searchView, modalId: "searchModal" });
 
         this.aboutVolpianoView = new AboutVolpianoView();
-        this.aboutVolpianoModalView = new ModalView({title: "About Volpiano", view: this.aboutVolpianoView, modalId: "aboutVolModal"});
+        this.aboutVolpianoModalView = new ModalView({ title: "About Volpiano", view: this.aboutVolpianoView, modalId: "aboutVolModal" });
     },
 
     /**
      * Expand the side menu on click
      * @param event
      */
-    toggleNavigationDrawer: function (event)
-    {
+    toggleNavigationDrawer: function (event) {
         event.preventDefault();
         navChannel.request('toggle:menu');
     },
@@ -73,10 +70,8 @@ export default Marionette.LayoutView.extend({
      *
      * @param title
      */
-    updateNavbarTitle: function (title)
-    {
-        if (title)
-        {
+    updateNavbarTitle: function (title) {
+        if (title) {
             this.pageTitle.show(new Marionette.ItemView({
                 tagName: 'span',
                 template: subheadTemplate,
@@ -87,46 +82,38 @@ export default Marionette.LayoutView.extend({
 
             this.ui.siteBrand.removeClass('no-subhead');
         }
-        else
-        {
+        else {
             this.pageTitle.empty();
             this.ui.siteBrand.addClass('no-subhead');
         }
     },
 
-    onRender: function ()
-    {
-        var searchModalAttrs = {
-            'data-toggle': 'modal',
-            href: '#searchModal'
-        };
-
-        // Dynamically make the search link a modal
-        this.ui.searchModalLink.attr(searchModalAttrs);
-
+    onRender: function () {
         // Get the nav links from the DOM and add them to the collection.
         // The advantage of doing things this way is that it makes it possible to
         // provide a simple, mobile-friendly, JavaScript-free default.
         var navLinkCollection = this.collection;
-        var searchModalLinkElem = this.ui.searchModalLink[0];
 
-        this.ui.navLinks.each(function ()
-        {
-            var profile = {content: this.textContent, attr: {href: this.href}};
+        this.ui.navLinks.each(function () {
+            // Get text content and all attributes except the class attribute from the link
+            var attrs = {};
+            for (var i = 0; i < this.attributes.length; i++) {
+                var attr = this.attributes[i];
+                if (attr.nodeName != 'class') {
+                    attrs[attr.nodeName] = attr.nodeValue;
+                }
+            }
 
-            // Special case: The search link will become a modal target
-            if (this === searchModalLinkElem)
-                profile.attr = searchModalAttrs;
+            var profile = { content: this.textContent, attr: attrs };
 
             navLinkCollection.add(profile);
         });
 
-        this.searchModalRegion.show(this.searchModalView, {preventDestroy: true});
-        this.aboutVolpianoModalRegion.show(this.aboutVolpianoModalView, {preventDestroy: true});
+        this.searchModalRegion.show(this.searchModalView, { preventDestroy: true });
+        this.aboutVolpianoModalRegion.show(this.aboutVolpianoModalView, { preventDestroy: true });
     },
 
-    onDestroy: function ()
-    {
+    onDestroy: function () {
         this.searchModalView.destroy();
         this.aboutVolpianoModalView.destroy();
     }

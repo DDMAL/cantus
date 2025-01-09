@@ -11,10 +11,7 @@ import $ from "jquery";
  * @param {function} callback
  * @param {Object} context
  */
-export default function afterTransition(jqElem, fallbackMs, callback, ctx)
-{
-    // These jQuery properties are defined by Bootstrap
+export default function afterTransition(jqElem, fallbackMs, callback, ctx) {
     jqElem
-        .one($.support.transition.end, _.bind(callback, ctx))
-        .emulateTransitionEnd(fallbackMs);
+        .one("transitionend", _.bind(callback, ctx));
 }
