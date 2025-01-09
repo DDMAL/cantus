@@ -42,10 +42,10 @@ services:
       - "5432:5432"
     healthcheck:
       test: "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"
-      interval: 30s
+      interval: 10s
       timeout: 30s
       retries: 5
-      start_period: 30s
+      start_period: 10s
 
   nginx:
     container_name: cantus-nginx-1
