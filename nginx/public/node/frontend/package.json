@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
     "babel-loader": "^9.0.0",
     "del": "^8.0.0",
     "gulp": "^5.0.0",
@@ -30,12 +31,5 @@
   "scripts": {
     "lint": "gulp lint:js",
     "build": "gulp build"
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "Firefox ESR",
-    "Opera 12.1",
-    "ie >= 9"
-  ]
+  }
 }

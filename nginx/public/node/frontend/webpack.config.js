@@ -52,7 +52,19 @@ module.exports = configureBuildMode({
             {
                 test: /\.js$/,
                 include: [APP_BASE_DIR],
-                use: 'babel-loader'
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        targets: [
+                            "> 1%",
+                            "last 2 versions",
+                            "Firefox ESR",
+                            "Opera 12.1",
+                            "ie >= 9"
+                        ],
+                        presets: ['@babel/preset-env']
+                    }
+                }
             },
 
             {
