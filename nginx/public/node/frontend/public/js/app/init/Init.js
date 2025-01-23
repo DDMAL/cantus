@@ -1,24 +1,15 @@
 import "./GlobalSetup";
 import Backbone from "backbone";
 import App from "App";
-import WorkSpace from "routers/WorkSpace";
-import RouteController from "routers/RouteController";
+import Router from "routers/router";
 
-App.on('before:start', function ()
-{
-    this.routeController = new RouteController({
+App.on('before:start', function () {
+    this.appRouter = new Router({
         rootView: App.rootView
     });
-
-    this.appRouter = new WorkSpace({
-        controller: this.routeController
-    });
-
-    this.routeController.triggerMethod('before:start');
 });
 
-App.on('start', function ()
-{
+App.on('start', function () {
     // We don't support hash URL fallbacks at the moment because we're not loading the routing code
     // in the root URL page, so hash links are never forwarded. There might also be infinite loops in
     // the manuscript detail view (not really sure; this would need more looking into).
@@ -27,7 +18,7 @@ App.on('start', function ()
     // IE 9 being the only support case we really need to worry about. For now, do hard reloads on page
     // changes and hope caching will be our salvation.
 
-    Backbone.history.start({pushState: true, hashChange: false});
+    Backbone.history.start({ pushState: true, hashChange: false });
 });
 
 App.start();

@@ -4,8 +4,9 @@ import Qs from "qs";
 import Backbone from "backbone";
 import OpenChantState from "objects/OpenChantState";
 import Manuscript from "models/Manuscript";
+import Radio from "backbone.radio";
 
-var manuscriptStateChannel = Backbone.Radio.channel('manuscript');
+var manuscriptStateChannel = Radio.channel('manuscript');
 
 /**
  * Handles the manuscript state (i.e. the selected manuscript, folio, and
@@ -22,8 +23,7 @@ export default Backbone.Model.extend({
         pageAlias: undefined
     },
 
-    initialize: function()
-    {
+    initialize: function () {
         this.chantStateManager = new OpenChantState();
         this.manuscriptModel = null;
 
@@ -39,19 +39,16 @@ export default Backbone.Model.extend({
         manuscriptStateChannel.reply('model:manuscript', this.getManuscriptModel, this);
 
         // Proxy model getters and setters to the channel
-        _.forEach(_.keys(this.attributes), function (attr)
-        {
+        _.forEach(_.keys(this.attributes), function (attr) {
             manuscriptStateChannel.reply(attr, _.bind(this.get, this, attr), this);
 
-            manuscriptStateChannel.reply('set:' + attr, function (value, params)
-            {
-                this.set(attr, value, {stateChangeParams: params});
+            manuscriptStateChannel.reply('set:' + attr, function (value, params) {
+                this.set(attr, value, { stateChangeParams: params });
             }, this);
         }, this);
     },
 
-    unbindEvents: function ()
-    {
+    unbindEvents: function () {
         this.stopListening();
 
         // Stop replying to state requests
@@ -61,12 +58,10 @@ export default Backbone.Model.extend({
     /**
      * On manuscript change, reset the folio if it hasn't been explicitly set
      */
-    manuscriptChanged: function ()
-    {
+    manuscriptChanged: function () {
         this.manuscriptModel = null;
 
-        if (!this.hasChanged('folio') && !this.hasChanged('pageAlias'))
-        {
+        if (!this.hasChanged('folio') && !this.hasChanged('pageAlias')) {
             this.set('folio', null);
             this.set('pageAlias', null);
         }
@@ -75,8 +70,7 @@ export default Backbone.Model.extend({
     /**
      * On folio change, get the stored chant state for the new folio and set it
      */
-    folioChanged: function ()
-    {
+    folioChanged: function () {
         // If the chant was explicitly set in this round of updates then don't
         // change it here (the chantChanged callback will handle the relevant
         // state)
@@ -98,14 +92,13 @@ export default Backbone.Model.extend({
         var newChant = this.chantStateManager.get(manuscript, folio);
 
         if (newChant !== currentChant)
-            this.set('chant', newChant, {replaceState: true});
+            this.set('chant', newChant, { replaceState: true });
     },
 
     /**
      * On chant change, save the new chant state
      */
-    chantChanged: function ()
-    {
+    chantChanged: function () {
         var manuscript = this.get('manuscript');
         var folio = this.get('folio');
 
@@ -120,21 +113,17 @@ export default Backbone.Model.extend({
      * Publish changes to the manuscript channel. If the manuscript
      * has changed, wait for the manuscript model to load first.
      */
-    publishChanges: function ()
-    {
-        if (this.hasChanged('manuscript'))
-        {
+    publishChanges: function () {
+        if (this.hasChanged('manuscript')) {
             var changed = this.changedAttributes();
             var self = this;
 
             // FIXME: handle load failures somehow?
-            this.loadManuscriptModel().always(function ()
-            {
+            this.loadManuscriptModel().always(function () {
                 self.triggerChangeEvents(changed);
             });
         }
-        else
-        {
+        else {
             this.triggerChangeEvents(this.changed);
         }
     },
@@ -144,16 +133,13 @@ export default Backbone.Model.extend({
      * in the changed hash
      * @param changed
      */
-    triggerChangeEvents: function (changed)
-    {
-        _.forEach(changed, function (value, attr)
-        {
+    triggerChangeEvents: function (changed) {
+        _.forEach(changed, function (value, attr) {
             manuscriptStateChannel.trigger('change:' + attr, value);
         }, this);
     },
 
-    getManuscriptModel: function ()
-    {
+    getManuscriptModel: function () {
         return this.manuscriptModel;
     },
 
@@ -161,8 +147,7 @@ export default Backbone.Model.extend({
      * Load the model for the current manuscript from the server.
      * @returns {jQuery.Promise} a promise which resolves once the manuscript model is synced
      */
-    loadManuscriptModel: function ()
-    {
+    loadManuscriptModel: function () {
         // jshint eqnull:true
 
         // If there is no manuscript, return a promise
@@ -171,18 +156,16 @@ export default Backbone.Model.extend({
             return $.when(null);
 
         var deferred = $.Deferred();
-        var model = new Manuscript({id: this.get('manuscript')});
+        var model = new Manuscript({ id: this.get('manuscript') });
         var self = this;
 
         model.fetch({
-            success: function ()
-            {
+            success: function () {
                 self.manuscriptModel = model;
                 deferred.resolve(model);
                 self.trigger('load:manuscript', model);
             },
-            error: function (model, resp)
-            {
+            error: function (model, resp) {
                 deferred.reject(resp);
 
                 // FIXME: what's a better thing to do here?
@@ -193,8 +176,7 @@ export default Backbone.Model.extend({
         return deferred.promise();
     },
 
-    getUrl: function()
-    {
+    getUrl: function () {
         var composedUrl = "manuscript/" + this.get('manuscript') + "/";
 
         // Get truthy attributes which are not manuscript
@@ -210,8 +192,7 @@ export default Backbone.Model.extend({
     /**
      * Update the url without triggering a page reload
      */
-    updateUrl: function(model, options)
-    {
+    updateUrl: function (model, options) {
         // Don't actually trigger the router!
         Backbone.history.navigate(this.getUrl(), {
             trigger: false,

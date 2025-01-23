@@ -1,15 +1,12 @@
-import Backbone from 'backbone';
+import Radio from 'backbone.radio';
 import Marionette from 'marionette';
 import ChantItemView from "./ChantItemView";
 
-var manuscriptChannel = Backbone.Radio.channel('manuscript');
+var manuscriptChannel = Radio.channel('manuscript');
 
 import template from './chant-composite.template.html';
 
-/**
- * A composite view.
- */
-export default Marionette.CompositeView.extend({
+export default Marionette.CollectionView.extend({
     childView: ChantItemView,
     childViewContainer: ".accordion",
 
@@ -28,8 +25,7 @@ export default Marionette.CompositeView.extend({
         'unfold:chant': 'chantUnfolded'
     },
 
-    initialize: function()
-    {
+    initialize: function () {
         // Set the initial open chant state
         var unfoldedChant = manuscriptChannel.request('chant');
 
@@ -52,8 +48,7 @@ export default Marionette.CompositeView.extend({
      * @param index
      * @returns {{open: boolean}}
      */
-    childViewOptions: function (model, index)
-    {
+    childViewOptions: function (model, index) {
         return {
             open: this.unfoldedChant != null && this.unfoldedChant - 1 === index // eslint-disable-line eqeqeq
         };
@@ -65,13 +60,11 @@ export default Marionette.CompositeView.extend({
      *
      * @param child the child view
      */
-    chantFolded: function (child)
-    {
+    chantFolded: function (child) {
         // Get the 1-indexed position of the child
         var chant = this.collection.indexOf(child.model) + 1;
 
-        if (this.unfoldedChant === chant)
-        {
+        if (this.unfoldedChant === chant) {
             this.unfoldedChant = null;
             manuscriptChannel.request('set:chant', null);
         }
@@ -83,13 +76,11 @@ export default Marionette.CompositeView.extend({
      *
      * @param child the child view
      */
-    chantUnfolded: function (child)
-    {
+    chantUnfolded: function (child) {
         // Get the 1-indexed position of the child
         var chant = this.collection.indexOf(child.model) + 1;
 
-        if (this.unfoldedChant !== chant)
-        {
+        if (this.unfoldedChant !== chant) {
             this.unfoldedChant = chant;
             manuscriptChannel.request('set:chant', chant);
         }
@@ -100,16 +91,14 @@ export default Marionette.CompositeView.extend({
      *
      * @param index 0 to infinity
      */
-    setUnfoldedChant: function(index)
-    {
+    setUnfoldedChant: function (index) {
         var child;
 
         /* Check for a chant value of null or undefined */
         if (index == null) // eslint-disable-line eqeqeq
         {
             // If the chant is closed then collapse the chant panel
-            if (this.unfoldedChant !== null)
-            {
+            if (this.unfoldedChant !== null) {
                 var chant = this.unfoldedChant;
                 this.unfoldedChant = null;
 
@@ -118,15 +107,13 @@ export default Marionette.CompositeView.extend({
                     child.collapseContent();
             }
         }
-        else
-        {
+        else {
             // Coerce to integer
             index |= 0; // eslint-disable-line no-bitwise
 
             // If the chant has changed then expand the correct panel
             // (this will automatically collapse other panels as necessary)
-            if (this.unfoldedChant !== index)
-            {
+            if (this.unfoldedChant !== index) {
                 this.unfoldedChant = index;
 
                 child = this.children.findByIndex(this.unfoldedChant - 1);
@@ -136,8 +123,7 @@ export default Marionette.CompositeView.extend({
         }
     },
 
-    onRender: function ()
-    {
+    onRender: function () {
         this.collectionLoad();
     },
 
@@ -146,20 +132,17 @@ export default Marionette.CompositeView.extend({
      *
      * TODO(wabain): refactor the error messages to be an emptyView
      */
-    collectionLoad: function()
-    {
+    collectionLoad: function () {
         // Catch the case where the collection is loaded before the view is rendered
         if (typeof this.ui.errorMessages === 'string')
             return;
 
         // We need to display messages if there are no chants.
-        if (this.collection.length === 0)
-        {
+        if (this.collection.length === 0) {
             // No chants
             this.ui.errorMessages.html("No chant records begin on this page or folio side.");
         }
-        else
-        {
+        else {
             // Some chants
             this.ui.errorMessages.empty();
         }

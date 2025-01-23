@@ -2,7 +2,7 @@ import Marionette from 'marionette';
 
 import template from './suggestion.template.html';
 
-export default Marionette.ItemView.extend({
+export default Marionette.View.extend({
     tagName: "a",
     className: "list-group-item",
     attributes: {

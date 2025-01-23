@@ -1,59 +1,51 @@
 import _ from "underscore";
-import Backbone from "backbone";
+import Radio from "backbone.radio";
 import Marionette from "marionette";
 import pageSnippetUrl from "utils/pageSnippetUrl";
 
 import template from './result-item.template.html';
 
-var manuscriptChannel = Backbone.Radio.channel('manuscript');
+var manuscriptChannel = Radio.channel('manuscript');
 
-export default Marionette.ItemView.extend({
+export default Marionette.View.extend({
     template,
     tagName: 'tr',
 
     neumeImageHeight: 30,
 
     events: {
-        'click .result-target': function (event)
-        {
+        'click .result-target': function (event) {
             event.preventDefault();
             this.trigger('showResult');
         }
     },
 
-    initialize: function ()
-    {
+    initialize: function () {
         var manuscript = manuscriptChannel.request('model:manuscript');
 
         this.siglumSlug = manuscript ? manuscript.get('siglum_slug') : null;
     },
 
-    getThumbnail: function (box)
-    {
-        if (!this.siglumSlug)
-        {
+    getThumbnail: function (box) {
+        if (!this.siglumSlug) {
             return null;
         }
 
-        return pageSnippetUrl(box, {height: this.neumeImageHeight});
+        return pageSnippetUrl(box, { height: this.neumeImageHeight });
     },
 
-    templateHelpers: function ()
-    {
+    templateContext: function () {
         return {
-            contourGraph: function (semitones)
-            {
+            contourGraph: function (semitones) {
                 var highest = 0, lowest = 0;
                 var height = 15, width = 50;
 
-                var relPitches = _.reduce(semitones, function (relPitches, semitone)
-                {
+                var relPitches = _.reduce(semitones, function (relPitches, semitone) {
                     relPitches.push(_.last(relPitches) + semitone);
                     return relPitches;
                 }, [0]);
 
-                _.forEach(relPitches, function (pitch)
-                {
+                _.forEach(relPitches, function (pitch) {
                     if (pitch > highest)
                         highest = pitch;
                     else if (pitch < lowest)
@@ -63,21 +55,18 @@ export default Marionette.ItemView.extend({
                 var range = highest - lowest;
                 var stretch = relPitches.length === 1 ? 0.5 : relPitches.length - 1;
 
-                var points = _.map(relPitches, function (pitch, index)
-                {
+                var points = _.map(relPitches, function (pitch, index) {
                     return {
                         x: (index / stretch) * width,
                         y: height - (range === 0 ? 0.5 : (pitch - lowest) / range) * height
                     };
                 }, []);
 
-                var path = _.map(points, function (p, index)
-                {
+                var path = _.map(points, function (p, index) {
                     return (index === 0 ? 'M' : 'L') + p.x + ' ' + p.y;
                 }).join('');
 
-                var circles = _.map(points, function (p)
-                {
+                var circles = _.map(points, function (p) {
                     return '<circle fill="black" r="2" cx="' + p.x + '" cy="' + p.y + '" />';
                 }).join('');
 

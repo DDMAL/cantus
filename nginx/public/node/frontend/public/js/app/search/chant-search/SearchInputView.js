@@ -5,7 +5,7 @@ import template from './search-input.template.html';
 
 /** Control an input for a search field, firing a `search` event when the query changes.
  * Takes a SearchInput model. */
-export default Marionette.ItemView.extend({
+export default Marionette.View.extend({
     template,
 
     events: {
@@ -24,8 +24,7 @@ export default Marionette.ItemView.extend({
         searchInput: '.search-input'
     },
 
-    initialize: function ()
-    {
+    initialize: function () {
         _.bindAll(this, 'setQuery');
 
         this.setQueryDebounced = _.debounce(this.setQuery, 250);
@@ -36,13 +35,11 @@ export default Marionette.ItemView.extend({
     },
 
     /** We don't need to do anything real on a submit because the query is set on each change. */
-    preventSubmit: function (event)
-    {
+    preventSubmit: function (event) {
         event.preventDefault();
     },
 
-    setQuery: function (e, query)
-    {
+    setQuery: function (e, query) {
         //If a query is passed, update the value of the text field
         if (query)
             this.ui.searchInput.val(query);
@@ -50,10 +47,10 @@ export default Marionette.ItemView.extend({
         // For volpiano searches, remove the clef from the search before execution
         var searchField = this.model.get('field');
         var searchInput = this.ui.searchInput.val();
-        if (searchField === 'volpiano' || searchField === 'volpiano_literal'){
+        if (searchField === 'volpiano' || searchField === 'volpiano_literal') {
             // Ensure that search input field displays a treble clef as the default
             // search value, and replace it if user deletes it.
-            if (searchInput === "" || searchInput === "1"){
+            if (searchInput === "" || searchInput === "1") {
                 this.ui.searchInput.val("1-");
                 searchInput = "1-";
             }
@@ -61,15 +58,15 @@ export default Marionette.ItemView.extend({
             this.ui.searchInput.val(searchInput)
             // Remove the treble clef before the string is sent to solr. Volpiano
             // searches assume treble clef.
-            searchInput = searchInput.replaceAll("1-","");
+            searchInput = searchInput.replaceAll("1-", "");
             // Replace hyphens (a reserved character in solr queries) with 
             // escaped hyphens in the query string.
-            searchInput = searchInput.replaceAll("-","\\-");
+            searchInput = searchInput.replaceAll("-", "\\-");
         }
         // Handle quotations in text field searches. Solr errors if quotation marks
         // are not closed. If the search string contains an odd number of quotation
         // marks, add a quotation mark to the end of the string.
-        if (["all","feast","genre","office"].includes(searchField)){
+        if (["all", "feast", "genre", "office"].includes(searchField)) {
             (searchInput.split('"').length - 1) % 2 === 1 ? searchInput += '"' : null;
         }
         // FIXME(wabain): While this class needs to take a SearchInput model so it can initially
@@ -83,14 +80,11 @@ export default Marionette.ItemView.extend({
     /**
      * Update the `search-text-entered` class on the query input when that input changes.
      */
-    updateQueryInput: function (e)
-    {
-        if (this.ui.searchInput.val())
-        {
+    updateQueryInput: function (e) {
+        if (this.ui.searchInput.val()) {
             this.ui.searchInput.addClass('search-text-entered');
         }
-        else
-        {
+        else {
             this.ui.searchInput.removeClass('search-text-entered');
         }
 
@@ -99,16 +93,15 @@ export default Marionette.ItemView.extend({
             this.trigger('keydown:input', e.keyCode);
     },
 
-    onRender: function ()
-    {
+    onRender: function () {
         // Set dynamic classes on the query input
         this.updateQueryInput();
 
         // If the mode field is selected, 
         // "select" the previously queried modes
-        if (this.model.get('field') === "mode"){
+        if (this.model.get('field') === "mode") {
             let mode_query = this.model.get('query');
-            for (let i = 0; i < mode_query.length; i++){
+            for (let i = 0; i < mode_query.length; i++) {
                 // We use the first character of each mode search string.
                 // Where the search string is a number, the first character is that
                 // number. 

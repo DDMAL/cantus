@@ -1,5 +1,5 @@
 import _ from 'underscore';
-import Backbone from 'backbone';
+import Radio from 'backbone.radio';
 import Marionette from 'marionette';
 
 import GlobalVars from "config/GlobalVars";
@@ -10,27 +10,24 @@ import ChantCompositeView from "./ChantCompositeView";
 
 import template from './folio.template.html';
 
-var manuscriptChannel = Backbone.Radio.channel('manuscript');
-var folioChannel = Backbone.Radio.channel('folio');
+var manuscriptChannel = Radio.channel('manuscript');
 
-export default Marionette.LayoutView.extend({
+export default Marionette.View.extend({
     template,
 
     regions: {
-        chantListRegion: '.chant-list-region'
+        chantList: '.chant-list-region'
     },
 
     modelEvents: {
-        sync: '_onFetch',
-        error: '_handleFetchError'
+        "sync": '_onFetch',
+        "error": '_handleFetchError'
     },
 
-    initialize: function()
-    {
+    initialize: function () {
         this.chantCollection = new ChantCollection();
 
-        if (!this.model)
-        {
+        if (!this.model) {
             this.model = new Folio();
             this.updateFolio();
         }
@@ -38,8 +35,7 @@ export default Marionette.LayoutView.extend({
         this.listenTo(manuscriptChannel, 'change:imageURI', this.updateFolio);
     },
 
-    updateFolio: function ()
-    {
+    updateFolio: function () {
         var manuscript = manuscriptChannel.request('manuscript');
         var imageURI = manuscriptChannel.request('imageURI');
 
@@ -51,10 +47,8 @@ export default Marionette.LayoutView.extend({
         var loaded = false;
 
         // Display a loading message if the chants don't load almost immediately
-        _.delay(_.bind(function ()
-        {
-            if (!loaded)
-            {
+        _.delay(_.bind(function () {
+            if (!loaded) {
                 this.chantCollection.reset();
                 this._showMessage('Loading...');
             }
@@ -63,73 +57,65 @@ export default Marionette.LayoutView.extend({
         imageURI = encodeURIComponent(imageURI);
         this.model.clear();
         this.model.fetch({
-            url: GlobalVars.siteUrl + "folio-set/manuscript/" + manuscript + "/" + imageURI + "/"
-        }).always(function ()
-        {
+            //url: GlobalVars.siteUrl + 
+            url: "/folio-set/manuscript/" + manuscript + "/" + imageURI + "/"
+        }).always(function () {
             loaded = true;
         });
     },
 
-    _onFetch: function ()
-    {
+    _onFetch: function () {
         // Broadcast that the folio name has been received
-        manuscriptChannel.request('set:folio', this.model.get('number'), {replaceState: true});
-        folioChannel.trigger('folioLoaded');
+        manuscriptChannel.request('set:folio', this.model.get('number'), { replaceState: true });
+        manuscriptChannel.trigger('folioLoaded');
         this.chantCollection.reset();
         this.assignChants();
     },
 
-    _handleFetchError: function (model, xhr)
-    {
+    _handleFetchError: function (model, xhr) {
         this.chantCollection.reset();
         this.model.clear();
         this._showMessage('Failed to load chants.');
     },
 
     /** Display a message */
-    _showMessage: function (message)
-    {
+    _showMessage: function (message) {
         // FIXME: This is a pretty fragile way to display a message.
         // Really this should probably all be in templates.
-        if (this.chantListRegion.currentView)
-        {
+        if (this.getRegion('chantList').currentView) {
             if (message)
-                this.chantListRegion.currentView.ui.errorMessages.text(message);
+                this.getRegion('chantList').currentView.ui.errorMessages.text(message);
             else
-                this.chantListRegion.currentView.ui.errorMessages.empty();
+                this.getRegion('chantList').currentView.ui.errorMessages.empty();
         }
     },
 
     /**
      * Rebuild the list of chants
      */
-    assignChants: function()
-    {
+    assignChants: function () {
         // TODO(wabain): normalize Solr differences in model.parse methods
         // We are going to query this data from SOLR because it's faster.
         // So we need the manuscript siglum and folio name.
         // We need to handle the data differently depending on whether
         // we're getting the information from Django or Solr.
-        if (this.model.get("item_id"))
-        {
+        if (this.model.get("item_id")) {
             // Compose the url
             var composedUrl = GlobalVars.siteUrl + "chant-set/folio/" + this.model.get("item_id") + "/";
 
             // Update the chant collection
-            this.chantCollection.fetch({reset: true, url: composedUrl});
+            this.chantCollection.fetch({ reset: true, url: composedUrl });
 
             // Clear a loading message if one is displayed
             this._showMessage(null);
         }
-        else
-        {
+        else {
             this.chantCollection.reset();
         }
     },
 
-    onShow: function()
-    {
-        this.chantListRegion.show(new ChantCompositeView({
+    onAttach: function () {
+        this.getRegion('chantList').show(new ChantCompositeView({
             collection: this.chantCollection
         }));
     }

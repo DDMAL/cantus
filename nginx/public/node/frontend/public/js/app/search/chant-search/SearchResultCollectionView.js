@@ -7,8 +7,6 @@ import SearchResultItemView from './SearchResultItemView';
 
 import template from './search-result-collection.template.html';
 
-// TODO(wabain): this is misnamed since it's actually a CompositeView
-
 /**
  * Determine whether an element has been hidden by having
  * display: none set.
@@ -17,17 +15,17 @@ import template from './search-result-collection.template.html';
  * @returns {boolean}
  * @private
  */
-function isDisplayed(jqElem)
-{
+function isDisplayed(jqElem) {
     return jqElem.css('display') !== 'none';
 }
 
 /**
  * View representing a Search Result with count.
  */
-export default Marionette.CompositeView.extend({
+export default Marionette.CollectionView.extend({
     template,
-    tagName: 'div class="propagate-height"',
+    tagName: 'div',
+    className: 'propagate-height',
 
     childView: SearchResultItemView,
     childViewContainer: '.child-container',
@@ -48,8 +46,7 @@ export default Marionette.CompositeView.extend({
         'click @ui.resultHeading': 'changeSortCriterion'
     },
 
-    initialize: function()
-    {
+    initialize: function () {
         // FIXME(wabain): update this to use mergeOptions after updating Marionette
         this.searchParameters = this.getOption('searchParameters');
 
@@ -64,8 +61,7 @@ export default Marionette.CompositeView.extend({
         this.showManuscript = _.some(this.getOption("infoFields"), field => field.type === 'manuscript');
     },
 
-    childViewOptions: function ()
-    {
+    childViewOptions: function () {
         return {
             searchType: this.searchParameters.get('field'),
             query: this.searchParameters.get('query'),
@@ -74,8 +70,7 @@ export default Marionette.CompositeView.extend({
         };
     },
 
-    onRenderTemplate: function ()
-    {
+    onRenderTemplate: function () {
         this.hideIfEmpty();
         this.triggerMethod('sorting:changed');
 
@@ -84,13 +79,11 @@ export default Marionette.CompositeView.extend({
         this.ui.resultListWrapper.on('scroll', this._handleScroll);
     },
 
-    _triggerSortingChanged: function ()
-    {
+    _triggerSortingChanged: function () {
         this.triggerMethod('sorting:changed');
     },
 
-    _resetScrolling: function ()
-    {
+    _resetScrolling: function () {
         if (this.isRendered)
             this.ui.resultListWrapper.scrollTop(0);
     },
@@ -99,25 +92,20 @@ export default Marionette.CompositeView.extend({
      * If there is no query then hide the view. If there is a
      * query but no results then hide the result table.
      */
-    hideIfEmpty: function ()
-    {
-        if (!this.searchParameters.get('query'))
-        {
+    hideIfEmpty: function () {
+        if (!this.searchParameters.get('query')) {
             this.$el.hide();
             return;
         }
 
-        if (!isDisplayed(this.$el))
-        {
+        if (!isDisplayed(this.$el)) {
             this.$el.show();
         }
 
-        if (this.collection.length === 0)
-        {
+        if (this.collection.length === 0) {
             this.ui.resultList.hide();
         }
-        else if (!isDisplayed(this.ui.resultList))
-        {
+        else if (!isDisplayed(this.ui.resultList)) {
             this.ui.resultList.show();
         }
     },
@@ -129,8 +117,7 @@ export default Marionette.CompositeView.extend({
      *
      * @param event
      */
-    changeSortCriterion: function (event)
-    {
+    changeSortCriterion: function (event) {
         // It's convenient to listen to the click event when it's bubbled up to the th
         // element, but let's only act if the a element is what was clicked.
         if (event.target.tagName !== 'A')
@@ -142,13 +129,11 @@ export default Marionette.CompositeView.extend({
         var heading = $(event.currentTarget);
         var field = this.getHeadingSearchField(heading);
 
-        if (field === this.searchParameters.get('sortBy'))
-        {
+        if (field === this.searchParameters.get('sortBy')) {
             this.searchParameters.set('reverseSort', !this.searchParameters.get('reverseSort'));
         }
-        else
-        {
-            this.searchParameters.set({sortBy: field, reverseSort: false});
+        else {
+            this.searchParameters.set({ sortBy: field, reverseSort: false });
         }
     },
 
@@ -158,23 +143,19 @@ export default Marionette.CompositeView.extend({
      * @param heading
      * @returns {string}
      */
-    getHeadingSearchField: function (heading)
-    {
+    getHeadingSearchField: function (heading) {
         return heading.children('a').text().toLowerCase();
     },
 
-    onSortingChanged: function ()
-    {
+    onSortingChanged: function () {
         // Set the caret on the result table heading which corresponds
         // to the field which is being sorted by
         var sortField = this.searchParameters.get('sortBy');
 
-        _.some(this.ui.resultHeading, function (heading)
-        {
+        _.some(this.ui.resultHeading, function (heading) {
             heading = $(heading);
 
-            if (this.getHeadingSearchField(heading) === sortField)
-            {
+            if (this.getHeadingSearchField(heading) === sortField) {
                 this._setHeadingCaret(heading);
                 return true;
             }
@@ -188,8 +169,7 @@ export default Marionette.CompositeView.extend({
      * @param heading The heading for the active row
      * @private
      */
-    _setHeadingCaret: function (heading)
-    {
+    _setHeadingCaret: function (heading) {
         heading.children('.search-caret')
             .addClass('caret')
             .toggleClass('caret-reversed', this.searchParameters.get('reverseSort'));
@@ -197,8 +177,7 @@ export default Marionette.CompositeView.extend({
         // Register a callback to clear the state of the heading the next time that
         // the sort criteria change. We need to defer this because otherwise it could be triggered
         // immediately if we're in the middle of dispatching sorting:changed callbacks
-        _.defer(_.bind(this.once, this), 'sorting:changed', function ()
-        {
+        _.defer(_.bind(this.once, this), 'sorting:changed', function () {
             if (this.searchParameters.get('sortBy') !== this.getHeadingSearchField(heading))
                 heading.children('.search-caret').removeClass('caret caret-reversed');
         });
@@ -208,8 +187,7 @@ export default Marionette.CompositeView.extend({
      * If the last item in the results list is scrolled into view, then request more items
      * @private
      */
-    _loadResultsIfAtEnd: function ()
-    {
+    _loadResultsIfAtEnd: function () {
         // If the last child element is visible, request more items. This is a
         // pretty noisy trigger, but the incremental load handler ignores
         // duplicate requests, and it's better to to be overly broad in
@@ -218,8 +196,7 @@ export default Marionette.CompositeView.extend({
             this.trigger('continue:loading');
     },
 
-    templateHelpers: function()
-    {
+    templateContext: function () {
         return {
             infoFields: _.toArray(this.getOption('infoFields')),
             showManuscript: this.showManuscript

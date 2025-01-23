@@ -28,6 +28,7 @@ $link-hover-decoration: underline;
 // Override default padding for the navbar
 $navbar-padding-y: 0em;
 $navbar-toggler-padding-y: 0rem;
+$navbar-toggler-focus-width: 0rem;
 
 // Accordion variables
 $accordion-button-color: $gray-dark;
@@ -318,6 +319,7 @@ body.propagate-height {
     height: 100%;
     width: 10px;
     background-color: transparent;
+    position: absolute;
 
     // Kind of arbitrarily slot this into the Bootstrap hierarchy
     z-index: $zindex-dropdown;
@@ -581,8 +583,12 @@ body.propagate-height {
 // A subhead is an extension of a navbar brand that works like a breadcrumb to title a specific page
 .secondary-brand-component::before {
     content: "›";
-    padding-right: 15px;
-    padding-left: 15px;
+    padding-right: 6px;
+    padding-left: 6px;
+}
+
+.app-version {
+    font-size: .6em;
 }
 
 @include media-breakpoint-down(sm) {

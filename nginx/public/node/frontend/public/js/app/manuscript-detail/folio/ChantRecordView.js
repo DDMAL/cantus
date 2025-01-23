@@ -1,4 +1,4 @@
-import Backbone from 'backbone';
+import Radio from 'backbone.radio';
 import Marionette from 'marionette';
 
 import { parseVolpianoSyllables } from 'utils/VolpianoDisplayHelper';
@@ -7,7 +7,7 @@ import template from './chant-record.template.html';
 
 import { MIDI } from 'utils/midi-player/midiPlayer.js';
 
-var manuscriptChannel = Backbone.Radio.channel('manuscript');
+var manuscriptChannel = Radio.channel('manuscript');
 
 addEventListener("DOMContentLoaded", function () {
 	MIDI.audioDetect(function (supports) {
@@ -243,7 +243,7 @@ function get_vowel(syllStr) {
 	return 0;
 }
 
-export default Marionette.ItemView.extend({
+export default Marionette.View.extend({
 	template,
 
 	initialize: function () {

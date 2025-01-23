@@ -1,5 +1,6 @@
 import Marionette from "marionette";
 import Radio from "backbone.radio";
+import _ from "underscore";
 
 import SearchView from "search/SearchView";
 import ChantSearchProvider from "search/chant-search/ChantSearchProvider";
@@ -7,14 +8,12 @@ import AboutVolpianoView from "search/chant-search/AboutVolpianoView";
 
 import ModalView from "./ModalView";
 
-import subheadTemplate from './navbar-subhead.template.html';
-
 var navChannel = Radio.channel('navigation');
 
 /**
  * Add JS enhancements to the page header.
  */
-export default Marionette.LayoutView.extend({
+export default Marionette.View.extend({
     el: '#page-header',
     template: false,
 
@@ -24,8 +23,8 @@ export default Marionette.LayoutView.extend({
 
     regions: {
         pageTitle: '#page-title',
-        searchModalRegion: '#search-modal',
-        aboutVolpianoModalRegion: '#about-volpiano-modal'
+        searchModal: '#search-modal',
+        aboutVolpianoModal: '#about-volpiano-modal',
     },
 
     ui: {
@@ -53,42 +52,7 @@ export default Marionette.LayoutView.extend({
 
         this.aboutVolpianoView = new AboutVolpianoView();
         this.aboutVolpianoModalView = new ModalView({ title: "About Volpiano", view: this.aboutVolpianoView, modalId: "aboutVolModal" });
-    },
-
-    /**
-     * Expand the side menu on click
-     * @param event
-     */
-    toggleNavigationDrawer: function (event) {
-        event.preventDefault();
-        navChannel.request('toggle:menu');
-    },
-
-    /**
-     * When the global navbarTitle changes, update the pageTitle region
-     * to display it
-     *
-     * @param title
-     */
-    updateNavbarTitle: function (title) {
-        if (title) {
-            this.pageTitle.show(new Marionette.ItemView({
-                tagName: 'span',
-                template: subheadTemplate,
-                templateHelpers: {
-                    subhead: title
-                }
-            }));
-
-            this.ui.siteBrand.removeClass('no-subhead');
-        }
-        else {
-            this.pageTitle.empty();
-            this.ui.siteBrand.addClass('no-subhead');
-        }
-    },
-
-    onRender: function () {
+        this.bindUIElements();
         // Get the nav links from the DOM and add them to the collection.
         // The advantage of doing things this way is that it makes it possible to
         // provide a simple, mobile-friendly, JavaScript-free default.
@@ -109,8 +73,39 @@ export default Marionette.LayoutView.extend({
             navLinkCollection.add(profile);
         });
 
-        this.searchModalRegion.show(this.searchModalView, { preventDestroy: true });
-        this.aboutVolpianoModalRegion.show(this.aboutVolpianoModalView, { preventDestroy: true });
+        this.getRegion("searchModal").show(this.searchModalView);
+        this.getRegion("aboutVolpianoModal").show(this.aboutVolpianoModalView);
+    },
+
+    /**
+     * Expand the side menu on click
+     * @param event
+     */
+    toggleNavigationDrawer: function (event) {
+        event.preventDefault();
+        navChannel.request('toggle:menu');
+    },
+
+    /**
+     * When the global navbarTitle changes, update the pageTitle region
+     * to display it
+     *
+     * @param title
+     */
+    updateNavbarTitle: function (title) {
+        if (title) {
+            this.getRegion('pageTitle').show(new Marionette.View({
+                tagName: 'span',
+                className: 'secondary-brand-component',
+                template: _.template(title),
+            }));
+
+            this.ui.siteBrand.removeClass('no-subhead');
+        }
+        else {
+            this.getRegion('pageTitle').empty();
+            this.ui.siteBrand.addClass('no-subhead');
+        }
     },
 
     onDestroy: function () {

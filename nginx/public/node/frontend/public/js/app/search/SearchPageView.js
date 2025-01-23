@@ -1,6 +1,7 @@
 import Marionette from "marionette";
 import SearchView from "search/SearchView";
 import ChantSearchProvider from "search/chant-search/ChantSearchProvider";
+import fillViewportHeight from "behaviors/FillViewportHeightBehavior";
 
 import template from './search-page.template.html';
 
@@ -9,23 +10,18 @@ import template from './search-page.template.html';
  *
  * @constructor
  */
-export default Marionette.LayoutView.extend({
+export default Marionette.View.extend({
     template,
-    tagName: 'div class="propagate-height"',
+    tagName: 'div',
+    className: 'propagate-height',
 
-    behaviors: {
-        fillViewportHeight: true
-    },
+    behaviors: [fillViewportHeight],
 
     regions: {
         searchRegion: '#search'
     },
 
-    // Subviews
-    searchView: null,
-
-    initialize: function(options)
-    {
+    initialize: function (options) {
         // Initialize the subview
         this.searchView = new SearchView({
             providers: [new ChantSearchProvider({
@@ -35,8 +31,7 @@ export default Marionette.LayoutView.extend({
         });
     },
 
-    onRender: function()
-    {
-        this.searchRegion.show(this.searchView, {preventDestroy: true});
+    onRender: function () {
+        this.getRegion('searchRegion').show(this.searchView);
     }
 });
