@@ -6,14 +6,12 @@ import Marionette from 'marionette';
  * by setting the `propagate-height` class on the ancestors.
  */
 var FillViewportHeightBehavior = Marionette.Behavior.extend({
-    onShow()
-    {
+    onAttach() {
         this.$el.addClass('propagate-height');
         this.$el.parentsUntil('html').addClass('propagate-height');
     },
 
-    onBeforeDestroy()
-    {
+    onBeforeDestroy() {
         this.$el.removeClass('propagate-height');
         this.$el.parentsUntil('html').removeClass('propagate-height');
     }

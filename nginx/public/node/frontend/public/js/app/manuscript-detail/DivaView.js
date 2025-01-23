@@ -1,5 +1,5 @@
 import Marionette from 'marionette';
-import Backbone from 'backbone';
+import Radio from 'backbone.radio';
 import $ from 'jquery';
 import _ from "underscore";
 
@@ -9,38 +9,36 @@ import GlobalVars from '../config/GlobalVars';
 
 import template from './diva.template.html';
 
-var manuscriptChannel = Backbone.Radio.channel('manuscript');
-var folioChannel = Backbone.Radio.channel('folio');
+var manuscriptChannel = Radio.channel('manuscript');
 
 /**
  * Manages the lifecycle and customization of the Diva viewer
  */
-export default Marionette.ItemView.extend({
+export default Marionette.View.extend({
     template,
-    tagName: 'div class="propagate-height"',
+    tagName: 'div',
+    className: 'propagate-height',
 
     ui: {
         divaWrapper: '#diva-wrapper'
     },
 
-    initialize: function(options)
-    {
+    initialize: function (options) {
         _.bindAll(this, 'propagateFolioChange', 'onViewerLoad', 'setImageURI',
             'paintBoxes', 'updatePageAlias', 'gotoInputPage',
-            'getPageWhichMatchesAlias', 'onDocLoad', 'showPageSuggestions', 
+            'getPageWhichMatchesAlias', 'onDocLoad', 'showPageSuggestions',
             'onManifestLoad');
 
         this.divaEventHandles = [];
 
         // Create a debounced function to alert the site that Diva has
         // changed the folio
-        this.triggerFolioChange = _.debounce(function (imageURI)
-        {
-            manuscriptChannel.request('set:imageURI', imageURI, {replaceState: true});
+        this.triggerFolioChange = _.debounce(function (imageURI) {
+            manuscriptChannel.request('set:imageURI', imageURI, { replaceState: true });
         }, 250);
 
         this.listenTo(manuscriptChannel, 'change:imageURI', this.setImageURI);
-        this.listenTo(folioChannel, 'folioLoaded', this.updatePageAlias);
+        this.listenTo(manuscriptChannel, 'folioLoaded', this.updatePageAlias);
 
         this.toolbarParentObject = this.options.toolbarParentObject;
 
@@ -48,18 +46,15 @@ export default Marionette.ItemView.extend({
         this.manifestUrl = options.manifestUrl;
     },
 
-    onBeforeDestroy: function()
-    {
+    onBeforeDestroy: function () {
         // Uninitialize the Diva viewer, if it exists
-        if (this.divaInstance)
-        {
+        if (this.divaInstance) {
             // Call Diva's destructor
             this.divaInstance.destroy();
             this.divaInstance = null;
 
             // Unsubscribe the event handlers
-            _.forEach(this.divaEventHandles, function (handle)
-            {
+            _.forEach(this.divaEventHandles, function (handle) {
                 diva.Events.unsubscribe(handle);
             });
 
@@ -70,8 +65,7 @@ export default Marionette.ItemView.extend({
     /**
      * Initialize Diva and subscribe to its events.
      */
-    initializeDiva: function()
-    {
+    initializeDiva: function () {
         var manifestUrl = this.manifestUrl;
 
         var options = {
@@ -117,8 +111,7 @@ export default Marionette.ItemView.extend({
      * @param event
      * @param callback
      */
-    onDivaEvent: function (event, callback)
-    {
+    onDivaEvent: function (event, callback) {
         this.divaEventHandles.push(diva.Events.subscribe(event, callback));
     },
 
@@ -130,13 +123,11 @@ export default Marionette.ItemView.extend({
      *
      * When this happens, setting the width to a different but close value seems to work.
      */
-    onDocLoad: function ()
-    {
+    onDocLoad: function () {
         var inner = this.ui.divaWrapper.find('.diva-inner');
         var cssWidth = parseInt(inner[0].style.width, 10);
 
-        if (cssWidth && cssWidth !== inner.width())
-        {
+        if (cssWidth && cssWidth !== inner.width()) {
             /* eslint-disable no-console */
             console.warn(
                 "Trying to mitigate a Diva zooming bug...\n" +
@@ -150,14 +141,11 @@ export default Marionette.ItemView.extend({
 
     /**
      * Update Diva's page index to show the folio name
-     *
-     * @param folioName
      */
-    updatePageAlias: function ()
-    {
+    updatePageAlias: function () {
         let folioNumber = manuscriptChannel.request('folio');
-        if (folioNumber != null){
-            if (_.isArray(folioNumber)){
+        if (folioNumber != null) {
+            if (_.isArray(folioNumber)) {
                 folioNumber = folioNumber.join(', ');
             }
             var pageAlias = 'Folio ' + folioNumber;
@@ -165,22 +153,21 @@ export default Marionette.ItemView.extend({
             let imageIndex = this.divaInstance.getCurrentAliasedPageIndex()
             var pageAlias = 'Image ' + imageIndex;
         }
-        manuscriptChannel.request('set:pageAlias', pageAlias, {replaceState: true});
+        manuscriptChannel.trigger('set:pageAlias', pageAlias);
         this.folioNumberSpan.textContent = pageAlias;
     },
 
     /**
      * Replacement callback for the Diva page input submission
      */
-    gotoInputPage: function (event)
-    {
+    gotoInputPage: function (event) {
         event.preventDefault();
         // If the form was explicitly submitted by the user (eg. by clicking "Go"
         // or pressing the Enter key), we take the first suggestion as the page
         // destination. If the form was triggered by the user clicking a page
         // suggestion, we take the clicked suggestion as the destination (this is already
         // set in the Diva default handler for a "mousedown" event).
-        if (event.originalEvent){
+        if (event.originalEvent) {
             var inputSuggestions = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'input-suggestions');
             var pageInput = $('.diva-input-suggestion:first', inputSuggestions);
             var pageAlias = pageInput.text();
@@ -192,12 +179,10 @@ export default Marionette.ItemView.extend({
         if (!pageAlias)
             return;
 
-        this.getPageWhichMatchesAlias(pageAlias).done(_.bind(function (page)
-        {
+        this.getPageWhichMatchesAlias(pageAlias).done(_.bind(function (page) {
             this.divaInstance.gotoPageByName(page);
 
-        }, this)).fail(function ()
-        {
+        }, this)).fail(function () {
             alert("Invalid page number");
         });
     },
@@ -208,26 +193,26 @@ export default Marionette.ItemView.extend({
      * than the IIIF manifest.
      */
 
-    showPageSuggestions: function showPageSuggestions(event){
+    showPageSuggestions: function showPageSuggestions(event) {
         var inputSuggestions = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'input-suggestions');
         var manuscript = manuscriptChannel.request('manuscript');
 
         var pageInput = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'goto-page-input');
 
-        var queryUrl =  '/folio-set/manuscript/' + manuscript + '/?q=' + pageInput.val();
+        var queryUrl = '/folio-set/manuscript/' + manuscript + '/?q=' + pageInput.val();
         $.get(queryUrl,
-            function (data){
+            function (data) {
                 inputSuggestions.empty();
-                for (const queryResult of data){
+                for (const queryResult of data) {
                     var newInputSuggestion = document.createElement('div');
-                    newInputSuggestion.setAttribute('class','diva-input-suggestion');
+                    newInputSuggestion.setAttribute('class', 'diva-input-suggestion');
                     newInputSuggestion.textContent = queryResult.number;
                     inputSuggestions.append(newInputSuggestion);
                 }
             }
         )
 
-        inputSuggestions.css('display','block');
+        inputSuggestions.css('display', 'block');
     },
     /**
      * Query Solr to convert a folio name to an image URI
@@ -235,8 +220,7 @@ export default Marionette.ItemView.extend({
      * @param alias {string} A folio name or page index
      * @returns {object} A promise that the image URI will be retrieved from Solr
      */
-    getPageWhichMatchesAlias: function (alias)
-    {
+    getPageWhichMatchesAlias: function (alias) {
         var deferred = $.Deferred();
 
         if (!alias)
@@ -245,36 +229,31 @@ export default Marionette.ItemView.extend({
         var manuscript = manuscriptChannel.request('manuscript');
         $.ajax({
             url: GlobalVars.siteUrl + 'folios/?number=' + alias + '&manuscript=' + manuscript,
-            success: function (response)
-            {
+            success: function (response) {
                 // jscs:disable requireDotNotation
                 deferred.resolve(response[0]['image_uri']);
                 // jscs:enable requireDotNotation
             },
-            error: _.bind(function(response)
-            {
+            error: _.bind(function (response) {
                 // We didn't find a match; fall back to treating this as a non-aliased page number
-                if (alias.match(/^Image (\d+)$/)){
+                if (alias.match(/^Image (\d+)$/)) {
                     var pageIndex = parseInt(alias.match(/^Image (\d+)$/)[1], 10) - 1;
-                } else if (alias.match(/^\d+$/))
-                {
+                } else if (alias.match(/^\d+$/)) {
                     var pageIndex = parseInt(alias, 10) - 1;
                 }
-                if (pageIndex >= 0 && pageIndex < this.divaFilenames.length)
-                    {
-                        return deferred.resolve(this.divaFilenames[pageIndex]);
-                    } else {
-                        // If nothing worked, then just return null
-                        return deferred.reject(response);
-                    }
+                if (pageIndex >= 0 && pageIndex < this.divaFilenames.length) {
+                    return deferred.resolve(this.divaFilenames[pageIndex]);
+                } else {
+                    // If nothing worked, then just return null
+                    return deferred.reject(response);
+                }
             }, this)
         });
 
         return deferred.promise();
     },
 
-    onShow: function()
-    {
+    onAttach: function () {
         this.initializeDiva();
     },
 
@@ -282,8 +261,7 @@ export default Marionette.ItemView.extend({
      * Calculate the page size and store the index and filename of the first
      * loaded page.
      */
-    onViewerLoad: function()
-    {
+    onViewerLoad: function () {
         this.trigger('loaded:viewer');
 
         // Customize the toolbar
@@ -291,19 +269,16 @@ export default Marionette.ItemView.extend({
 
         // Go to the predetermined initial folio if one is set
         var initialFolio = manuscriptChannel.request('folio') ? manuscriptChannel.request('folio') : manuscriptChannel.request('pageAlias');
-        if (initialFolio !== null)
-        {
-            this.getPageWhichMatchesAlias(initialFolio).done(_.bind(function (initialImageURI)
-            {
+        if (initialFolio !== null) {
+            this.getPageWhichMatchesAlias(initialFolio).done(_.bind(function (initialImageURI) {
                 this.setImageURI(initialImageURI);
                 this.updatePageAlias(initialFolio);
             }, this));
         }
-        else
-        {
+        else {
             // If one is not set, then set the global folio to the Diva viewer's initial page
             var imageURI = this.divaInstance.getCurrentPageFilename();
-            manuscriptChannel.request('set:imageURI', imageURI, {replaceState: true});
+            manuscriptChannel.request('set:imageURI', imageURI, { replaceState: true });
         }
 
         // Store the list of filenames
@@ -323,7 +298,7 @@ export default Marionette.ItemView.extend({
      * NOTE: At the moment, we only support the IIIF 2 API, since Diva only
      * supports that version.
      **/
-    onManifestLoad: function (manifest){
+    onManifestLoad: function (manifest) {
         var attribution = manifest.attribution;
         var logo = manifest.logo;
         if (typeof logo === "object") {
@@ -340,8 +315,7 @@ export default Marionette.ItemView.extend({
     },
 
     /** Do some awkward manual manipulation of the toolbar */
-    _customizeToolbar: function()
-    {
+    _customizeToolbar: function () {
         // Rebind the go to page input
         var input = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'goto-page');
 
@@ -373,8 +347,7 @@ export default Marionette.ItemView.extend({
      *
      * @param imageURI
      */
-    setImageURI: function(imageURI)
-    {
+    setImageURI: function (imageURI) {
         if (!this.divaInstance)
             return;
 
@@ -392,8 +365,7 @@ export default Marionette.ItemView.extend({
      * @param {Number} index
      * @param {String} fileName
      */
-    propagateFolioChange: function(_, imageURI)
-    {
+    propagateFolioChange: function (_, imageURI) {
         // In the case that this is triggered by the 'ViewerDidLoad' event,
         // Set the imageURI to be URI of the first page of the document
         if (!imageURI)
@@ -409,16 +381,13 @@ export default Marionette.ItemView.extend({
      *
      * @param boxSet [ {p,w,h,x,y}, ... ]
      */
-    paintBoxes: function(boxSet)
-    {
+    paintBoxes: function (boxSet) {
         if (!this.divaInstance)
             return;
 
         // Wait for the Diva instance to be ready
-        if (!this.divaInstance.isReady())
-        {
-            this.divaEventHandles.push(diva.Events.subscribe("ViewerDidLoad", function ()
-            {
+        if (!this.divaInstance.isReady()) {
+            this.divaEventHandles.push(diva.Events.subscribe("ViewerDidLoad", function () {
                 this.paintBoxes(boxSet);
             }.bind(this)));
             return;
@@ -430,14 +399,12 @@ export default Marionette.ItemView.extend({
         var highlightsByPageHash = {};
         var pageList = [];
 
-        for (var i = 0; i < boxSet.length; i++)
-        {
+        for (var i = 0; i < boxSet.length; i++) {
             // Translate folio to Diva page
             var pageFilename = boxSet[i].p;
             var pageIndex = this.divaFilenames.indexOf(pageFilename);
 
-            if (highlightsByPageHash[pageIndex] === undefined)
-            {
+            if (highlightsByPageHash[pageIndex] === undefined) {
                 // Add page to the hash
                 highlightsByPageHash[pageIndex] = [];
                 pageList.push(pageIndex);
@@ -451,8 +418,7 @@ export default Marionette.ItemView.extend({
             });
         }
         // Now we need to add all of the pages to the Diva viewer
-        for (var j = 0; j < pageList.length; j++)
-        {
+        for (var j = 0; j < pageList.length; j++) {
             this.divaInstance.highlightOnPage(
                 pageList[j], // The page number
                 highlightsByPageHash[pageList[j]] // List of boxes
@@ -465,16 +431,13 @@ export default Marionette.ItemView.extend({
       *
       * @param box
       */
-    zoomToLocation: function(box)
-    {
+    zoomToLocation: function (box) {
         if (!this.divaInstance)
             return;
 
         // Wait for the Diva instance to be ready
-        if (!this.divaInstance.isReady())
-        {
-            this.divaEventHandles.push(diva.Events.subscribe("ViewerDidLoad", function ()
-            {
+        if (!this.divaInstance.isReady()) {
+            this.divaEventHandles.push(diva.Events.subscribe("ViewerDidLoad", function () {
                 this.zoomToLocation(box);
             }.bind(this)));
             return;
@@ -485,7 +448,7 @@ export default Marionette.ItemView.extend({
 
         // Do nothing if there's no box or if Diva is not initialized
         if (!box || !divaData)
-        return;
+            return;
 
         var divaSettings = divaData.getSettings();
         // Now figure out the page that box is on
@@ -506,7 +469,7 @@ export default Marionette.ItemView.extend({
         var leftMarginConsiderations = 0; // = divaSettings.averageWidths[zoomLevel] * divaSettings.adaptivePadding;
 
         divaOuter.scrollTop(boxTop + currentScrollTop - (divaOuter.height() / 2) + (box.h / 2) +
-               topMarginConsiderations);
+            topMarginConsiderations);
 
         // Now get the horizontal scroll
         var boxLeft = divaData.translateFromMaxZoomLevel(box.x);

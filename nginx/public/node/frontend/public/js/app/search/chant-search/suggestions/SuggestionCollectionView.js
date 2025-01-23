@@ -5,13 +5,15 @@ import Marionette from 'marionette';
 import SuggestionView from './SuggestionView';
 import template from './suggestion-collection.template.html';
 
-export default Marionette.CompositeView.extend({
+export default Marionette.CollectionView.extend({
     template: template,
 
     childView: SuggestionView,
     childViewContainer: "div",
 
-    sort: false,
+    sort: function () {
+        return false;
+    },
 
     ui: {
         'suggestion': 'div.list-group'
@@ -22,14 +24,12 @@ export default Marionette.CompositeView.extend({
         'touchstart @ui.suggestion': 'suggestionClicked' // Touch support
     },
 
-    initialize: function ()
-    {
+    initialize: function () {
         _.bindAll(this, 'show', 'hide', 'keyDown');
         this.hide(); // Hide the suggestions initially
     },
 
-    suggestionClicked: function (e)
-    {
+    suggestionClicked: function (e) {
         // Triggers "setQuery" in the SearchInputView through the ChantSearchProvider
         var el = $(e.target).closest('a.list-group-item');
 
@@ -37,14 +37,12 @@ export default Marionette.CompositeView.extend({
         this._searchActiveSuggestion();
     },
 
-    _setActive: function (el)
-    {
+    _setActive: function (el) {
         this.$('.active').removeClass('active');
         el.addClass('active');
     },
 
-    _searchActiveSuggestion: function ()
-    {
+    _searchActiveSuggestion: function () {
         // Get the active suggestion
         var el = this.$('.active');
         // Add boolean operator 'AND' between all words, in order to match exactly the suggestion
@@ -53,23 +51,19 @@ export default Marionette.CompositeView.extend({
         this.hide();
     },
 
-    show: function()
-    {
+    show: function () {
         this.$el.show();
     },
 
-    hide: function ()
-    {
+    hide: function () {
         this.$el.hide();
     },
 
-    keyDown: function (keyCode)
-    {
+    keyDown: function (keyCode) {
         this.show(); // Make sure the suggestions are shown when typing
 
         var el;
-        switch (keyCode)
-        {
+        switch (keyCode) {
             // Enter key
             case 13:
                 this._searchActiveSuggestion();

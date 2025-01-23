@@ -1,15 +1,15 @@
 import Marionette from 'marionette';
-import Backbone from 'backbone';
+import Radio from 'backbone.radio';
 import ChantRecordView from './ChantRecordView';
 
 import template from './chant-item.template.html';
 
-var manuscriptChannel = Backbone.Radio.channel('manuscript');
+var manuscriptChannel = Radio.channel('manuscript');
 
 /**
  * A panel containing chant information
  */
-export default Marionette.LayoutView.extend({
+export default Marionette.View.extend({
     template,
 
     regions: {
@@ -36,7 +36,7 @@ export default Marionette.LayoutView.extend({
     },
 
     onRender: function () {
-        this.panelBody.show(new ChantRecordView({
+        this.getRegion('panelBody').show(new ChantRecordView({
             model: this.model
         }));
     },
@@ -46,7 +46,7 @@ export default Marionette.LayoutView.extend({
      *
      * @returns {{isOpen: Function}}
      */
-    templateHelpers: function () {
+    templateContext: function () {
         var self = this;
 
         return {

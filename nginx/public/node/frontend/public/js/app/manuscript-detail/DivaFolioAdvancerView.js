@@ -1,14 +1,14 @@
 import Marionette from 'marionette';
-import Backbone from 'backbone';
 import $ from 'jquery';
+import Radio from 'backbone.radio';
 
 import template from './diva-folio-advancer.template.html';
 
-var manuscriptChannel = Backbone.Radio.channel('manuscript');
+var manuscriptChannel = Radio.channel('manuscript');
 /**
  * A widget with buttons that controls
  */
-export default Marionette.ItemView.extend({
+export default Marionette.View.extend({
     template,
 
     ui:
@@ -30,22 +30,19 @@ export default Marionette.ItemView.extend({
      *
      * @returns {*|jQuery}
      */
-    getDivaData: function()
-    {
+    getDivaData: function () {
         return $("#diva-wrapper").data('diva');
     },
 
     /**
      * Increase the page by 1, or 2 if in 'Book' view.
      */
-    nextButtonCallbackHandler: function(event)
-    {
+    nextButtonCallbackHandler: function (event) {
         // Don't follow the a href to "#"
         event.preventDefault();
 
         this.changeDivaPage(
-            function(index, divaData)
-            {
+            function (index, divaData) {
                 var inBookView = divaData.getState().v === 'b';
                 return index + (inBookView ? 2 : 1);
             }
@@ -55,27 +52,25 @@ export default Marionette.ItemView.extend({
     /**
      * Decrease the page by 1, or 2 if in 'Book' view.
      */
-    previousButtonCallbackHandler: function(event)
-    {
+    previousButtonCallbackHandler: function (event) {
         // Don't follow the a href to "#"
         event.preventDefault();
 
         this.changeDivaPage(
-            function(index, divaData)
-            {
+            function (index, divaData) {
                 var inBookView = divaData.getState().v === 'b';
                 return index - (inBookView ? 2 : 1);
             }
         );
     },
 
-    firstChantFolioCallbackHandler: function(event){
+    firstChantFolioCallbackHandler: function (event) {
         // Query which folio in the manuscript has the first chant
         var manuscript = manuscriptChannel.request('manuscript');
-        var queryUrl =  '/folio-set/manuscript/' + manuscript + '/';
+        var queryUrl = '/folio-set/manuscript/' + manuscript + '/';
         var divaData = this.getDivaData();
         $.get(queryUrl,
-            function(data){
+            function (data) {
                 var firstFolioURI = data[0].image_uri;
                 divaData.gotoPageByName(firstFolioURI);
             })
@@ -87,8 +82,7 @@ export default Marionette.ItemView.extend({
      *
      * @param numberChangeFunction fn : int -> int
      */
-    changeDivaPage: function(numberChangeFunction)
-    {
+    changeDivaPage: function (numberChangeFunction) {
         // Get DivaData and the curent page count
         var divaData = this.getDivaData(),
             currentPageIndex = divaData.getCurrentPageIndex();

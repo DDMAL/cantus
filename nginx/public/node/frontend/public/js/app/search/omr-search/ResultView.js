@@ -7,9 +7,10 @@ import ResultItemView from "./ResultItemView";
 
 import template from './result-list.template.html';
 
-export default Marionette.CompositeView.extend({
+export default Marionette.CollectionView.extend({
     template,
-    tagName: 'div class="propagate-height"',
+    tagName: 'div',
+    className: 'propagate-height',
 
     childView: ResultItemView,
 
@@ -25,42 +26,34 @@ export default Marionette.CompositeView.extend({
         table: 'table'
     },
 
-    childEvents: function ()
-    {
+    childEvents: function () {
         return {
             showResult: this.triggerZoomToResult
         };
     },
 
-    initialize: function ()
-    {
+    initialize: function () {
         this._handleScroll = _.throttle(_.bind(this._loadResultsIfAtEnd, this), 250);
     },
 
-    updateTable: function ()
-    {
-        if (this.collection.length)
-        {
+    updateTable: function () {
+        if (this.collection.length) {
             this.ui.tableWrapper.show();
         }
-        else
-        {
+        else {
             this.ui.tableWrapper.hide();
         }
     },
 
-    handleRequest: function ()
-    {
+    handleRequest: function () {
         this.ui.tableWrapper.hide();
     },
 
-    triggerZoomToResult: function (view)
-    {
+    triggerZoomToResult: function (view) {
         this.trigger('zoomToResult', view.model);
     },
 
-    onRender: function ()
-    {
+    onRender: function () {
         this.updateTable();
 
         // We can't use the events hash for this because it relies on events
@@ -72,8 +65,7 @@ export default Marionette.CompositeView.extend({
      * If the last item in the results list is scrolled into view, then request more items
      * @private
      */
-    _loadResultsIfAtEnd: function ()
-    {
+    _loadResultsIfAtEnd: function () {
         if (lastChildVisible(this, this.ui.tableWrapper))
             this.trigger('continue:loading');
     }

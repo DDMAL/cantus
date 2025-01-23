@@ -18,7 +18,7 @@ var BACKDROP_TRANSITION_MS = 150;
  *  - show
  *  - hide
  */
-export default Marionette.LayoutView.extend({
+export default Marionette.View.extend({
     template,
 
     regions: {
@@ -84,14 +84,15 @@ export default Marionette.LayoutView.extend({
     },
 
     _renderContent() {
-        if (!this.content.currentView) {
+        var contentRegion = this.getRegion('content');
+        if (!contentRegion.currentView) {
             let contentView = this.getOption('content');
 
             if (typeof contentView === 'function')
                 contentView = contentView();
 
             if (contentView)
-                this.content.show(contentView);
+                contentRegion.show(contentView);
         }
     },
 

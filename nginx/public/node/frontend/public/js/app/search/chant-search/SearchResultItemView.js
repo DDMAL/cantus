@@ -1,17 +1,17 @@
 import _ from 'underscore';
-import Backbone from 'backbone';
+import Radio from 'backbone.radio';
 import Marionette from 'marionette';
 import { Collapse } from 'bootstrap';
 
 import template from './search-result-item.template.html';
 
 
-var manuscriptChannel = Backbone.Radio.channel('manuscript');
+var manuscriptChannel = Radio.channel('manuscript');
 
 /**
  * View representing a single search result
  */
-export default Marionette.ItemView.extend({
+export default Marionette.View.extend({
     template,
 
     // Each result view gets its own tbody element.

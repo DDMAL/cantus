@@ -12,8 +12,7 @@ var NO_SEARCH = 0,
     FAILURE = 2,
     LOADING = 3;
 
-var viewError = function (message)
-{
+var viewError = function (message) {
     var err = new Error(message);
     err.name = 'SearchResultHeadingViewError';
     return err;
@@ -30,7 +29,7 @@ var viewError = function (message)
  *
  *   - `showLoading` (default false): Whether to show a loading state while the request loads
  */
-export default Marionette.ItemView.extend({
+export default Marionette.View.extend({
     collectionEvents: {
         request: 'searchLoading',
         sync: 'searchSucceeded',
@@ -48,36 +47,31 @@ export default Marionette.ItemView.extend({
     // Initial state
     state: NO_SEARCH,
 
-    initialize: function ()
-    {
+    initialize: function () {
         // FIXME(wabain): maybe debounce loading to allow a grace period instead of making it optional?
         this.showLoading = this.getOption('showLoading');
 
         this.getSearchMetadata = this.getOption('getSearchMetadata');
 
-        if (!_.isFunction(this.getSearchMetadata))
-        {
+        if (!_.isFunction(this.getSearchMetadata)) {
             throw viewError('Require a function getSearchMetadata but got ' + this.getSearchMetadata);
         }
 
         this.setState(this.state);
     },
 
-    onRender: function ()
-    {
+    onRender: function () {
         // If the template is false then we don't want to display anything
         // (no state should persist between renders)
         if (!this.currentTemplate)
             this.$el.empty();
     },
 
-    getTemplate: function ()
-    {
+    getTemplate: function () {
         return this.currentTemplate;
     },
 
-    templateHelpers: function ()
-    {
+    templateContext: function () {
         var defaults = {
             fieldName: null,
             numFound: this.collection.length,
@@ -90,40 +84,33 @@ export default Marionette.ItemView.extend({
         return defaults;
     },
 
-    searchLoading: function ()
-    {
-        if (this.showLoading)
-        {
+    searchLoading: function () {
+        if (this.showLoading) {
             this.setState(LOADING);
             this.render();
         }
     },
 
-    searchSucceeded: function ()
-    {
+    searchSucceeded: function () {
         this.setState(SUCCESS);
         this.render();
     },
 
-    searchFailed: function (collection, resp)
-    {
-        this.setState(FAILURE, {error: resp});
+    searchFailed: function (collection, resp) {
+        this.setState(FAILURE, { error: resp });
         this.render();
     },
 
-    collectionReset: function ()
-    {
+    collectionReset: function () {
         this.setState(NO_SEARCH);
         this.render();
     },
 
-    setState: function (state, parameters)
-    {
+    setState: function (state, parameters) {
         this.metadata = null;
         this.error = null;
 
-        switch (state)
-        {
+        switch (state) {
             case NO_SEARCH:
                 break;
 
@@ -144,15 +131,12 @@ export default Marionette.ItemView.extend({
         this.currentTemplate = this.templateMap[state];
     },
 
-    getErrorMessage: function (resp)
-    {
-        if (resp.status >= 500)
-        {
+    getErrorMessage: function (resp) {
+        if (resp.status >= 500) {
             return 'The server encountered an error';
         }
 
-        if (_.has(resp.responseJSON, 'detail'))
-        {
+        if (_.has(resp.responseJSON, 'detail')) {
             return resp.responseJSON.detail;
         }
 

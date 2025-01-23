@@ -5,7 +5,7 @@ import template from './input.template.html';
 /**
  * Handle the search box for notation search
  */
-export default Marionette.ItemView.extend({
+export default Marionette.View.extend({
     template,
 
     ui: {
@@ -17,30 +17,26 @@ export default Marionette.ItemView.extend({
         'submit @ui.form': 'triggerSearch'
     },
 
-    serializeData: function ()
-    {
+    serializeData: function () {
         return {
             initialQuery: this.getOption('initialQuery')
         };
     },
 
     /** Trigger a search event when the search form is submitted */
-    triggerSearch: function (event)
-    {
+    triggerSearch: function (event) {
         event.preventDefault();
         this.trigger('search', this.ui.searchBox.val());
     },
 
     /** Insert a string into the search input at the current caret position */
-    insertSearchString: function (newQuery, addSpace)
-    {
+    insertSearchString: function (newQuery, addSpace) {
         var input = this.ui.searchBox[0];
         var text = this.ui.searchBox.val();
 
         // If the HTML5 input selection functions aren't available, just dump
         // the query onto the end of the text
-        if (!input.setRangeText)
-        {
+        if (!input.setRangeText) {
             // Place a space before the new term if the existing input
             // ends with a non-space character
             if (addSpace && text.length > 0 && !/\s/.test(text.charAt(text.length - 1)))
@@ -56,16 +52,14 @@ export default Marionette.ItemView.extend({
         var selEnd = input.selectionEnd;
 
         // If a range of text is selected, just replace it
-        if (selStart !== selEnd)
-        {
+        if (selStart !== selEnd) {
             input.setRangeText(newQuery, selStart, selEnd, 'select');
             return;
         }
 
         // Place a space before the new term if the existing input
         // ends with a non-space character
-        if (addSpace)
-        {
+        if (addSpace) {
             var prevChar = text.charAt(selStart - 1);
             if (prevChar && !/\s/.test(prevChar))
                 newQuery = ' ' + newQuery;

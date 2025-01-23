@@ -1,22 +1,29 @@
 import _ from "underscore";
 import Backbone from "backbone";
 import Radio from "backbone.radio";
-import Marionette from "marionette";
 import LinkWatcher from "link-watcher";
 import Qs from "qs";
 
 import GlobalVars from "config/GlobalVars";
 import ManuscriptStateModel from "models/ManuscriptStateModel";
 
+import ManuscriptCollection from "collections/ManuscriptCollection";
 import ManuscriptListPageView from "manuscript-list/ManuscriptListPageView";
 import ManuscriptDetailPageView from "manuscript-detail/ManuscriptDetailPageView";
 import SearchPageView from "search/SearchPageView";
 
 var navChannel = Radio.channel('navigation');
 
-export default Marionette.Object.extend({
+export default Backbone.Router.extend({
+    routes: {
+        "manuscript/:id/": "manuscriptSingle",
+        "manuscripts/": "manuscripts",
+        "search/": "search",
+        '*path': "notFound"
+    },
+
     initialize: function (options) {
-        this.rootView = this.getOption('rootView', options);
+        this.rootView = options.rootView;
 
         this.initialRouteComplete = false;
         this.listenToOnce(Backbone.history, 'route', function () {
@@ -32,12 +39,10 @@ export default Marionette.Object.extend({
                 this.manuscriptState = null;
             }
         });
-    },
 
-    /** Initialize the layout for the application */
-    onBeforeStart: function () {
-        // The manuscripts page has no state, so we might as well instantiate it
-        this.manuscriptListPage = new ManuscriptListPageView();
+        // Initialize the manuscript list collection
+        this.manuscriptCollection = new ManuscriptCollection();
+        this.manuscriptCollection.fetch();
 
         // Navigate to clicked links
         LinkWatcher.onLinkClicked(document.body, function (event, info) {
@@ -52,6 +57,7 @@ export default Marionette.Object.extend({
      * Display the manuscripts list page
      */
     manuscripts: function () {
+        this.manuscriptListPage = new ManuscriptListPageView({ collection: this.manuscriptCollection });
         this.showContentView(this.manuscriptListPage, { title: 'Manuscripts' });
     },
 
@@ -139,20 +145,10 @@ export default Marionette.Object.extend({
      * @param titleSettings
      */
     showContentView: function (newView, titleSettings) {
-        this.rootView.mainContent.show(newView, { preventDestroy: this.shouldDestroyMainContentView() });
+        this.rootView.getRegion('mainContent').show(newView);
 
         navChannel.request('set:navbarTitle', titleSettings.navbarTitle || titleSettings.title);
         this.setDocumentTitle(titleSettings.title);
-    },
-
-    /**
-     * Determine whether the current view of the main content region should be destroyed
-     * when another view is rendered.
-     *
-     * @returns {boolean}
-     */
-    shouldDestroyMainContentView: function () {
-        return this.rootView.mainContent.currentView === this.manuscriptListPage;
     },
 
     /**

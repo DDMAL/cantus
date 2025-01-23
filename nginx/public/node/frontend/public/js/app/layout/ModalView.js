@@ -9,7 +9,7 @@ import template from './modal.template.html';
  *
  * @type {*|void}
  */
-export default Marionette.LayoutView.extend({
+export default Marionette.View.extend({
     title: null,
     visitorView: null,
     modalId: null,
@@ -24,33 +24,30 @@ export default Marionette.LayoutView.extend({
         "hidden.bs.modal": "modalDismissCallback"
     },
 
-    initialize: function(options)
-    {
+    initialize: function (options) {
         this.title = options.title;
         this.visitorView = options.view;
         this.modalId = options.modalId;
     },
 
-    onRender: function()
-    {
+    onRender: function () {
         // Render out the modal template
-        if (this.visitorView !== null)
-        {
-            this.body.show(this.visitorView, {preventDestroy: true});
+        if (this.visitorView !== null) {
+            this.getRegion('body').show(this.visitorView);
+            this.visitorView.triggerMethod('show');
         }
     },
 
-    serializeData: function()
-    {
+    serializeData: function () {
         return {
             title: this.title,
             modalId: this.modalId
         };
     },
 
-    modalDismissCallback: function(event){
-        if (this.modalId == "aboutVolModal"){
-            if ($('#manuscript-search-pane').length == 0){
+    modalDismissCallback: function (event) {
+        if (this.modalId == "aboutVolModal") {
+            if ($('#manuscript-search-pane').length == 0) {
                 $('#searchModal').modal('show');
             }
         }

@@ -7,13 +7,13 @@ import diva from 'diva';
 import SearchView from "search/SearchView";
 import ChantSearchProvider from "search/chant-search/ChantSearchProvider";
 import OMRSearchProvider from "search/omr-search/OMRSearchProvider";
+import fillViewportHeight from "behaviors/FillViewportHeightBehavior";
 
 import SidenavView from 'ui/SidenavView';
 
 import FolioView from "./folio/FolioView";
 import DivaView from "./DivaView";
 import ManuscriptInfoView from "./ManuscriptInfoView";
-import NavFolioNumberView from './NavFolioNumberView';
 import DivaFolioAdvancerView from './DivaFolioAdvancerView';
 
 import template from './manuscript.template.html';
@@ -26,26 +26,25 @@ var manuscriptStateChannel = Radio.channel('manuscript');
  *
  * @type {*|void}
  */
-export default Marionette.LayoutView.extend({
+export default Marionette.View.extend({
     template,
 
-    behaviors: {
-        fillViewportHeight: true
-    },
+    behaviors: [fillViewportHeight],
+
 
     regions: {
-        divaViewRegion: "#diva-column",
-        folioViewRegion: "#folio",
-        searchViewRegion: "#manuscript-search",
-        navFolioRegion: '#manuscript-nav-folio-number',
-        folioAdvancerRegion: '#manuscript-folio-advancer-container'
+        divaView: "#diva-column",
+        folioView: "#folio",
+        searchView: "#manuscript-search",
+        folioAdvancer: '#manuscript-folio-advancer-container'
     },
 
     ui: {
         toolbarRow: '#toolbar-row',
         resizer: '.resizer',
         divaColumn: "#diva-column",
-        manuscriptDataColumn: '#manuscript-data-column'
+        manuscriptDataColumn: '#manuscript-data-column',
+        folioDetailTab: '#manuscript-nav-folio-number'
     },
 
     events: {
@@ -149,10 +148,9 @@ export default Marionette.LayoutView.extend({
         });
 
         // Render the subviews
-        this.folioViewRegion.show(new FolioView());
-        this.searchViewRegion.show(searchView);
-        this.navFolioRegion.show(new NavFolioNumberView());
-        this.folioAdvancerRegion.show(new DivaFolioAdvancerView());
+        this.getRegion('folioView').show(new FolioView());
+        this.getRegion('searchView').show(searchView);
+        this.getRegion('folioAdvancer').show(new DivaFolioAdvancerView());
 
         // Attach the info sidenav
         this._infoSidenavParent = $('<div class="manuscript-info-sidenav-container"></div>');
@@ -172,13 +170,17 @@ export default Marionette.LayoutView.extend({
         // on initialization in the DivaView, so we wait for DOM Refresh before showing the
         // view here. Maybe check if that is resolved after updating Marionette?
         this.once('dom:refresh', function () {
-            this.divaViewRegion.show(divaView);
+            this.getRegion('divaView').show(divaView);
 
             // Diva inserts its own viewport on initialization, so we need to reset it
             // TODO: Take this out after upgrading to Diva 4.0
             this._viewportContent = null;
             this._updateViewport();
         });
+    },
+
+    onAttach: function () {
+        this.listenTo(manuscriptStateChannel, 'set:pageAlias', this._updateFolioTabNumber);
     },
 
     onDestroy() {
@@ -243,6 +245,10 @@ export default Marionette.LayoutView.extend({
 
     onWindowResized: function () {
         this._updateViewport();
+    },
+
+    _updateFolioTabNumber: function (pageAlias) {
+        this.ui.folioDetailTab.text(pageAlias);
     }
 });
 

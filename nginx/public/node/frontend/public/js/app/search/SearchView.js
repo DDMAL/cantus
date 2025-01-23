@@ -23,9 +23,10 @@ import template from './search.template.html';
  *  two search views which had different implementations. Refactoring those to make the abstraction
  *  better would be nice.
  */
-export default Marionette.LayoutView.extend({
+export default Marionette.View.extend({
     template,
-    tagName: 'div class="propagate-height"',
+    tagName: 'div',
+    className: 'propagate-height',
 
     regions: {
         searchInput: ".search-input",
@@ -50,49 +51,45 @@ export default Marionette.LayoutView.extend({
      * - `providers`: an array of search providers to delegate to
      * - `searchTerm`: the initial search type and query to look for
      */
-    initialize: function ()
-    {
+    initialize: function () {
         this.cachedQueries = {};
 
         this.providers = this.getOption('providers');
         this._setInitialSearchTerm();
-        this.listenTo(this.searchInput, 'show', this.bindInputSearchEvent);
+    },
+
+    onShow() {
+        this.bindInputSearchEvent(this.getRegion('searchInput').currentView);
     },
 
     /** Match up the passed in search term to a field from the providers,
      * or fall back to the first provider's first field and an empty query.
      * @private
      */
-    _setInitialSearchTerm: function ()
-    {
+    _setInitialSearchTerm: function () {
         var searchTerm = this.getOption('searchTerm');
 
         // If a search term was given, try to match its search type to some provider field
         var searchTypeFound;
-        if (searchTerm)
-        {
+        if (searchTerm) {
             // Special case (mostly for backwards compatibility): if a search
             // query is provided but not a search type, default to the type "all"
-            if (searchTerm.query && !searchTerm.type)
-            {
+            if (searchTerm.query && !searchTerm.type) {
                 searchTerm.type = 'all';
             }
 
             searchTypeFound = this._findSearchField(searchTerm.type);
         }
-        else
-        {
+        else {
             searchTypeFound = false;
         }
 
         // If the search type was not found or not given, use the first available
         // search field and an empty query
-        if (searchTypeFound)
-        {
+        if (searchTypeFound) {
             this._setQuery(searchTerm.query);
         }
-        else
-        {
+        else {
             this.activeProvider = this.providers[0];
             this.activeField = this.activeProvider.fields[0];
             this._setQuery('');
@@ -107,14 +104,10 @@ export default Marionette.LayoutView.extend({
      * @returns {Boolean} Whether a match was found
      * @private
      */
-    _findSearchField: function (type)
-    {
-        return _.some(this.providers, function (provider)
-        {
-            return _.some(provider.fields, function (field)
-            {
-                if (field.type === type)
-                {
+    _findSearchField: function (type) {
+        return _.some(this.providers, function (provider) {
+            return _.some(provider.fields, function (field) {
+                if (field.type === type) {
                     this.activeProvider = provider;
                     this.activeField = field;
                     return true;
@@ -132,34 +125,28 @@ export default Marionette.LayoutView.extend({
      * @param {String} query
      * @private
      */
-    _setQuery: function (query)
-    {
+    _setQuery: function (query) {
         this.query = this.cachedQueries[this.activeField.type] = query;
     },
 
     /** Add a binding to listen for `search` on the input view whenever an
      * input view is shown. */
-    bindInputSearchEvent: function (inputView)
-    {
-        this.listenTo(inputView, 'search', function (query)
-        {
+    bindInputSearchEvent: function (inputView) {
+        this.listenTo(inputView, 'search', function (query) {
             this._setQuery(query);
 
-            this.trigger('search', {type: this.activeField.type, query: query});
+            this.trigger('search', { type: this.activeField.type, query: query });
             this.activeProvider.triggerMethod('search', query);
         });
     },
 
-    fieldSelected: function (event)
-    {
+    fieldSelected: function (event) {
         var menuItem = $(event.target);
         var provider = this.providers[menuItem.data('provider-index')];
         var field = provider.fields[menuItem.data('field-index')];
 
-        if (field !== this.activeField)
-        {
-            if (provider !== this.activeProvider)
-            {
+        if (field !== this.activeField) {
+            if (provider !== this.activeProvider) {
                 this.activeProvider = provider;
             }
 
@@ -172,27 +159,23 @@ export default Marionette.LayoutView.extend({
         }
     },
 
-    serializeData: function ()
-    {
+    serializeData: function () {
         return {
             searchProviders: this.providers,
             activeField: this.activeField
         };
     },
 
-    renderActiveField: function ()
-    {
-        this.trigger('search', {type: this.activeField.type, query: this.query});
+    renderActiveField: function () {
+        this.trigger('search', { type: this.activeField.type, query: this.query });
         this.activeProvider.display(this.activeField, this.query, this.getRegions());
     },
 
-    onRender: function ()
-    {
+    onRender: function () {
         this.renderActiveField();
     },
 
-    onDestroy: function ()
-    {
+    onDestroy: function () {
         _.invoke(this.providers, 'triggerMethod', 'destroy');
     }
 });
