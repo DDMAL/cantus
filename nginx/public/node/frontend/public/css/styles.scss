@@ -456,6 +456,11 @@ body.propagate-height {
     z-index: $zindex-diva-canvas + 5;
 }
 
+.search-input .form-control:focus {
+    box-shadow: none;
+    border-color: $border-color;
+}
+
 .search-field {
     padding-left: 15px;
 }
