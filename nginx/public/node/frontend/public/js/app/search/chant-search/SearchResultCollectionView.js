@@ -70,7 +70,7 @@ export default Marionette.CollectionView.extend({
         };
     },
 
-    onRenderTemplate: function () {
+    onRender: function () {
         this.hideIfEmpty();
         this.triggerMethod('sorting:changed');
 
