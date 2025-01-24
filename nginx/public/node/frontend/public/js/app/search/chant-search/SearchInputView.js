@@ -27,7 +27,7 @@ export default Marionette.View.extend({
     initialize: function () {
         _.bindAll(this, 'setQuery');
 
-        this.setQueryDebounced = _.debounce(this.setQuery, 250);
+        this.setQueryDebounced = _.debounce(this.setQuery, 500);
 
         // Create a regex that will match all invalid volpiano
         // characters
@@ -75,6 +75,10 @@ export default Marionette.View.extend({
         // confusing.
         this.trigger('search', searchInput);
         this.updateQueryInput();
+    },
+
+    setQueryDebounced: function (e, query) {
+        this.setQueryDebounced(e, query);
     },
 
     /**
