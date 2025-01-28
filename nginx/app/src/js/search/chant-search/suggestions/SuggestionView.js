@@ -1,6 +1,6 @@
 import Marionette from 'marionette';
 
-import template from './suggestion.template.html';
+import _ from 'underscore';
 
 export default Marionette.View.extend({
     tagName: "a",
@@ -9,5 +9,7 @@ export default Marionette.View.extend({
         'href': '#'
     },
 
-    template: template
+    template: _.template('<%= term %>'),
+
+
 });

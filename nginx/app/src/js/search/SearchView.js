@@ -58,10 +58,6 @@ export default Marionette.View.extend({
         this._setInitialSearchTerm();
     },
 
-    onShow() {
-        this.bindInputSearchEvent(this.getRegion('searchInput').currentView);
-    },
-
     /** Match up the passed in search term to a field from the providers,
      * or fall back to the first provider's first field and an empty query.
      * @private
@@ -173,6 +169,7 @@ export default Marionette.View.extend({
 
     onRender: function () {
         this.renderActiveField();
+        this.bindInputSearchEvent(this.getRegion('searchInput').currentView);
     },
 
     onDestroy: function () {

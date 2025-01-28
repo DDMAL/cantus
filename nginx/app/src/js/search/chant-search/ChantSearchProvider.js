@@ -14,17 +14,17 @@ import SuggestionCollectionView from './suggestions/SuggestionCollectionView';
 import SearchResultCollectionView from "./SearchResultCollectionView";
 
 var KNOWN_FIELDS = [
-    {type: "all", "name": "All Text Fields"},
-    {type: "manuscript", "name": "Manuscript"},
-    {type: "volpiano", "name": "Volpiano"},
-    {type: "volpiano_literal", "name": "Volpiano (Literal)"},
-    {type: "mode", "name": "Mode"},
-    {type: "feast", "name": "Feast"},
-    {type: "genre", "name": "Genre"},
-    {type: "office", "name": "Office"},
-    {type: "differentia", "name": "Differentia"},
-    {type: "differentiae_database", "name": "Differentiae Database"},
-    {type: "cantus_id", "name": "Cantus ID"},
+    { type: "all", "name": "All Text Fields" },
+    { type: "manuscript", "name": "Manuscript" },
+    { type: "volpiano", "name": "Volpiano" },
+    { type: "volpiano_literal", "name": "Volpiano (Literal)" },
+    { type: "mode", "name": "Mode" },
+    { type: "feast", "name": "Feast" },
+    { type: "genre", "name": "Genre" },
+    { type: "office", "name": "Office" },
+    { type: "differentia", "name": "Differentia" },
+    { type: "differentiae_database", "name": "Differentiae Database" },
+    { type: "cantus_id", "name": "Cantus ID" },
 ];
 
 var INITIAL_LOAD_CUTOFF = 100;
@@ -38,8 +38,7 @@ export default Marionette.Object.extend({
     description: 'Cantus Search',
 
     /** Search fields this class provides */
-    fields: KNOWN_FIELDS.filter(function (field)
-    {
+    fields: KNOWN_FIELDS.filter(function (field) {
         return field.type !== 'manuscript';
     }),
 
@@ -70,8 +69,7 @@ export default Marionette.Object.extend({
      * - `restriction`: object with field: value mappings of restrictions
      *   to apply to all queries made by the controller
      */
-    initialize: function()
-    {
+    initialize: function () {
         _.bindAll(this, 'search', 'setRestriction', 'getSearchMetadata');
 
         // Set options
@@ -79,10 +77,12 @@ export default Marionette.Object.extend({
 
         // Initialize search input model
         this.searchParameters = new SearchInput();
+        this.searchInputView = new SearchInputView({ model: this.searchParameters });
 
         // Initialize search result collection
         this.collection = new SearchResultCollection();
         this.suggestionCollection = new SuggestionCollection();
+        this.suggestionCollectionView = new SuggestionCollectionView({ collection: this.suggestionCollection });
 
         this.resultLoadingHandler = new IncrementalSolrLoader(this.collection, {
             baseUrl: this.collection.baseUrl()
@@ -92,22 +92,25 @@ export default Marionette.Object.extend({
         this.listenTo(this.searchParameters, 'change:query change:field', this.search);
         this.listenTo(this.searchParameters, 'change:sortBy change:reverseSort', this._handleSort);
         this.listenTo(this.collection, 'sync', this._handleSync);
+        //Send information from the search input view to the suggestion collection view and vice-versa
+        this.listenTo(this.searchInputView, 'focus:input', this.suggestionCollectionView.show);
+        this.listenTo(this.searchInputView, 'blur:input', this.suggestionCollectionView.hide);
+        this.listenTo(this.searchInputView, 'keydown:input', this.suggestionCollectionView.keyDown);
+        this.listenTo(this.suggestionCollectionView, 'click:suggestion', this.searchInputView.setQuery);
     },
 
-    onDestroy: function ()
-    {
+    onDestroy: function () {
         this.stopListening();
     },
 
-    getSearchMetadata: function ()
-    {
+    getSearchMetadata: function () {
         let fieldName = this.searchParameters.get('field');
         let numFound = this.collection.metadata.numFound;
         // Modify query returned by solr so it is ready for display.
         // Remove escaping backslashes from the displayed string.
         let query = this.searchParameters.get('query');
         let displayedQuery;
-        switch (fieldName){
+        switch (fieldName) {
             case "volpiano":
             case "volpiano_literal":
                 displayedQuery = query.replaceAll("\\-", "-");
@@ -131,8 +134,7 @@ export default Marionette.Object.extend({
      * @param {string} field
      * @param {string} value
      */
-    setRestriction: function (field, value)
-    {
+    setRestriction: function (field, value) {
         this.restrictions[field] = value;
 
         // If there is a search active then redo it
@@ -140,8 +142,7 @@ export default Marionette.Object.extend({
             this.search();
     },
 
-    onSearch: function (query)
-    {
+    onSearch: function (query) {
         // Just set the query on the model; the actual search is triggered
         // by the change event
         this.searchParameters.set('query', query);
@@ -152,20 +153,17 @@ export default Marionette.Object.extend({
      * with it. This function hits the API (possibly multiple times) every
      * time it is called if the query is non-empty.
      */
-    search: function()
-    {
+    search: function () {
         var query = this.searchParameters.get('query');
         var field = this.searchParameters.get('field');
 
-        if (!query)
-        {
+        if (!query) {
             this.resultLoadingHandler.stopLoading();
             this.collection.reset();
             return;
         }
 
-        if (field !== 'all')
-        {
+        if (field !== 'all') {
             // FIXME(wabain): I don't think this is ever actually triggered
             // If the field is a mode then the value is already an array
             if (_.isString(query))
@@ -182,23 +180,22 @@ export default Marionette.Object.extend({
                 (this.searchParameters.get('reverseSort') ? 'desc' : 'asc')
         };
 
-        if (field === 'mode'){
+        if (field === 'mode') {
             params.sort = 'score desc, ' + params.sort;
         }
 
-        var queryBuilder = new SolrQuery({params: params});
+        var queryBuilder = new SolrQuery({ params: params });
 
         this.setSearchQueryOnBuilder(queryBuilder, field, query);
 
-        _.forEach(this.restrictions, function (value, field)
-        {
+        _.forEach(this.restrictions, function (value, field) {
             queryBuilder.setField(this.getSearchField(field), value);
         }, this);
 
         var suggestionQuery = queryBuilder.toSuggestString();
         // suggestionQuery will be null if no suggesters are defined for this search
         if (suggestionQuery)
-            this.suggestionCollection.fetch({url: this.suggestionCollection.baseUrl() + '?' + suggestionQuery});
+            this.suggestionCollection.fetch({ url: this.suggestionCollection.baseUrl() + '?' + suggestionQuery });
 
         this.resultLoadingHandler.fetch(queryBuilder);
     },
@@ -227,21 +224,20 @@ export default Marionette.Object.extend({
      * @param field
      * @param query
      */
-    setSearchQueryOnBuilder: function (queryBuilder, field, query)
-    {
-        if (field !== 'mode')
-        {
+    setSearchQueryOnBuilder: function (queryBuilder, field, query) {
+        if (field !== 'mode') {
             queryBuilder.setField(this.getSearchField(field), query, 'OR');
             return;
         }
 
         let query_modified = [];
-        _.forEach(query, function (value){
-            if (value.length === 1){
+        _.forEach(query, function (value) {
+            if (value.length === 1) {
                 query_modified.push(value);
             } else {
                 query_modified.push(`"${value.slice(3)}"`);
-        }});
+            }
+        });
         queryBuilder.setField('mode_t_hidden', query_modified, "OR");
     },
 
@@ -253,8 +249,7 @@ export default Marionette.Object.extend({
      * @param {string} field
      * @returns {string} a searchable field
      */
-    getSearchField: function (field)
-    {
+    getSearchField: function (field) {
         if (_.contains(this.stringFields, field))
             return field + '_t_hidden';
 
@@ -262,25 +257,18 @@ export default Marionette.Object.extend({
     },
 
     /** Display component views for the selected search field */
-    display: function (field, query, regions)
-    {
+    display: function (field, query, regions) {
         // Restore the last query which was searched for by this field if one exists
         this.searchParameters.set({
             field: field.type,
             query: query
         });
 
-        // FIXME(wabain): This triggers changes on the model, as well as going through
-        // the SearchView event feedback path. I don't think this is a real problem,
-        // but it is deeply confusing.
-        var searchInputView = new SearchInputView({model: this.searchParameters});
-
-        //Reset the suggestion collection since we are now searching for something else
+        // Reset the suggestion collection since we are now searching for something else
         this.suggestionCollection.reset();
-        var suggestionCollectionView = new SuggestionCollectionView({collection: this.suggestionCollection});
 
-        regions.searchInput.show(searchInputView);
-        regions.searchSuggestions.show(suggestionCollectionView);
+        regions.searchInput.show(this.searchInputView);
+        regions.searchSuggestions.show(this.suggestionCollectionView);
 
         regions.searchHelper.empty();
 
@@ -292,8 +280,7 @@ export default Marionette.Object.extend({
 
         // Get the additional result fields to display
         var specifiedAddFields = this.getOption('additionalResultFields');
-        var infoFields = _.filter(KNOWN_FIELDS, function (field)
-        {
+        var infoFields = _.filter(KNOWN_FIELDS, function (field) {
             return _.contains(specifiedAddFields, field.type);
         });
 
@@ -305,12 +292,6 @@ export default Marionette.Object.extend({
         regions.searchResults.show(resultsView);
 
         this.listenTo(resultsView, 'continue:loading', this._continueLoadingResults);
-
-        //Send information from the search input view to the suggestion collection view and vice-versa
-        this.listenTo(searchInputView, 'focus:input', suggestionCollectionView.show);
-        this.listenTo(searchInputView, 'blur:input', suggestionCollectionView.hide);
-        this.listenTo(searchInputView, 'keydown:input', suggestionCollectionView.keyDown);
-        this.listenTo(suggestionCollectionView, 'click:suggestion', searchInputView.setQuery);
     },
 
     /**
@@ -318,8 +299,7 @@ export default Marionette.Object.extend({
      *
      * @private
      */
-    _continueLoadingResults: function ()
-    {
+    _continueLoadingResults: function () {
         this.resultLoadingHandler.continueLoading();
     },
 
@@ -329,8 +309,7 @@ export default Marionette.Object.extend({
      *
      * @private
      */
-    _handleSync: function ()
-    {
+    _handleSync: function () {
         if (this.resultLoadingHandler.hasMore() && this.resultLoadingHandler.loaded() < INITIAL_LOAD_CUTOFF)
             this.resultLoadingHandler.continueLoading();
     },
@@ -342,14 +321,11 @@ export default Marionette.Object.extend({
      *
      * @private
      */
-    _handleSort: function ()
-    {
-        if (this.resultLoadingHandler.hasMore() || this.resultLoadingHandler.numFound > CLIENT_SIDE_SORT_LIMIT)
-        {
+    _handleSort: function () {
+        if (this.resultLoadingHandler.hasMore() || this.resultLoadingHandler.numFound > CLIENT_SIDE_SORT_LIMIT) {
             this.search();
         }
-        else
-        {
+        else {
             // We only specify the comparator for a one-time sort; otherwise we count on results to load in
             // the correct order
             this.collection.comparator = SearchResultCollection.getComparatorFunction(this.searchParameters);

@@ -39,7 +39,9 @@ export default Marionette.View.extend({
 
     initialize: function () {
         navChannel.reply('set:navbarTitle', this.updateNavbarTitle, this);
+    },
 
+    onRender: function () {
         // The search view that we will shove into the modal box
         this.searchView = new SearchView({
             providers: [new ChantSearchProvider({
@@ -73,8 +75,8 @@ export default Marionette.View.extend({
             navLinkCollection.add(profile);
         });
 
-        this.getRegion("searchModal").show(this.searchModalView);
-        this.getRegion("aboutVolpianoModal").show(this.aboutVolpianoModalView);
+        this.showChildView('searchModal', this.searchModalView);
+        this.showChildView('aboutVolpianoModal', this.aboutVolpianoModalView);
     },
 
     /**

@@ -3,13 +3,12 @@ import $ from 'jquery';
 import Marionette from 'marionette';
 
 import SuggestionView from './SuggestionView';
-import template from './suggestion-collection.template.html';
 
 export default Marionette.CollectionView.extend({
-    template: template,
+    tagName: 'div',
+    className: 'list-group',
 
     childView: SuggestionView,
-    childViewContainer: "div",
 
     sort: function () {
         return false;

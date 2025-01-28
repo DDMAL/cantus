@@ -1,7 +1,7 @@
 import _ from 'underscore';
 import Radio from 'backbone.radio';
 import Marionette from 'marionette';
-import { Collapse } from 'bootstrap';
+// import { Collapse } from 'bootstrap';
 
 import template from './search-result-item.template.html';
 

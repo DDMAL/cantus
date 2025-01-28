@@ -4,10 +4,7 @@ var path = require('path'),
     webpack = require('webpack'),
     yargs = require('yargs').argv;
 
-var APP_BASE_DIR = path.resolve(__dirname, 'public/js'),
-    APP_DIR = path.resolve(APP_BASE_DIR, 'app'),
-    LIB_DIR = path.resolve(__dirname, 'public/node_modules'),
-    TMP_DIR = path.resolve(__dirname, '.tmp');
+var APP_DIR = path.resolve(__dirname, 'src/js');
 
 function configureBuildMode(config) {
     if (yargs.release) {
@@ -36,13 +33,13 @@ module.exports = configureBuildMode({
     },
 
     resolve: {
-        modules: [APP_DIR, LIB_DIR, TMP_DIR, 'node_modules'],
-
+        modules: [APP_DIR, 'node_modules'],
         alias: {
             marionette: 'backbone.marionette',
-
-            // Alias the Diva path to make it easier to access the plugins, etc.
-            diva: "diva.js/js/diva.js",
+            // Alias diva and link-watcher so that webpack looks in the
+            // `dependencies` directory for them.
+            diva: path.resolve(__dirname, "dependencies/diva.js/js/diva.js"),
+            'link-watcher': path.resolve(__dirname, "dependencies/link-watcher/dist/link-watcher.js"),
         },
 
     },
@@ -51,7 +48,7 @@ module.exports = configureBuildMode({
         rules: [
             {
                 test: /\.js$/,
-                include: [APP_BASE_DIR],
+                include: [APP_DIR],
                 use: {
                     loader: 'babel-loader',
                     options: {
@@ -69,7 +66,7 @@ module.exports = configureBuildMode({
 
             {
                 test: /\.template\.html$/,
-                include: [APP_BASE_DIR],
+                include: [APP_DIR],
                 loader: 'underscore-template-loader',
                 options: {
                     engine: 'underscore'
@@ -79,11 +76,7 @@ module.exports = configureBuildMode({
     },
 
     plugins: [
-        // Inject globals that Diva relies on. While this plugin applies
-        // globally, ESLint should ensure that these aren't injected in
-        // app code.
         new webpack.ProvidePlugin({
-            diva: 'diva',
             jQuery: 'jquery',
             'window.jQuery': 'jquery',
             $: 'jquery'

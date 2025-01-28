@@ -19,10 +19,10 @@ const sass = gulpSass(dartSass);
 
 // Set path variables
 var sources = {
-    appJS: ['public/js/app/**/*.js', '!public/js/app/**/*.spec.js'],
+    appJS: ['src/js/**/*.js', '!src/js/**/*.spec.js'],
     buildJS: ['./*.js'],
-    templates: ['public/js/app/**/*.template.html'],
-    css: ['public/css/**/*{.css,.scss}']
+    templates: ['src/js/**/*.template.html'],
+    css: ['src/styles/**/*{.css,.scss}']
 };
 
 sources.clientJS = ['public/node_modules'].concat(sources.appJS).concat(sources.templates);
@@ -104,8 +104,8 @@ gulp.task('build:js', gulp.series('clean:js', 'bundle:js'), function (cb) {
 
 gulp.task('bundle:css', function () {
     var sources = [
-        './public/css/styles.scss',
-        './public/css/diva.min.css'
+        './src/styles/styles.scss',
+        './src/styles/diva.min.css'
     ];
 
     var isScssFile = /\.scss$/;
@@ -118,7 +118,7 @@ gulp.task('bundle:css', function () {
         })
         .pipe(autoprefixer);
 
-    return gulp.src(sources, { base: './public/css/', sourcemaps: isDevBuild })
+    return gulp.src(sources, { base: './src/styles/', sourcemaps: isDevBuild })
         .pipe(gulpif(isScssFile, compileScss()))
         .pipe(concat('cantus-min.css'))
         .pipe(gulp.dest('../static/css', { sourcemaps: '.' }))

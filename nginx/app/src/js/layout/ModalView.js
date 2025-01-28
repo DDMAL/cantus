@@ -10,10 +10,6 @@ import template from './modal.template.html';
  * @type {*|void}
  */
 export default Marionette.View.extend({
-    title: null,
-    visitorView: null,
-    modalId: null,
-
     template,
 
     regions: {
@@ -34,7 +30,6 @@ export default Marionette.View.extend({
         // Render out the modal template
         if (this.visitorView !== null) {
             this.getRegion('body').show(this.visitorView);
-            this.visitorView.triggerMethod('show');
         }
     },
 

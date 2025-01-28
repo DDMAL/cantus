@@ -2,12 +2,10 @@
  * Provide general, global configuration.
  */
 
-// Ensure Bootstrap JS runs
 import _ from 'underscore';
 import Backbone from 'backbone';
 import Marionette from 'marionette';
-
-import App from 'App';
+import bootstrap from 'bootstrap';
 
 // Marionette inspector
 if (window.__agent) {
