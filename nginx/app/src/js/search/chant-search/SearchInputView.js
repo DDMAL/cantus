@@ -74,7 +74,6 @@ export default Marionette.View.extend({
         // an event which will cause the appropriate changes to propagate. That's kind of
         // confusing.
         this.trigger('search', searchInput);
-        this.updateQueryInput();
     },
 
     setQueryDebounced: function (e, query) {

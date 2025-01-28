@@ -36,7 +36,10 @@ export default Marionette.CollectionView.extend({
     _searchActiveSuggestion: function () {
         // Get the active suggestion
         var el = this.$('.active');
-        // Add boolean operator 'AND' between all words, in order to match exactly the suggestion
+        if (!el.length) {
+            this.hide();
+            return;
+        }
         var text = `"${el.text()}"`
         this.trigger('click:suggestion', null, text);
         this.hide();
