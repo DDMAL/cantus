@@ -10,10 +10,6 @@ export default Marionette.CollectionView.extend({
 
     childView: SuggestionView,
 
-    sort: function () {
-        return false;
-    },
-
     ui: {
         'suggestion': 'div.list-group'
     },
