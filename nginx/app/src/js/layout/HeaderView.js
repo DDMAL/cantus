@@ -39,9 +39,7 @@ export default Marionette.View.extend({
 
     initialize: function () {
         navChannel.reply('set:navbarTitle', this.updateNavbarTitle, this);
-    },
 
-    onRender: function () {
         // The search view that we will shove into the modal box
         this.searchView = new SearchView({
             providers: [new ChantSearchProvider({
