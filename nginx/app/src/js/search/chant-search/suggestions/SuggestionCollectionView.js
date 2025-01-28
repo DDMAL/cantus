@@ -10,13 +10,9 @@ export default Marionette.CollectionView.extend({
 
     childView: SuggestionView,
 
-    ui: {
-        'suggestion': 'div.list-group'
-    },
-
     events: {
-        'mousedown @ui.suggestion': 'suggestionClicked',
-        'touchstart @ui.suggestion': 'suggestionClicked' // Touch support
+        'mousedown': 'suggestionClicked',
+        'touchstart': 'suggestionClicked' // Touch support
     },
 
     initialize: function () {
