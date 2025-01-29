@@ -60,13 +60,6 @@ export default Marionette.View.extend({
         this.setState(this.state);
     },
 
-    onRender: function () {
-        // If the template is false then we don't want to display anything
-        // (no state should persist between renders)
-        if (!this.currentTemplate)
-            this.$el.empty();
-    },
-
     getTemplate: function () {
         return this.currentTemplate;
     },
@@ -103,7 +96,7 @@ export default Marionette.View.extend({
 
     collectionReset: function () {
         this.setState(NO_SEARCH);
-        this.render();
+        this.$el.empty();
     },
 
     setState: function (state, parameters) {
