@@ -1,0 +1,1 @@
+This folder contains DDMAL-managed dependencies (as opposed to third-party dependencies that are installed, during the `nginx` container build, in the usual `node_modules` directory).
