@@ -77,12 +77,10 @@ export default Marionette.Object.extend({
 
         // Initialize search input model
         this.searchParameters = new SearchInput();
-        this.searchInputView = new SearchInputView({ model: this.searchParameters });
 
         // Initialize search result collection
         this.collection = new SearchResultCollection();
         this.suggestionCollection = new SuggestionCollection();
-        this.suggestionCollectionView = new SuggestionCollectionView({ collection: this.suggestionCollection });
 
         this.resultLoadingHandler = new IncrementalSolrLoader(this.collection, {
             baseUrl: this.collection.baseUrl()
@@ -92,11 +90,6 @@ export default Marionette.Object.extend({
         this.listenTo(this.searchParameters, 'change:query change:field', this.search);
         this.listenTo(this.searchParameters, 'change:sortBy change:reverseSort', this._handleSort);
         this.listenTo(this.collection, 'sync', this._handleSync);
-        //Send information from the search input view to the suggestion collection view and vice-versa
-        this.listenTo(this.searchInputView, 'focus:input', this.suggestionCollectionView.show);
-        this.listenTo(this.searchInputView, 'blur:input', this.suggestionCollectionView.hide);
-        this.listenTo(this.searchInputView, 'keydown:input', this.suggestionCollectionView.keyDown);
-        this.listenTo(this.suggestionCollectionView, 'click:suggestion', this.searchInputView.setQuery);
     },
 
     onDestroy: function () {
@@ -267,8 +260,12 @@ export default Marionette.Object.extend({
         // Reset the suggestion collection since we are now searching for something else
         this.suggestionCollection.reset();
 
-        regions.searchInput.show(this.searchInputView);
-        regions.searchSuggestions.show(this.suggestionCollectionView);
+        // Initialize search input model
+        var searchInputView = new SearchInputView({ model: this.searchParameters });
+        var suggestionCollectionView = new SuggestionCollectionView({ collection: this.suggestionCollection });
+
+        regions.searchInput.show(searchInputView);
+        regions.searchSuggestions.show(suggestionCollectionView);
 
         regions.searchHelper.empty();
 
@@ -292,6 +289,12 @@ export default Marionette.Object.extend({
         regions.searchResults.show(resultsView);
 
         this.listenTo(resultsView, 'continue:loading', this._continueLoadingResults);
+
+        // Send information from the search input view to the suggestion collection view and vice-versa
+        this.listenTo(searchInputView, 'focus:input', suggestionCollectionView.show);
+        this.listenTo(searchInputView, 'blur:input', suggestionCollectionView.hide);
+        this.listenTo(searchInputView, 'keydown:input', suggestionCollectionView.keyDown);
+        this.listenTo(suggestionCollectionView, 'click:suggestion', searchInputView.setQuery);
     },
 
     /**

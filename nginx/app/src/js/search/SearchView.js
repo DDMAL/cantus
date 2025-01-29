@@ -165,11 +165,11 @@ export default Marionette.View.extend({
     renderActiveField: function () {
         this.trigger('search', { type: this.activeField.type, query: this.query });
         this.activeProvider.display(this.activeField, this.query, this.getRegions());
+        this.bindInputSearchEvent(this.getRegion('searchInput').currentView);
     },
 
     onRender: function () {
         this.renderActiveField();
-        this.bindInputSearchEvent(this.getRegion('searchInput').currentView);
     },
 
     onDestroy: function () {

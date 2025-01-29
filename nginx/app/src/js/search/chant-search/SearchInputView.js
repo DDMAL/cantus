@@ -10,7 +10,6 @@ export default Marionette.View.extend({
 
     events: {
         "submit": "preventSubmit",
-        "change .search-input": "setQuery",
         "input .search-input": "setQueryDebounced",
         "keydown .search-input": "updateQueryInput"
     },
