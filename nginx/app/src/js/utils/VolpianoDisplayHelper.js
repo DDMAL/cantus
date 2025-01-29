@@ -12,10 +12,8 @@ var lastVolpianoQuery = null,
 
 // Build a mapping of equivalent Volpiano characters
 _.forEach(['iwxyz', 'IWXYZ', 'eEmM', 'fF8(nN', 'gG9)oO', 'hHaApP', 'jJbBqQ', 'kKcCrR', 'lLdDsS'],
-    function (equivalent)
-    {
-        _.forEach(equivalent, function (value)
-        {
+    function (equivalent) {
+        _.forEach(equivalent, function (value) {
             volpianoMap[value] = equivalent;
         });
     });
@@ -28,8 +26,7 @@ _.forEach(['iwxyz', 'IWXYZ', 'eEmM', 'fF8(nN', 'gG9)oO', 'hHaApP', 'jJbBqQ', 'kK
  * @param onlyLiteralMatches
  * @returns {*|string}
  */
-export function formatVolpianoResult(text, volpiano, query, onlyLiteralMatches)
-{
+export function formatVolpianoResult(text, volpiano, query, onlyLiteralMatches) {
     var parsedVolpiano = parseVolpianoSyllables(text, volpiano);
     return highlightVolpianoResult(volpiano, parsedVolpiano, query, onlyLiteralMatches);
 }
@@ -42,8 +39,7 @@ export function formatVolpianoResult(text, volpiano, query, onlyLiteralMatches)
  * @param {string} volpiano
  * @returns {string}
  */
-export function parseVolpianoSyllables(text, volpiano)
-{
+export function parseVolpianoSyllables(text, volpiano) {
     var volpianoWords = volpiano.split("---");
     var textWordsSplit = text.split(" ");
     var finalString = "";
@@ -53,11 +49,11 @@ export function parseVolpianoSyllables(text, volpiano)
     // aligned with set of missing notes.
     var textWords = [];
     for (var i = 0; i < textWordsSplit.length; i++) {
-        if (textWordsSplit[i].includes("{")){
+        if (textWordsSplit[i].includes("{")) {
             var foundClose = false;
             var rejoinedString = "";
-            while (!foundClose){
-                if (textWordsSplit[i].includes("}")){
+            while (!foundClose) {
+                if (textWordsSplit[i].includes("}")) {
                     rejoinedString += textWordsSplit[i];
                     textWords.push(rejoinedString);
                     foundClose = true;
@@ -76,21 +72,28 @@ export function parseVolpianoSyllables(text, volpiano)
     // volpiano words like numbers are going to be skipped
     var textWordIndex = 0;
 
-    for (var i = 0, len = volpianoWords.length; i < len && volpianoWords[i]; i++)
-    {
+    for (var i = 0, len = volpianoWords.length; i < len && volpianoWords[i]; i++) {
         // Missing music is noted with "6------6" in Volpiano.
         // When split above, this results in the sequence of volpiano
         // words "6", "", "6". We check for, and deal with, this case
         // first. 
-        if (volpianoWords[i] == "6" && volpianoWords[i + 1] == "" && volpianoWords[i+2] == "6"){
-            var numBlankWords = textWords[textWordIndex].split(" ").length;
-            var innerSpaceString = "6---";
-            for (j = 0; j < numBlankWords; j++){
-                innerSpaceString += "---";
+        if (volpianoWords[i] == "6" && volpianoWords[i + 1] == "" && volpianoWords[i + 2] == "6") {
+            if (textWords.length > textWordIndex) {
+                var numBlankWords = textWords[textWordIndex].split(" ").length;
+                var innerSpaceString = "6---";
+                for (j = 0; j < numBlankWords; j++) {
+                    innerSpaceString += "---";
+                }
+                innerSpaceString += "6";
+                finalString += '<div class="volpiano-syllable">' + innerSpaceString +
+                    '<span class="volpiano-text">' + textWords[textWordIndex] + '</span></div>';
+
+            } else {
+                // If there is no text for the missing music, add the normal
+                // spacing to the finalString
+                finalString += '<div class="volpiano-syllable">6------6<span class="volpiano-text"></span></div>';
+
             }
-            innerSpaceString += "6";
-            finalString += '<div class="volpiano-syllable">' + innerSpaceString + 
-            '<span class="volpiano-text">' + textWords[textWordIndex] + '</span></div>';
             textWordIndex++;
             // Skip the next two volpianoWords (the "" and "6")
             i += 2;
@@ -98,49 +101,44 @@ export function parseVolpianoSyllables(text, volpiano)
             var wordString = '';
             var volpianoSyllables = volpianoWords[i].split("--");
             var textSyllables = Syllabifier.syllabifyWord(textWords[textWordIndex] || '');
-    
+
             // The word is just a number, no text should be attached to it.
-            if (!isNaN(parseInt(volpianoWords[i])) && textWords[textWordIndex] !== '|')
-            {
+            if (!isNaN(parseInt(volpianoWords[i])) && textWords[textWordIndex] !== '|') {
                 // If the word begins with "9", then it is still a valid note sequence.
-                if (parseInt(volpianoWords[i]) != 9){
+                if (parseInt(volpianoWords[i]) != 9) {
                     textWordIndex--;
                     textSyllables = [];
                 }
             }
-    
-            for (var j = 0; j < volpianoSyllables.length; j++)
-            {
+
+            for (var j = 0; j < volpianoSyllables.length; j++) {
                 // Add a blank character if there are no more text syllables.
                 // This makes sure that the following divs will be correctly aligned
                 if (!textSyllables[j])
                     textSyllables[j] = '&nbsp;';
-    
+
                 // This is not the end of the text
-                if (i < volpianoWords.length - 1)
-                {
+                if (i < volpianoWords.length - 1) {
                     if (j === volpianoSyllables.length - 1)  // End of a word
                         volpianoSyllables[j] += '---';
                     else // End of a syllable
                         volpianoSyllables[j] += '--';
                 }
-    
+
                 // If the syllabification doesn't match the volpiano,
                 // append the rest of the text to the last syllable
-                if (j === volpianoSyllables.length - 1 && volpianoSyllables.length < textSyllables.length)
-                {
-                    for (var k = j + 1; k < textSyllables.length; k++)
-                    {
+                if (j === volpianoSyllables.length - 1 && volpianoSyllables.length < textSyllables.length) {
+                    for (var k = j + 1; k < textSyllables.length; k++) {
                         textSyllables[j] += textSyllables[k];
                     }
                 }
                 else if (j < textSyllables.length - 1)  // This is not the end of a text word
                     textSyllables[j] += '-';
-    
+
                 wordString += '<div class="volpiano-syllable">' + volpianoSyllables[j] +
                     '<span class="volpiano-text">' + textSyllables[j] + '</span></div>';
             }
-    
+
             finalString += wordString;
             textWordIndex++;
         }
@@ -156,8 +154,7 @@ export function parseVolpianoSyllables(text, volpiano)
  * @param result volpiano result string
  * @returns {string} highlighted string
  */
-export function highlightVolpianoResult(originalVolpiano, parsedVolpiano, query, onlyLiteralMatches)
-{
+export function highlightVolpianoResult(originalVolpiano, parsedVolpiano, query, onlyLiteralMatches) {
     // Format the Volpiano as a lenient regex
     var regex = getVolpianoRegex(query, onlyLiteralMatches);
 
@@ -184,14 +181,12 @@ export function highlightVolpianoResult(originalVolpiano, parsedVolpiano, query,
     var highlightIndex = 0; // The index of the next character in the match to highlight
 
     // Go through each syllable (1 div element per syllable)
-    $.each(htmlVolpiano, function(index, element)
-    {
+    $.each(htmlVolpiano, function (index, element) {
         var $el = $(element);
 
         // Get only the text content of the element
         // Useful to ignore the <br> and <span> tags
-        var $textEl = $el.contents().filter(function()
-        {
+        var $textEl = $el.contents().filter(function () {
             return this.nodeType === Node.TEXT_NODE;
         });
 
@@ -199,8 +194,7 @@ export function highlightVolpianoResult(originalVolpiano, parsedVolpiano, query,
         var syllableIndex = 0;  // Used if there is more than one match in a single syllable
         var syllableText = '';
 
-        while (startIndices[matchIndex] < textIndex + text.length)
-        {
+        while (startIndices[matchIndex] < textIndex + text.length) {
             var highlightStartIndex = startIndices[matchIndex] - textIndex + highlightIndex;
 
             var matchLength = matches[matchIndex].length;
@@ -251,8 +245,7 @@ export function highlightVolpianoResult(originalVolpiano, parsedVolpiano, query,
  * @param volpiano {string} a Volpiano query
  * @returns {RegExp}
  */
-export function getVolpianoRegex(volpiano, onlyLiteralMatches)
-{
+export function getVolpianoRegex(volpiano, onlyLiteralMatches) {
     // Use a cached regex if one is available
     if (!onlyLiteralMatches && volpiano === lastVolpianoQuery)
         return lastVolpianoRegex;
@@ -264,8 +257,7 @@ export function getVolpianoRegex(volpiano, onlyLiteralMatches)
 
     var queryLength = volpiano.length;
 
-    for (var i = 0; i < queryLength; i++)
-    {
+    for (var i = 0; i < queryLength; i++) {
         var symbol = volpiano.charAt(i);
 
         // Use this variable to check if the symbol is a dash and a
@@ -292,13 +284,11 @@ export function getVolpianoRegex(volpiano, onlyLiteralMatches)
         regex = new RegExp(outputAsString, "g");
 
     // Cache the generated regex
-    if (onlyLiteralMatches)
-    {
+    if (onlyLiteralMatches) {
         lastLiteralVolpianoQuery = volpiano;
         lastLiteralVolpianoRegex = regex;
     }
-    else
-    {
+    else {
         lastVolpianoQuery = volpiano;
         lastVolpianoRegex = regex;
     }
