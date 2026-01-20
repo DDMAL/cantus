@@ -1,31 +1,32 @@
 # from django.conf.urls import patterns, include, url
-from django.contrib import admin
 from django.conf import settings
+from django.contrib import admin
+from django.contrib.admin.views.decorators import staff_member_required
 from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
+
+from cantusdata.views import staticpages
 from cantusdata.views.browse import browse_view
-from cantusdata.views.manuscript import ManuscriptList, ManuscriptDetail
-from cantusdata.views.chant import ChantList, ChantDetail
-from cantusdata.views.folio import FolioList, FolioDetail
-from cantusdata.views.search import SearchView
-from cantusdata.views.suggestion import SuggestionView
-from cantusdata.views.search_notation import SearchNotationView
+from cantusdata.views.chant import ChantDetail, ChantList
 from cantusdata.views.chant_set import (
     FolioChantSetView,
     ManuscriptChantSetView,
 )
+from cantusdata.views.folio import FolioDetail, FolioList
 from cantusdata.views.folio_set import ManuscriptFolioSetView
-from cantusdata.views.manuscript_glyph_set import ManuscriptGlyphSetView
-from cantusdata.views.map_folios import MapFoliosView
 from cantusdata.views.load_chants import LoadChantsView
 from cantusdata.views.manifest_proxy import ManifestProxyView
+from cantusdata.views.manuscript import ManuscriptDetail, ManuscriptList
+from cantusdata.views.manuscript_glyph_set import ManuscriptGlyphSetView
+from cantusdata.views.map_folios import MapFoliosView
 from cantusdata.views.neume_exemplars import (
+    NeumeExemplarsAPIView,
     NeumeSetAPIView,
     PickNeumeExemplarsView,
-    NeumeExemplarsAPIView,
 )
-from cantusdata.views import staticpages
-from django.contrib.admin.views.decorators import staff_member_required
+from cantusdata.views.search import SearchView
+from cantusdata.views.search_notation import SearchNotationView
+from cantusdata.views.suggestion import SuggestionView
 
 urlpatterns = [
     # Admin pages
@@ -117,7 +118,8 @@ urlpatterns = [
     path("suggest/", SuggestionView.as_view(), name="suggestion-view"),
     # Work around Mixed Content errors in third-party manifest files
     path(
-        "manifest-proxy/<path:manifest_url>/",
+        "manifest-proxy/<path:manifest_url>",
+        # previously <str:manifest_url>/ which forced a trailing slash in Django; removal will allow Django to accept without redirection, which was breaking some IIIF manifests. See #933.
         ManifestProxyView.as_view(),
         name="retrieve-manifest",
     ),
