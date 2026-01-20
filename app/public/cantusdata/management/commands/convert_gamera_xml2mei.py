@@ -8,7 +8,6 @@ from cantusdata.helpers.gamera_xml2mei.converter import (
     main,
 )
 
-
 BASE_NAME = os.path.basename(os.path.splitext(__file__)[0])
 
 

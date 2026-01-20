@@ -6,7 +6,6 @@ from rest_framework.renderers import JSONRenderer
 from cantusdata.renderers.csv_renderer import CSVRenderer
 import solr
 
-
 FOLIO_FIELDS = [
     "type",
     "number",

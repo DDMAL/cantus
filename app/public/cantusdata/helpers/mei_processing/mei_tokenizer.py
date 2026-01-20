@@ -1,7 +1,7 @@
 """
 Defines a class MEITokenizer that extends MEIParser with functionaliy
 used to create json documents from an MEI file. These json documents
-can then be indexed by a search engine (i.e. for this project, Solr). 
+can then be indexed by a search engine (i.e. for this project, Solr).
 """
 
 import uuid
