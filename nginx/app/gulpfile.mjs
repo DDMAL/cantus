@@ -105,7 +105,7 @@ gulp.task('build:js', gulp.series('clean:js', 'bundle:js'), function (cb) {
 gulp.task('bundle:css', function () {
     var sources = [
         './src/styles/styles.scss',
-        './src/styles/diva.min.css'
+        './dependencies/diva.js/build/diva.css'
     ];
 
     var isScssFile = /\.scss$/;
