@@ -3,105 +3,107 @@
     <img width="382" height="191" src="https://github.com/DDMAL/diva.js/wiki/img/diva-logo-sm.png" />
   </a>
 </p>
-Diva.js [![Build Status](https://travis-ci.org/DDMAL/diva.js.svg?branch=master)](http://travis-ci.org/DDMAL/diva.js) [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/DDMAL/diva.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
+Diva.js [![Build Status](https://travis-ci.org/DDMAL/diva.js.svg?branch=master)](http://travis-ci.org/DDMAL/diva.js)
 =========================================
 
 Diva.js (Document Image Viewer with AJAX) is a JavaScript book image viewer designed to present multi-page documents at multiple resolutions.
 
-Version 5.0 contains many new features and improvements:
+Version 6.0 contains many new features and improvements:
 
-- Page images are now rendered using the HTML Canvas, allowing us to support “smooth” zooming. 
-- Improved IIIF support: Easily toggle “non-paged” pages' visibility and search for pages based on their label name.
-- Complete re-organization of the source code. We now use ES6, WebPack, and Karma. This makes both the development process and code debugging much easier.
+- **Compatibility with IIIF Presentation API version 2.1 and 3**.
+- **Small footprint, zero dependencies**. Can be deployed with just a JavaScript and a CSS file.
+- **Rewritten in ES6** for compatibility with the new JavaScript module system.
+- **New plugins**: Metadata, Image Manipulation
 
 ## Overview
 
 There are two components to a functioning Diva system:
 
-1. **An image server.** Either [IIP Image Server](http://iipimage.sourceforge.net) with Diva's JSON measurement data file or [any other IIIF-compatible image server](http://iiif.io/apps-demos.html).
-2. **The Diva.js jQuery plugin.** The embedded web application that displays the images in a browser.
-
-If using IIP, your document image files must be processed into either Pyramid TIFF or JPEG2000 format. We provide [a script](https://github.com/DDMAL/diva.js/wiki/Preparing-Your-Images) to easily do this.
+1. **[A IIIF Manifest](https://iiif.io/)** that will be displayed.
+2. **The Diva.js plugin.** The embedded web application that displays the images in a browser.
 
 ### Details
 
-#### If using IIIF
-Diva.js is an image viewing client compatible with version 2.0 of the IIIF [Image](http://iiif.io/api/image/2.0/) and [Presentation](http://iiif.io/api/presentation/2.0/) APIs. Simply supply the path to a valid IIIF Manifest and Diva will display the document as described by the metadata (see [Installing](#installing)).
-
-#### If using IIP
-IIP creates the image tiles and other image representations "on the fly". Instructions for building and installing IIP are available on the [project's website](http://iipimage.sourceforge.net/documentation/server/). If you want to support JPEG 2000 you will either need to download a pre-compiled version (available on the [Old Maps Online site](http://help.oldmapsonline.org/jpeg2000/installation)) or [purchase the Kakadu libraries](http://www.kakadusoftware.com) and build it yourself.
-
-Diva relies on a JavaScript Object Notation (JSON) file that contains data about your document. This JSON file is automatically generated when you use the image conversion scripts that we distribute with Diva. These files can be served using a regular web server.
-
-There are two image formats supported by IIP: Pyramid TIFF and, with the inclusion of the Kakadu libraries, JPEG2000. These formats support multiple file resolutions and image tiling.
+#### Using IIIF
+Diva.js is an image viewer compatible with IIIF Presentation API versions [2](http://iiif.io/api/presentation/2.0/) and [3](http://iiif.io/api/presentation/3.0/). Simply supply the path to a valid IIIF Manifest and Diva will display the document as described by the metadata (see [Installing](#installing)).
 
 ## Installing
 
 ### From a CDN (hosted)
 
-Downloading the Diva.js release package provides access to image processing scripts and demos of possible configurations. If you don't need these you can skip downloading and simply paste the following tags into the `<head>` of any webpage to include all the  files necessary to use Diva.js.
-
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/diva.js/4.1.0/css/diva.min.css" />
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/diva.js/4.1.0/js/diva.min.js"></script>
-
+If you prefer to use a hosted version of Diva, copy and paste the following into the `<head>` of any webpage to 
+include all the files necessary to use Diva.js.
+```html
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/diva.js/6.0.2/css/diva.css" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/diva.js/6.0.2/js/diva.js"></script>
+```
 ### Locally (release package)
 
-Download the [latest release](https://github.com/DDMAL/diva.js/releases) of Diva. In the `diva.js` directory you can find a pre-compiled version. The `css` and `js` directories contain the files necessary to use Diva. Simply include [jQuery 2.x](https://jquery.com/), `css/diva.min.css` and `js/diva.min.js` in the `<head>` of your webpage, as shown in the HTML source of the demo pages. You will also find some helper scripts for processing your image files.
+Download the [latest release](https://github.com/DDMAL/diva.js/releases) of Diva. In the `diva.js` directory you can
+find a pre-compiled version. The `build` directory contains the files necessary 
+to use Diva. Simply include `build/diva.css` and `build/diva.js` in the `<head>`
+of your webpage, as shown in the HTML source of the example [index page](https://github.com/DDMAL/diva.js/blob/develop/index.html). 
 
-### Basic setup
+### From npm
 
-After including the necessary files, the most basic Diva viewer is instantiated with three (IIP) or one (IIIF) required parameter(s):
+You can also run `npm install diva.js` in order to install Diva as a node package. Then, Diva will be located 
+under `node_modules/diva.js/`, and you can access the `build` directory the same as above. 
 
-    <script>
-        $('#diva-wrapper').diva({
-            iipServerURL: "http://www.example.com/fcgi-bin/iipsrv.fcgi",
-            objectData: "http://www.example.com/beromunster.json",
-            imageDir: "/mnt/images/beromunster"
-        });
-    </script>
+## Basic setup
+### HTML
+After including the necessary files, the most basic Diva viewer is instantiated with one (IIIF) required parameter
+and several optional settings parameters. Diva must target a parent div, in this case diva-wrapper:
+```html
+<div id="diva-wrapper"></div>
 
-Required for IIP and IIIF:
+<script>
+    let diva = new Diva('diva-wrapper', {
+        objectData: "http://www.example.com/manifest.json"
+        // possible settings
+    });
+</script>
+```
  * `objectData`: The URL (absolute or relative) to the document's `.json` file, or a IIIF Manifest
 
-Required for IIP:
- * `iipServerURL`: The URL to your IIP installation. In most cases this should point to the iipsrv.fcgi file;
- * `imageDir`: Either the absolute path to your images on your server, OR the path relative to your IIP installation's [`FILESYSTEM_PREFIX`](http://iipimage.sourceforge.net/documentation/server/) configuration option.
+The `diva-wrapper` selector points to a `div` element within which the document viewer will appear.
 
-The `#diva-wrapper` selector points to a `div` element within which the document viewer will appear.
+### JavaScript
+If you wish to include the Diva viewer component into your own JavaScript app, this can be done easily by just importing Diva beforehand. 
+```javascript
+import Diva from './path/to/source/diva.js';
+
+let diva = new Diva('diva-wrapper', {
+    objectData: "http://www.example.com/manifest.json"
+    // possible settings
+});
+```
+
+There are a large number of settings that can be enabled/disabled for this Diva instance. See [Settings](https://github.com/DDMAL/diva.js/wiki/Settings) for a comprehensive list.
 
 See [Installation](https://github.com/DDMAL/diva.js/wiki/Installation) for full instructions.
 
-### Running the Demos
-
-Running the demos works best using a web server. The easiest is to use Python to start a small web server in the `diva.js` directory (or `build` if you have the source code):
-
-```
-$> cd diva-v3.0.0/diva.js/ # (or cd diva.js/build)
-$> python -m SimpleHTTPServer
-Serving HTTP on 0.0.0.0 port 8000 ...
-```
-You may then load the demos in your web browser by visiting `http://localhost:8000` in your browser.
-
 ## Building from source
 
-If you wish to install from source, first you must install [node.js and npm](https://nodejs.org/en/). Then, check out the code from [our GitHub repository](http://github.com/DDMAL/diva.js) or run `npm install diva.js`. Once you've obtained the code, change to the project directory and run `npm install -g gulp` then `npm install` to fetch all development dependencies.
+If you wish to install from source, first you must install [node.js and npm](https://nodejs.org/en/). Then, check out the code from [our GitHub repository](http://github.com/DDMAL/diva.js). Once you've obtained the code, change to the project directory and run `npm install` to fetch all development dependencies.
 
-The full installation gives you access to the un-minified JavaScript source, the plugins, the documentation, and our unit-tests. We use [gulp](http://gulpjs.com/) as our build system and for other development tasks.
+The full installation gives you access to the un-minified JavaScript source, the plugins, the documentation, and our unit-tests. 
 
+```javascript
+npm run develop          // Runs a server at localhost:9001 and automatically builds and reloads upon changes
+npm run build:develop    // Compiles the Javascript and SASS source and places it in the build/ directory
+npm run lint             // Lints the Javascript source with JSHint
+npm test                 // Runs the unit tests and outputs a report to the console
+npm run build:production // Builds the release package
 ```
-gulp develop          // Runs a webserver at localhost:9001 and automatically builds and reloads upon changes
-gulp develop:build    // Compiles the Javascript and LESS source and places it in the build/ directory
-gulp develop:test     // Runs the unit tests and outputs a report to the console
-```
 
-Run `gulp develop` and navigate to [http://localhost:9001/demo](http://localhost:9001/demo) in your web browser to see the demo.
+Run `npm run develop` and navigate to [http://localhost:9001](http://localhost:9001) in your web browser to see a basic Diva instance.
 
 See [Installation](https://github.com/DDMAL/diva.js/wiki/Installation) for more information.
 
 ## Getting help
 
-Help for Diva.js is available through this repository's [wiki](https://github.com/DDMAL/diva.js/wiki), in the form of code documentation, installation instructions and usage tips.
+Help for Diva.js is available through this repository's [wiki](https://github.com/DDMAL/diva.js/wiki), in the form of code documentation, installation instructions and usage tips. You can also [submit an issue](https://github.com/DDMAL/diva.js/issues)!
 
 ## Cross-site Requests
 
