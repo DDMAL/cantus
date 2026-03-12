@@ -51,7 +51,7 @@ class Manuscript(models.Model):
     viewer_warning = models.TextField(
         blank=True,
         null=True,
-        help_text="Optional warning message to display if the manuscript viewer has compatibility issues"
+        help_text="Optional warning message to display if the manuscript viewer has compatibility issues",
     )
 
     # Store the initial value of public in order to detect any changes.

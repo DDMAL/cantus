@@ -24,12 +24,10 @@ class Command(BaseCommand):
             salzinnes.save()
             self.stdout.write(
                 self.style.SUCCESS(
-                    f'Successfully updated warning for manuscript: {salzinnes}'
+                    f"Successfully updated warning for manuscript: {salzinnes}"
                 )
             )
         else:
             self.stdout.write(
-                self.style.WARNING(
-                    'Salzinnes manuscript not found in database'
-                )
+                self.style.WARNING("Salzinnes manuscript not found in database")
             )
