@@ -6,11 +6,10 @@ WORKDIR /code/frontend
 
 # Download and unzip volpiano fonts file
 RUN mkdir -p ../static/fonts
-RUN wget http://www.fawe.de/volpiano/volpiano51_web.zip
-RUN unzip volpiano51_web.zip
-RUN rm volpiano51_web.zip
-RUN mv volpiano51_web/volpiano.woff ../static/fonts/volpiano.woff
-
+RUN wget http://www.fawe.de/volpiano/volpiano601_web.zip
+RUN unzip volpiano601_web.zip
+RUN mv $(find . -name "volpiano.woff" | head -n 1) ../static/fonts/volpiano.woff
+RUN rm -rf volpiano*
 # Install front-end dependencies
 RUN npm install
 
