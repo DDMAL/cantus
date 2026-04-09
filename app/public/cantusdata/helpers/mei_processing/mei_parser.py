@@ -1,6 +1,6 @@
 """
-Defines a class, MEIParser, that converts the contents of an MEI file into 
-python types for ease of subsequent processing. 
+Defines a class, MEIParser, that converts the contents of an MEI file into
+python types for ease of subsequent processing.
 
 Also defines some additional functions useful for analyzing contents of an MEI
 file:
@@ -26,7 +26,6 @@ from .mei_parsing_types import (
     Syllable,
 )
 from .bounding_box_utils import combine_bounding_boxes_single_system
-
 
 # Mapping from pitch names to integer pitch class where C = 0
 PITCH_CLASS = {"c": 0, "d": 2, "e": 4, "f": 5, "g": 7, "a": 9, "b": 11}

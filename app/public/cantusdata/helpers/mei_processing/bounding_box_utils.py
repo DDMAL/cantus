@@ -1,5 +1,5 @@
 """
-Module containing utilities for the manipulation of bounding boxes 
+Module containing utilities for the manipulation of bounding boxes
 obtained from MEI files.
 """
 
