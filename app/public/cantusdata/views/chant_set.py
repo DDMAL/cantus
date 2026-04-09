@@ -7,7 +7,6 @@ from rest_framework.renderers import JSONRenderer
 from cantusdata.serializers.search import SearchSerializer
 import solr
 
-
 CHANT_FIELDS = [
     "type",
     "item_id",

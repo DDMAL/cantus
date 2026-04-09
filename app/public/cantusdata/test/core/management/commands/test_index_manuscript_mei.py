@@ -11,7 +11,6 @@ from cantusdata.test.core.helpers.mei_processing.test_mei_tokenizer import (
 
 from solr.core import SolrConnection  # type: ignore
 
-
 TEST_MEI_FILES_PATH = settings.TEST_MEI_FILES_PATH
 
 

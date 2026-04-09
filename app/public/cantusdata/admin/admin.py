@@ -80,10 +80,8 @@ class ManuscriptAdmin(ModelAdmin):  # type: ignore[type-arg]
     )
     list_display = ("name", "siglum", "public", "chants_loaded", "is_mapped")
 
-    @admin.action(
-        description="Imports the chants associated \
-        with the selected manuscript(s)"
-    )
+    @admin.action(description="Imports the chants associated \
+        with the selected manuscript(s)")
     def load_chants(self, request: HttpRequest, queryset: QuerySet[Manuscript]) -> None:
         for ms in queryset:
             chant_import_task.apply_async(kwargs={"manuscript_ids": [ms.pk]})

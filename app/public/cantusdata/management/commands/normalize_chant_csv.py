@@ -3,7 +3,6 @@ import re
 
 from django.core.management.base import BaseCommand
 
-
 W_REGEX = re.compile(r"^(\d+)w$")
 
 
