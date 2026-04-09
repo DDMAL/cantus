@@ -58,17 +58,23 @@ def normalize_iiif3_service_type(datadict):
             for annotation in anno_page.get("items", []):
                 body = annotation.get("body", {})
                 service = body.get("service", {})
-                if isinstance(service, dict) and "@type" in service and "type" not in service:
+                if (
+                    isinstance(service, dict)
+                    and "@type" in service
+                    and "type" not in service
+                ):
                     service["type"] = service.pop("@type")
     return datadict
 
 
 def compose(*fns):
     """Apply multiple postprocessing functions in sequence."""
+
     def composed(datadict):
         for fn in fns:
             datadict = fn(datadict)
         return datadict
+
     return composed
 
 
