@@ -31,7 +31,7 @@ export default Marionette.View.extend({
      * @returns {*|jQuery}
      */
     getDivaData: function () {
-        return $("#diva-wrapper").data('diva');
+        return manuscriptChannel.request('diva');
     },
 
     /**
@@ -72,7 +72,7 @@ export default Marionette.View.extend({
         $.get(queryUrl,
             function (data) {
                 var firstFolioURI = data[0].image_uri;
-                divaData.gotoPageByName(firstFolioURI);
+                divaData.gotoPageByURI(firstFolioURI);
             })
     },
 
@@ -85,7 +85,7 @@ export default Marionette.View.extend({
     changeDivaPage: function (numberChangeFunction) {
         // Get DivaData and the curent page count
         var divaData = this.getDivaData(),
-            currentPageIndex = divaData.getCurrentPageIndex();
+            currentPageIndex = divaData.settings.activePageIndex;
         // Tell Diva to go to the page specified by numberChangeFunction()
         divaData.gotoPageByIndex(numberChangeFunction(currentPageIndex, divaData));
     }

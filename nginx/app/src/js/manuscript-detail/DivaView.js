@@ -3,7 +3,9 @@ import Radio from 'backbone.radio';
 import $ from 'jquery';
 import _ from "underscore";
 
-import diva from "diva";
+import "diva";
+
+const diva = window.Diva;
 
 import GlobalVars from '../config/GlobalVars';
 
@@ -52,6 +54,7 @@ export default Marionette.View.extend({
             // Call Diva's destructor
             this.divaInstance.destroy();
             this.divaInstance = null;
+            manuscriptChannel.stopReplying('diva');
 
             // Unsubscribe the event handlers
             _.forEach(this.divaEventHandles, function (handle) {
@@ -69,7 +72,7 @@ export default Marionette.View.extend({
         var manifestUrl = this.manifestUrl;
 
         var options = {
-            toolbarParentObject: this.toolbarParentObject,
+            toolbarParentObject: this.toolbarParentObject[0],
             viewerWidthPadding: 0,
 
             enableAutoTitle: false,
@@ -95,9 +98,8 @@ export default Marionette.View.extend({
         // Destroy the diva div just in case
         this.ui.divaWrapper.empty();
         // Initialize Diva
-        this.ui.divaWrapper.diva(options);
-
-        this.divaInstance = this.ui.divaWrapper.data('diva');
+        this.divaInstance = new diva('diva-wrapper', options);
+        manuscriptChannel.reply('diva', () => this.divaInstance);
 
         this.onDivaEvent("ViewerDidLoad", this.onViewerLoad);
         this.onDivaEvent("ViewerDidLoad", this.propagateFolioChange);
@@ -150,7 +152,7 @@ export default Marionette.View.extend({
             }
             var pageAlias = 'Folio ' + folioNumber;
         } else {
-            let imageIndex = this.divaInstance.getCurrentAliasedPageIndex()
+            let imageIndex = this.divaInstance.settings.activePageIndex + 1;
             var pageAlias = 'Image ' + imageIndex;
         }
         manuscriptChannel.trigger('set:pageAlias', pageAlias);
@@ -180,7 +182,7 @@ export default Marionette.View.extend({
             return;
 
         this.getPageWhichMatchesAlias(pageAlias).done(_.bind(function (page) {
-            this.divaInstance.gotoPageByName(page);
+            this.divaInstance.gotoPageByURI(page);
 
         }, this)).fail(function () {
             alert("Invalid page number");
@@ -277,12 +279,12 @@ export default Marionette.View.extend({
         }
         else {
             // If one is not set, then set the global folio to the Diva viewer's initial page
-            var imageURI = this.divaInstance.getCurrentPageFilename();
+            var imageURI = this.divaInstance.getCurrentPageURI();
             manuscriptChannel.request('set:imageURI', imageURI, { replaceState: true });
         }
 
         // Store the list of filenames
-        this.divaFilenames = this.divaInstance.getFilenames();
+        this.divaFilenames = this.divaInstance.getAllPageURIs();
 
         // Change initial view to document view
         this.divaInstance.changeView('document');
@@ -353,10 +355,10 @@ export default Marionette.View.extend({
 
         // Don't jump to the folio if we're already somewhere on it (this would just make Diva
         // jump to the top of the page)
-        if (imageURI === this.divaInstance.getCurrentPageFilename())
+        if (imageURI === this.divaInstance.getCurrentPageURI())
             return;
 
-        this.divaInstance.gotoPageByName(imageURI);
+        this.divaInstance.gotoPageByURI(imageURI);
     },
 
     /**
@@ -369,7 +371,7 @@ export default Marionette.View.extend({
         // In the case that this is triggered by the 'ViewerDidLoad' event,
         // Set the imageURI to be URI of the first page of the document
         if (!imageURI)
-            imageURI = this.divaInstance.getCurrentPageFilename();
+            imageURI = this.divaInstance.getCurrentPageURI();
 
         this.triggerFolioChange(imageURI);
     },
@@ -393,37 +395,9 @@ export default Marionette.View.extend({
             return;
         }
 
-        this.divaInstance.resetHighlights();
-
-        // Use the Diva highlight plugin to draw the boxes
-        var highlightsByPageHash = {};
-        var pageList = [];
-
-        for (var i = 0; i < boxSet.length; i++) {
-            // Translate folio to Diva page
-            var pageFilename = boxSet[i].p;
-            var pageIndex = this.divaFilenames.indexOf(pageFilename);
-
-            if (highlightsByPageHash[pageIndex] === undefined) {
-                // Add page to the hash
-                highlightsByPageHash[pageIndex] = [];
-                pageList.push(pageIndex);
-            }
-            // Page is in the hash, so we add to it.
-            highlightsByPageHash[pageIndex].push({
-                'width': boxSet[i].w,
-                'height': boxSet[i].h,
-                'ulx': boxSet[i].x,
-                'uly': boxSet[i].y
-            });
-        }
-        // Now we need to add all of the pages to the Diva viewer
-        for (var j = 0; j < pageList.length; j++) {
-            this.divaInstance.highlightOnPage(
-                pageList[j], // The page number
-                highlightsByPageHash[pageList[j]] // List of boxes
-            );
-        }
+        // NOTE: The Diva v6 highlight plugin has been removed. OMR search result
+        // highlighting is not currently supported. This should be revisited when
+        // Diva v6 provides a replacement highlighting API.
     },
 
     /**
