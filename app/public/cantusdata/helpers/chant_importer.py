@@ -1,9 +1,7 @@
-from django.utils.text import slugify
 from django.conf import settings
 from django.db import transaction
 from cantusdata.models.chant import Chant
 from cantusdata.models.folio import Folio
-from cantusdata.models.manuscript import Manuscript
 from cantusdata.helpers import expandr
 from cantusdata.signals.solr_sync import solr_synchronizer
 import csv
@@ -12,13 +10,13 @@ import csv
 class ChantImporter:
     def __init__(self, stdout, mobj=None):
         self.stdout = stdout
-        # Map siglum to manuscript model
-        self._manuscript_cache = {}
         # Provide a manuscript object to use always
         self._mobj = mobj
         self.new_chant_info = []
         self.new_folios = []
         self.folio_registry = set()
+        # Use genre expander object to get correct genres
+        self.genre_expander = expandr.GenreExpander()
         # Use position expander object to get correct positions
         self.position_expander = expandr.PositionExpander()
 
@@ -47,22 +45,14 @@ class ChantImporter:
         """Get a chant object to save to the database.
         Prepare a folio object to add if necessary.
         """
-        # Get the corresponding manuscript
-        manuscript = self.get_manuscript(row["siglum"])
-        # Throw exception if no corresponding manuscript
-        if not manuscript:
-            raise ValueError(
-                "Manuscript with siglum={0} does not exist!".format(
-                    slugify(str(row["siglum"]))
-                )
-            )
+        manuscript = self.get_manuscript()
         chant = Chant()
         chant.marginalia = row["marginalia"].strip()
         chant.sequence = row["sequence"].strip()
         chant.cantus_id = row["cantus_id"].strip().rstrip(" _")
         chant.feast = row["feast"].strip()
-        chant.office = expandr.expand_office(row["office"].strip())
-        chant.genre = expandr.expand_genre(row["genre"].strip())
+        chant.office = expandr.expand_office(row["service"].strip())
+        chant.genre = self.genre_expander.expand_genre(row["genre"].strip())
         chant.mode = expandr.expand_mode(row["mode"].strip())
         chant.differentia = expandr.expand_differentia(row["differentia"].strip())
         chant.differentiae_database = row["differentiae_database"].strip()
@@ -72,8 +62,8 @@ class ChantImporter:
         chant.full_text_ms = row["fulltext_ms"].strip()
         chant.volpiano = row["volpiano"].strip()
         chant.cdb_uri = row["node_id"].strip()
-        chant.lit_position = self.position_expander.get_text(
-            row["office"].strip(),
+        chant.lit_position = self.position_expander.expand_position(
+            row["service"].strip(),
             row["genre"].strip(),
             row["position"].strip(),
         )
@@ -102,16 +92,10 @@ class ChantImporter:
         self.new_folios.append(folio)
         self.folio_registry.add((folio_code, manuscript.pk))
 
-    def get_manuscript(self, siglum):
-        if self._mobj:
-            # If provided with a manuscript object, use that
-            mobj = self._mobj
-        elif siglum in self._manuscript_cache:
-            mobj = self._manuscript_cache[siglum]
-        else:
-            mobj = Manuscript.objects.get(siglum=siglum)
-            self._manuscript_cache[siglum] = mobj
-        return mobj
+    def get_manuscript(self):
+        if not self._mobj:
+            raise ValueError("ChantImporter requires a manuscript object (mobj).")
+        return self._mobj
 
     @transaction.atomic
     def save(self, delete_existing=False, task=None):
