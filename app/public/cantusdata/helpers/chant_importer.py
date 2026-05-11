@@ -8,10 +8,9 @@ import csv
 
 
 class ChantImporter:
-    def __init__(self, stdout, mobj=None):
+    def __init__(self, stdout, mobj):
         self.stdout = stdout
-        # Provide a manuscript object to use always
-        self._mobj = mobj
+        self.manuscript = mobj
         self.new_chant_info = []
         self.new_folios = []
         self.folio_registry = set()
@@ -45,7 +44,7 @@ class ChantImporter:
         """Get a chant object to save to the database.
         Prepare a folio object to add if necessary.
         """
-        manuscript = self.get_manuscript()
+        manuscript = self.manuscript
         chant = Chant()
         chant.marginalia = row["marginalia"].strip()
         chant.sequence = row["sequence"].strip()
@@ -91,11 +90,6 @@ class ChantImporter:
         folio.image_link = image_link
         self.new_folios.append(folio)
         self.folio_registry.add((folio_code, manuscript.pk))
-
-    def get_manuscript(self):
-        if not self._mobj:
-            raise ValueError("ChantImporter requires a manuscript object (mobj).")
-        return self._mobj
 
     @transaction.atomic
     def save(self, delete_existing=False, task=None):
