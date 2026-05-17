@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: cantus-ultimus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: <your-registry>/cantus-nginx:latest
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        # Django static files are baked into the image at build time (no shared PVC needed).
+        # Only the IIIF manifests require a runtime volume.
+        - name: manifests
+          mountPath: /code/manifests
+          readOnly: true
+        readinessProbe:
+          tcpSocket:
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          tcpSocket:
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+      volumes:
+      - name: manifests
+        persistentVolumeClaim:
+          claimName: cantaloupe-manifests-pvc

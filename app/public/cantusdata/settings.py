@@ -26,8 +26,7 @@ ALLOWED_HOSTS = [
     "dev-cantus.simssa.ca",
     "cantus.staging.simssa.ca",
     "localhost",
-    "cantus-app-1",
-]
+] + [h for h in os.environ.get("EXTRA_ALLOWED_HOSTS", "").split(",") if h]
 
 # Application definition
 
@@ -89,7 +88,7 @@ DATABASES = {
         "NAME": os.environ.get("POSTGRES_DB"),
         "USER": os.environ.get("POSTGRES_USER"),
         "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
-        "HOST": "postgres",
+        "HOST": os.environ.get("POSTGRES_HOST", "postgres"),
         "PORT": "5432",
     }
 }
@@ -150,9 +149,10 @@ REST_FRAMEWORK = {
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
 
-SOLR_SERVER = "http://solr:8983/solr/cantus_ultimus_1"
-SOLR_ADMIN = "http://solr:8983/solr/admin"
-SOLR_TEST_SERVER = "http://solr:8983/solr/cantus-test"
+_solr_host = os.environ.get("SOLR_HOST", "solr")
+SOLR_SERVER = os.environ.get("SOLR_SERVER", f"http://{_solr_host}:8983/solr/cantus_ultimus_1")
+SOLR_ADMIN = os.environ.get("SOLR_ADMIN", f"http://{_solr_host}:8983/solr/admin")
+SOLR_TEST_SERVER = os.environ.get("SOLR_TEST_SERVER", f"http://{_solr_host}:8983/solr/cantus-test")
 
 LOGGING_CONFIG = None
 
@@ -169,7 +169,11 @@ SECURE_HSTS_SECONDS = 86400
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
-CELERY_BROKER_URL = f"amqp://{os.environ.get('RABBIT_USER')}:{os.environ.get('RABBIT_PASSWORD')}@cantus-rabbitmq-1:5672/{os.environ.get('RABBIT_VHOST')}"
+_rabbit_host = os.environ.get("RABBIT_HOST", "cantus-rabbitmq-1")
+CELERY_BROKER_URL = (
+    f"amqp://{os.environ.get('RABBIT_USER')}:{os.environ.get('RABBIT_PASSWORD')}"
+    f"@{_rabbit_host}:5672/{os.environ.get('RABBIT_VHOST')}"
+)
 CELERY_RESULT_BACKEND = "django-db"
 CELERY_RESULT_PERSISTENT = False
 CELERY_RESULT_EXTENDED = True

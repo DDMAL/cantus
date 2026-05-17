@@ -14,6 +14,7 @@ COPY app/production-mei-files/ /code/production-mei-files/
 EXPOSE 8001
 
 RUN chmod u+x /code/django-config.sh
+COPY app/public /code/public
 # Copy environment dependencies, but not poetry, to the django container
 COPY --from=dependency-install-container /code/.venv /code/.venv
 # Add our python environment binaries and package files to the path

@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cantaloupe
+  namespace: cantus-ultimus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cantaloupe
+  template:
+    metadata:
+      labels:
+        app: cantaloupe
+    spec:
+      containers:
+      - name: cantaloupe
+        image: <your-registry>/cantus-cantaloupe:latest
+        ports:
+        - containerPort: 8182
+        volumeMounts:
+        - name: cantaloupe-images
+          mountPath: /srv/images
+        readinessProbe:
+          httpGet:
+            path: /iiif/2
+            port: 8182
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 6
+        livenessProbe:
+          httpGet:
+            path: /iiif/2
+            port: 8182
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "2500Mi"
+          limits:
+            cpu: "2"
+            # 3Gi provides headroom above -Xmx2g for JVM metaspace, threads, and OS overhead.
+            # Setting limits equal to -Xmx causes OOMKill.
+            memory: "3Gi"
+      volumes:
+      - name: cantaloupe-images
+        persistentVolumeClaim:
+          claimName: cantaloupe-images-pvc

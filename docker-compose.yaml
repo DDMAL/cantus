@@ -44,7 +44,9 @@ services:
 
   nginx:
     container_name: cantus-nginx-1
-    build: ./nginx
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
     ports:
       - "8000:8000"
     depends_on:
