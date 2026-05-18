@@ -18,6 +18,12 @@ spec:
       containers:
       - name: cantaloupe
         image: ghcr.io/ddmal/cantus-cantaloupe:main-latest
+        command:
+        - java
+        - -Dcantaloupe.config=/etc/cantaloupe/cantaloupe.properties
+        - -Xmx2g
+        - -jar
+        - /opt/cantaloupe/cantaloupe-5.0.5/cantaloupe-5.0.5.jar
         ports:
         - containerPort: 8182
         volumeMounts:
