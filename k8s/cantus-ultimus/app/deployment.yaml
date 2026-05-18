@@ -18,6 +18,7 @@ spec:
       initContainers:
       - name: migrate
         image: ghcr.io/ddmal/cantus-app:main-latest
+        imagePullPolicy: Always
         command: ["python", "manage.py", "migrate", "--noinput"]
         envFrom:
         - configMapRef:
@@ -41,6 +42,7 @@ spec:
       containers:
       - name: app
         image: ghcr.io/ddmal/cantus-app:main-latest
+        imagePullPolicy: Always
         command: ["/code/django-config.sh"]
         ports:
         - containerPort: 8001

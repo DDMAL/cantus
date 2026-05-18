@@ -18,6 +18,7 @@ spec:
       containers:
       - name: cantaloupe
         image: ghcr.io/ddmal/cantus-cantaloupe:main-latest
+        imagePullPolicy: Always
         command:
         - java
         - -Dcantaloupe.config=/etc/cantaloupe/cantaloupe.properties
