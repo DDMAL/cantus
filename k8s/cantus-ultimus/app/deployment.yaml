@@ -13,9 +13,11 @@ spec:
       labels:
         app: app
     spec:
+      imagePullSecrets:
+      - name: ghcr-pull-secret
       initContainers:
       - name: migrate
-        image: <your-registry>/cantus-app:latest
+        image: ghcr.io/ddmal/cantus-app:main-latest
         command: ["python", "manage.py", "migrate", "--noinput"]
         envFrom:
         - configMapRef:
@@ -38,7 +40,7 @@ spec:
               key: RABBIT_PASSWORD
       containers:
       - name: app
-        image: <your-registry>/cantus-app:latest
+        image: ghcr.io/ddmal/cantus-app:main-latest
         command: ["/code/django-config.sh"]
         ports:
         - containerPort: 8001

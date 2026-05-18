@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: postgres
+  name: postgres-cantus-ultimus
   namespace: postgres
 spec:
-  serviceName: postgres
+  serviceName: postgres-cantus-ultimus
   replicas: 1
   selector:
     matchLabels:
-      app: postgres
+      app: postgres-cantus-ultimus
   template:
     metadata:
       labels:
-        app: postgres
+        app: postgres-cantus-ultimus
     spec:
       tolerations:
       - effect: NoSchedule
@@ -26,12 +26,12 @@ spec:
         - containerPort: 5432
         envFrom:
         - configMapRef:
-            name: postgres-config
+            name: postgres-cantus-ultimus-config
         env:
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: postgres-secret
+              name: postgres-cantus-ultimus-secret
               key: POSTGRES_PASSWORD
         volumeMounts:
         - name: postgres-data
@@ -57,4 +57,4 @@ spec:
       volumes:
       - name: postgres-data
         persistentVolumeClaim:
-          claimName: postgres-data-pvc
+          claimName: postgres-cantus-ultimus-pvc

@@ -9,7 +9,7 @@ data:
   POSTGRES_DB: "cantus_db"
   POSTGRES_USER: "cantus_admin"
   # Cross-namespace FQDN — postgres Service lives in the postgres namespace
-  POSTGRES_HOST: "postgres.postgres.svc.cluster.local"
+  POSTGRES_HOST: "postgres-cantus-ultimus.postgres.svc.cluster.local"
   RABBIT_USER: "cantus_admin"
   RABBIT_VHOST: "cantus_ultimus"
   # Matches the rabbitmq Service name in this namespace

@@ -13,9 +13,11 @@ spec:
       labels:
         app: nginx
     spec:
+      imagePullSecrets:
+      - name: ghcr-pull-secret
       containers:
       - name: nginx
-        image: <your-registry>/cantus-nginx:latest
+        image: ghcr.io/ddmal/cantus-nginx:main-latest
         ports:
         - containerPort: 8000
         volumeMounts:

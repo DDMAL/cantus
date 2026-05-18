@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres
+  name: postgres-cantus-ultimus
   namespace: postgres
 spec:
   selector:
-    app: postgres
+    app: postgres-cantus-ultimus
   ports:
   - port: 5432
     targetPort: 5432

@@ -13,9 +13,11 @@ spec:
       labels:
         app: rabbitmq
     spec:
+      imagePullSecrets:
+      - name: ghcr-pull-secret
       containers:
       - name: rabbitmq
-        image: <your-registry>/cantus-rabbitmq:latest
+        image: ghcr.io/ddmal/cantus-rabbitmq:main-latest
         ports:
         - containerPort: 5672
         envFrom:

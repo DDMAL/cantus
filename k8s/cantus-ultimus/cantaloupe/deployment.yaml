@@ -13,9 +13,11 @@ spec:
       labels:
         app: cantaloupe
     spec:
+      imagePullSecrets:
+      - name: ghcr-pull-secret
       containers:
       - name: cantaloupe
-        image: <your-registry>/cantus-cantaloupe:latest
+        image: ghcr.io/ddmal/cantus-cantaloupe:main-latest
         ports:
         - containerPort: 8182
         volumeMounts:
