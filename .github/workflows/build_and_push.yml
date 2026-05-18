@@ -32,10 +32,6 @@ jobs:
             context: ./solr
             file: ./solr/Dockerfile
             image: cantus-solr
-          - name: rabbitmq
-            context: ./rabbitmq
-            file: ./rabbitmq/Dockerfile
-            image: cantus-rabbitmq
           - name: cantaloupe
             context: ./cantaloupe
             file: ./cantaloupe/Dockerfile
