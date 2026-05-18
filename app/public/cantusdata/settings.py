@@ -22,6 +22,7 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 DEBUG = False
 
 ALLOWED_HOSTS = [
+    "cantus-k3s.simssa.ca",
     "cantus.simssa.ca",
     "dev-cantus.simssa.ca",
     "cantus.staging.simssa.ca",
@@ -163,7 +164,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-CSRF_TRUSTED_ORIGINS = ["https://cantus.simssa.ca", "https://cantus.staging.simssa.ca"]
+CSRF_TRUSTED_ORIGINS = ["https://cantus-k3s.simssa.ca", "https://cantus.simssa.ca", "https://cantus.staging.simssa.ca"]
 
 SECURE_HSTS_SECONDS = 86400
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
