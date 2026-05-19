@@ -7,6 +7,8 @@ metadata:
     # Match the gunicorn/nginx proxy timeouts (600s) to avoid 504s on slow requests
     nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      merge_slashes off;
 spec:
   rules:
   - host: cantus-k3s.simssa.ca

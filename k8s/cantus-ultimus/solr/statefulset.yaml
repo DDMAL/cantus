@@ -45,10 +45,10 @@ spec:
           periodSeconds: 20
         resources:
           requests:
-            cpu: "500m"
+            cpu: "1"
             memory: "512Mi"
           limits:
-            cpu: "2"
+            cpu: "3"
             memory: "2Gi"
       volumes:
       - name: solr-data
