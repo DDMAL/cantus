@@ -19,7 +19,7 @@ COPY app/public /code/public
 COPY --from=dependency-install-container /code/.venv /code/.venv
 # Add our python environment binaries and package files to the path
 ENV PATH="$PATH:/code/.venv/bin/" \
-    PYTHONPATH="$PYTHONPATH:/code/.venv/lib/python3.12/site-packages/" \
+    PYTHONPATH="/code/.venv/lib/python3.12/site-packages/" \
     DJANGO_SETTINGS_MODULE="cantusdata.settings"
 
 WORKDIR /code/public
