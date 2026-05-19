@@ -25,7 +25,7 @@ class Manuscript(models.Model):
         ordering = ["name"]
         constraints = [
             models.CheckConstraint(
-                check=models.Q(is_mapped__in=IsMapped.values), name="is_mapped_status"
+                condition=models.Q(is_mapped__in=IsMapped.values), name="is_mapped_status"
             )
         ]
 

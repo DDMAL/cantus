@@ -235,7 +235,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="manuscript",
             constraint=models.CheckConstraint(
-                check=models.Q(("is_mapped__in", ["UNMAPPED", "PENDING", "MAPPED"])),
+                condition=models.Q(("is_mapped__in", ["UNMAPPED", "PENDING", "MAPPED"])),
                 name="is_mapped_status",
             ),
         ),
