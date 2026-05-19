@@ -20,6 +20,8 @@ class ManifestProxyView(APIView):
 
     def get(self, request, *args, **kwargs):
         manifest_url = kwargs["manifest_url"]
+        # Traefik (and some nginx configs) collapse https:// → https:/
+        manifest_url = manifest_url.replace("https:/", "https://", 1).replace("http:/", "http://", 1)
         postprocessing = iiif_fn.get(manifest_url, lambda x: x)
         format_ = kwargs.get("format", None)
         if format_:
