@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Additional apps
     "django_celery_results",
+    "django_extensions",
     "rest_framework",
     "rest_framework.authtoken",
     "cantusdata.CantusdataConfig",
