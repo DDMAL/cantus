@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cantaloupe
+  namespace: cantus-ultimus-staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cantaloupe
+  template:
+    metadata:
+      labels:
+        app: cantaloupe
+    spec:
+      imagePullSecrets:
+      - name: ghcr-pull-secret
+      containers:
+      - name: cantaloupe
+        image: ghcr.io/ddmal/cantus-cantaloupe:develop-latest
+        imagePullPolicy: Always
+        command:
+        - java
+        - -Dcantaloupe.config=/etc/cantaloupe/cantaloupe.properties
+        - -Xmx2g
+        - -jar
+        - /opt/cantaloupe/cantaloupe-5.0.5/cantaloupe-5.0.5.jar
+        ports:
+        - containerPort: 8182
+        volumeMounts:
+        - name: cantaloupe-images
+          mountPath: /srv/images
+        readinessProbe:
+          httpGet:
+            path: /iiif/2
+            port: 8182
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 6
+        livenessProbe:
+          httpGet:
+            path: /iiif/2
+            port: 8182
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "2"
+            memory: "3Gi"
+      volumes:
+      - name: cantaloupe-images
+        persistentVolumeClaim:
+          claimName: cantaloupe-images-pvc
