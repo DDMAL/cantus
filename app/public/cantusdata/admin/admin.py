@@ -3,15 +3,14 @@ from django.contrib.admin import ModelAdmin
 from django.db.models import Model
 from django.db.models.query import QuerySet
 from django.http import HttpRequest
-
-from django_celery_results.models import TaskResult  # type: ignore[import-untyped]
 from django_celery_results.admin import TaskResultAdmin  # type: ignore[import-untyped]
+from django_celery_results.models import TaskResult  # type: ignore[import-untyped]
 
-from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.chant import Chant
 from cantusdata.models.folio import Folio
-from cantusdata.models.plugin import Plugin
+from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.neume_exemplar import NeumeExemplar
+from cantusdata.models.plugin import Plugin
 from cantusdata.tasks import chant_import_task
 
 
@@ -80,10 +79,8 @@ class ManuscriptAdmin(ModelAdmin):  # type: ignore[type-arg]
     )
     list_display = ("name", "siglum", "public", "chants_loaded", "is_mapped")
 
-    @admin.action(
-        description="Imports the chants associated \
-        with the selected manuscript(s)"
-    )
+    @admin.action(description="Imports the chants associated \
+        with the selected manuscript(s)")
     def load_chants(self, request: HttpRequest, queryset: QuerySet[Manuscript]) -> None:
         for ms in queryset:
             chant_import_task.apply_async(kwargs={"manuscript_ids": [ms.pk]})
