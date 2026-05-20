@@ -3,15 +3,14 @@ from django.contrib.admin import ModelAdmin
 from django.db.models import Model
 from django.db.models.query import QuerySet
 from django.http import HttpRequest
-
-from django_celery_results.models import TaskResult  # type: ignore[import-untyped]
 from django_celery_results.admin import TaskResultAdmin  # type: ignore[import-untyped]
+from django_celery_results.models import TaskResult  # type: ignore[import-untyped]
 
-from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.chant import Chant
 from cantusdata.models.folio import Folio
-from cantusdata.models.plugin import Plugin
+from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.neume_exemplar import NeumeExemplar
+from cantusdata.models.plugin import Plugin
 from cantusdata.tasks import chant_import_task
 
 

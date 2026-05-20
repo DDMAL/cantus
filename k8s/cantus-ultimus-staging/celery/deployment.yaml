@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery
+  namespace: cantus-ultimus-staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: celery
+  template:
+    metadata:
+      labels:
+        app: celery
+    spec:
+      imagePullSecrets:
+      - name: ghcr-pull-secret
+      containers:
+      - name: celery
+        image: ghcr.io/ddmal/cantus-app:develop-latest
+        imagePullPolicy: Always
+        command:
+        - /code/.venv/bin/celery
+        - -A
+        - cantusdata
+        - worker
+        - -l
+        - INFO
+        - -c
+        - "1"
+        envFrom:
+        - configMapRef:
+            name: app-config
+        env:
+        - name: DJANGO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: DJANGO_SECRET_KEY
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: POSTGRES_PASSWORD
+        - name: RABBIT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: RABBIT_PASSWORD
+        livenessProbe:
+          exec:
+            command:
+            - /code/.venv/bin/celery
+            - -A
+            - cantusdata
+            - inspect
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 60
+          timeoutSeconds: 10
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+          limits:
+            cpu: "1"
+            memory: "1Gi"

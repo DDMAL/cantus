@@ -5,6 +5,7 @@ services:
       dockerfile: ./app/Dockerfile
       args:
         DEVELOPMENT: ${DEVELOPMENT}
+    image: cantus-app
     container_name: cantus-app-1
     command: /code/django-config.sh
     volumes:
@@ -44,7 +45,9 @@ services:
 
   nginx:
     container_name: cantus-nginx-1
-    build: ./nginx
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
     ports:
       - "8000:8000"
     depends_on:

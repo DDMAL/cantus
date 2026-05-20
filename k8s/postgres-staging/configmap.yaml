@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-cantus-ultimus-staging-config
+  namespace: postgres
+data:
+  POSTGRES_DB: "cantus_db_staging"
+  POSTGRES_USER: "cantus_admin"

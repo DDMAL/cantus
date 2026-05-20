@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: solr
+  namespace: cantus-ultimus
+spec:
+  serviceName: solr
+  replicas: 1
+  selector:
+    matchLabels:
+      app: solr
+  template:
+    metadata:
+      labels:
+        app: solr
+    spec:
+      imagePullSecrets:
+      - name: ghcr-pull-secret
+      containers:
+      - name: solr
+        image: ghcr.io/ddmal/cantus-solr:main-latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8983
+        env:
+        - name: SOLR_SECURITY_MANAGER_ENABLED
+          value: "false"
+        volumeMounts:
+        # Mount only the index data directory so the image-baked core config
+        # at /var/solr/data/cantus_ultimus_1/conf/ is not shadowed by the PVC.
+        - name: solr-data
+          mountPath: /var/solr/data/cantus_ultimus_1/data
+        readinessProbe:
+          httpGet:
+            path: /solr/cantus_ultimus_1/admin/ping?wt=json
+            port: 8983
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 10
+        livenessProbe:
+          httpGet:
+            path: /solr/cantus_ultimus_1/admin/ping?wt=json
+            port: 8983
+          initialDelaySeconds: 60
+          periodSeconds: 20
+        resources:
+          requests:
+            cpu: "1"
+            memory: "512Mi"
+          limits:
+            cpu: "3"
+            memory: "2Gi"
+      volumes:
+      - name: solr-data
+        persistentVolumeClaim:
+          claimName: solr-data-pvc

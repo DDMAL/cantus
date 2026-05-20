@@ -25,7 +25,8 @@ class Manuscript(models.Model):
         ordering = ["name"]
         constraints = [
             models.CheckConstraint(
-                check=models.Q(is_mapped__in=IsMapped.values), name="is_mapped_status"
+                condition=models.Q(is_mapped__in=IsMapped.values),
+                name="is_mapped_status",
             )
         ]
 
@@ -60,7 +61,9 @@ class Manuscript(models.Model):
         self._last_public_value = self.public
 
     def save(self, force_insert=False, force_update=False, *args, **kwargs):
-        super(Manuscript, self).save(force_insert, force_update, *args, **kwargs)
+        super(Manuscript, self).save(
+            force_insert=force_insert, force_update=force_update, *args, **kwargs
+        )
 
         if (self.public != self._last_public_value) and self.chants_loaded:
             # The public property has changed, we need to refresh the Solr chants

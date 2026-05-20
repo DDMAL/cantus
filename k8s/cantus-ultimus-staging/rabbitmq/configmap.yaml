@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-config
+  namespace: cantus-ultimus-staging
+data:
+  RABBITMQ_DEFAULT_USER: "cantus_admin"
+  RABBITMQ_DEFAULT_VHOST: "cantus_ultimus_staging"

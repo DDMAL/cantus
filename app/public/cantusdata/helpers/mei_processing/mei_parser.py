@@ -13,9 +13,11 @@ file:
 Defines associated types for the data structures used by the parser.
 """
 
-from typing import Tuple, Dict, List, Iterator, Optional
 from lxml import etree  # pylint: disable=no-name-in-module
+from typing import Tuple, Dict, List, Iterator, Optional
+
 from cantusdata.helpers.neume_helpers import NEUME_GROUPS, NeumeName
+from .bounding_box_utils import combine_bounding_boxes_single_system
 from .mei_parsing_types import (
     Zone,
     SyllableText,
@@ -25,7 +27,6 @@ from .mei_parsing_types import (
     Neume,
     Syllable,
 )
-from .bounding_box_utils import combine_bounding_boxes_single_system
 
 # Mapping from pitch names to integer pitch class where C = 0
 PITCH_CLASS = {"c": 0, "d": 2, "e": 4, "f": 5, "g": 7, "a": 9, "b": 11}

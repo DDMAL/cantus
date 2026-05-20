@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: cantus-ultimus-staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      imagePullSecrets:
+      - name: ghcr-pull-secret
+      initContainers:
+      - name: migrate
+        image: ghcr.io/ddmal/cantus-app:develop-latest
+        imagePullPolicy: Always
+        command: ["python", "manage.py", "migrate", "--noinput"]
+        envFrom:
+        - configMapRef:
+            name: app-config
+        env:
+        - name: DJANGO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: DJANGO_SECRET_KEY
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: POSTGRES_PASSWORD
+        - name: RABBIT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: RABBIT_PASSWORD
+      containers:
+      - name: app
+        image: ghcr.io/ddmal/cantus-app:develop-latest
+        imagePullPolicy: Always
+        command: ["/code/django-config.sh"]
+        ports:
+        - containerPort: 8001
+        envFrom:
+        - configMapRef:
+            name: app-config
+        env:
+        - name: DJANGO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: DJANGO_SECRET_KEY
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: POSTGRES_PASSWORD
+        - name: RABBIT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: RABBIT_PASSWORD
+        readinessProbe:
+          tcpSocket:
+            port: 8001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 6
+        livenessProbe:
+          tcpSocket:
+            port: 8001
+          initialDelaySeconds: 60
+          periodSeconds: 20
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"

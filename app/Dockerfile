@@ -14,11 +14,12 @@ COPY app/production-mei-files/ /code/production-mei-files/
 EXPOSE 8001
 
 RUN chmod u+x /code/django-config.sh
+COPY app/public /code/public
 # Copy environment dependencies, but not poetry, to the django container
 COPY --from=dependency-install-container /code/.venv /code/.venv
 # Add our python environment binaries and package files to the path
 ENV PATH="$PATH:/code/.venv/bin/" \
-    PYTHONPATH="$PYTHONPATH:/code/.venv/lib/python3.12/site-packages/" \
+    PYTHONPATH="/code/.venv/lib/python3.12/site-packages/" \
     DJANGO_SETTINGS_MODULE="cantusdata.settings"
 
 WORKDIR /code/public

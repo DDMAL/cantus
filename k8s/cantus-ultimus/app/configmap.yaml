@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: cantus-ultimus
+data:
+  APP_VERSION: "3.2-0.12.1"
+  DEVELOPMENT: "False"
+  POSTGRES_DB: "cantus_db"
+  POSTGRES_USER: "cantus_admin"
+  # Cross-namespace FQDN — postgres Service lives in the postgres namespace
+  POSTGRES_HOST: "postgres-cantus-ultimus.postgres.svc.cluster.local"
+  RABBIT_USER: "cantus_admin"
+  RABBIT_VHOST: "cantus_ultimus"
+  # Matches the rabbitmq Service name in this namespace
+  RABBIT_HOST: "rabbitmq"
+  # Matches the solr Service name in this namespace
+  SOLR_HOST: "solr"
+  # Add any additional hostnames the app should accept (comma-separated)
+  EXTRA_ALLOWED_HOSTS: "app,cantus-k3s.simssa.ca"
