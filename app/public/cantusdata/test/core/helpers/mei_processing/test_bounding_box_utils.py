@@ -9,7 +9,6 @@ from cantusdata.helpers.mei_processing.mei_parsing_types import Zone
 
 
 class TestBoundingBoxUtils(TestCase):
-
     def test_combine_bounding_boxes_single_system(self) -> None:
         bounding_boxes: List[Zone] = [
             {"coordinates": (0, 0, 1, 1), "rotate": 0},

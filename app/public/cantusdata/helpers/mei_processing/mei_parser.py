@@ -13,9 +13,11 @@ file:
 Defines associated types for the data structures used by the parser.
 """
 
-from typing import Tuple, Dict, List, Iterator, Optional
 from lxml import etree  # pylint: disable=no-name-in-module
+from typing import Tuple, Dict, List, Iterator, Optional
+
 from cantusdata.helpers.neume_helpers import NEUME_GROUPS, NeumeName
+from .bounding_box_utils import combine_bounding_boxes_single_system
 from .mei_parsing_types import (
     Zone,
     SyllableText,
@@ -25,7 +27,6 @@ from .mei_parsing_types import (
     Neume,
     Syllable,
 )
-from .bounding_box_utils import combine_bounding_boxes_single_system
 
 # Mapping from pitch names to integer pitch class where C = 0
 PITCH_CLASS = {"c": 0, "d": 2, "e": 4, "f": 5, "g": 7, "a": 9, "b": 11}
@@ -124,7 +125,7 @@ class MEIParser:
         return text_dict
 
     def _parse_neume_component_element(
-        self, neume_comp: etree._Element
+            self, neume_comp: etree._Element
     ) -> Optional[NeumeComponentElementData]:
         """
         Parses an 'nc' element into a NeumeComponent dictionary.
@@ -143,10 +144,10 @@ class MEIParser:
         return None
 
     def _parse_neume(
-        self,
-        neume_components: List[etree._Element],
-        neume_system: int,
-        next_neume_component: Optional[etree._Element],
+            self,
+            neume_components: List[etree._Element],
+            neume_system: int,
+            next_neume_component: Optional[etree._Element],
     ) -> Neume:
         """
         Gets a Neume dictionary from a series of 'nc' elements (including
@@ -217,9 +218,9 @@ class MEIParser:
         return parsed_neume
 
     def _neume_iterator(
-        self,
-        neumes: List[Tuple[etree._Element, int]],
-        next_syllable_1st_nc: Optional[etree._Element],
+            self,
+            neumes: List[Tuple[etree._Element, int]],
+            next_syllable_1st_nc: Optional[etree._Element],
     ) -> Iterator[Tuple[List[etree._Element], int, Optional[etree._Element]]]:
         """
         Convenience generator for iterating over a syllable's neumes.
@@ -252,7 +253,7 @@ class MEIParser:
             current_neume = next_neume
 
     def _syllable_iterator(
-        self,
+            self,
     ) -> Iterator[
         Tuple[
             Optional[etree._Element],
@@ -344,14 +345,14 @@ class MEIParser:
         """
         syllables: List[Syllable] = []
         for (
-            text_elem,
-            syllable_neumes,
-            next_neume_comp,
+                text_elem,
+                syllable_neumes,
+                next_neume_comp,
         ) in self._syllable_iterator():
             syllable_text: SyllableText = self._parse_syllable_text(text_elem)
             neumes_list: List[Neume] = []
             for neume, neume_system, next_neume_1st_nc in self._neume_iterator(
-                syllable_neumes, next_neume_comp
+                    syllable_neumes, next_neume_comp
             ):
                 neumes_list.append(
                     self._parse_neume(neume, neume_system, next_neume_1st_nc)
@@ -365,8 +366,8 @@ class MEIParser:
 
 
 def get_semitones_between_neume_components(
-    neume_component_1: NeumeComponentElementData,
-    neume_component_2: NeumeComponentElementData,
+        neume_component_1: NeumeComponentElementData,
+        neume_component_2: NeumeComponentElementData,
 ) -> int:
     """
     Compute the interval (in semitones) between two
@@ -464,7 +465,7 @@ def get_melodic_interval(semitone_interval: int, starting_pitch_name: str) -> in
 
 
 def analyze_neume(
-    neume: List[NeumeComponentElementData],
+        neume: List[NeumeComponentElementData],
 ) -> Tuple[NeumeName, List[int], List[ContourType], List[int]]:
     """
     Analyze a neume (a list of neume components) to determine:

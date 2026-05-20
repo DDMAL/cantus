@@ -280,10 +280,14 @@ class GameraXMLConverter:
         width = max(max(zone.endX for zone in cluster.zones) for cluster in clusters)
 
         with open(dumpFile, "w") as f:
-            f.write("""\
+            f.write(
+                """\
 <?xml version="1.0" standalone="yes"?>
 <svg viewBox="0 0 {width} {height}" version="1.1"
-     xmlns="http://www.w3.org/2000/svg">""".format(height=height, width=width))
+     xmlns="http://www.w3.org/2000/svg">""".format(
+                    height=height, width=width
+                )
+            )
 
             f.write("<!-- Clusters -->\n")
 

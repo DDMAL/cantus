@@ -92,9 +92,12 @@ class MEITokenizer(MEIParser):
             and the system number of that neume component.
         :return: An NgramDocument containing the information from the neume components.
         """
-        pitch_names, contour, semitone_intervals, intervals = (
-            self._stringify_neume_component_data(neume_components)
-        )
+        (
+            pitch_names,
+            contour,
+            semitone_intervals,
+            intervals,
+        ) = self._stringify_neume_component_data(neume_components)
         zones_with_sys: List[Tuple[Zone, int]] = [
             (nc["bounding_box"], nc["system"]) for nc in neume_components
         ]

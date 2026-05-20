@@ -150,9 +150,13 @@ REST_FRAMEWORK = {
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
 
 _solr_host = os.environ.get("SOLR_HOST", "solr")
-SOLR_SERVER = os.environ.get("SOLR_SERVER", f"http://{_solr_host}:8983/solr/cantus_ultimus_1")
+SOLR_SERVER = os.environ.get(
+    "SOLR_SERVER", f"http://{_solr_host}:8983/solr/cantus_ultimus_1"
+)
 SOLR_ADMIN = os.environ.get("SOLR_ADMIN", f"http://{_solr_host}:8983/solr/admin")
-SOLR_TEST_SERVER = os.environ.get("SOLR_TEST_SERVER", f"http://{_solr_host}:8983/solr/cantus-test")
+SOLR_TEST_SERVER = os.environ.get(
+    "SOLR_TEST_SERVER", f"http://{_solr_host}:8983/solr/cantus-test"
+)
 
 LOGGING_CONFIG = None
 
@@ -163,7 +167,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-CSRF_TRUSTED_ORIGINS = ["https://cantus-k3s.simssa.ca", "https://cantus.simssa.ca", "https://cantus.staging.simssa.ca"]
+CSRF_TRUSTED_ORIGINS = [
+    "https://cantus-k3s.simssa.ca",
+    "https://cantus.simssa.ca",
+    "https://cantus.staging.simssa.ca",
+]
 
 SECURE_HSTS_SECONDS = 86400
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
