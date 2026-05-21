@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
 from django.http import Http404, JsonResponse
 from cantusdata.helpers.postprocess_iiif import iiif_fn, iiif_default_fns
+import re
 import requests
 import json
 
@@ -20,10 +21,8 @@ class ManifestProxyView(APIView):
 
     def get(self, request, *args, **kwargs):
         manifest_url = kwargs["manifest_url"]
-        # Traefik (and some nginx configs) collapse https:// → https:/
-        manifest_url = manifest_url.replace("https:/", "https://", 1).replace(
-            "http:/", "http://", 1
-        )
+        # Traefik collapses https:// → https:/ in paths; restore only if actually missing
+        manifest_url = re.sub(r"^(https?:/)(?!/)", r"\1/", manifest_url)
         postprocessing = iiif_fn.get(manifest_url, lambda x: x)
         format_ = kwargs.get("format", None)
         if format_:
