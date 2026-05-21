@@ -21,7 +21,7 @@
     rather than a Solr-managed schema. -->
     <schemaFactory class="ClassicIndexSchemaFactory" />
     <luceneMatchVersion>9.4.2</luceneMatchVersion>
-    <dataDir>${solr.data.dir:/var/solr}</dataDir>
+    <dataDir>/var/solr/data/cantus_ultimus_1/data</dataDir>
     <!-- Controls how indexes are stored. The cantus_ultimus_1 
     core uses the default, which combines some elements of an index
     in the filesystem and memory for performance. -->
