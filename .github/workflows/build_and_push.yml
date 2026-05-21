@@ -73,3 +73,28 @@ jobs:
           build-args: ${{ matrix.build_args }}
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Restart deployments
+        run: |
+          kubectl rollout restart deployment/app -n cantus-ultimus
+          kubectl rollout restart deployment/celery -n cantus-ultimus
+          kubectl rollout restart deployment/nginx -n cantus-ultimus
+          kubectl rollout restart deployment/cantaloupe -n cantus-ultimus
+          kubectl rollout restart statefulset/solr -n cantus-ultimus
+
+      - name: Wait for rollouts
+        run: |
+          kubectl rollout status deployment/app -n cantus-ultimus --timeout=300s
+          kubectl rollout status deployment/nginx -n cantus-ultimus --timeout=300s
+          kubectl rollout status deployment/celery -n cantus-ultimus --timeout=300s
