@@ -51,7 +51,7 @@ class Command(BaseCommand):
         if options["all"]:
             record_types = list(self.TYPE_MAPPING.keys())
         else:
-            record_types = [options["record_type"]]
+            record_types = options["record_type"]
 
         for record_type in record_types:
             # Remove the trailing 's' to make the type singular
