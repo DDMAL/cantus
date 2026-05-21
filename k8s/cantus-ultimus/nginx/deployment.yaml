@@ -26,7 +26,6 @@ spec:
         # Only the IIIF manifests require a runtime volume.
         - name: manifests
           mountPath: /code/manifests
-          readOnly: true
         readinessProbe:
           tcpSocket:
             port: 8000

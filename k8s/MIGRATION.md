@@ -279,10 +279,10 @@ kubectl exec -n cantus-ultimus \
 kubectl logs -n cantus-ultimus deployment/celery --tail=20
 
 # Nginx static files served
-curl -I https://cantus-k3s.simssa.ca/static/admin/css/base.css
+curl -I https://cantus.simssa.ca/static/admin/css/base.css
 
 # Folio viewer loads
-curl -s "https://cantus-k3s.simssa.ca/manifest-proxy/https://www.e-codices.unifr.ch/metadata/iiif/bcj-0018/manifest.json" \
+curl -s "https://cantus.simssa.ca/manifest-proxy/https://www.e-codices.unifr.ch/metadata/iiif/bcj-0018/manifest.json" \
   | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('@type'))"
 ```
 
@@ -292,7 +292,7 @@ curl -s "https://cantus-k3s.simssa.ca/manifest-proxy/https://www.e-codices.unifr
 
 Once the k8s deployment is verified:
 
-1. Update the DNS A record for `cantus-k3s.simssa.ca` to point to the k3s node IP.
+1. Update the DNS A record for `cantus.simssa.ca` to point to the k3s node IP.
 2. Lower TTL ahead of time (e.g. to 60s) to minimize propagation delay.
 3. Monitor error rates for 30 minutes after cutover.
 4. Keep the Docker Compose deployment running until DNS has fully propagated.

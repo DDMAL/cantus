@@ -46,10 +46,10 @@ spec:
         resources:
           requests:
             cpu: "1"
-            memory: "512Mi"
+            memory: "1Gi"
           limits:
             cpu: "3"
-            memory: "2Gi"
+            memory: "3Gi"
       volumes:
       - name: solr-data
         persistentVolumeClaim:

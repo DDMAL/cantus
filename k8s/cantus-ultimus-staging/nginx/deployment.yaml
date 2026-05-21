@@ -24,7 +24,6 @@ spec:
         volumeMounts:
         - name: manifests
           mountPath: /code/manifests
-          readOnly: true
         readinessProbe:
           tcpSocket:
             port: 8000
