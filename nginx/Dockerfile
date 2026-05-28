@@ -43,6 +43,9 @@ RUN python manage.py collectstatic --noinput
 
 # Build final image with nginx
 FROM nginx:1.25
-COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
+COPY ./nginx/nginx.conf.template /etc/nginx/nginx.conf.template
 COPY --from=frontend /code/static /code/static
 COPY --from=django-static /code/static/ /code/static/django/
+ENV NGINX_APP_HOST=app \
+    NGINX_CANTALOUPE_HOST=cantaloupe
+CMD ["/bin/sh", "-c", "envsubst '${NGINX_APP_HOST} ${NGINX_CANTALOUPE_HOST}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"]

@@ -19,6 +19,9 @@ spec:
       - name: nginx
         image: ghcr.io/ddmal/cantus-nginx:main-latest
         imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: nginx-config
         ports:
         - containerPort: 8000
         volumeMounts:
