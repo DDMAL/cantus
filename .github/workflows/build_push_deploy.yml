@@ -95,7 +95,7 @@ jobs:
       - name: Update production images
         run: |
           TAG=${{ steps.tag.outputs.value }}
-          OWNER=${{ github.repository_owner }}
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           kubectl set image deployment/app app=ghcr.io/${OWNER}/cantus-app:${TAG} -n cantus-ultimus
           kubectl set image deployment/celery celery=ghcr.io/${OWNER}/cantus-app:${TAG} -n cantus-ultimus
           kubectl set image deployment/nginx nginx=ghcr.io/${OWNER}/cantus-nginx:${TAG} -n cantus-ultimus
@@ -129,7 +129,7 @@ jobs:
       - name: Update staging images
         run: |
           TAG=${{ steps.tag.outputs.value }}
-          OWNER=${{ github.repository_owner }}
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           kubectl set image deployment/app-staging app=ghcr.io/${OWNER}/cantus-app:${TAG} -n cantus-ultimus
           kubectl set image deployment/celery-staging celery=ghcr.io/${OWNER}/cantus-app:${TAG} -n cantus-ultimus
           kubectl set image deployment/nginx-staging nginx=ghcr.io/${OWNER}/cantus-nginx:${TAG} -n cantus-ultimus
