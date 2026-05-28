@@ -85,16 +85,60 @@ jobs:
           echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
           chmod 600 ~/.kube/config
 
-      - name: Restart deployments
+      - name: Compute image tag
+        id: tag
         run: |
-          kubectl rollout restart deployment/app -n cantus-ultimus
-          kubectl rollout restart deployment/celery -n cantus-ultimus
-          kubectl rollout restart deployment/nginx -n cantus-ultimus
-          kubectl rollout restart deployment/cantaloupe -n cantus-ultimus
-          kubectl rollout restart statefulset/solr -n cantus-ultimus
+          BRANCH=$(echo "$GITHUB_REF_NAME" | sed 's/[^a-zA-Z0-9._-]/-/g')
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+          echo "value=${BRANCH}-${SHORT_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Update production images
+        run: |
+          TAG=${{ steps.tag.outputs.value }}
+          OWNER=${{ github.repository_owner }}
+          kubectl set image deployment/app app=ghcr.io/${OWNER}/cantus-app:${TAG} -n cantus-ultimus
+          kubectl set image deployment/celery celery=ghcr.io/${OWNER}/cantus-app:${TAG} -n cantus-ultimus
+          kubectl set image deployment/nginx nginx=ghcr.io/${OWNER}/cantus-nginx:${TAG} -n cantus-ultimus
+          kubectl set image deployment/cantaloupe cantaloupe=ghcr.io/${OWNER}/cantus-cantaloupe:${TAG} -n cantus-ultimus
+          kubectl set image statefulset/solr solr=ghcr.io/${OWNER}/cantus-solr:${TAG} -n cantus-ultimus
 
       - name: Wait for rollouts
         run: |
           kubectl rollout status deployment/app -n cantus-ultimus --timeout=300s
           kubectl rollout status deployment/nginx -n cantus-ultimus --timeout=300s
           kubectl rollout status deployment/celery -n cantus-ultimus --timeout=300s
+
+  deploy-staging:
+    if: github.event_name == 'workflow_dispatch'
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Compute image tag
+        id: tag
+        run: |
+          BRANCH=$(echo "$GITHUB_REF_NAME" | sed 's/[^a-zA-Z0-9._-]/-/g')
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+          echo "value=${BRANCH}-${SHORT_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Update staging images
+        run: |
+          TAG=${{ steps.tag.outputs.value }}
+          OWNER=${{ github.repository_owner }}
+          kubectl set image deployment/app-staging app=ghcr.io/${OWNER}/cantus-app:${TAG} -n cantus-ultimus
+          kubectl set image deployment/celery-staging celery=ghcr.io/${OWNER}/cantus-app:${TAG} -n cantus-ultimus
+          kubectl set image deployment/nginx-staging nginx=ghcr.io/${OWNER}/cantus-nginx:${TAG} -n cantus-ultimus
+          kubectl set image deployment/cantaloupe-staging \
+            cantaloupe=ghcr.io/${OWNER}/cantus-cantaloupe:${TAG} -n cantus-ultimus
+          kubectl set image statefulset/solr-staging solr=ghcr.io/${OWNER}/cantus-solr:${TAG} -n cantus-ultimus
+
+      - name: Wait for staging rollouts
+        run: |
+          kubectl rollout status deployment/app-staging -n cantus-ultimus --timeout=300s
+          kubectl rollout status deployment/nginx-staging -n cantus-ultimus --timeout=300s
+          kubectl rollout status deployment/celery-staging -n cantus-ultimus --timeout=300s
