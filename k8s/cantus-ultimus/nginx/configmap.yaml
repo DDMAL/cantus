@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: cantus-ultimus
+data:
+  NGINX_APP_HOST: "app"
+  NGINX_CANTALOUPE_HOST: "cantaloupe"
