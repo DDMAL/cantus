@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rabbitmq
-  namespace: cantus-ultimus-staging
+  name: rabbitmq-staging
+  namespace: cantus-ultimus
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: rabbitmq
+      app: rabbitmq-staging
   template:
     metadata:
       labels:
-        app: rabbitmq
+        app: rabbitmq-staging
     spec:
       containers:
       - name: rabbitmq
@@ -20,12 +20,12 @@ spec:
         - containerPort: 5672
         envFrom:
         - configMapRef:
-            name: rabbitmq-config
+            name: rabbitmq-config-staging
         env:
         - name: RABBITMQ_DEFAULT_PASS
           valueFrom:
             secretKeyRef:
-              name: rabbitmq-secret
+              name: rabbitmq-secret-staging
               key: RABBITMQ_DEFAULT_PASS
         readinessProbe:
           exec:

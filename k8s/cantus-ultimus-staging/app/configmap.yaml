@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: app-config
-  namespace: cantus-ultimus-staging
+  name: app-config-staging
+  namespace: cantus-ultimus
 data:
   APP_VERSION: "3.2-0.12.1"
   DEVELOPMENT: "False"
-  POSTGRES_DB: "cantus_db_staging"
+  POSTGRES_DB: "cantus_db"
   POSTGRES_USER: "cantus_admin"
   POSTGRES_HOST: "postgres-cantus-ultimus-staging.postgres.svc.cluster.local"
   RABBIT_USER: "cantus_admin"
   RABBIT_VHOST: "cantus_ultimus_staging"
-  RABBIT_HOST: "rabbitmq"
-  SOLR_HOST: "solr"
-  EXTRA_ALLOWED_HOSTS: "app,cantus.staging.simssa.ca"
+  RABBIT_HOST: "rabbitmq-staging"
+  SOLR_HOST: "solr-staging"
+  EXTRA_ALLOWED_HOSTS: "app-staging,cantus.staging.simssa.ca"

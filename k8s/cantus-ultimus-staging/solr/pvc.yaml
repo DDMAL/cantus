@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: solr-data-pvc
-  namespace: cantus-ultimus-staging
+  name: solr-data-staging-pvc
+  namespace: cantus-ultimus
 spec:
   accessModes: [ReadWriteOnce]
   resources:
     requests:
-      storage: 1Gi
+      storage: 1500Mi
   storageClassName: local-path

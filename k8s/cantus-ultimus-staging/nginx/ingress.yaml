@@ -1,8 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: cantus-ingress
-  namespace: cantus-ultimus-staging
+  name: cantus-ingress-staging
+  namespace: cantus-ultimus
 spec:
   rules:
   - host: cantus.staging.simssa.ca
@@ -12,6 +12,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: nginx
+            name: nginx-staging
             port:
               number: 8000

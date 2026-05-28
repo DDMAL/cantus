@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: cantaloupe
-  namespace: cantus-ultimus-staging
+  name: cantaloupe-staging
+  namespace: cantus-ultimus
 spec:
   selector:
-    app: cantaloupe
+    app: cantaloupe-staging
   ports:
   - port: 8182
     targetPort: 8182

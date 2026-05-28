@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: solr
-  namespace: cantus-ultimus-staging
+  name: solr-staging
+  namespace: cantus-ultimus
 spec:
   selector:
-    app: solr
+    app: solr-staging
   ports:
   - port: 8983
     targetPort: 8983

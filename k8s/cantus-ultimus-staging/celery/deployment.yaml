@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: celery
-  namespace: cantus-ultimus-staging
+  name: celery-staging
+  namespace: cantus-ultimus
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: celery
+      app: celery-staging
   template:
     metadata:
       labels:
-        app: celery
+        app: celery-staging
     spec:
       imagePullSecrets:
       - name: ghcr-pull-secret
@@ -30,22 +30,22 @@ spec:
         - "1"
         envFrom:
         - configMapRef:
-            name: app-config
+            name: app-config-staging
         env:
         - name: DJANGO_SECRET_KEY
           valueFrom:
             secretKeyRef:
-              name: app-secret
+              name: app-secret-staging
               key: DJANGO_SECRET_KEY
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: app-secret
+              name: app-secret-staging
               key: POSTGRES_PASSWORD
         - name: RABBIT_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: app-secret
+              name: app-secret-staging
               key: RABBIT_PASSWORD
         livenessProbe:
           exec:

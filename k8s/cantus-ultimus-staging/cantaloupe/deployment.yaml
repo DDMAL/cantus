@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cantaloupe
-  namespace: cantus-ultimus-staging
+  name: cantaloupe-staging
+  namespace: cantus-ultimus
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: cantaloupe
+      app: cantaloupe-staging
   template:
     metadata:
       labels:
-        app: cantaloupe
+        app: cantaloupe-staging
     spec:
       imagePullSecrets:
       - name: ghcr-pull-secret
       containers:
       - name: cantaloupe
-        image: ghcr.io/ddmal/cantus-cantaloupe:develop-latest
+        image: ghcr.io/ddmal/cantus-cantaloupe:main-latest
         imagePullPolicy: Always
         command:
         - java
@@ -53,4 +53,4 @@ spec:
       volumes:
       - name: cantaloupe-images
         persistentVolumeClaim:
-          claimName: cantaloupe-images-pvc
+          claimName: cantaloupe-images-staging-pvc

@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: solr
-  namespace: cantus-ultimus-staging
+  name: solr-staging
+  namespace: cantus-ultimus
 spec:
-  serviceName: solr
+  serviceName: solr-staging
   replicas: 1
   selector:
     matchLabels:
-      app: solr
+      app: solr-staging
   template:
     metadata:
       labels:
-        app: solr
+        app: solr-staging
     spec:
       imagePullSecrets:
       - name: ghcr-pull-secret
       containers:
       - name: solr
-        image: ghcr.io/ddmal/cantus-solr:develop-latest
+        image: ghcr.io/ddmal/cantus-solr:main-latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8983
@@ -51,4 +51,4 @@ spec:
       volumes:
       - name: solr-data
         persistentVolumeClaim:
-          claimName: solr-data-pvc
+          claimName: solr-data-staging-pvc

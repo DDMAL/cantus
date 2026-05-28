@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx
-  namespace: cantus-ultimus-staging
+  name: nginx-staging
+  namespace: cantus-ultimus
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: nginx
+      app: nginx-staging
   template:
     metadata:
       labels:
-        app: nginx
+        app: nginx-staging
     spec:
       imagePullSecrets:
       - name: ghcr-pull-secret
       containers:
       - name: nginx
-        image: ghcr.io/ddmal/cantus-nginx:develop-latest
+        image: ghcr.io/ddmal/cantus-nginx:main-latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
@@ -44,4 +44,4 @@ spec:
       volumes:
       - name: manifests
         persistentVolumeClaim:
-          claimName: cantaloupe-manifests-pvc
+          claimName: cantaloupe-manifests-staging-pvc
