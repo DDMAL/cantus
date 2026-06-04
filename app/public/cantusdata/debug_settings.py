@@ -28,7 +28,7 @@ DEBUG_TOOLBAR_CONFIG = {
     ),
 }
 MIDDLEWARE.insert(0, "debug_toolbar.middleware.DebugToolbarMiddleware")
-INSTALLED_APPS.extend(["django_extensions", "debug_toolbar"])
+INSTALLED_APPS.extend(["debug_toolbar"])
 
 
 SESSION_COOKIE_SECURE = False
