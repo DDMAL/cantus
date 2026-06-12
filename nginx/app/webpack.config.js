@@ -38,7 +38,8 @@ module.exports = configureBuildMode({
             marionette: 'backbone.marionette',
             // Alias diva and link-watcher so that webpack looks in the
             // `dependencies` directory for them.
-            diva: path.resolve(__dirname, "dependencies/diva.js/build/diva.js"),
+            diva: path.resolve(__dirname, "dependencies/diva.js/build/diva.js"),   // v6
+            diva7: path.resolve(__dirname, "dependencies/diva.js.v7/build/diva.js"), // v7
             'link-watcher': path.resolve(__dirname, "dependencies/link-watcher/dist/link-watcher.js"),
         },
 

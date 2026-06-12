@@ -295,6 +295,20 @@ body.propagate-height {
     }
 }
 
+// Diva v7 sizes its whole UI from the #diva-wrapper mount node downward using
+// height:100% / flex, so the wrapper and the Elm root it mounts (.diva-app) must
+// fill the height of the diva column. The .propagate-height flex chain stretches
+// #diva-wrapper, but v6 also measured the panel height in JS as a backstop, while
+// v7 relies purely on the CSS cascade -- make that height explicit so v7's chain
+// resolves instead of collapsing the OpenSeadragon canvas. See issue #942.
+#diva-column #diva-wrapper {
+    height: 100%;
+
+    .diva-app {
+        height: 100%;
+    }
+}
+
 .modal-dialog {
     max-width: 90%;
     width: 50%;
