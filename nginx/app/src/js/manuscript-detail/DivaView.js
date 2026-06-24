@@ -66,8 +66,12 @@ export default Marionette.View.extend({
             manifestUrl: this.manifestUrl,
             toolbarParentObject: this.toolbarParentObject
         });
-        // Initialize Diva
-        this.divaAdapter.initialize();
+        // Initialize Diva. On the v7 backend initialize() is async (it lazily
+        // loads OpenSeadragon and the v7 bundle), so surface a load failure
+        // instead of leaving an unhandled rejection behind a blank viewer.
+        Promise.resolve(this.divaAdapter.initialize()).catch(function (error) {
+            console.error('Failed to initialize the Diva viewer', error); // eslint-disable-line no-console
+        });
 
         manuscriptChannel.reply('diva', () => this.divaAdapter);
 
@@ -88,6 +92,10 @@ export default Marionette.View.extend({
      */
     onDocLoad: function () {
         var inner = this.ui.divaWrapper.find('.diva-inner');
+        // The v7 viewer has no .diva-inner element, so this v6-only fix is irrelevant.
+        if (!inner.length)
+            return;
+
         var cssWidth = parseInt(inner[0].style.width, 10);
 
         if (cssWidth && cssWidth !== inner.width()) {
@@ -117,7 +125,10 @@ export default Marionette.View.extend({
             var pageAlias = 'Image ' + imageIndex;
         }
         manuscriptChannel.trigger('set:pageAlias', pageAlias);
-        this.folioNumberSpan.textContent = pageAlias;
+        // The folio label span only exists in the v6 toolbar; on v7 the alias
+        // will reach the right-panel tab via set:pageAlias above.
+        if (this.folioNumberSpan)
+            this.folioNumberSpan.textContent = pageAlias;
     },
 
     /**
@@ -279,6 +290,11 @@ export default Marionette.View.extend({
 
     /** Do some awkward manual manipulation of the toolbar */
     _customizeToolbar: function () {
+        // v7 owns its toolbar in Elm and exposes no instance selector to graft
+        // onto; its Cantus chrome is re-homed outside the viewer in Stage 3j.
+        if (!this.divaAdapter.getInstanceSelector())
+            return;
+
         // Rebind the go to page input
         var input = this.toolbarParentObject.find(this.divaAdapter.getInstanceSelector() + 'goto-page');
 
