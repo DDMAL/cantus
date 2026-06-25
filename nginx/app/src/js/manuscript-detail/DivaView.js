@@ -263,29 +263,13 @@ export default Marionette.View.extend({
     },
 
     /**
-     * Once the manifest is loaded, grab any attribution and rights information
-     * contained in the manifest and update the DOM to display it.
-     * NOTE: Diva contains a plug-in ("IIIFMetadata") that could theoretically
-     * be used to collect and show this data, but it errors if this data is
-     * improperly formatted in the IIIF, so we introduce this here to tolerate
-     * these cases.
-     * NOTE: At the moment, we only support the IIIF 2 API, since Diva only
-     * supports that version.
-     **/
-    onManifestLoad: function (manifest) {
-        var attribution = manifest.attribution;
-        var logo = manifest.logo;
-        if (typeof logo === "object") {
-            var logo_url = logo['@id'];
-        } else {
-            var logo_url = logo;
-        }
-        var licence = manifest.license;
-        this.imageAttributionMetadata = {
-            imageAttribution: attribution,
-            imageLogoUrl: logo_url,
-            imageLicence: licence
-        };
+     * Store the image attribution metadata the adapter extracted from the IIIF
+     * manifest (already flattened to { imageAttribution, imageLogoUrl,
+     * imageLicence }) and announce it so the page can wire it into the model.
+     */
+    onManifestLoad: function (metadata) {
+        this.imageAttributionMetadata = metadata;
+        this.trigger('loaded:manifest');
     },
 
     /** Do some awkward manual manipulation of the toolbar */

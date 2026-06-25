@@ -118,7 +118,12 @@ export default Marionette.View.extend({
 
             $(manuscriptInfoButton).on('click', this._showInfoSidenav.bind(this));
             manuscriptInfo.appendTo(this.ui.toolbarRow.find('.diva-tools-right'));
+        });
 
+        // Add the image attribution to the model once the manifest is loaded.
+        // Keyed on the manifest event rather than viewer load because on the v7
+        // backend the manifest fetch and the viewer load race.
+        this.listenToOnce(divaView, 'loaded:manifest', function () {
             this.model.set(divaView.imageAttributionMetadata);
         });
 

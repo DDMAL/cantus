@@ -1,5 +1,7 @@
 import "diva";
 
+import extractImageAttribution from './manifestMetadata';
+
 const diva = window.Diva;
 
 // Backend-neutral event names mapped to the underlying Diva v6 topics,
@@ -59,19 +61,21 @@ export default class DivaBackendV6 {
      * Subscribe to an adapter event, registering it for automatic deregistration
      * @param event one of the keys in EVENT_TOPICS
      * @param callback for 'page:changed', invoked with a normalized
-     *                 { index, imageURI }; for other events, invoked with Diva's
-     *                 original arguments unchanged (e.g. 'manifest:loaded'
-     *                 receives the manifest)
+     *                 { index, imageURI }; for 'manifest:loaded', invoked with
+     *                 the flattened attribution metadata; for other events,
+     *                 invoked with Diva's original arguments unchanged
      */
     on(event, callback) {
         var handler = callback;
-        // Normalize the page-change payload to a backend-neutral shape rather
-        // than leaking Diva's raw arguments to callers.
+        // Normalize the payloads to a backend-neutral shape rather than leaking
+        // Diva's raw arguments to callers (and to match the v7 backend).
         if (event === "page:changed")
             handler = () => callback({
                 index: this.instance.getActivePageIndex(),
                 imageURI: this.instance.getCurrentPageURI()
             });
+        else if (event === "manifest:loaded")
+            handler = manifest => callback(extractImageAttribution(manifest));
         this.eventHandles.push(diva.Events.subscribe(EVENT_TOPICS[event], handler));
     }
 

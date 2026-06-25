@@ -1,3 +1,5 @@
+import extractImageAttribution from './manifestMetadata';
+
 // OpenSeadragon version matching the one diva.js v7's own test harness loads.
 // v7 references OpenSeadragon as a global and expects window.OpenSeadragon to
 // exist before its bundle runs.
@@ -87,6 +89,10 @@ export default class DivaBackendV7 {
     }
 
     initialize() {
+        // v7 has no ManifestDidLoad event; fetch the manifest ourselves for the
+        // attribution, off the load chain so a fetch failure can't blank the viewer.
+        this.loadManifestMetadata();
+
         // Each step is gated on `destroyed` so navigating away mid-load does not
         // construct a viewer against a DOM node that no longer exists.
         return loadOpenSeadragon()
@@ -117,6 +123,22 @@ export default class DivaBackendV7 {
                 // during construction, so it exists by now.
                 this.viewerElement = document.getElementById('main-viewer');
                 this.viewerElement.addEventListener('diva-page-change', this.onPageChange);
+            });
+    }
+
+    /**
+     * Fetch the IIIF manifest and emit 'manifest:loaded' with the flattened
+     * attribution metadata. Runs independently of initialize()'s load chain.
+     */
+    loadManifestMetadata() {
+        fetch('/manifest-proxy/' + this.manifestUrl)
+            .then(response => response.json())
+            .then(manifest => {
+                if (!this.destroyed)
+                    this.emit('manifest:loaded', extractImageAttribution(manifest));
+            })
+            .catch(error => {
+                console.error('Failed to load the IIIF manifest metadata', error); // eslint-disable-line no-console
             });
     }
 
