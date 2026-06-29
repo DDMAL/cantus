@@ -205,14 +205,73 @@ export default class DivaBackendV7 {
         return this.currentIndex;
     }
 
+    /** Scroll to the page with the given image URI, if the viewer has it. */
+    gotoPageByURI(uri) {
+        this.viewerElement.scrollToIndex(this.pageURIs.indexOf(uri));
+    }
+
+    goToNextPage() {
+        this.viewerElement.scrollToIndex(this.currentIndex + this.pageStep());
+    }
+
+    goToPreviousPage() {
+        this.viewerElement.scrollToIndex(this.currentIndex - this.pageStep());
+    }
+
+    /**
+     * Pages to advance per step: a full opening (two) in a two-page layout, one
+     * otherwise. The two pages of an opening share a scroll position, so a step
+     * of one would change the page index without moving the view.
+     */
+    pageStep() {
+        return this.viewerElement.layoutMode === 'single' ? 1 : 2;
+    }
+
+    // No-op: OpenSeadragon's autoResize reflows the viewer when its container resizes.
     resize() {}
-    gotoPageByURI() {}
-    goToNextPage() {}
-    goToPreviousPage() {}
+
+    // No-op: v7 sets its layout from the manifest; the reader toggles it in the toolbar.
     changeView() {}
+
     getInstanceSelector() { return null; }
     setHighlights() {}
-    focusRegion() {}
+
+    /**
+     * Scroll to an OMR result's page and zoom to its region, given in
+     * full-resolution image pixels.
+     */
+    focusRegion(region) {
+        // A search can run before the viewer has loaded; retry once it has, so
+        // pageURIs is populated.
+        if (!this.firstPageHandled) {
+            this.on('viewer:loaded', () => this.focusRegion(region));
+            return;
+        }
+
+        var index = this.pageURIs.indexOf(region.imageURI);
+        if (index < 0)
+            return;
+
+        this.viewerElement.scrollToIndex(index);
+
+        // The page's tile image loads asynchronously; wait for it before mapping
+        // the region into viewport coordinates.
+        var zoomToRegionWhenLoaded = () => {
+            if (this.destroyed)
+                return;
+
+            var item = this.viewerElement.loadedItems.get(index);
+            if (item) {
+                var imageRect = new window.OpenSeadragon.Rect(
+                    region.x, region.y, region.width, region.height);
+                this.viewerElement.viewer.viewport.fitBounds(
+                    item.imageToViewportRectangle(imageRect));
+            } else if (this.viewerElement.loadingIndexes.has(index)) {
+                window.requestAnimationFrame(zoomToRegionWhenLoaded);
+            }
+        };
+        zoomToRegionWhenLoaded();
+    }
 
     destroy() {
         // Mark destroyed so an in-flight initialize() bails before constructing.
