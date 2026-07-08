@@ -100,9 +100,24 @@ pre.preformatted-text {
     max-width: 60%;
 }
 
-#manuscript-info-target {
-    float: right;
+#toolbar-row {
+    display: flex;
+    align-items: center;
 
+    // The Diva v6 toolbar is appended to this row at runtime; let it take the
+    // remaining width so the "Manuscript info" button stays at the right edge
+    // whether or not the toolbar is present.
+    .diva-tools {
+        flex: 1;
+    }
+
+    #manuscript-info-target {
+        order: 1;
+        margin-left: auto;
+    }
+}
+
+#manuscript-info-target {
     // FIXME: This should actually be the padding for all .btn-sm elements; the Bootstrap button padding was
     // inconsistently tweaked
     .btn-sm {
@@ -309,6 +324,14 @@ body.propagate-height {
     }
 }
 
+// Cantus presents the manifest attribution in its own "Manuscript info"
+// sidenav, so hide Diva v7's built-in trigger for the raw-manifest modal. The
+// whole toolbar item is hidden rather than just the button because the toolbar
+// lays its items out with a flex gap.
+#diva-wrapper .canvas-toolbar-item:has(> .canvas-toolbar-button[title="Manifest Info"]) {
+    display: none;
+}
+
 .modal-dialog {
     max-width: 90%;
     width: 50%;
@@ -422,11 +445,6 @@ body.propagate-height {
     .diva-page-nav {
         padding-left: 0 !important;
         padding-right: 0 !important;
-    }
-
-    // Hide the extra button that was stuck into the Diva toolbar
-    #manuscript-info-target {
-        display: none;
     }
 }
 
