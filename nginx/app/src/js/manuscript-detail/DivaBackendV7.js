@@ -233,7 +233,6 @@ export default class DivaBackendV7 {
     // No-op: v7 sets its layout from the manifest; the reader toggles it in the toolbar.
     changeView() {}
 
-    getInstanceSelector() { return null; }
     setHighlights() {}
 
     /**
