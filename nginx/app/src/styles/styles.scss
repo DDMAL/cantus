@@ -102,33 +102,51 @@ pre.preformatted-text {
 
 #toolbar-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
+    gap: 20px;
+    padding: 10px 15px;
+    border-bottom: 1px solid $border-color;
 
-    // The Diva v6 toolbar is appended to this row at runtime; let it take the
-    // remaining width so the "Manuscript info" button stays at the right edge
-    // whether or not the toolbar is present.
     .diva-tools {
         flex: 1;
     }
 
-    #folio-navigation {
-        display: flex;
+    .pager a {
+        display: inline-flex;
         align-items: center;
-        gap: 20px;
-        padding: 10px 15px;
+        gap: 5px;
+        vertical-align: middle;
     }
 
-    #current-folio-label {
+    #current-folio-label,
+    #manuscript-folio-advancer-container {
         white-space: nowrap;
     }
 
     #goto-folio-form {
         position: relative;
         display: flex;
+        align-items: center;
         gap: 10px;
 
         #goto-folio-input {
-            width: 150px;
+            width: 160px;
+            padding-top: 2px;
+            padding-bottom: 2px;
+            font-weight: $body-font-weight;
+        }
+
+        #goto-folio-input,
+        .btn {
+            height: 32px;
+            min-height: 0;
+            border-radius: 3px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
         }
     }
 
@@ -375,10 +393,54 @@ body.propagate-height {
     display: none;
 }
 
-// The Cantus toolbar row shows the current folio alias, so hide Diva v7's
-// canvas label, which shows the manifest's raw canvas label (e.g. "001_front").
 #diva-wrapper .canvas-label {
     display: none;
+}
+
+// hide the page label overlay by Diva
+#diva-wrapper .diva-page-overlay-label {
+    display: none !important;
+}
+
+// Restyle Diva v7's toolbar from large captioned columns into a compact strip
+// of flat icon buttons matching the site's .diva-button colours. The buttons
+// keep their title-attribute tooltips, and their icons scale with the button.
+#diva-column #diva-wrapper {
+    --diva-accent: #{$brand-primary};
+
+    .canvas-toolbar-label {
+        display: none;
+    }
+
+    .canvas-toolbar-item {
+        width: auto;
+        gap: 0;
+    }
+
+    .canvas-toolbar-button {
+        width: 40px;
+        height: 32px;
+        padding: 4px 6px;
+        border: 1px solid #DADADA;
+        border-radius: 3px;
+        background-color: #E7E7E7;
+        color: $gray-dark;
+        box-shadow: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+
+        &:hover {
+            border-color: #BBB;
+            background-color: #D3D3D3;
+            box-shadow: none;
+        }
+
+        // Preserve the stock look of disabled buttons on hover
+        &.is-disabled:hover {
+            border-color: #DADADA;
+            background-color: #E7E7E7;
+        }
+    }
 }
 
 .modal-dialog {
@@ -448,7 +510,6 @@ body.propagate-height {
     padding: 20px 15px;
     min-height: 70px;
     border-right: 1px solid $border-color;
-    border-bottom: 1px solid $border-color;
 
     .diva-button {
         border-color: #DADADA;
