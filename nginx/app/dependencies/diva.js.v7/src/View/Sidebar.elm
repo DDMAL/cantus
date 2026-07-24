@@ -1,14 +1,15 @@
 module View.Sidebar exposing (viewSidebarPanel, viewSidebarResizer)
 
+import Auth
 import Dict exposing (Dict)
-import Html exposing (Html, a, button, div, img, li, text, ul)
-import Html.Attributes as HA exposing (alt, attribute, classList, id, src, type_)
+import Html exposing (Html, a, button, div, li, text, ul)
+import Html.Attributes as HA exposing (attribute, classList, id, type_)
 import Html.Events as Events
 import Html.Lazy as Lazy
 import IIIF.Language exposing (LabelValue, Language, extractLabelFromLanguageMap)
 import IIIF.Presentation exposing (IIIFManifest, MediaFormats, Range, RangeItem(..), ResourceTypes, ViewingDirection(..), canvasLabel, toCanvases, toHomepage, toMetadata, toRanges, toViewingDirection)
 import Json.Decode as Decode
-import Model exposing (ContentsView(..), Model, Page, ResourceResponse(..), Response(..), SidebarState(..), ViewMode(..), currentManifest, pageViewStartIndex, primaryImage)
+import Model exposing (ContentsView(..), Model, Page, ResourceResponse(..), Response(..), SidebarState(..), ViewMode(..), currentManifest, getPageAt, pageViewStartIndex)
 import Msg exposing (Msg(..))
 import View.Helpers exposing (emptyHtml, viewMaybe)
 import View.HtmlRenderer exposing (renderHtml)
@@ -70,11 +71,11 @@ chunkHelp size remaining acc =
             chunkHelp size rest (nextChunk :: acc)
 
 
-currentCanvasId : Model -> IIIFManifest -> Maybe String
-currentCanvasId model manifest =
+currentCanvasId : Model -> Maybe String
+currentCanvasId model =
     model.selectedIndex
-        |> Maybe.andThen (\index -> List.drop index (toCanvases manifest) |> List.head)
-        |> Maybe.map .id
+        |> Maybe.andThen (\index -> getPageAt index model.pages)
+        |> Maybe.map .canvasId
 
 
 hasManifestMetadata : IIIFManifest -> Bool
@@ -148,25 +149,7 @@ isSidebarVisible state =
 
 isThumbnailActive : ViewMode -> Bool -> Maybe Int -> Int -> Bool
 isThumbnailActive viewMode shiftByOne selectedIndex index =
-    case selectedIndex of
-        Just selected ->
-            case viewMode of
-                OneUp ->
-                    selected == index
-
-                TwoUp ->
-                    if shiftByOne && selected == 0 then
-                        index == 0
-
-                    else
-                        let
-                            startIndex =
-                                pageViewStartIndex TwoUp shiftByOne selected
-                        in
-                        index == startIndex || index == startIndex + 1
-
-        Nothing ->
-            False
+    List.member index (visiblePageIndexes viewMode shiftByOne selectedIndex)
 
 
 lookupRangeIndex : Dict String (Maybe Int) -> String -> Maybe Int
@@ -394,7 +377,7 @@ viewMetadataContent model =
 
 viewOnThisPageBody : Model -> IIIFManifest -> Html Msg
 viewOnThisPageBody model manifest =
-    case currentCanvasId model manifest of
+    case currentCanvasId model of
         Just canvasId ->
             case toRanges manifest of
                 Just list ->
@@ -472,7 +455,7 @@ viewOtpRangeItem model canvasLabelMap range =
                 rangePrefix ++ labelText
 
         labelNode =
-            viewRangeButton range.id maybeIndex resolvedLabel
+            viewRangeButton False maybeIndex resolvedLabel
 
         metadataBlock =
             viewRangeMetadata model.detectedLanguage range.metadata
@@ -482,14 +465,58 @@ viewOtpRangeItem model canvasLabelMap range =
         (labelNode :: metadataBlock)
 
 
-viewRangeButton : String -> Maybe Int -> String -> Html Msg
-viewRangeButton rangeId maybeIndex labelText =
+viewRangeButton : Bool -> Maybe Int -> String -> Html Msg
+viewRangeButton isCurrent maybeIndex labelText =
     button
-        [ HA.class "contents-button ui-button"
-        , type_ "button"
-        , Events.onClick (UserClickedRange rangeId maybeIndex)
-        ]
+        ([ classList
+            [ ( "contents-button", True )
+            , ( "ui-button", True )
+            , ( "is-current", isCurrent )
+            ]
+         , type_ "button"
+         , Events.onClick (UserClickedRange maybeIndex)
+         ]
+            ++ (if isCurrent then
+                    [ attribute "aria-current" "location" ]
+
+                else
+                    []
+               )
+        )
         [ text labelText ]
+
+
+viewRangeDisclosure : Bool -> String -> String -> Html Msg
+viewRangeDisclosure isExpanded rangeId labelText =
+    button
+        [ HA.class "contents-disclosure ui-button"
+        , type_ "button"
+        , attribute "aria-expanded"
+            (if isExpanded then
+                "true"
+
+             else
+                "false"
+            )
+        , attribute "aria-label"
+            ((if isExpanded then
+                "Hide information for "
+
+              else
+                "Show information for "
+             )
+                ++ labelText
+            )
+        , Events.onClick (UserToggledRangeMetadata rangeId)
+        ]
+        [ text
+            (if isExpanded then
+                "▾"
+
+             else
+                "▸"
+            )
+        ]
 
 
 viewRangeItems : Model -> Dict String (Maybe Int) -> List RangeItem -> List (Html Msg)
@@ -536,8 +563,8 @@ viewRangeMetadata language metadata =
 viewRangeNode : Model -> Dict String (Maybe Int) -> Range -> Html Msg
 viewRangeNode model rangeIndexMap range =
     let
-        maybeIndex =
-            lookupRangeIndex rangeIndexMap range.id
+        isExpanded =
+            model.selectedRangeId == Just range.id
 
         labelText =
             extractLabelFromLanguageMap model.detectedLanguage range.label
@@ -549,22 +576,41 @@ viewRangeNode model rangeIndexMap range =
             else
                 labelText
 
+        children =
+            viewRangeItems model rangeIndexMap range.items
+
+        isCurrent =
+            visibleCanvasIds model
+                |> List.any (\canvasId -> rangeContainsCanvas canvasId range)
+
+        maybeIndex =
+            lookupRangeIndex rangeIndexMap range.id
+
         labelNode =
-            viewRangeButton range.id maybeIndex resolvedLabel
+            viewRangeButton isCurrent maybeIndex resolvedLabel
+
+        headingNode =
+            div
+                [ HA.class "contents-heading" ]
+                ((if List.isEmpty range.metadata then
+                    []
+
+                  else
+                    [ viewRangeDisclosure isExpanded range.id resolvedLabel ]
+                 )
+                    ++ [ labelNode ]
+                )
 
         metadataBlock =
-            if model.selectedRangeId == Just range.id then
+            if isExpanded then
                 viewRangeMetadata model.detectedLanguage range.metadata
 
             else
                 []
-
-        children =
-            viewRangeItems model rangeIndexMap range.items
     in
     li
         [ HA.class "contents-item" ]
-        (labelNode :: metadataBlock ++ children)
+        (headingNode :: metadataBlock ++ children)
 
 
 viewSidebarPane : SidebarState -> SidebarState -> Html Msg -> Html Msg
@@ -667,6 +713,7 @@ viewSidebarPanelWithMaybeManifest model maybeManifest =
                 SidebarThumbnails
                 (viewThumbnails
                     { fullscreen = model.fullscreen
+                    , auth = model.auth
                     , selectedIndex = model.selectedIndex
                     , shiftByOne = model.shiftByOne
                     , thumbsInstantScroll = model.thumbsInstantScroll
@@ -694,8 +741,8 @@ viewSidebarTab current target label msg =
         [ text label ]
 
 
-viewThumbnail : ViewMode -> Bool -> Maybe Int -> Int -> Page -> Html Msg
-viewThumbnail viewMode shiftByOne selectedIndex index page =
+viewThumbnail : Auth.Model -> ViewMode -> Bool -> Maybe Int -> Int -> Page -> Html Msg
+viewThumbnail auth viewMode shiftByOne selectedIndex index page =
     let
         isActive =
             isThumbnailActive viewMode shiftByOne selectedIndex index
@@ -713,21 +760,46 @@ viewThumbnail viewMode shiftByOne selectedIndex index page =
             , Events.onClick (UserClickedThumbnail index)
             ]
 
-        thumbUrl =
-            primaryImage page
-                |> Maybe.map .thumbUrl
-                |> Maybe.withDefault ""
-
         hasChoices =
             List.length page.images > 1
+
+        fallbackImage =
+            { id = ""
+            , sourceId = ""
+            , tileSource = ""
+            , thumbUrl = ""
+            , label = ""
+            , isPrimary = False
+            , isStatic = True
+            , auth = Auth.Unknown
+            }
+
+        primary =
+            page.images
+                |> List.filter .isPrimary
+                |> List.head
+                |> Maybe.withDefault (List.head page.images |> Maybe.withDefault fallbackImage)
+
+        thumbnail =
+            case Auth.thumbnailCrossOrigin primary.sourceId auth of
+                Just crossOrigin ->
+                    Html.node "diva-lazy-image"
+                        [ HA.class "thumbs-lazy-image"
+                        , attribute "data-src" page.thumbUrl
+                        , attribute "data-alt" ("Page " ++ String.fromInt (index + 1))
+                        , attribute "data-crossorigin" crossOrigin
+                        ]
+                        []
+
+                Nothing ->
+                    div
+                        [ HA.class "thumbs-image thumbs-image--protected"
+                        , attribute "aria-label" "Protected image"
+                        ]
+                        []
     in
     button attrs
-        [ img
-            [ HA.class "thumbs-image"
-            , src thumbUrl
-            , alt ("Page " ++ String.fromInt (index + 1))
-            ]
-            []
+        [ thumbnail
         , div
             [ classList
                 [ ( "thumbs-label", True )
@@ -747,6 +819,7 @@ viewThumbnail viewMode shiftByOne selectedIndex index page =
 
 viewThumbnails :
     { fullscreen : Bool
+    , auth : Auth.Model
     , selectedIndex : Maybe Int
     , shiftByOne : Bool
     , thumbsInstantScroll : Bool
@@ -755,7 +828,7 @@ viewThumbnails :
     }
     -> List Page
     -> Html Msg
-viewThumbnails { fullscreen, selectedIndex, shiftByOne, thumbsInstantScroll, viewMode, viewingDirection } pages =
+viewThumbnails { fullscreen, auth, selectedIndex, shiftByOne, thumbsInstantScroll, viewMode, viewingDirection } pages =
     let
         indexedPages =
             List.indexedMap Tuple.pair pages
@@ -782,5 +855,35 @@ viewThumbnails { fullscreen, selectedIndex, shiftByOne, thumbsInstantScroll, vie
             )
         ]
         (orderedPages
-            |> List.map (\( index, page ) -> Lazy.lazy5 viewThumbnail viewMode shiftByOne selectedIndex index page)
+            |> List.map (\( index, page ) -> Lazy.lazy6 viewThumbnail auth viewMode shiftByOne selectedIndex index page)
         )
+
+
+visibleCanvasIds : Model -> List String
+visibleCanvasIds model =
+    visiblePageIndexes model.viewMode model.shiftByOne model.selectedIndex
+        |> List.filterMap (\index -> getPageAt index model.pages)
+        |> List.map .canvasId
+
+
+visiblePageIndexes : ViewMode -> Bool -> Maybe Int -> List Int
+visiblePageIndexes viewMode shiftByOne selectedIndex =
+    case selectedIndex of
+        Just selected ->
+            case viewMode of
+                OneUp ->
+                    [ selected ]
+
+                TwoUp ->
+                    if shiftByOne && selected == 0 then
+                        [ 0 ]
+
+                    else
+                        let
+                            startIndex =
+                                pageViewStartIndex TwoUp shiftByOne selected
+                        in
+                        [ startIndex, startIndex + 1 ]
+
+        Nothing ->
+            []

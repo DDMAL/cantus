@@ -59,7 +59,13 @@ $navbar-dark-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w
 @import "sidenav";
 
 $zindex-diva-fullscreen: $zindex-modal;
-$zindex-diva-canvas: $zindex-diva-fullscreen + 5;
+
+// Shared control grey for the manuscript viewer so the Diva toolbar/sidebar
+// buttons read as one set with the site's own controls.
+$diva-control-bg: #eee;
+$diva-control-bg-hover: #e2e2e2;
+$diva-control-border: #dadada;
+$diva-control-border-hover: #bbb;
 
 // Volpiano font
 @font-face {
@@ -141,7 +147,6 @@ pre.preformatted-text {
         .btn {
             height: 32px;
             min-height: 0;
-            border-radius: 3px;
         }
 
         .btn {
@@ -386,10 +391,16 @@ body.propagate-height {
 }
 
 // Cantus presents the manifest attribution in its own "Manuscript info"
-// sidenav, so hide Diva v7's built-in trigger for the raw-manifest modal. The
-// whole toolbar item is hidden rather than just the button because the toolbar
-// lays its items out with a flex gap.
-#diva-wrapper .canvas-toolbar-item:has(> .canvas-toolbar-button[title="Manifest Info"]) {
+// sidenav, so hide Diva v7's built-in trigger for the raw-manifest modal.
+#diva-wrapper .canvas-toolbar-item[data-tooltip="Manifest Info"] {
+    display: none;
+}
+
+// ... and its requiredStatement dock at the bottom of the viewer, shown for
+// manuscripts whose manifest declares one -- same attribution, same sidenav.
+// The extra #diva-column id outweighs v7's own display:flex, which ships later
+// in the bundle at equal specificity.
+#diva-column #diva-wrapper .required-statement-dock {
     display: none;
 }
 
@@ -402,43 +413,34 @@ body.propagate-height {
     display: none !important;
 }
 
-// Restyle Diva v7's toolbar from large captioned columns into a compact strip
-// of flat icon buttons matching the site's .diva-button colours. The buttons
-// keep their title-attribute tooltips, and their icons scale with the button.
+// Match Diva v7's toolbar and sidebar styles to the Cantus frontend.
 #diva-column #diva-wrapper {
     --diva-accent: #{$brand-primary};
+    --diva-surface: #{$diva-control-bg};
 
-    .canvas-toolbar-label {
-        display: none;
+    .canvas-toolbar-section {
+        gap: 6px;
     }
 
     .canvas-toolbar-item {
-        width: auto;
-        gap: 0;
+        width: 34px;
+        height: 34px;
     }
 
     .canvas-toolbar-button {
-        width: 40px;
-        height: 32px;
-        padding: 4px 6px;
-        border: 1px solid #DADADA;
-        border-radius: 3px;
-        background-color: #E7E7E7;
-        color: $gray-dark;
-        box-shadow: none;
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
+        width: 34px;
+        height: 34px;
+        background-color: $diva-control-bg;
+        border-color: $diva-control-border;
 
-        &:hover {
-            border-color: #BBB;
-            background-color: #D3D3D3;
-            box-shadow: none;
+        svg {
+            width: 20px;
+            height: 20px;
         }
 
-        // Preserve the stock look of disabled buttons on hover
-        &.is-disabled:hover {
-            border-color: #DADADA;
-            background-color: #E7E7E7;
+        &:hover {
+            background-color: $diva-control-bg-hover;
+            border-color: $diva-control-border-hover;
         }
     }
 }
@@ -578,30 +580,6 @@ body.propagate-height {
 .diva-popup,
 .diva-tools.diva-fullscreen-tools {
     z-index: $zindex-diva-fullscreen + 1;
-}
-
-#diva-canvas-backdrop {
-    z-index: $zindex-diva-canvas;
-}
-
-#diva-canvas-wrapper {
-    z-index: $zindex-diva-canvas + 1;
-}
-
-#diva-canvas {
-    z-index: $zindex-diva-canvas + 2;
-}
-
-#diva-canvas-tools {
-    z-index: $zindex-diva-canvas + 3;
-}
-
-#diva-canvas-toolbar div {
-    z-index: $zindex-diva-canvas + 4;
-}
-
-.canvas-throbber {
-    z-index: $zindex-diva-canvas + 5;
 }
 
 .search-input .form-control:focus {

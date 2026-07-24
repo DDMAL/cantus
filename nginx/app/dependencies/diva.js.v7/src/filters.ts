@@ -25,10 +25,12 @@
 
 export type FilterProcessor = (context: CanvasRenderingContext2D, callback: () => void) => void;
 type PixelTransformInPlace = (r: number, g: number, b: number, a: number, out: number[]) => void;
-type ResettableItem = {reset: () => void};
+type ResettableItem = {
+    reset: () => void
+};
 
 export type FilterDefinition = {
-    items?: ResettableItem | ResettableItem[]; processors : FilterProcessor | FilterProcessor[];
+    items?: ResettableItem|ResettableItem[]; processors : FilterProcessor | FilterProcessor[];
 };
 
 export type FilterOptions = {
@@ -187,7 +189,8 @@ function createFilterPlugin(viewer: any, options: FilterOptions): FilterPluginIn
 function setOptions(instance: FilterPluginInstance, options: FilterOptions): void
 {
     const filters = options.filters;
-    instance.filters = !filters ? [] : Array.isArray(filters) ? filters : [ filters ];
+    instance.filters = !filters ? [] : Array.isArray(filters) ? filters
+                                                              : [ filters ];
     for (let i = 0; i < instance.filters.length; i += 1)
     {
         const filter = instance.filters[i];
@@ -755,14 +758,14 @@ function powerIterEigen(m: number[][], iterations: number): {vector: number[]; v
 
 type PcaBasis = {
     mean: number[];
-    vectors: number[][];
-    values: number[];
+    vectors : number[][];
+    values : number[];
 };
 
 type RunningPcaStats = {
     count: number;
-    mean: number[];
-    m2: number[][];
+    mean : number[];
+    m2 : number[][];
 };
 
 function computePcaBasisFromCov(mean: number[], cov: number[][]): PcaBasis
@@ -907,8 +910,12 @@ function applyPcaColor(imgData: ImageData, mode: string, hueDegrees: number = 0)
 
 type HueRotationMatrix = {
     m00: number; m01 : number; m02 : number;
-    m10: number; m11 : number; m12 : number;
-    m20: number; m21 : number; m22 : number;
+    m10 : number;
+    m11 : number;
+    m12 : number;
+    m20 : number;
+    m21 : number;
+    m22 : number;
 };
 
 function buildHueRotationMatrix(degrees: number): HueRotationMatrix
@@ -1106,9 +1113,9 @@ function rgbToHSV(r: number, g: number, b: number): {h: number; s : number; v : 
 
 function hsvToRGB(h: number, s: number, v: number): {r: number; g : number; b : number}
 {
-    let r = 0;
-    let g = 0;
-    let b = 0;
+    let r: number;
+    let g: number;
+    let b: number;
     const i = Math.floor(h * 6);
     const f = h * 6 - i;
     const p = v * (1 - s);
@@ -1665,7 +1672,7 @@ export const Filters = {
             const dg = g - src[1];
             const db = b - src[2];
             const dist = Math.sqrt(dr * dr + dg * dg + db * db);
-            let weight = 0;
+            let weight: number;
             if (tol <= 0)
             {
                 weight = dist === 0 ? 1 : 0;

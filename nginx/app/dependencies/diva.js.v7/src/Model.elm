@@ -1,10 +1,14 @@
 module Model exposing (CollectionState, ContentsView(..), Model, Page, PageImage, ResourceResponse(..), Response(..), SidebarState(..), ViewMode(..), currentManifest, getPageAt, manifestToPages, pageViewStartIndex, primaryImage)
 
+import Auth
 import Dict exposing (Dict)
 import Filters exposing (Filters)
+import IIIF.Auth as IIIFAuth
 import IIIF.Image exposing (createImageAddress, thumbnailUrlFromInfo)
 import IIIF.Language exposing (Language, extractLabelFromLanguageMap)
 import IIIF.Presentation exposing (Canvas, IIIFCollection, IIIFManifest, Image, ImageType(..), canvasAspect, canvasLabel, toCanvases)
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Set exposing (Set)
 import Utilities exposing (find, isNothing)
 
@@ -24,9 +28,11 @@ type ContentsView
 
 
 type alias Model =
-    { rootElementId : String
+    { auth : Auth.Model
+    , rootElementId : String
     , manifestUrl : String
     , acceptHeaders : List String
+    , initialPage : Decode.Value
     , initialZoom : Maybe Float
     , currentZoom : Maybe Float
     , hasTileSources : Bool
@@ -36,6 +42,8 @@ type alias Model =
     , rangeIndexMap : Dict String (Maybe Int)
     , thumbsInstantScroll : Bool
     , pendingThumbScroll : Maybe Int
+    , pendingPublicResource : Maybe String
+    , initialResourceSuperseded : Bool
     , pageViewOpen : Bool
     , pageViewFullscreen : Bool
     , pageViewSidebarVisible : Bool
@@ -48,6 +56,7 @@ type alias Model =
     , viewMode : ViewMode
     , shiftByOne : Bool
     , sidebarState : SidebarState
+    , sidebarPanel : SidebarState
     , mobileSidebarOpen : Bool
     , isMobile : Bool
     , showTitle : Bool
@@ -66,17 +75,25 @@ type alias Model =
 
 
 type alias Page =
-    { aspect : Float
+    { canvasId : String
+    , width : Maybe Int
+    , height : Maybe Int
+    , aspect : Float
     , label : String
+    , thumbUrl : String
     , images : List PageImage
     }
 
 
 type alias PageImage =
-    { tileSource : String
+    { id : String
+    , sourceId : String
+    , tileSource : String
     , thumbUrl : String
     , label : String
     , isPrimary : Bool
+    , isStatic : Bool
+    , auth : Auth.SourceAuth
     }
 
 
@@ -166,6 +183,26 @@ primaryImage page =
             List.head page.images
 
 
+canvasThumbnailUrl : List PageImage -> Canvas -> String
+canvasThumbnailUrl images canvas =
+    case canvas.thumbnail of
+        Just thumbnail ->
+            thumbnailUrlForImage thumbnail
+
+        Nothing ->
+            case List.filter .isPrimary images |> List.head of
+                Just image ->
+                    image.thumbUrl
+
+                Nothing ->
+                    case List.head images of
+                        Just image ->
+                            image.thumbUrl
+
+                        Nothing ->
+                            ""
+
+
 canvasToPage : Language -> Canvas -> Maybe Page
 canvasToPage language canvas =
     let
@@ -176,9 +213,17 @@ canvasToPage language canvas =
         Nothing
 
     else
+        let
+            thumbUrl =
+                canvasThumbnailUrl images canvas
+        in
         Just
-            { aspect = canvasAspect canvas
+            { canvasId = canvas.id
+            , width = canvas.width
+            , height = canvas.height
+            , aspect = canvasAspect canvas
             , label = canvasLabel canvas
+            , thumbUrl = thumbUrl
             , images = images
             }
 
@@ -189,8 +234,11 @@ iiifImageToPageImage language allImages image =
         tileSource =
             createImageAddress image.id
 
+        isStatic =
+            List.isEmpty image.service
+
         thumbUrl =
-            thumbnailUrlFromInfo tileSource
+            thumbnailUrlForImage image
 
         label =
             Maybe.map (extractLabelFromLanguageMap language) image.label
@@ -206,8 +254,31 @@ iiifImageToPageImage language allImages image =
         isPrimary =
             image.imageType == PrimaryImage || (isPrimaryImage && isFirst)
     in
-    { tileSource = tileSource
+    { id = tileSource
+    , sourceId = tileSource
+    , tileSource = tileSource
     , thumbUrl = thumbUrl
     , label = label
     , isPrimary = isPrimary
+    , isStatic = isStatic
+    , auth =
+        case Decode.decodeValue IIIFAuth.authServicesDecoder (Encode.list identity image.serviceObjects) of
+            Ok discovery ->
+                Auth.Discovered discovery
+
+            Err error ->
+                Auth.Invalid (Decode.errorToString error)
     }
+
+
+thumbnailUrlForImage : Image -> String
+thumbnailUrlForImage image =
+    let
+        url =
+            createImageAddress image.id
+    in
+    if List.isEmpty image.service then
+        url
+
+    else
+        thumbnailUrlFromInfo url

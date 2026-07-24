@@ -1,7 +1,9 @@
 module View exposing (view)
 
-import Html exposing (Html, div, h1, node, text)
+import Auth
+import Html exposing (Html, button, div, h1, h2, node, p, text)
 import Html.Attributes as HA exposing (classList, id)
+import Html.Events as HE
 import Html.Lazy as Lazy
 import IIIF.Language exposing (extractLabelFromLanguageMap)
 import IIIF.Presentation exposing (toLabel, toRequiredStatement)
@@ -64,6 +66,7 @@ view model =
                 [ viewMaybe (Lazy.lazy viewRequiredStatement) (requiredStatementTextFor model) ]
             , View.PageViewModal.viewPageViewModal model
             , View.ManifestInfoModal.viewManifestInfoModal model
+            , viewMaybe (viewAuthPrompt model) (Auth.prompt model.auth)
             ]
         ]
 
@@ -95,6 +98,43 @@ requiredStatementTextFor model =
     currentManifest model
         |> Maybe.andThen toRequiredStatement
         |> Maybe.map (\statement -> extractLabelFromLanguageMap model.detectedLanguage statement.value)
+
+
+viewAuthPrompt : Model -> Auth.Prompt -> Html Msg
+viewAuthPrompt model authPrompt =
+    let
+        localized value fallback =
+            value
+                |> Maybe.map (extractLabelFromLanguageMap model.detectedLanguage)
+                |> Maybe.withDefault fallback
+
+        noteText =
+            Maybe.withDefault (localized authPrompt.note "Sign in to view this image.") authPrompt.error
+    in
+    div
+        [ HA.class "diva-auth-overlay"
+        , HA.attribute "role" "dialog"
+        , HA.attribute "aria-modal" "true"
+        ]
+        [ div [ HA.class "diva-auth-dialog" ]
+            [ h2 [] [ text (localized authPrompt.heading "Sign in required") ]
+            , p [] [ text noteText ]
+            , button
+                [ HA.type_ "button"
+                , HA.attribute "data-diva-auth-flow" authPrompt.flowId
+                , HA.attribute "data-diva-auth-url" authPrompt.accessUrl
+                ]
+                [ text
+                    (if authPrompt.error == Nothing then
+                        localized authPrompt.confirmLabel "Sign in"
+
+                     else
+                        "Retry"
+                    )
+                ]
+            , button [ HA.type_ "button", HE.onClick (Msg.AuthEvent Auth.UserCancelled) ] [ text "Cancel" ]
+            ]
+        ]
 
 
 viewCanvas : Bool -> Bool -> Bool -> Maybe ( String, String, Bool ) -> Maybe String -> Html Msg

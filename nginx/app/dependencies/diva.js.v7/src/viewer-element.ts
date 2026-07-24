@@ -1,18 +1,105 @@
 import type * as OpenSeadragonType from "openseadragon";
 
+import type {ResolvedTileSource, TileSourceDescriptor} from "./auth";
+import type {DivaRegion, ZoomToRegionOptions} from "./public-api";
+
 declare const OpenSeadragon: typeof OpenSeadragonType;
+
+type ViewerTileSource = TileSourceDescriptor;
+type TileSourceResolver = (source: TileSourceDescriptor, signal: AbortSignal) => Promise<ResolvedTileSource>;
 
 const ZOOM_IN_FACTOR = 1.6
 const ZOOM_OUT_FACTOR = 1 / ZOOM_IN_FACTOR
 const PAGE_LABEL_TOP_PADDING_PX = 28;
 const PAGE_GAP_VIEWPORT_UNITS = 0.06;
 
+let lazyImageObserver: IntersectionObserver|null = null;
+
+class DivaLazyImage extends HTMLElement
+{
+    private image: HTMLImageElement|null = null;
+
+    static get observedAttributes(): string[]
+    {
+        return [ "data-src", "data-alt", "data-crossorigin" ];
+    }
+
+    connectedCallback(): void
+    {
+        this.observe();
+    }
+
+    disconnectedCallback(): void
+    {
+        lazyImageObserver?.unobserve(this);
+    }
+
+    attributeChangedCallback(): void
+    {
+        if (this.image)
+        {
+            this.image.remove();
+            this.image = null;
+        }
+        if (this.isConnected)
+        {
+            this.observe();
+        }
+    }
+
+    load(): void
+    {
+        if (this.image)
+        {
+            return;
+        }
+        const url = this.dataset.src;
+        if (!url)
+        {
+            return;
+        }
+        lazyImageObserver?.unobserve(this);
+        const image = document.createElement("img");
+        image.className = "thumbs-image";
+        image.alt = this.dataset.alt ?? "";
+        const crossOrigin = this.dataset.crossorigin;
+        if (crossOrigin)
+        {
+            image.crossOrigin = crossOrigin;
+        }
+        this.image = image;
+        this.appendChild(image);
+        image.src = url;
+    }
+
+    private observe(): void
+    {
+        if (!("IntersectionObserver" in window))
+        {
+            this.load();
+            return;
+        }
+        if (!lazyImageObserver)
+        {
+            lazyImageObserver = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting)
+                    {
+                        (entry.target as DivaLazyImage).load();
+                    }
+                });
+            }, {rootMargin : "300px 0px"});
+        }
+        lazyImageObserver.observe(this);
+    }
+}
+
 class OsdViewer extends HTMLElement
 {
     private container: HTMLDivElement|null = null;
     private viewer: OpenSeadragonType.Viewer|null = null;
     private loadToken = 0;
-    private tileSources: string[] = [];
+    private tileSources: ViewerTileSource[] = [];
     private pageLabels: string[] = [];
     private pageAspects: number[] = [];
     private pageOffsets: number[] = [];
@@ -24,9 +111,16 @@ class OsdViewer extends HTMLElement
     private hasFitFirstPage = false;
     private loadedIndexes: Set<number> = new Set();
     private loadingIndexes: Set<number> = new Set();
+    private unavailableIndexes: Map<number, string> = new Map();
+    private loadControllers: Map<number, AbortController> = new Map();
+    private tileSourceResolver: TileSourceResolver = async (source) =>
+        source.isStatic ? {type : "image", url: source.url, crossOriginPolicy: "Anonymous"} : source.url;
     private loadedItems: Map<number, any> = new Map();
+    private pageWaiters: Map<number, Array<{resolve : (item: any) => void; reject : (error: Error) => void}>> = new Map();
     private pageOverlayElements: Map<number, HTMLDivElement> = new Map();
     private targetIndex: number|null = null;
+    private initialPageIndex = 0;
+    private resourceId = "initial";
     private scrollPlaneItem: any = null;
     private isViewportInitialized = false;
     private lastReportedIndex: number|null = null;
@@ -70,11 +164,17 @@ class OsdViewer extends HTMLElement
 
             this.createScrollbar();
         }
+        const hadViewer = Boolean(this.viewer);
         this.syncViewer();
+        if (!hadViewer && this.viewer && this.tileSources.length > 0)
+        {
+            this.resetTileSources(this.tileSources.slice(), this.initialPageIndex);
+        }
     }
 
     disconnectedCallback(): void
     {
+        this.cancelLoads();
         if (this.loadingTimer !== null)
         {
             window.clearTimeout(this.loadingTimer);
@@ -120,6 +220,9 @@ class OsdViewer extends HTMLElement
                 animationTime : 0.8,
                 showNavigationControl : false,
                 preserveViewport : true,
+                maxImageCacheCount : 512,
+                tileRetryMax : 2,
+                tileRetryDelay : 500,
                 visibilityRatio : 0,
                 constrainDuringPan : false,
                 minZoomLevel : 0.1,
@@ -166,15 +269,40 @@ class OsdViewer extends HTMLElement
         this.applyLayoutChange({mode : nextMode, direction : nextDirection});
     }
 
-    public setTileSources(tileSources: string[]): void
+    public setTileSources(tileSources: ViewerTileSource[], initialPageIndex = 0, resourceId = "internal"): void
     {
-        if (!Array.isArray(tileSources) || tileSources.length === 0)
+        if (!Array.isArray(tileSources))
         {
             return;
         }
 
+        this.tileSources = tileSources.slice();
+        this.resourceId = resourceId;
+        this.initialPageIndex = Number.isInteger(initialPageIndex) && initialPageIndex >= 0 && initialPageIndex < tileSources.length
+                                    ? initialPageIndex
+                                    : 0;
         this.syncViewer();
-        this.resetTileSources(tileSources);
+        if (!this.viewer)
+        {
+            this.buildOffsets();
+            return;
+        }
+        this.resetTileSources(this.tileSources.slice(), this.initialPageIndex);
+    }
+
+    public setTileSourceResolver(resolver: TileSourceResolver): void
+    {
+        this.tileSourceResolver = resolver;
+    }
+
+    public invalidateTileSources(sourceIds: string[]): void
+    {
+        const affected = new Set(sourceIds);
+        if (affected.size === 0 || !this.tileSources.some((source) => affected.has(source.sourceId)))
+        {
+            return;
+        }
+        this.resetTileSources(this.tileSources.slice(), this.lastReportedIndex ?? this.initialPageIndex);
     }
 
     public setPageLabels(labels: string[]): void
@@ -190,7 +318,7 @@ class OsdViewer extends HTMLElement
         });
     }
 
-    private resetTileSources(tileSources: string[]): void
+    private resetTileSources(tileSources: ViewerTileSource[], initialPageIndex = 0): void
     {
         if (!this.viewer)
         {
@@ -206,18 +334,27 @@ class OsdViewer extends HTMLElement
         {
             this.viewer.world.removeAll();
         }
-        this.loadToken += 1;
+        this.cancelLoads();
         this.tileSources = tileSources;
+        this.initialPageIndex = Number.isInteger(initialPageIndex) && initialPageIndex >= 0 && initialPageIndex < tileSources.length
+                                    ? initialPageIndex
+                                    : 0;
         this.hasFitFirstPage = false;
         this.isViewportInitialized = false;
         this.loadedIndexes.clear();
         this.loadingIndexes.clear();
+        this.unavailableIndexes.clear();
         this.loadedItems.clear();
         this.clearPageOverlays();
-        this.targetIndex = null;
+        this.targetIndex = tileSources.length > 0 ? this.initialPageIndex : null;
+        this.lastReportedIndex = this.targetIndex;
         this.clearScrollPlane();
         this.buildOffsets();
         this.ensureScrollPlane();
+        if (this.targetIndex !== null)
+        {
+            this.positionInitialViewport(this.targetIndex);
+        }
         this.resetLoadingState();
         this.suppressPageChange = true;
         this.suppressZoomChange = true;
@@ -252,6 +389,25 @@ class OsdViewer extends HTMLElement
     {
         if (this.tileSources.length === 0)
         {
+            return;
+        }
+
+        if (!this.isViewportInitialized)
+        {
+            if (this.targetIndex !== null)
+            {
+                this.ensurePageLoaded(this.targetIndex);
+                const targetTop = this.pageOffsets[this.targetIndex] || 0;
+                const targetHeight = this.pageRowHeights[this.targetIndex] || this.pageHeights[this.targetIndex] || 1;
+                const range = this.indicesForRange(Math.max(0, targetTop - (targetHeight * 1.5)), targetTop + (targetHeight * 2.5));
+                if (range)
+                {
+                    for (let index = range[0]; index <= range[1]; index += 1)
+                    {
+                        this.ensurePageLoaded(index);
+                    }
+                }
+            }
             return;
         }
 
@@ -294,15 +450,15 @@ class OsdViewer extends HTMLElement
             return;
         }
 
-        if (this.loadedIndexes.has(index) || this.loadingIndexes.has(index))
+        if (this.loadedIndexes.has(index) || this.loadingIndexes.has(index) || this.unavailableIndexes.has(index))
         {
             return;
         }
 
-        this.loadTile(index);
+        void this.loadTile(index);
     }
 
-    private loadTile(index: number): void
+    private async loadTile(index: number): Promise<void>
     {
         if (!this.viewer)
         {
@@ -310,16 +466,38 @@ class OsdViewer extends HTMLElement
         }
 
         const token = this.loadToken;
-        const tileSource = this.tileSources[index];
+        const descriptor = this.tileSources[index];
+        const controller = new AbortController();
+        this.loadControllers.set(index, controller);
 
         this.loadingIndexes.add(index);
+        this.unavailableIndexes.delete(index);
+        this.removeUnavailableOverlay(index);
         this.updateLoadingState();
+        let tileSource: ResolvedTileSource;
+        try
+        {
+            tileSource = await this.tileSourceResolver(descriptor, controller.signal);
+        }
+        catch (error)
+        {
+            if (token === this.loadToken && !controller.signal.aborted)
+                this.markUnavailable(index, error instanceof Error ? error.message : "This image is unavailable.");
+            this.finishLoad(index, controller);
+            return;
+        }
+        if (token !== this.loadToken || controller.signal.aborted || !this.viewer)
+        {
+            this.finishLoad(index, controller);
+            return;
+        }
+
         const yOffset = this.pageOffsets[index] || 0;
         const xOffset = this.pageXOffsets[index] || 0;
-        const height = this.pageHeights[index] || 1;
 
         this.viewer.addTiledImage({
             tileSource,
+            ...this.tileRequestOptions(tileSource),
             x : xOffset,
             y : yOffset,
             width : 1,
@@ -329,15 +507,20 @@ class OsdViewer extends HTMLElement
                     return;
                 }
                 const item = event.item;
-                item.setPosition(new OpenSeadragon.Point(xOffset, yOffset), true);
+                const currentXOffset = this.pageXOffsets[index] || 0;
+                const currentYOffset = this.pageOffsets[index] || 0;
+                const currentHeight = this.pageHeights[index] || 1;
+                item.setPosition(new OpenSeadragon.Point(currentXOffset, currentYOffset), true);
                 item.setWidth(1, true);
-                item.setHeight(height, true);
+                item.setHeight(currentHeight, true);
                 this.loadedIndexes.add(index);
                 this.loadedItems.set(index, item);
+                this.resolvePageWaiters(index, item);
                 this.addOrUpdatePageOverlay(index);
                 this.loadingIndexes.delete(index);
+                this.loadControllers.delete(index);
                 this.updateLoadingState();
-                if (!this.hasFitFirstPage)
+                if (!this.hasFitFirstPage && index === this.initialPageIndex)
                 {
                     this.hasFitFirstPage = true;
                     const viewer = this.viewer;
@@ -347,14 +530,14 @@ class OsdViewer extends HTMLElement
                     }
                     const isSingleCanvas = this.isSingleCanvasLayout();
                     const bounds = isSingleCanvas
-                        ? item.getBounds()
-                        : (this.isSpreadMode() ? this.getRowBounds(index) : item.getBounds());
+                                       ? item.getBounds()
+                                       : (this.isSpreadMode() ? this.getRowBounds(index) : item.getBounds());
                     viewer.viewport.fitBounds(bounds, true);
                     if (!isSingleCanvas)
                     {
                         viewer.viewport.zoomBy(0.95, viewer.viewport.getCenter(true), true);
                     }
-                    this.alignTopAfterFit();
+                    this.alignTopAfterFit(index);
                     viewer.viewport.applyConstraints();
                     this.isViewportInitialized = true;
                     this.lockHorizontalPan();
@@ -362,22 +545,142 @@ class OsdViewer extends HTMLElement
                     this.flushInitialPageChange();
                     this.flushInitialZoomChange();
                 }
+                this.emitCustomEvent("diva-page-loaded", {index, resourceId : this.resourceId});
                 if (this.targetIndex === index)
                 {
                     this.targetIndex = null;
                 }
                 this.maybeLoadMore();
             },
-            error : () => {
+            error : (event: any) => {
                 if (token !== this.loadToken)
                 {
                     return;
                 }
-                this.loadingIndexes.delete(index);
-                this.updateLoadingState();
+                this.markUnavailable(index, event?.message || "This image could not be loaded. Static images must allow CORS.");
+                this.finishLoad(index, controller);
                 this.maybeLoadMore();
             }
+        } as any);
+    }
+
+    private tileRequestOptions(tileSource: ResolvedTileSource): {ajaxWithCredentials?: boolean; crossOriginPolicy?: string | boolean}
+    {
+        if (!tileSource || typeof tileSource !== "object")
+        {
+            return {};
+        }
+
+        const source = tileSource as Record<string, unknown>;
+        const options: {ajaxWithCredentials?: boolean; crossOriginPolicy?: string | boolean} = {};
+        if (typeof source.ajaxWithCredentials === "boolean")
+        {
+            options.ajaxWithCredentials = source.ajaxWithCredentials;
+        }
+        if (typeof source.crossOriginPolicy === "string" || typeof source.crossOriginPolicy === "boolean")
+        {
+            options.crossOriginPolicy = source.crossOriginPolicy;
+        }
+        return options;
+    }
+
+    private finishLoad(index: number, controller: AbortController): void
+    {
+        if (this.loadControllers.get(index) !== controller)
+        {
+            return;
+        }
+        this.loadControllers.delete(index);
+        this.loadingIndexes.delete(index);
+        this.updateLoadingState();
+    }
+
+    private cancelLoads(): void
+    {
+        this.loadToken += 1;
+        this.loadControllers.forEach((controller) => controller.abort());
+        this.loadControllers.clear();
+        this.loadingIndexes.clear();
+        this.rejectPageWaiters(new DOMException("The image load was cancelled.", "AbortError"));
+        this.resetLoadingState();
+    }
+
+    private markUnavailable(index: number, message: string): void
+    {
+        this.unavailableIndexes.set(index, message);
+        this.rejectPageWaiters(new Error(message), index);
+        this.emitCustomEvent("diva-page-load-error", {index, message, resourceId : this.resourceId});
+        this.addUnavailableOverlay(index, message);
+    }
+
+    private waitForPage(index: number): Promise<any>
+    {
+        const loaded = this.loadedItems.get(index);
+        if (loaded)
+        {
+            return Promise.resolve(loaded);
+        }
+        const unavailable = this.unavailableIndexes.get(index);
+        if (unavailable)
+        {
+            return Promise.reject(new Error(unavailable));
+        }
+        return new Promise((resolve, reject) => {
+            const waiters = this.pageWaiters.get(index) ?? [];
+            waiters.push({resolve, reject});
+            this.pageWaiters.set(index, waiters);
+            this.ensurePageLoaded(index);
         });
+    }
+
+    private resolvePageWaiters(index: number, item: any): void
+    {
+        const waiters = this.pageWaiters.get(index) ?? [];
+        this.pageWaiters.delete(index);
+        waiters.forEach((waiter) => waiter.resolve(item));
+    }
+
+    private rejectPageWaiters(error: Error, index?: number): void
+    {
+        const indexes = index === undefined ? Array.from(this.pageWaiters.keys()) : [ index ];
+        indexes.forEach((waiterIndex) => {
+            const waiters = this.pageWaiters.get(waiterIndex) ?? [];
+            this.pageWaiters.delete(waiterIndex);
+            waiters.forEach((waiter) => waiter.reject(error));
+        });
+    }
+
+    private addUnavailableOverlay(index: number, message: string): void
+    {
+        if (!this.viewer)
+            return;
+        this.removeUnavailableOverlay(index);
+        const element = document.createElement("div");
+        element.className = "diva-image-unavailable";
+        element.dataset.index = String(index);
+        const text = document.createElement("p");
+        text.textContent = message;
+        const retry = document.createElement("button");
+        retry.type = "button";
+        retry.textContent = "Retry image";
+        retry.addEventListener("click", () => {
+            this.unavailableIndexes.delete(index);
+            this.removeUnavailableOverlay(index);
+            this.ensurePageLoaded(index);
+        });
+        element.append(text, retry);
+        this.viewer.addOverlay({
+            element,
+            location : new OpenSeadragon.Rect(this.pageXOffsets[index] || 0, this.pageOffsets[index] || 0, 1, this.pageHeights[index] || 1)
+        });
+    }
+
+    private removeUnavailableOverlay(index: number): void
+    {
+        const element = this.querySelector(`.diva-image-unavailable[data-index="${index}"]`);
+        if (element && this.viewer)
+            this.viewer.removeOverlay(element as HTMLElement);
+        element?.remove();
     }
 
     public setPageAspects(aspects: number[]): void
@@ -391,6 +694,10 @@ class OsdViewer extends HTMLElement
         this.buildOffsets();
         this.updateLoadedItemPositions();
         this.ensureScrollPlane();
+        if (!this.isViewportInitialized && this.targetIndex !== null)
+        {
+            this.positionInitialViewport(this.targetIndex);
+        }
         this.maybeLoadMore();
     }
 
@@ -667,6 +974,21 @@ class OsdViewer extends HTMLElement
         viewport.fitBounds(rect, true);
     }
 
+    private positionInitialViewport(index: number): void
+    {
+        const viewport = this.viewer?.viewport;
+        if (!viewport)
+        {
+            return;
+        }
+        const targetTop = this.pageOffsets[index] || 0;
+        const targetHeight = this.pageRowHeights[index] || this.pageHeights[index] || 1;
+        const top = Math.max(0, targetTop - (targetHeight * 1.5));
+        const bottom = targetTop + (targetHeight * 2.5);
+        const width = this.isSpreadMode() ? 2 : 1;
+        viewport.fitBounds(new OpenSeadragon.Rect(0, top, width, bottom - top), true);
+    }
+
     public scrollToIndex(index: number): void
     {
         if (index < 0 || index >= this.tileSources.length || index >= this.pageOffsets.length)
@@ -680,6 +1002,71 @@ class OsdViewer extends HTMLElement
         this.ensurePageLoaded(index);
         this.lastReportedIndex = index;
         this.emitCustomEvent("diva-page-change", {index});
+    }
+
+    public getVisiblePageIndexes(): number[]
+    {
+        if (this.pageOffsets.length === 0)
+        {
+            return [];
+        }
+        const index = this.lastReportedIndex ?? 0;
+        const start = this.getRowStartIndex(index);
+        const end = this.getRowEndIndex(start);
+        return Array.from({length : end - start + 1}, (_value, offset) => start + offset);
+    }
+
+    public isPageLoaded(index: number, sourceId: string): boolean
+    {
+        return this.tileSources[index]?.sourceId === sourceId && this.loadedIndexes.has(index);
+    }
+
+    public next(): void
+    {
+        const visible = this.getVisiblePageIndexes();
+        if (visible.length === 0)
+        {
+            return;
+        }
+        const nextIndex = this.getRowEndIndex(visible[0]) + 1;
+        if (nextIndex < this.tileSources.length)
+        {
+            this.scrollToIndex(nextIndex);
+        }
+    }
+
+    public previous(): void
+    {
+        const visible = this.getVisiblePageIndexes();
+        if (visible.length === 0 || visible[0] === 0)
+        {
+            return;
+        }
+        this.scrollToIndex(this.getRowStartIndex(visible[0] - 1));
+    }
+
+    public async fitToPage(index: number): Promise<void>
+    {
+        this.scrollToIndex(index);
+        const item = await this.waitForPage(index);
+        this.viewer?.viewport.fitBounds(item.getBounds(), false);
+        this.viewer?.viewport.applyConstraints();
+    }
+
+    public async zoomToRegion(index: number, region: DivaRegion, options: ZoomToRegionOptions = {}): Promise<void>
+    {
+        this.scrollToIndex(index);
+        const item = await this.waitForPage(index);
+        const padding = options.padding ?? 0.05;
+        const padded = {
+            x : region.x - (region.width * padding),
+            y : region.y - (region.height * padding),
+            width : region.width * (1 + (padding * 2)),
+            height : region.height * (1 + (padding * 2))
+        };
+        const bounds = item.imageToViewportRectangle(padded.x, padded.y, padded.width, padded.height);
+        this.viewer?.viewport.fitBounds(bounds, options.immediately === true);
+        this.viewer?.viewport.applyConstraints();
     }
 
     public setZoomLevel(zoom: number): void
@@ -981,7 +1368,7 @@ class OsdViewer extends HTMLElement
         this.emitCustomEvent("diva-zoom-change", {zoom});
     }
 
-    private alignTopAfterFit(): void
+    private alignTopAfterFit(index: number): void
     {
         if (!this.viewer)
         {
@@ -996,14 +1383,14 @@ class OsdViewer extends HTMLElement
 
         const bounds = viewport.getBounds(true);
         const topPadding = this.getTopPaddingViewport(bounds.height);
-        const minTop = -topPadding;
-        if (bounds.y <= minTop)
+        const targetTop = (this.pageOffsets[index] || 0) - topPadding;
+        if (Math.abs(bounds.y - targetTop) < 0.0005)
         {
             return;
         }
 
         const center = viewport.getCenter(true);
-        viewport.panTo(new OpenSeadragon.Point(center.x, (bounds.height / 2) + minTop), true);
+        viewport.panTo(new OpenSeadragon.Point(center.x, (bounds.height / 2) + targetTop), true);
         viewport.applyConstraints();
     }
 
@@ -1304,4 +1691,5 @@ class OsdViewer extends HTMLElement
     }
 }
 
+customElements.define("diva-lazy-image", DivaLazyImage);
 customElements.define("osd-viewer", OsdViewer);

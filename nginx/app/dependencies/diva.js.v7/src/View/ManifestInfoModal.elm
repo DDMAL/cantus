@@ -102,6 +102,9 @@ buildRows model manifest =
 
         iiifVersion =
             case version of
+                IIIFV1 ->
+                    "IIIF v1"
+
                 IIIFV2 ->
                     "IIIF v2"
 
@@ -233,7 +236,7 @@ viewHeader { fullscreen } =
             [ div
                 [ HA.class "modal-close-action" ]
                 [ viewButton
-                    { label = ""
+                    { label = "Close"
                     , icon = Icons.close
                     , onClickMsg = Just UserClickedCloseManifestInfo
                     , isFullscreen = fullscreen
