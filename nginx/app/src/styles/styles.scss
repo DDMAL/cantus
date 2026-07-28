@@ -58,8 +58,6 @@ $navbar-dark-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w
 @import "bootswatch";
 @import "sidenav";
 
-$zindex-diva-fullscreen: $zindex-modal;
-
 // Shared control grey for the manuscript viewer so the Diva toolbar/sidebar
 // buttons read as one set with the site's own controls.
 $diva-control-bg: #eee;
@@ -113,10 +111,6 @@ pre.preformatted-text {
     gap: 20px;
     padding: 10px 15px;
     border-bottom: 1px solid $border-color;
-
-    .diva-tools {
-        flex: 1;
-    }
 
     .pager a {
         display: inline-flex;
@@ -376,12 +370,10 @@ body.propagate-height {
     }
 }
 
-// Diva v7 sizes its whole UI from the #diva-wrapper mount node downward using
+// Diva sizes its whole UI from the #diva-wrapper mount node downward using
 // height:100% / flex, so the wrapper and the Elm root it mounts (.diva-app) must
-// fill the height of the diva column. The .propagate-height flex chain stretches
-// #diva-wrapper, but v6 also measured the panel height in JS as a backstop, while
-// v7 relies purely on the CSS cascade -- make that height explicit so v7's chain
-// resolves instead of collapsing the OpenSeadragon canvas. See issue #942.
+// fill the height of the diva column -- make that height explicit or Diva's flex
+// chain collapses the OpenSeadragon canvas.
 #diva-column #diva-wrapper {
     height: 100%;
 
@@ -391,14 +383,14 @@ body.propagate-height {
 }
 
 // Cantus presents the manifest attribution in its own "Manuscript info"
-// sidenav, so hide Diva v7's built-in trigger for the raw-manifest modal.
+// sidenav, so hide Diva's built-in trigger for the raw-manifest modal.
 #diva-wrapper .canvas-toolbar-item[data-tooltip="Manifest Info"] {
     display: none;
 }
 
 // ... and its requiredStatement dock at the bottom of the viewer, shown for
 // manuscripts whose manifest declares one -- same attribution, same sidenav.
-// The extra #diva-column id outweighs v7's own display:flex, which ships later
+// The extra #diva-column id outweighs Diva's own display:flex, which ships later
 // in the bundle at equal specificity.
 #diva-column #diva-wrapper .required-statement-dock {
     display: none;
@@ -413,7 +405,7 @@ body.propagate-height {
     display: none !important;
 }
 
-// Match Diva v7's toolbar and sidebar styles to the Cantus frontend.
+// Match Diva's toolbar and sidebar styles to the Cantus frontend.
 #diva-column #diva-wrapper {
     --diva-accent: #{$brand-primary};
     --diva-surface: #{$diva-control-bg};
@@ -505,81 +497,6 @@ body.propagate-height {
     &.col-resize-cursor {
         cursor: col-resize;
     }
-}
-
-.diva-tools {
-    margin-top: 0;
-    padding: 20px 15px;
-    min-height: 70px;
-    border-right: 1px solid $border-color;
-
-    .diva-button {
-        border-color: #DADADA;
-        background-color: #E7E7E7;
-        height: 30px;
-
-        &:hover {
-            border-color: #BBB;
-            background-color: #D3D3D3;
-        }
-
-        &.diva-button-text {
-            line-height: 30px;
-        }
-    }
-
-    .diva-buttons-label,
-    .diva-page-label {
-        padding: 5px 10px !important;
-        line-height: 1.5 !important;
-        margin: 0;
-    }
-
-    // Broken since Diva v6 (issue #949) and superseded by the folio label in
-    // the Cantus toolbar row.
-    .diva-page-label {
-        display: none;
-    }
-
-    .diva-goto-form,
-    .diva-input {
-        line-height: inherit;
-    }
-
-    .diva-input {
-        height: 30px;
-        border-color: #c6c6c6;
-    }
-}
-
-.diva-tools.diva-fullscreen-tools {
-    width: auto;
-    min-width: 260px;
-    height: 120px;
-    padding: 10px;
-
-    .diva-buttons-label,
-    .diva-page-label,
-    .diva-page-nav {
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-    }
-}
-
-.diva-outer {
-    border: none;
-    border-right: 1px solid $border-color;
-    min-width: 0;
-}
-
-// Integrate Diva z-index values with the Bootstrap z-index hierarchy
-.diva-outer.diva-fullscreen {
-    z-index: $zindex-diva-fullscreen;
-}
-
-.diva-popup,
-.diva-tools.diva-fullscreen-tools {
-    z-index: $zindex-diva-fullscreen + 1;
 }
 
 .search-input .form-control:focus {

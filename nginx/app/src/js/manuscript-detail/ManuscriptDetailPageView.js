@@ -1,5 +1,4 @@
 import $ from 'jquery';
-import _ from 'underscore';
 import Radio from 'backbone.radio';
 import Marionette from 'marionette';
 
@@ -81,15 +80,8 @@ export default Marionette.View.extend({
 
             divaColumn.css('width', (100 - newWidthPercentage) + '%');
             panes.css('width', newWidthPercentage + '%');
-
-            updateDivaSize(); // eslint-disable-line no-use-before-define
+            // OpenSeadragon's autoResize re-fits the viewer to the resized column.
         };
-
-        var updateDivaSize = _.throttle(function () {
-            var divaAdapter = manuscriptStateChannel.request('diva');
-            if (divaAdapter)
-                divaAdapter.resize();
-        }, 250);
 
         var stopResizing = function () {
             $window.off('mousemove', executeResize);
@@ -113,8 +105,8 @@ export default Marionette.View.extend({
         });
 
         // Add the image attribution to the model once the manifest is loaded.
-        // Keyed on the manifest event rather than viewer load because on the v7
-        // backend the manifest fetch and the viewer load race.
+        // Keyed on the manifest event rather than viewer load because the
+        // manifest fetch and the viewer load race.
         this.listenToOnce(divaView, 'loaded:manifest', function () {
             this.model.set(divaView.imageAttributionMetadata);
         });

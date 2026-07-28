@@ -26,7 +26,7 @@ export default Marionette.View.extend({
     initialize: function (options) {
         _.bindAll(this, 'propagateFolioChange', 'onViewerLoad', 'setImageURI',
             'updatePageAlias', 'gotoInputPage',
-            'getPageWhichMatchesAlias', 'onDocLoad', 'showPageSuggestions',
+            'getPageWhichMatchesAlias', 'showPageSuggestions',
             'gotoSuggestedFolio', 'onManifestLoad');
 
         // Create a debounced function to alert the site that Diva has
@@ -83,12 +83,11 @@ export default Marionette.View.extend({
         // Create the Diva adapter
         this.divaAdapter = new DivaAdapter({
             rootElementId: 'diva-wrapper',
-            manifestUrl: this.manifestUrl,
-            toolbarParentObject: this.toolbarParentObject
+            manifestUrl: this.manifestUrl
         });
-        // Initialize Diva. On the v7 backend initialize() is async (it lazily
-        // loads OpenSeadragon and the v7 bundle), so surface a load failure
-        // instead of leaving an unhandled rejection behind a blank viewer.
+        // initialize() is async (it lazily loads OpenSeadragon and the Diva
+        // bundle), so surface a load failure instead of leaving an unhandled
+        // rejection behind a blank viewer.
         Promise.resolve(this.divaAdapter.initialize()).catch(function (error) {
             console.error('Failed to initialize the Diva viewer', error); // eslint-disable-line no-console
         });
@@ -98,36 +97,7 @@ export default Marionette.View.extend({
         this.divaAdapter.on("viewer:loaded", this.onViewerLoad);
         this.divaAdapter.on("viewer:loaded", this.propagateFolioChange);
         this.divaAdapter.on("page:changed", this.propagateFolioChange);
-        this.divaAdapter.on("document:loaded", this.onDocLoad);
         this.divaAdapter.on("manifest:loaded", this.onManifestLoad);
-    },
-
-    /**
-     * Workaround for a weird Chrome bug - sometimes setting the style on the
-     * diva-inner element doesn't work. The CSS value is changed, but the width
-     * of the element itself is not. Manually re-applying the change in the Developer
-     * Console makes it work, so it doesn't seem to be a styling issue.
-     *
-     * When this happens, setting the width to a different but close value seems to work.
-     */
-    onDocLoad: function () {
-        var inner = this.ui.divaWrapper.find('.diva-inner');
-        // The v7 viewer has no .diva-inner element, so this v6-only fix is irrelevant.
-        if (!inner.length)
-            return;
-
-        var cssWidth = parseInt(inner[0].style.width, 10);
-
-        if (cssWidth && cssWidth !== inner.width()) {
-            /* eslint-disable no-console */
-            console.warn(
-                "Trying to mitigate a Diva zooming bug...\n" +
-                "If you're not using Chrome, you shouldn't be seeing this.\n" +
-                "See https://github.com/DDMAL/cantus/issues/206");
-            /* eslint-enable no-console */
-
-            inner[0].style.width = (cssWidth + 1) + 'px';
-        }
     },
 
     /**
@@ -281,9 +251,6 @@ export default Marionette.View.extend({
 
         // Store the list of filenames
         this.divaFilenames = this.divaAdapter.getAllPageURIs();
-
-        // Change initial view to document view
-        this.divaAdapter.changeView('document');
     },
 
     /**
