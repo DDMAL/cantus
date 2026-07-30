@@ -12337,7 +12337,7 @@ pre.preformatted-text {
   flex-wrap: wrap;
   align-items: center;
   gap: 20px;
-  padding: 10px 15px;
+  padding: 12px 24px;
   border-bottom: 1px solid #ddd;
 }
 #toolbar-row .pager a {
@@ -12366,6 +12366,7 @@ pre.preformatted-text {
 #toolbar-row #goto-folio-form .btn {
   height: 32px;
   min-height: 0;
+  font-size: 1rem;
 }
 #toolbar-row #goto-folio-form .btn {
   display: inline-flex;
@@ -12399,6 +12400,13 @@ pre.preformatted-text {
   padding: 5px 10px;
 }
 
+.manuscript-info-sidenav-container {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1050;
+}
 .manuscript-info-sidenav-container .sidenav {
   width: 350px;
   right: 0;
@@ -12407,17 +12415,23 @@ pre.preformatted-text {
 .manuscript-info-sidenav-container .sidenav.in {
   transform: translate(0, 0);
 }
+.manuscript-info-sidenav-container .sidenav {
+  pointer-events: auto;
+}
 
 .manuscript-info {
-  padding: 0 15px;
+  padding: 18px 15px;
 }
 .manuscript-info dl {
   margin-bottom: 0;
 }
 
-#manuscript-nav-container {
-  margin-top: -1px;
-  margin-left: -1px;
+#manuscript-data-column {
+  padding-top: 12px;
+}
+
+.tab-content {
+  padding: 12px 15px;
 }
 
 .volpiano,
@@ -12720,10 +12734,6 @@ body.propagate-height {
   margin-bottom: 15px;
 }
 
-#manuscript-search {
-  margin-top: 21px;
-}
-
 #menu-sidenav {
   color: #333;
 }
@@ -12761,7 +12771,7 @@ body.propagate-height {
 }
 
 .pager a {
-  font-size: 12px;
+  font-size: 1rem;
   font-weight: 300;
   padding-right: 1em;
   padding-left: 1em;
@@ -12773,20 +12783,27 @@ body.propagate-height {
   background-color: #eeeeee;
 }
 
-.nav-tabs.nav-justified li a {
-  background-color: #e7e7e7;
-  color: #222222;
+.nav-tabs.nav-justified {
+  border-bottom: 1px solid #ddd;
 }
-.nav-tabs.nav-justified li a .active {
-  background-color: #ffffff;
+.nav-tabs.nav-justified .nav-link {
+  padding-top: 7px;
+  padding-bottom: 8px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  background-color: transparent;
   color: #6f6f6f;
-  border: 1px solid #dddddd;
-  border-bottom-color: #ffffff;
-  cursor: default;
+  font-weight: 300;
 }
-.nav-tabs.nav-justified li a:hover:not(.active) {
-  background-color: #eeeeee;
+.nav-tabs.nav-justified .nav-link:hover:not(.active) {
   color: #c2342e;
+  border-bottom-color: rgb(238.425, 238.425, 238.425);
+}
+.nav-tabs.nav-justified .nav-link.active {
+  color: #c2342e;
+  font-weight: 400;
+  border-bottom-color: #c2342e;
 }
 
 .secondary-brand-component::before {

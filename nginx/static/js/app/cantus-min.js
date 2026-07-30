@@ -32116,8 +32116,7 @@ var DivaBackend = /*#__PURE__*/function () {
         _this.instance.addEventListener('pagechange', _this.onPageChange);
 
         // Cantus's folio label and chants panel track one folio at a
-        // time, so open single-page: a manifest that declares a two-up
-        // (paged) layout would otherwise hide each opening's second folio.
+        // time, so open single-page.
         return _this.instance.ready.then(function () {
           return _this.instance.setLayoutMode('single');
         }).then(function () {
@@ -32481,7 +32480,6 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default().ch
       var imageIndex = this.divaAdapter.getCurrentPageIndex() + 1;
       var pageAlias = 'Image ' + imageIndex;
     }
-    manuscriptChannel.trigger('set:pageAlias', pageAlias);
     var pagePosition = this.divaAdapter.getCurrentPageIndex() + 1 + ' of ' + this.divaAdapter.getAllPageURIs().length;
     this.folioLabelSpan.textContent = pageAlias + ' (' + pagePosition + ')';
   },
@@ -32712,7 +32710,6 @@ var manuscriptStateChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default
     resizer: '.resizer',
     divaColumn: "#diva-column",
     manuscriptDataColumn: '#manuscript-data-column',
-    folioDetailTab: '#manuscript-nav-folio-number',
     manuscriptInfoButton: '#manuscript-info-target button'
   },
   events: {
@@ -32825,9 +32822,6 @@ var manuscriptStateChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default
       this._updateViewport();
     });
   },
-  onAttach: function onAttach() {
-    this.listenTo(manuscriptStateChannel, 'set:pageAlias', this._updateFolioTabNumber);
-  },
   onDestroy: function onDestroy() {
     this._infoSidenav.destroy();
     this._infoSidenavParent.remove();
@@ -32883,9 +32877,6 @@ var manuscriptStateChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default
   },
   onWindowResized: function onWindowResized() {
     this._updateViewport();
-  },
-  _updateFolioTabNumber: function _updateFolioTabNumber(pageAlias) {
-    this.ui.folioDetailTab.text(pageAlias);
   }
 }));
 
@@ -33920,7 +33911,7 @@ __p+='\n<div class="alert alert-warning alert-dismissible fade show" role="alert
 ((__t=( viewer_warning ))==null?'':_.escape(__t))+
 '\n    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>\n</div>\n';
  } 
-__p+='\n<div class="manuscript-columns propagate-height">\n    <div id="diva-column" class="propagate-height"></div>\n    <div id="manuscript-data-column" class="propagate-height">\n        <div id="manuscript-nav-container">\n            <ul class="nav nav-tabs nav-justified mt-0">\n                <li class="nav-item">\n                    <a id="manuscript-nav-folio-number"\n                       class="nav-link active"\n                       data-bs-target="#manuscript-folio-pane"\n                       data-bs-toggle="tab"\n                       type="button"\n                       role="tab"\n                       aria-controls="manuscript-folio-pane"\n                       aria-selected="true"></a>\n                </li>\n                <li class="nav-item">\n                    <a class="nav-link" \n                    data-bs-target="#manuscript-search-pane" \n                    data-bs-toggle="tab" \n                    type="button" \n                    role="tab" \n                    aria-controls="manuscript-search-pane" \n                    aria-selected="false">Search Manuscript</a>\n                </li>\n            </ul>\n        </div>\n        <div id="manuscript-data-container" class="propagate-height">\n            <div class="resizer">\n                <div class="prong"></div>\n                <div class="prong"></div>\n            </div>\n            <div class="tab-content ps-2">\n                <div role="tabpanel"\n                    class="tab-pane active"\n                    id="manuscript-folio-pane">\n                    <div id="folio"></div>\n                </div>\n                <div role="tabpanel"\n                    class="tab-pane"\n                    id="manuscript-search-pane">\n                    <div id="manuscript-search"></div>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n';
+__p+='\n<div class="manuscript-columns propagate-height">\n    <div id="diva-column" class="propagate-height"></div>\n    <div id="manuscript-data-column" class="propagate-height">\n        <div id="manuscript-nav-container">\n            <ul class="nav nav-tabs nav-justified mt-0">\n                <li class="nav-item">\n                    <a class="nav-link active"\n                       data-bs-target="#manuscript-folio-pane"\n                       data-bs-toggle="tab"\n                       type="button"\n                       role="tab"\n                       aria-controls="manuscript-folio-pane"\n                       aria-selected="true">Folio Chants</a>\n                </li>\n                <li class="nav-item">\n                    <a class="nav-link" \n                    data-bs-target="#manuscript-search-pane" \n                    data-bs-toggle="tab" \n                    type="button" \n                    role="tab" \n                    aria-controls="manuscript-search-pane" \n                    aria-selected="false">Search Manuscript</a>\n                </li>\n            </ul>\n        </div>\n        <div id="manuscript-data-container" class="propagate-height">\n            <div class="resizer">\n                <div class="prong"></div>\n                <div class="prong"></div>\n            </div>\n            <div class="tab-content">\n                <div role="tabpanel"\n                    class="tab-pane active"\n                    id="manuscript-folio-pane">\n                    <div id="folio"></div>\n                </div>\n                <div role="tabpanel"\n                    class="tab-pane"\n                    id="manuscript-search-pane">\n                    <div id="manuscript-search"></div>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n';
 }
 return __p;
 };

@@ -109,7 +109,7 @@ pre.preformatted-text {
     flex-wrap: wrap;
     align-items: center;
     gap: 20px;
-    padding: 10px 15px;
+    padding: 12px 24px;
     border-bottom: 1px solid $border-color;
 
     .pager a {
@@ -141,6 +141,7 @@ pre.preformatted-text {
         .btn {
             height: 32px;
             min-height: 0;
+            font-size: 1rem;
         }
 
         .btn {
@@ -185,22 +186,38 @@ pre.preformatted-text {
     }
 }
 
-.manuscript-info-sidenav-container .sidenav {
-    @include sidenav-size($width: 350px, $position: right);
+// Clip the off-canvas panel to the viewport so parking it past the right
+// edge doesn't extend the page's scroll width.
+.manuscript-info-sidenav-container {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: $zindex-modal-backdrop;
+
+    .sidenav {
+        @include sidenav-size($width: 350px, $position: right);
+        pointer-events: auto;
+    }
 }
 
 .manuscript-info {
-    padding: 0 15px;
+    padding: 18px 15px;
 
     dl {
         margin-bottom: 0;
     }
 }
 
-#manuscript-nav-container {
-    // Subtract 1px from margins so that the borders are flush with the container's
-    margin-top: -1px;
-    margin-left: -1px;
+// Diva insets its own UI (.diva-app padding), so match that on the data
+// column to line the tabs up with the top of the viewer.
+#manuscript-data-column {
+    padding-top: 12px;
+}
+
+// Give the folio and search panels breathing room inside the tab body.
+.tab-content {
+    padding: 12px 15px;
 }
 
 .volpiano,
@@ -541,10 +558,6 @@ body.propagate-height {
     margin-bottom: 15px;
 }
 
-#manuscript-search {
-    margin-top: 21px;
-}
-
 #menu-sidenav {
     color: #333;
 
@@ -593,7 +606,7 @@ body.propagate-height {
 
 .pager {
     a {
-        font-size: 12px;
+        font-size: 1rem;
         font-weight: 300;
         padding-right: 1em;
         padding-left: 1em;
@@ -608,22 +621,27 @@ body.propagate-height {
 }
 
 .nav-tabs.nav-justified {
-    li a {
-        background-color: #e7e7e7;
-        color: #222222;
+    border-bottom: 1px solid $border-color;
 
-        .active {
-            background-color: #ffffff;
-            color: #6f6f6f;
-            border: 1px solid #dddddd;
-            border-bottom-color: #ffffff;
-            cursor: default;
-
-        }
+    .nav-link {
+        padding-top: 7px;
+        padding-bottom: 8px;
+        border: 0;
+        border-bottom: 1px solid transparent;
+        border-radius: 0;
+        background-color: transparent;
+        color: $gray;
+        font-weight: $body-font-weight;
 
         &:hover:not(.active) {
-            background-color: #eeeeee;
             color: $brand-primary;
+            border-bottom-color: $gray-lighter;
+        }
+
+        &.active {
+            color: $brand-primary;
+            font-weight: 400;
+            border-bottom-color: $brand-primary;
         }
     }
 }

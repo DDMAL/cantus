@@ -114,7 +114,6 @@ export default Marionette.View.extend({
             let imageIndex = this.divaAdapter.getCurrentPageIndex() + 1;
             var pageAlias = 'Image ' + imageIndex;
         }
-        manuscriptChannel.trigger('set:pageAlias', pageAlias);
 
         var pagePosition = (this.divaAdapter.getCurrentPageIndex() + 1) + ' of ' + this.divaAdapter.getAllPageURIs().length;
         this.folioLabelSpan.textContent = pageAlias + ' (' + pagePosition + ')';

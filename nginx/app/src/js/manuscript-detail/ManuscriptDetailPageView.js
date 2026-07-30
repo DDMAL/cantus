@@ -42,7 +42,6 @@ export default Marionette.View.extend({
         resizer: '.resizer',
         divaColumn: "#diva-column",
         manuscriptDataColumn: '#manuscript-data-column',
-        folioDetailTab: '#manuscript-nav-folio-number',
         manuscriptInfoButton: '#manuscript-info-target button'
     },
 
@@ -168,10 +167,6 @@ export default Marionette.View.extend({
         });
     },
 
-    onAttach: function () {
-        this.listenTo(manuscriptStateChannel, 'set:pageAlias', this._updateFolioTabNumber);
-    },
-
     onDestroy() {
         this._infoSidenav.destroy();
         this._infoSidenavParent.remove();
@@ -234,10 +229,6 @@ export default Marionette.View.extend({
 
     onWindowResized: function () {
         this._updateViewport();
-    },
-
-    _updateFolioTabNumber: function (pageAlias) {
-        this.ui.folioDetailTab.text(pageAlias);
     }
 });
 
