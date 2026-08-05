@@ -156,6 +156,17 @@ export default Marionette.View.extend({
             var pageAlias = 'Image ' + imageIndex;
         }
         manuscriptChannel.trigger('set:pageAlias', pageAlias);
+
+        // Diva's own page-label span (.diva-page-label's first child) is
+        // repopulated by Diva itself on every page change, independently of
+        // this custom label. _customizeToolbar only clears it once at setup,
+        // so it must be re-cleared here on every update or it reappears
+        // alongside (before) our custom label on subsequent navigation.
+        var pageLabel = this.toolbarParentObject.find('.diva-page-label')[0];
+        if (pageLabel && pageLabel.firstChild) {
+            pageLabel.firstChild.textContent = '';
+        }
+
         this.folioNumberSpan.textContent = pageAlias;
     },
 
@@ -164,19 +175,15 @@ export default Marionette.View.extend({
      */
     gotoInputPage: function (event) {
         event.preventDefault();
-        // If the form was explicitly submitted by the user (eg. by clicking "Go"
-        // or pressing the Enter key), we take the first suggestion as the page
-        // destination. If the form was triggered by the user clicking a page
-        // suggestion, we take the clicked suggestion as the destination (this is already
-        // set in the Diva default handler for a "mousedown" event).
-        if (event.originalEvent) {
-            var inputSuggestions = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'input-suggestions');
-            var pageInput = $('.diva-input-suggestion:first', inputSuggestions);
-            var pageAlias = pageInput.text();
-        } else {
-            var pageInput = $(this.divaInstance.getInstanceSelector() + 'goto-page-input').get(0);
-            var pageAlias = pageInput.value
-        }
+        // Always read the input's current value directly. Diva's own suggestion
+        // click handler sets this value before dispatching the submit event, so
+        // this is correct whether the user typed and submitted directly or
+        // clicked a suggestion. (Previously this branched on event.originalEvent
+        // to instead use the first rendered suggestion on direct submission, but
+        // the un-debounced, unordered suggestion requests race with typing and
+        // can leave stale or empty suggestions in place at submit time.)
+        var pageInput = $(this.divaInstance.getInstanceSelector() + 'goto-page-input').get(0);
+        var pageAlias = pageInput.value;
 
         if (!pageAlias)
             return;
