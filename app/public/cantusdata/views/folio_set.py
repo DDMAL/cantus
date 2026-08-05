@@ -53,7 +53,10 @@ class ManuscriptFolioSetView(APIView):
         # If a query parameter is passed, return suggested folios
         # for navigation.
         if "q" in request.GET:
-            query_str = request.GET["q"]
+            # Folio numbers are displayed to users with leading zeros (eg. "0056"),
+            # so strip any the user typed to match number_wo_lead_zero, which never
+            # has them.
+            query_str = request.GET["q"].lstrip("0")
             # Query for suggested folio numbers should return folios associated with
             # the manuscript that have the form:
             # [some number of leading zeros][the user-entered string][wildcard of characters].
