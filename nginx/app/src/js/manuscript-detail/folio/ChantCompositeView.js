@@ -20,7 +20,7 @@ export default Marionette.CollectionView.extend({
         'sync reset': 'collectionLoad'
     },
 
-    childEvents: {
+    childViewEvents: {
         'fold:chant': 'chantFolded',
         'unfold:chant': 'chantUnfolded'
     },

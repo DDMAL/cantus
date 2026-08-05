@@ -8,7 +8,11 @@ import childTemplate from './neume-gallery-item.template.html';
 export default Marionette.CollectionView.extend({
     template,
 
-    onChildviewExemplarClicked: function (view) {
+    childViewEvents: {
+        'exemplar:clicked': 'onExemplarClicked'
+    },
+
+    onExemplarClicked: function (view) {
         this.trigger('use:neume', view.model.get('name'));
     },
 
