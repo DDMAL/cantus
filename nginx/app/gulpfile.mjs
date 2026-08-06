@@ -14,6 +14,7 @@ import { deleteSync } from 'del';
 import path from 'path';
 import webpackConfig from './webpack.config.js';
 import * as dartSass from 'sass';
+import fs from 'fs';
 
 const sass = gulpSass(dartSass);
 
@@ -44,7 +45,6 @@ var getWebpackCompiler = (function () {
 
 gulp.task('lint:js', function () {
     return lintJS()
-        .pipe(jscs.reporter('fail'))
         .pipe(eslint.failAfterError());
 });
 
@@ -102,10 +102,40 @@ gulp.task('build:js', gulp.series('clean:js', 'bundle:js'), function (cb) {
  */
 
 
+// Derive a #diva-wrapper-scoped copy of Diva v7's stylesheet from the vendored
+// source at build time. Diva v7 injects this CSS globally and its
+// generic class names (.modal, .status, .thumbs, ...) collide with Bootstrap/
+// Cantus; v7 renders its whole UI inside #diva-wrapper, so scoping it there
+// isolates it (DivaBackendV7 suppresses v7's own global injection). Generating
+// from the vendored files keeps this in sync automatically on a Diva upgrade --
+// there is no committed scoped copy to regenerate by hand.
+var DIVA7_STYLE_DIR = './dependencies/diva.js.v7/src/styles/';
+// Concatenation order matches Diva v7's own scripts/minify-css.mjs.
+var DIVA7_STYLE_FILES = ['theme', 'app', 'sidebar', 'toolbar', 'modal', 'collection'];
+
+function generateScopedDiva7Css() {
+    var body = DIVA7_STYLE_FILES
+        .map(function (name) {
+            return fs.readFileSync(path.join(DIVA7_STYLE_DIR, name + '.css'), 'utf8');
+        })
+        .join('\n')
+        // v7 declares its design tokens on :root; rebind them to the wrapper so
+        // var(--diva-*) still resolves once everything is nested under it.
+        .replace(/:root/g, '&');
+
+    var compiled = dartSass.compileString('#diva-wrapper {\n' + body + '\n}\n').css;
+
+    fs.mkdirSync('./.tmp', { recursive: true });
+    var outPath = './.tmp/diva7-viewer.css';
+    fs.writeFileSync(outPath, compiled);
+    return outPath;
+}
+
 gulp.task('bundle:css', function () {
     var sources = [
         './src/styles/styles.scss',
-        './dependencies/diva.js/build/diva.css'
+        './dependencies/diva.js/build/diva.css',
+        generateScopedDiva7Css()
     ];
 
     var isScssFile = /\.scss$/;
@@ -163,12 +193,14 @@ function logWatchedChange(ev) {
 }
 
 function lintJS() {
-    var testEslintConfig = {
-        configFile: 'public/js/.eslintrc.test.json'
-    };
+    var lintSources = sources.buildJS.slice();
 
-    return gulp.src(sources.buildJS.concat('public/js/**/*.js'))
-        .pipe(gulpif((/\.spec\.js$/), eslint(testEslintConfig), eslint()))
+    if (fs.existsSync('public/js')) {
+        lintSources.push('public/js/**/*.js');
+    }
+
+    return gulp.src(lintSources)
+        .pipe(eslint({ configType: 'eslintrc' }))
         .pipe(eslint.format());
 }
 

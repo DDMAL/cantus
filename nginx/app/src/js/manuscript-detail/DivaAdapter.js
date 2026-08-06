@@ -1,170 +1,109 @@
-import "diva";
+import GlobalVars from '../config/GlobalVars';
 
-const diva = window.Diva;
+import DivaBackendV6 from './DivaBackendV6';
+import DivaBackendV7 from './DivaBackendV7';
 
-// Backend-neutral event names mapped to the underlying Diva v6 topics,
-// so callers depend on the adapter's vocabulary rather than Diva's own.
-const EVENT_TOPICS = {
-    "viewer:loaded": "ViewerDidLoad",
-    "page:changed": "VisiblePageDidChange",
-    "document:loaded": "DocumentDidLoad",
-    "manifest:loaded": "ManifestDidLoad"
-};
+/**
+ * Pick the Diva backend. A `divaBackend` localStorage entry ("v6"|"v7")
+ * overrides the GlobalVars.divaBackend default, for local A/B testing without a
+ * rebuild: localStorage.setItem("divaBackend", "v7") and reload (removeItem to
+ * revert).
+ */
+function selectBackend() {
+    var requested;
+    try {
+        requested = window.localStorage.getItem('divaBackend');
+    } catch (e) {
+        // localStorage may be unavailable (e.g. disabled); fall back to the default.
+    }
 
+    if (requested === 'v6' || requested === 'v7')
+        return requested;
+
+    return GlobalVars.divaBackend === 'v7' ? 'v7' : 'v6';
+}
+
+/**
+ * Facade owning 100% of the Cantus-to-Diva surface (issue #942). It delegates
+ * to one of two interchangeable backends, constructed synchronously in
+ * initialize() (so `this.backend` is set before any other method runs):
+ *
+ *  - DivaBackendV6: the behaviour-preserving v6 implementation.
+ *  - DivaBackendV7: the v7 implementation. Both backend classes are imported
+ *    statically, but the heavy v7 bundle + OpenSeadragon load lazily from inside
+ *    DivaBackendV7.initialize(), so they never touch the v6 path. (Both bundles
+ *    define window.Diva, so only one can be the active global -- hence v7's
+ *    bundle loads on demand only.)
+ */
 export default class DivaAdapter {
     constructor(options) {
-        this.rootElementId = options.rootElementId;
-        this.manifestUrl = options.manifestUrl;
-        this.toolbarParentObject = options.toolbarParentObject;
-
-        this.instance = null;
-        this.eventHandles = [];
+        this.options = options;
+        this.backend = null;
     }
 
     initialize() {
-        var options = {
-            toolbarParentObject: this.toolbarParentObject[0],
+        var backendName = selectBackend();
+        // Surface the active backend so it can be confirmed from the browser
+        // console during the v6 -> v7 A/B testing (issue #942).
+        console.info('[Diva] using ' + backendName + ' backend'); // eslint-disable-line no-console
 
-            enableAutoTitle: false,
-            enableFilename: false,
-            enableImageTitles: false,
-
-            fixedHeightGrid: true,
-
-            enableKeyScroll: false,
-            enableSpaceScroll: false,
-
-            objectData: '/manifest-proxy/' + this.manifestUrl,
-
-            blockMobileMove: false
-        };
-        this.instance = new diva(this.rootElementId, options);
-
-        // Rebind drag-to-pan here once the viewer exists.
-        this.on("viewer:loaded", () => {
-            if (window.resetDragscroll)
-                window.resetDragscroll();
-        });
+        var Backend = backendName === 'v7' ? DivaBackendV7 : DivaBackendV6;
+        this.backend = new Backend(this.options);
+        return this.backend.initialize();
     }
 
-    /**
-     * Subscribe to an adapter event, registering it for automatic deregistration
-     * @param event one of the keys in EVENT_TOPICS
-     * @param callback for 'page:changed', invoked with a normalized
-     *                 { index, imageURI }; for other events, invoked with Diva's
-     *                 original arguments unchanged (e.g. 'manifest:loaded'
-     *                 receives the manifest)
-     */
     on(event, callback) {
-        var handler = callback;
-        // Normalize the page-change payload to a backend-neutral shape rather
-        // than leaking Diva's raw arguments to callers.
-        if (event === "page:changed")
-            handler = () => callback({
-                index: this.instance.getActivePageIndex(),
-                imageURI: this.instance.getCurrentPageURI()
-            });
-        this.eventHandles.push(diva.Events.subscribe(EVENT_TOPICS[event], handler));
+        return this.backend.on(event, callback);
     }
 
     resize() {
-        // NOTE: the v6 viewer subscribes to this scoped to its instance, but
-        // publishing *with* the instance throws (the scoped updatePanelSize
-        // subscriber calls methods the public instance does not expose). The
-        // unscoped publish reaches no subscriber and is effectively a no-op;
-        // resize is handled natively (OSD ResizeObserver) once on v7.
-        diva.Events.publish("PanelSizeDidChange");
+        return this.backend.resize();
     }
 
     gotoPageByURI(uri) {
-        return this.instance.gotoPageByURI(uri);
+        return this.backend.gotoPageByURI(uri);
     }
 
     getCurrentPageURI() {
-        return this.instance.getCurrentPageURI();
+        return this.backend.getCurrentPageURI();
     }
 
     getAllPageURIs() {
-        return this.instance.getAllPageURIs();
+        return this.backend.getAllPageURIs();
     }
 
     getCurrentPageIndex() {
-        return this.instance.getActivePageIndex();
+        return this.backend.getCurrentPageIndex();
     }
 
     goToNextPage() {
-        // Advance a whole opening (two pages) in book view, otherwise one.
-        var step = this.instance.getState().v === 'b' ? 2 : 1;
-        this.instance.gotoPageByIndex(this.instance.getActivePageIndex() + step);
+        return this.backend.goToNextPage();
     }
 
     goToPreviousPage() {
-        var step = this.instance.getState().v === 'b' ? 2 : 1;
-        this.instance.gotoPageByIndex(this.instance.getActivePageIndex() - step);
+        return this.backend.goToPreviousPage();
     }
 
     changeView(view) {
-        return this.instance.changeView(view);
+        return this.backend.changeView(view);
     }
 
     getInstanceSelector() {
-        return this.instance.getInstanceSelector();
+        return this.backend.getInstanceSelector();
     }
 
-    /**
-     * Display OMR highlight regions, clearing them when passed an empty array.
-     *
-     * NOTE: the v6 highlight plugin was removed during the v5 -> v6 upgrade, so
-     * this is currently a no-op. Kept as the stable entry point for when
-     * highlighting is reintroduced on v7.
-     */
-    setHighlights(regions) { // eslint-disable-line no-unused-vars
-        // No-op: highlight rendering is not currently supported.
+    setHighlights(regions) {
+        return this.backend.setHighlights(regions);
     }
 
-    /**
-     * Scroll the viewer so that a region of a page is roughly centred. The
-     * region coordinates are in Diva's max-zoom pixel space.
-     *
-     * @param region { imageURI, x, y, width, height }
-     *
-     * NOTE: this scrolls rather than zooming and does not translate the region
-     * width/height; both are to be addressed when reimplemented on the v7 viewport.
-     */
     focusRegion(region) {
-        if (!this.instance || !region)
-            return;
-
-        // Wait for the viewer to be ready before scrolling
-        if (!this.instance.isReady()) {
-            this.on("viewer:loaded", () => this.focusRegion(region));
-            return;
-        }
-
-        var outer = this.instance.getSettings().outerObject;
-
-        // Jump to the page the region is on
-        var desiredPage = this.instance.getAllPageURIs().indexOf(region.imageURI);
-        this.instance.gotoPageByIndex(desiredPage);
-
-        // Vertical scroll to centre the region
-        var regionTop = this.instance.translateFromMaxZoomLevel(region.y);
-        var currentScrollTop = parseInt(outer.scrollTop(), 10);
-        outer.scrollTop(regionTop + currentScrollTop - (outer.height() / 2) + (region.height / 2));
-
-        // Horizontal scroll to centre the region
-        var regionLeft = this.instance.translateFromMaxZoomLevel(region.x);
-        outer.scrollLeft(regionLeft - (outer.width() / 2) + (region.width / 2));
+        return this.backend.focusRegion(region);
     }
 
     destroy() {
-        if (this.instance)
-            this.instance.destroy();
-
-        this.instance = null;
-
-        this.eventHandles.forEach(handle => diva.Events.unsubscribe(handle));
-
-        this.eventHandles.splice(0, this.eventHandles.length);
+        if (this.backend) {
+            this.backend.destroy();
+            this.backend = null;
+        }
     }
 }
