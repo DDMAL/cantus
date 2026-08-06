@@ -39,6 +39,13 @@ function loadOpenSeadragon() {
         });
 }
 
+// OMR result focus: Diva's zoomToRegion padding is a fraction of the region, so
+// one value can't frame both small and large boxes. Instead frame each result to
+// span at least this fraction of the page, so results of any size zoom alike.
+const OMR_MIN_VIEW_FRACTION = 0.4;
+// Padding kept around a region already larger than that minimum span.
+const OMR_MIN_ZOOM_PADDING = 2;
+
 /**
  * Diva backend for DivaAdapter. Lazily loads OpenSeadragon and the vendored Diva
  * bundle, mounts the viewer, and adapts Diva's public API to the adapter's
@@ -223,12 +230,22 @@ export default class DivaBackend {
         if (index < 0)
             return;
 
+        var page = this.instance.getPages()[index];
+        // pageSpan is 0 when the manifest omits page dimensions; the max() below
+        // then falls back to OMR_MIN_ZOOM_PADDING.
+        var pageSpan = Math.max(page.width || 0, page.height || 0);
+        var boxSpan = Math.max(region.width, region.height);
+        var padding = Math.max(
+            OMR_MIN_ZOOM_PADDING,
+            (pageSpan * OMR_MIN_VIEW_FRACTION / boxSpan - 1) / 2
+        );
+
         this.instance.zoomToRegion(index, {
             x: region.x,
             y: region.y,
             width: region.width,
             height: region.height
-        });
+        }, { padding: padding });
     }
 
     destroy() {

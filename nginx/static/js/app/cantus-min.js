@@ -32051,6 +32051,13 @@ function loadOpenSeadragon() {
   });
 }
 
+// OMR result focus: Diva's zoomToRegion padding is a fraction of the region, so
+// one value can't frame both small and large boxes. Instead frame each result to
+// span at least this fraction of the page, so results of any size zoom alike.
+var OMR_MIN_VIEW_FRACTION = 0.4;
+// Padding kept around a region already larger than that minimum span.
+var OMR_MIN_ZOOM_PADDING = 2;
+
 /**
  * Diva backend for DivaAdapter. Lazily loads OpenSeadragon and the vendored Diva
  * bundle, mounts the viewer, and adapts Diva's public API to the adapter's
@@ -32248,11 +32255,19 @@ var DivaBackend = /*#__PURE__*/function () {
       }
       var index = this.pageURIs.indexOf(region.imageURI);
       if (index < 0) return;
+      var page = this.instance.getPages()[index];
+      // pageSpan is 0 when the manifest omits page dimensions; the max() below
+      // then falls back to OMR_MIN_ZOOM_PADDING.
+      var pageSpan = Math.max(page.width || 0, page.height || 0);
+      var boxSpan = Math.max(region.width, region.height);
+      var padding = Math.max(OMR_MIN_ZOOM_PADDING, (pageSpan * OMR_MIN_VIEW_FRACTION / boxSpan - 1) / 2);
       this.instance.zoomToRegion(index, {
         x: region.x,
         y: region.y,
         width: region.width,
         height: region.height
+      }, {
+        padding: padding
       });
     }
   }, {
@@ -32974,7 +32989,7 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_0___default().ch
   collectionEvents: {
     'sync reset': 'collectionLoad'
   },
-  childEvents: {
+  childViewEvents: {
     'fold:chant': 'chantFolded',
     'unfold:chant': 'chantUnfolded'
   },
@@ -33158,13 +33173,13 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default().ch
    * Trigger a fold event when the chant is collapsed by Bootstrap
    */
   _triggerFoldChant: function _triggerFoldChant() {
-    this.trigger('fold:chant');
+    this.trigger('fold:chant', this);
   },
   /**
    * Trigger a unfold event when the chant is expanded by Bootstrap
    */
   _triggerUnfoldChant: function _triggerUnfoldChant() {
-    this.trigger('unfold:chant');
+    this.trigger('unfold:chant', this);
   },
   /**
    * Trigger an event to stop any audio that is playing
@@ -36431,7 +36446,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (marionette__WEBPACK_IMPORTED_MODULE_1___default().CollectionView.extend({
   template: (_neume_gallery_list_template_html__WEBPACK_IMPORTED_MODULE_3___default()),
-  onChildviewExemplarClicked: function onChildviewExemplarClicked(view) {
+  childViewEvents: {
+    'exemplar:clicked': 'onExemplarClicked'
+  },
+  onExemplarClicked: function onExemplarClicked(view) {
     this.trigger('use:neume', view.model.get('name'));
   },
   childViewContainer: '.child-container',
@@ -36711,7 +36729,7 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default().ch
   events: {
     'click .result-target': function click_ResultTarget(event) {
       event.preventDefault();
-      this.trigger('showResult');
+      this.trigger('showResult', this.model);
     }
   },
   initialize: function initialize() {
@@ -36803,10 +36821,8 @@ __webpack_require__.r(__webpack_exports__);
     tableWrapper: '.result-table-wrapper',
     table: 'table'
   },
-  childEvents: function childEvents() {
-    return {
-      showResult: this.triggerZoomToResult
-    };
+  childViewEvents: {
+    showResult: 'triggerZoomToResult'
   },
   initialize: function initialize() {
     this._handleScroll = underscore__WEBPACK_IMPORTED_MODULE_0__["default"].throttle(underscore__WEBPACK_IMPORTED_MODULE_0__["default"].bind(this._loadResultsIfAtEnd, this), 250);
@@ -36821,8 +36837,8 @@ __webpack_require__.r(__webpack_exports__);
   handleRequest: function handleRequest() {
     this.ui.tableWrapper.hide();
   },
-  triggerZoomToResult: function triggerZoomToResult(view) {
-    this.trigger('zoomToResult', view.model);
+  triggerZoomToResult: function triggerZoomToResult(model) {
+    this.trigger('zoomToResult', model);
   },
   onRender: function onRender() {
     this.updateTable();
