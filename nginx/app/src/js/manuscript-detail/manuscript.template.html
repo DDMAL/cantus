@@ -1,5 +1,15 @@
 <div id="toolbar-row">
     <div class="toolbar-things"></div>
+    <span id="current-folio-label"></span>
+    <div id="manuscript-folio-advancer-container"></div>
+    <form id="goto-folio-form" autocomplete="off">
+        <input id="goto-folio-input" type="text" class="form-control form-control-sm" placeholder="Go to folio">
+        <button type="submit" class="btn btn-secondary btn-sm">Go</button>
+        <div id="goto-folio-suggestions"></div>
+    </form>
+    <div id="manuscript-info-target">
+        <button type="button" class="btn btn-link btn-sm">Manuscript info</button>
+    </div>
 </div>
 <% if (viewer_warning) { %>
 <div class="alert alert-warning alert-dismissible fade show" role="alert" style="margin: 1rem; margin-bottom: 0;">
@@ -10,7 +20,6 @@
 <div class="manuscript-columns propagate-height">
     <div id="diva-column" class="propagate-height"></div>
     <div id="manuscript-data-column" class="propagate-height">
-        <div id="manuscript-folio-advancer-container"></div>
         <div id="manuscript-nav-container">
             <ul class="nav nav-tabs nav-justified mt-0">
                 <li class="nav-item">

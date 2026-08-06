@@ -27962,7 +27962,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  siteUrl: "/"
+  siteUrl: "/",
+  // Default Diva viewer backend ("v6" | "v7") for the v6 -> v7 migration
+  // (issue #942). Override locally with
+  // localStorage.setItem("divaBackend", "v7") and reload; see DivaAdapter.js.
+  divaBackend: "v6"
 });
 
 /***/ },

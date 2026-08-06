@@ -7,7 +7,7 @@
   flex-direction: column;
   min-height: 0;
   border: 1px solid var(--diva-dark-border);
-  border-radius: 0 6px 6px 0;
+  border-radius: 0;
   background-color: var(--diva-page-bg);
   overflow: hidden;
 }
@@ -23,7 +23,7 @@
 .sidebar-tabs {
   display: flex;
   border: 1px solid var(--diva-surface);
-  border-radius: 0 6px 0 0;
+  border-radius: 0;
   background-color: var(--diva-surface);
 }
 
@@ -109,7 +109,19 @@
   display: block;
   width: 100%;
   height: auto;
-  border-radius: 3px;
+  border-radius: 0;
+}
+
+.thumbs-lazy-image {
+  display: block;
+  width: 100%;
+  min-height: 96px;
+  background: var(--diva-dark-bg);
+}
+
+.thumbs-image--protected {
+  min-height: 96px;
+  background: var(--diva-dark-bg);
 }
 
 .thumbs-label {
@@ -145,7 +157,7 @@
 .contents-view-button {
   background-color: var(--diva-surface);
   border: 1px solid var(--diva-border);
-  border-radius: 6px;
+  border-radius: 0;
   padding: 4px 10px;
   font-size: var(--diva-font-sm);
   color: var(--diva-text-muted);
@@ -159,7 +171,9 @@
 }
 
 .contents-list-nested {
-  padding-left: 16px;
+  border-left: 1px solid var(--diva-border);
+  margin-left: 6px;
+  padding-left: 13px;
   margin-top: 6px;
 }
 
@@ -167,21 +181,62 @@
   margin-bottom: 6px;
 }
 
+.contents-heading {
+  display: flex;
+  align-items: baseline;
+}
+
+.contents-disclosure {
+  flex: 0 0 1.25rem;
+  color: var(--diva-text-muted);
+  cursor: pointer;
+  text-align: center;
+}
+
+.contents-disclosure:hover {
+  color: var(--diva-accent);
+}
+
 .contents-meta {
   border: 1px solid var(--diva-dark-border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   padding: 8px;
   margin-top: 6px;
+}
+
+.contents-meta dl > div + div {
+  border-top: 1px solid var(--diva-dark-border);
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+}
+
+.contents-meta dt {
+  font-weight: 600;
+}
+
+.contents-meta dd {
+  margin: 0 0 0.5rem 1rem;
+}
+
+.contents-meta dd:last-child {
+  margin-bottom: 0;
 }
 
 .contents-button:hover {
   color: var(--diva-accent);
 }
 
+.contents-button.is-current {
+  font-weight: 600;
+}
+
 @media (max-width: 720px) {
   .sidebar-panel {
     width: 100% !important;
     height: auto;
-    border-radius: 6px;
+    border-radius: 0;
   }
 
   .sidebar-panel.is-overlay {

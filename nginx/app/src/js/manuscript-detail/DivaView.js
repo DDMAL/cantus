@@ -27,7 +27,7 @@ export default Marionette.View.extend({
         _.bindAll(this, 'propagateFolioChange', 'onViewerLoad', 'setImageURI',
             'updatePageAlias', 'gotoInputPage',
             'getPageWhichMatchesAlias', 'onDocLoad', 'showPageSuggestions',
-            'onManifestLoad');
+            'gotoSuggestedFolio', 'onManifestLoad');
 
         // Create a debounced function to alert the site that Diva has
         // changed the folio
@@ -39,9 +39,29 @@ export default Marionette.View.extend({
         this.listenTo(manuscriptChannel, 'folioLoaded', this.updatePageAlias);
 
         this.toolbarParentObject = this.options.toolbarParentObject;
+        this._bindFolioNavigation();
 
         // TODO(wabain): get this from the manuscript channel for consistency
         this.manifestUrl = options.manifestUrl;
+    },
+
+    /**
+     * Bind the folio label and the goto-folio form in the Cantus toolbar row.
+     * They are rendered by the parent view's template, outside this view's own
+     * element, so they exist before the viewer loads and are independent of
+     * the Diva backend in use.
+     */
+    _bindFolioNavigation: function () {
+        this.folioLabelSpan = this.toolbarParentObject.find('#current-folio-label')[0];
+        this.gotoFolioInput = this.toolbarParentObject.find('#goto-folio-input');
+        this.gotoFolioSuggestions = this.toolbarParentObject.find('#goto-folio-suggestions');
+
+        this.toolbarParentObject.find('#goto-folio-form').on('submit', this.gotoInputPage);
+        this.gotoFolioInput.on('input focus', this.showPageSuggestions);
+        // A clicked suggestion still navigates before this hides the list,
+        // because its mousedown handler runs before the input loses focus.
+        this.gotoFolioInput.on('blur', () => this.gotoFolioSuggestions.hide());
+        this.gotoFolioSuggestions.on('mousedown', '.goto-folio-suggestion', this.gotoSuggestedFolio);
     },
 
     onBeforeDestroy: function () {
@@ -111,7 +131,7 @@ export default Marionette.View.extend({
     },
 
     /**
-     * Update Diva's page index to show the folio name
+     * Update the folio label in the Cantus toolbar row, e.g. "Folio 006v (3 of 500)"
      */
     updatePageAlias: function () {
         let folioNumber = manuscriptChannel.request('folio');
@@ -125,68 +145,75 @@ export default Marionette.View.extend({
             var pageAlias = 'Image ' + imageIndex;
         }
         manuscriptChannel.trigger('set:pageAlias', pageAlias);
-        // The folio label span only exists in the v6 toolbar; on v7 the alias
-        // will reach the right-panel tab via set:pageAlias above.
-        if (this.folioNumberSpan)
-            this.folioNumberSpan.textContent = pageAlias;
+
+        var pagePosition = (this.divaAdapter.getCurrentPageIndex() + 1) + ' of ' + this.divaAdapter.getAllPageURIs().length;
+        this.folioLabelSpan.textContent = pageAlias + ' (' + pagePosition + ')';
     },
 
     /**
-     * Replacement callback for the Diva page input submission
+     * Handle a goto-folio form submission. The first suggestion is taken as
+     * the destination, falling back to the typed value when there is none.
      */
     gotoInputPage: function (event) {
         event.preventDefault();
-        // If the form was explicitly submitted by the user (eg. by clicking "Go"
-        // or pressing the Enter key), we take the first suggestion as the page
-        // destination. If the form was triggered by the user clicking a page
-        // suggestion, we take the clicked suggestion as the destination (this is already
-        // set in the Diva default handler for a "mousedown" event).
-        if (event.originalEvent) {
-            var inputSuggestions = this.toolbarParentObject.find(this.divaAdapter.getInstanceSelector() + 'input-suggestions');
-            var pageInput = $('.diva-input-suggestion:first', inputSuggestions);
-            var pageAlias = pageInput.text();
-        } else {
-            var pageInput = $(this.divaAdapter.getInstanceSelector() + 'goto-page-input').get(0);
-            var pageAlias = pageInput.value
-        }
 
+        var firstSuggestion = this.gotoFolioSuggestions.children().first().text();
+        this.gotoFolioSuggestions.hide();
+
+        this._gotoFolioAlias(firstSuggestion || this.gotoFolioInput.val());
+    },
+
+    /**
+     * Navigate to a clicked page suggestion. Bound to mousedown so it runs
+     * before the input's blur hides the suggestion list.
+     */
+    gotoSuggestedFolio: function (event) {
+        var pageAlias = event.currentTarget.textContent;
+
+        this.gotoFolioInput.val(pageAlias);
+        this.gotoFolioSuggestions.hide();
+
+        this._gotoFolioAlias(pageAlias);
+    },
+
+    /**
+     * Jump the viewer to the folio with the given alias, alerting the user if
+     * it does not resolve to a page.
+     */
+    _gotoFolioAlias: function (pageAlias) {
         if (!pageAlias)
             return;
 
         this.getPageWhichMatchesAlias(pageAlias).done(_.bind(function (page) {
             this.divaAdapter.gotoPageByURI(page);
-
         }, this)).fail(function () {
             alert("Invalid page number");
         });
     },
+
     /**
-     * 
-     * Replacement callback for the Diva page input search suggestions.
+     * Show suggestions under the goto-folio input while the user is typing.
      * Suggestions are taken from folio numbers in solr/Django db rather
      * than the IIIF manifest.
      */
-
-    showPageSuggestions: function showPageSuggestions(event) {
-        var inputSuggestions = this.toolbarParentObject.find(this.divaAdapter.getInstanceSelector() + 'input-suggestions');
+    showPageSuggestions: function () {
         var manuscript = manuscriptChannel.request('manuscript');
+        // The endpoint matches folio numbers with their leading zeros stripped
+        // (e.g. "83r" for folio "083r"), so strip any the user typed as well,
+        // making "83r", "083r" and "0083r" all suggest folio 083r.
+        var query = this.gotoFolioInput.val().replace(/^0+/, '');
+        var queryUrl = '/folio-set/manuscript/' + manuscript + '/?q=' + query;
 
-        var pageInput = this.toolbarParentObject.find(this.divaAdapter.getInstanceSelector() + 'goto-page-input');
-
-        var queryUrl = '/folio-set/manuscript/' + manuscript + '/?q=' + pageInput.val();
-        $.get(queryUrl,
-            function (data) {
-                inputSuggestions.empty();
-                for (const queryResult of data) {
-                    var newInputSuggestion = document.createElement('div');
-                    newInputSuggestion.setAttribute('class', 'diva-input-suggestion');
-                    newInputSuggestion.textContent = queryResult.number;
-                    inputSuggestions.append(newInputSuggestion);
-                }
+        $.get(queryUrl, (data) => {
+            this.gotoFolioSuggestions.empty();
+            for (const queryResult of data) {
+                var suggestion = document.createElement('div');
+                suggestion.setAttribute('class', 'goto-folio-suggestion');
+                suggestion.textContent = queryResult.number;
+                this.gotoFolioSuggestions.append(suggestion);
             }
-        )
-
-        inputSuggestions.css('display', 'block');
+            this.gotoFolioSuggestions.show();
+        });
     },
     /**
      * Query Solr to convert a folio name to an image URI
@@ -238,9 +265,6 @@ export default Marionette.View.extend({
     onViewerLoad: function () {
         this.trigger('loaded:viewer');
 
-        // Customize the toolbar
-        this._customizeToolbar();
-
         // Go to the predetermined initial folio if one is set
         var initialFolio = manuscriptChannel.request('folio') ? manuscriptChannel.request('folio') : manuscriptChannel.request('pageAlias');
         if (initialFolio !== null) {
@@ -270,39 +294,6 @@ export default Marionette.View.extend({
     onManifestLoad: function (metadata) {
         this.imageAttributionMetadata = metadata;
         this.trigger('loaded:manifest');
-    },
-
-    /** Do some awkward manual manipulation of the toolbar */
-    _customizeToolbar: function () {
-        // v7 owns its toolbar in Elm and exposes no instance selector to graft
-        // onto; its Cantus chrome is re-homed outside the viewer in Stage 3j.
-        if (!this.divaAdapter.getInstanceSelector())
-            return;
-
-        // Rebind the go to page input
-        var input = this.toolbarParentObject.find(this.divaAdapter.getInstanceSelector() + 'goto-page');
-
-        input.off('submit');
-        input.on('submit', this.gotoInputPage);
-
-        // Rebind the go to page input focus
-        var pageSearch = this.toolbarParentObject.find(this.divaAdapter.getInstanceSelector() + 'goto-page-input');
-
-        pageSearch.off('input focus');
-        pageSearch.on('input focus', this.showPageSuggestions)
-
-        // Rename the current page label from Page to Folio
-        var pageLabel = this.toolbarParentObject.find('.diva-page-label')[0];
-        pageLabel.firstChild.textContent = '';
-
-        // Add an empty span to display the folio name
-        this.folioNumberSpan = document.createElement('span');
-        pageLabel.insertBefore(this.folioNumberSpan, pageLabel.firstChild.nextSibling);
-
-        pageLabel.insertBefore($('<span>').text(' (')[0], this.folioNumberSpan.nextSibling);
-
-        // Add a closing parenthesis (the opening is within the page alias)
-        pageLabel.appendChild(document.createTextNode(')'));
     },
 
     /**

@@ -88,10 +88,6 @@ export default class DivaAdapter {
         return this.backend.changeView(view);
     }
 
-    getInstanceSelector() {
-        return this.backend.getInstanceSelector();
-    }
-
     setHighlights(regions) {
         return this.backend.setHighlights(regions);
     }

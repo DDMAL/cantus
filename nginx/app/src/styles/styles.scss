@@ -59,7 +59,13 @@ $navbar-dark-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w
 @import "sidenav";
 
 $zindex-diva-fullscreen: $zindex-modal;
-$zindex-diva-canvas: $zindex-diva-fullscreen + 5;
+
+// Shared control grey for the manuscript viewer so the Diva toolbar/sidebar
+// buttons read as one set with the site's own controls.
+$diva-control-bg: #eee;
+$diva-control-bg-hover: #e2e2e2;
+$diva-control-border: #dadada;
+$diva-control-border-hover: #bbb;
 
 // Volpiano font
 @font-face {
@@ -100,9 +106,84 @@ pre.preformatted-text {
     max-width: 60%;
 }
 
-#manuscript-info-target {
-    float: right;
+#toolbar-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 20px;
+    padding: 10px 15px;
+    border-bottom: 1px solid $border-color;
 
+    .diva-tools {
+        flex: 1;
+    }
+
+    .pager a {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        vertical-align: middle;
+    }
+
+    #current-folio-label,
+    #manuscript-folio-advancer-container {
+        white-space: nowrap;
+    }
+
+    #goto-folio-form {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        #goto-folio-input {
+            width: 160px;
+            padding-top: 2px;
+            padding-bottom: 2px;
+            font-weight: $body-font-weight;
+        }
+
+        #goto-folio-input,
+        .btn {
+            height: 32px;
+            min-height: 0;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+        }
+    }
+
+    #goto-folio-suggestions {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        min-width: 100%;
+        max-height: 50vh;
+        overflow-y: auto;
+        background-color: #fff;
+        border: 1px solid $border-color;
+        z-index: $zindex-dropdown;
+
+        .goto-folio-suggestion {
+            padding: 2px 10px;
+            cursor: pointer;
+
+            &:hover {
+                background-color: $gray-lighter;
+            }
+        }
+    }
+
+    #manuscript-info-target {
+        order: 1;
+        margin-left: auto;
+    }
+}
+
+#manuscript-info-target {
     // FIXME: This should actually be the padding for all .btn-sm elements; the Bootstrap button padding was
     // inconsistently tweaked
     .btn-sm {
@@ -309,6 +390,61 @@ body.propagate-height {
     }
 }
 
+// Cantus presents the manifest attribution in its own "Manuscript info"
+// sidenav, so hide Diva v7's built-in trigger for the raw-manifest modal.
+#diva-wrapper .canvas-toolbar-item[data-tooltip="Manifest Info"] {
+    display: none;
+}
+
+// ... and its requiredStatement dock at the bottom of the viewer, shown for
+// manuscripts whose manifest declares one -- same attribution, same sidenav.
+// The extra #diva-column id outweighs v7's own display:flex, which ships later
+// in the bundle at equal specificity.
+#diva-column #diva-wrapper .required-statement-dock {
+    display: none;
+}
+
+#diva-wrapper .canvas-label {
+    display: none;
+}
+
+// hide the page label overlay by Diva
+#diva-wrapper .diva-page-overlay-label {
+    display: none !important;
+}
+
+// Match Diva v7's toolbar and sidebar styles to the Cantus frontend.
+#diva-column #diva-wrapper {
+    --diva-accent: #{$brand-primary};
+    --diva-surface: #{$diva-control-bg};
+
+    .canvas-toolbar-section {
+        gap: 6px;
+    }
+
+    .canvas-toolbar-item {
+        width: 34px;
+        height: 34px;
+    }
+
+    .canvas-toolbar-button {
+        width: 34px;
+        height: 34px;
+        background-color: $diva-control-bg;
+        border-color: $diva-control-border;
+
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        &:hover {
+            background-color: $diva-control-bg-hover;
+            border-color: $diva-control-border-hover;
+        }
+    }
+}
+
 .modal-dialog {
     max-width: 90%;
     width: 50%;
@@ -376,7 +512,6 @@ body.propagate-height {
     padding: 20px 15px;
     min-height: 70px;
     border-right: 1px solid $border-color;
-    border-bottom: 1px solid $border-color;
 
     .diva-button {
         border-color: #DADADA;
@@ -398,6 +533,12 @@ body.propagate-height {
         padding: 5px 10px !important;
         line-height: 1.5 !important;
         margin: 0;
+    }
+
+    // Broken since Diva v6 (issue #949) and superseded by the folio label in
+    // the Cantus toolbar row.
+    .diva-page-label {
+        display: none;
     }
 
     .diva-goto-form,
@@ -423,11 +564,6 @@ body.propagate-height {
         padding-left: 0 !important;
         padding-right: 0 !important;
     }
-
-    // Hide the extra button that was stuck into the Diva toolbar
-    #manuscript-info-target {
-        display: none;
-    }
 }
 
 .diva-outer {
@@ -444,30 +580,6 @@ body.propagate-height {
 .diva-popup,
 .diva-tools.diva-fullscreen-tools {
     z-index: $zindex-diva-fullscreen + 1;
-}
-
-#diva-canvas-backdrop {
-    z-index: $zindex-diva-canvas;
-}
-
-#diva-canvas-wrapper {
-    z-index: $zindex-diva-canvas + 1;
-}
-
-#diva-canvas {
-    z-index: $zindex-diva-canvas + 2;
-}
-
-#diva-canvas-tools {
-    z-index: $zindex-diva-canvas + 3;
-}
-
-#diva-canvas-toolbar div {
-    z-index: $zindex-diva-canvas + 4;
-}
-
-.canvas-throbber {
-    z-index: $zindex-diva-canvas + 5;
 }
 
 .search-input .form-control:focus {

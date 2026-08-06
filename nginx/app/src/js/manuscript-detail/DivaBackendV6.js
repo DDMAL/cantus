@@ -37,6 +37,9 @@ export default class DivaBackendV6 {
 
             enableAutoTitle: false,
             enableFilename: false,
+            // The Cantus toolbar row provides its own goto-folio form, backed
+            // by Solr folio numbers instead of the manifest.
+            enableGotoPage: false,
             enableImageTitles: false,
 
             fixedHeightGrid: true,
@@ -117,10 +120,6 @@ export default class DivaBackendV6 {
 
     changeView(view) {
         return this.instance.changeView(view);
-    }
-
-    getInstanceSelector() {
-        return this.instance.getInstanceSelector();
     }
 
     /**

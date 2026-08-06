@@ -31525,7 +31525,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  siteUrl: "/"
+  siteUrl: "/",
+  // Default Diva viewer backend ("v6" | "v7") for the v6 -> v7 migration
+  // (issue #942). Override locally with
+  // localStorage.setItem("divaBackend", "v7") and reload; see DivaAdapter.js.
+  divaBackend: "v6"
 });
 
 /***/ },
@@ -31918,6 +31922,650 @@ return __p;
 
 /***/ },
 
+/***/ "./manuscript-detail/DivaAdapter.js"
+/*!******************************************!*\
+  !*** ./manuscript-detail/DivaAdapter.js ***!
+  \******************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ DivaAdapter)
+/* harmony export */ });
+/* harmony import */ var _config_GlobalVars__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../config/GlobalVars */ "./config/GlobalVars.js");
+/* harmony import */ var _DivaBackendV6__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./DivaBackendV6 */ "./manuscript-detail/DivaBackendV6.js");
+/* harmony import */ var _DivaBackendV7__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./DivaBackendV7 */ "./manuscript-detail/DivaBackendV7.js");
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
+function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+
+
+
+
+/**
+ * Pick the Diva backend. A `divaBackend` localStorage entry ("v6"|"v7")
+ * overrides the GlobalVars.divaBackend default, for local A/B testing without a
+ * rebuild: localStorage.setItem("divaBackend", "v7") and reload (removeItem to
+ * revert).
+ */
+function selectBackend() {
+  var requested;
+  try {
+    requested = window.localStorage.getItem('divaBackend');
+  } catch (e) {
+    // localStorage may be unavailable (e.g. disabled); fall back to the default.
+  }
+  if (requested === 'v6' || requested === 'v7') return requested;
+  return _config_GlobalVars__WEBPACK_IMPORTED_MODULE_0__["default"].divaBackend === 'v7' ? 'v7' : 'v6';
+}
+
+/**
+ * Facade owning 100% of the Cantus-to-Diva surface (issue #942). It delegates
+ * to one of two interchangeable backends, constructed synchronously in
+ * initialize() (so `this.backend` is set before any other method runs):
+ *
+ *  - DivaBackendV6: the behaviour-preserving v6 implementation.
+ *  - DivaBackendV7: the v7 implementation. Both backend classes are imported
+ *    statically, but the heavy v7 bundle + OpenSeadragon load lazily from inside
+ *    DivaBackendV7.initialize(), so they never touch the v6 path. (Both bundles
+ *    define window.Diva, so only one can be the active global -- hence v7's
+ *    bundle loads on demand only.)
+ */
+var DivaAdapter = /*#__PURE__*/function () {
+  function DivaAdapter(options) {
+    _classCallCheck(this, DivaAdapter);
+    this.options = options;
+    this.backend = null;
+  }
+  return _createClass(DivaAdapter, [{
+    key: "initialize",
+    value: function initialize() {
+      var backendName = selectBackend();
+      // Surface the active backend so it can be confirmed from the browser
+      // console during the v6 -> v7 A/B testing (issue #942).
+      console.info('[Diva] using ' + backendName + ' backend'); // eslint-disable-line no-console
+
+      var Backend = backendName === 'v7' ? _DivaBackendV7__WEBPACK_IMPORTED_MODULE_2__["default"] : _DivaBackendV6__WEBPACK_IMPORTED_MODULE_1__["default"];
+      this.backend = new Backend(this.options);
+      return this.backend.initialize();
+    }
+  }, {
+    key: "on",
+    value: function on(event, callback) {
+      return this.backend.on(event, callback);
+    }
+  }, {
+    key: "resize",
+    value: function resize() {
+      return this.backend.resize();
+    }
+  }, {
+    key: "gotoPageByURI",
+    value: function gotoPageByURI(uri) {
+      return this.backend.gotoPageByURI(uri);
+    }
+  }, {
+    key: "getCurrentPageURI",
+    value: function getCurrentPageURI() {
+      return this.backend.getCurrentPageURI();
+    }
+  }, {
+    key: "getAllPageURIs",
+    value: function getAllPageURIs() {
+      return this.backend.getAllPageURIs();
+    }
+  }, {
+    key: "getCurrentPageIndex",
+    value: function getCurrentPageIndex() {
+      return this.backend.getCurrentPageIndex();
+    }
+  }, {
+    key: "goToNextPage",
+    value: function goToNextPage() {
+      return this.backend.goToNextPage();
+    }
+  }, {
+    key: "goToPreviousPage",
+    value: function goToPreviousPage() {
+      return this.backend.goToPreviousPage();
+    }
+  }, {
+    key: "changeView",
+    value: function changeView(view) {
+      return this.backend.changeView(view);
+    }
+  }, {
+    key: "setHighlights",
+    value: function setHighlights(regions) {
+      return this.backend.setHighlights(regions);
+    }
+  }, {
+    key: "focusRegion",
+    value: function focusRegion(region) {
+      return this.backend.focusRegion(region);
+    }
+  }, {
+    key: "destroy",
+    value: function destroy() {
+      if (this.backend) {
+        this.backend.destroy();
+        this.backend = null;
+      }
+    }
+  }]);
+}();
+
+
+/***/ },
+
+/***/ "./manuscript-detail/DivaBackendV6.js"
+/*!********************************************!*\
+  !*** ./manuscript-detail/DivaBackendV6.js ***!
+  \********************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ DivaBackendV6)
+/* harmony export */ });
+/* harmony import */ var diva__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! diva */ "../../dependencies/diva.js/build/diva.js");
+/* harmony import */ var diva__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(diva__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _manifestMetadata__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./manifestMetadata */ "./manuscript-detail/manifestMetadata.js");
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
+function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+
+
+var diva = window.Diva;
+
+// Backend-neutral event names mapped to the underlying Diva v6 topics,
+// so callers depend on the adapter's vocabulary rather than Diva's own.
+var EVENT_TOPICS = {
+  "viewer:loaded": "ViewerDidLoad",
+  "page:changed": "VisiblePageDidChange",
+  "document:loaded": "DocumentDidLoad",
+  "manifest:loaded": "ManifestDidLoad"
+};
+
+/**
+ * Diva v6 backend for DivaAdapter.
+ *
+ * Ported from the previous v6 DivaAdapter to keep the v6 code path
+ * behaviour-preserving while v7 is migrated in (issue #942). DivaAdapter is now
+ * a thin facade that delegates to either this backend or the v7 backend
+ * depending on a runtime switch.
+ */
+var DivaBackendV6 = /*#__PURE__*/function () {
+  function DivaBackendV6(options) {
+    _classCallCheck(this, DivaBackendV6);
+    this.rootElementId = options.rootElementId;
+    this.manifestUrl = options.manifestUrl;
+    this.toolbarParentObject = options.toolbarParentObject;
+    this.instance = null;
+    this.eventHandles = [];
+  }
+  return _createClass(DivaBackendV6, [{
+    key: "initialize",
+    value: function initialize() {
+      var options = {
+        toolbarParentObject: this.toolbarParentObject[0],
+        enableAutoTitle: false,
+        enableFilename: false,
+        // The Cantus toolbar row provides its own goto-folio form, backed
+        // by Solr folio numbers instead of the manifest.
+        enableGotoPage: false,
+        enableImageTitles: false,
+        fixedHeightGrid: true,
+        enableKeyScroll: false,
+        enableSpaceScroll: false,
+        objectData: '/manifest-proxy/' + this.manifestUrl,
+        blockMobileMove: false
+      };
+      this.instance = new diva(this.rootElementId, options);
+
+      // Rebind drag-to-pan here once the viewer exists.
+      this.on("viewer:loaded", function () {
+        if (window.resetDragscroll) window.resetDragscroll();
+      });
+    }
+
+    /**
+     * Subscribe to an adapter event, registering it for automatic deregistration
+     * @param event one of the keys in EVENT_TOPICS
+     * @param callback for 'page:changed', invoked with a normalized
+     *                 { index, imageURI }; for 'manifest:loaded', invoked with
+     *                 the flattened attribution metadata; for other events,
+     *                 invoked with Diva's original arguments unchanged
+     */
+  }, {
+    key: "on",
+    value: function on(event, callback) {
+      var _this = this;
+      var handler = callback;
+      // Normalize the payloads to a backend-neutral shape rather than leaking
+      // Diva's raw arguments to callers (and to match the v7 backend).
+      if (event === "page:changed") handler = function handler() {
+        return callback({
+          index: _this.instance.getActivePageIndex(),
+          imageURI: _this.instance.getCurrentPageURI()
+        });
+      };else if (event === "manifest:loaded") handler = function handler(manifest) {
+        return callback((0,_manifestMetadata__WEBPACK_IMPORTED_MODULE_1__["default"])(manifest));
+      };
+      this.eventHandles.push(diva.Events.subscribe(EVENT_TOPICS[event], handler));
+    }
+  }, {
+    key: "resize",
+    value: function resize() {
+      // NOTE: the v6 viewer subscribes to this scoped to its instance, but
+      // publishing *with* the instance throws (the scoped updatePanelSize
+      // subscriber calls methods the public instance does not expose). The
+      // unscoped publish reaches no subscriber and is effectively a no-op;
+      // resize is handled natively (OSD ResizeObserver) once on v7.
+      diva.Events.publish("PanelSizeDidChange");
+    }
+  }, {
+    key: "gotoPageByURI",
+    value: function gotoPageByURI(uri) {
+      return this.instance.gotoPageByURI(uri);
+    }
+  }, {
+    key: "getCurrentPageURI",
+    value: function getCurrentPageURI() {
+      return this.instance.getCurrentPageURI();
+    }
+  }, {
+    key: "getAllPageURIs",
+    value: function getAllPageURIs() {
+      return this.instance.getAllPageURIs();
+    }
+  }, {
+    key: "getCurrentPageIndex",
+    value: function getCurrentPageIndex() {
+      return this.instance.getActivePageIndex();
+    }
+  }, {
+    key: "goToNextPage",
+    value: function goToNextPage() {
+      // Advance a whole opening (two pages) in book view, otherwise one.
+      var step = this.instance.getState().v === 'b' ? 2 : 1;
+      this.instance.gotoPageByIndex(this.instance.getActivePageIndex() + step);
+    }
+  }, {
+    key: "goToPreviousPage",
+    value: function goToPreviousPage() {
+      var step = this.instance.getState().v === 'b' ? 2 : 1;
+      this.instance.gotoPageByIndex(this.instance.getActivePageIndex() - step);
+    }
+  }, {
+    key: "changeView",
+    value: function changeView(view) {
+      return this.instance.changeView(view);
+    }
+
+    /**
+     * Display OMR highlight regions, clearing them when passed an empty array.
+     *
+     * NOTE: the v6 highlight plugin was removed during the v5 -> v6 upgrade, so
+     * this is currently a no-op. Kept as the stable entry point for when
+     * highlighting is reintroduced on v7.
+     */
+  }, {
+    key: "setHighlights",
+    value: function setHighlights(regions) {// eslint-disable-line no-unused-vars
+      // No-op: highlight rendering is not currently supported.
+    }
+
+    /**
+     * Scroll the viewer so that a region of a page is roughly centred. The
+     * region coordinates are in Diva's max-zoom pixel space.
+     *
+     * @param region { imageURI, x, y, width, height }
+     *
+     * NOTE: this scrolls rather than zooming and does not translate the region
+     * width/height; both are to be addressed when reimplemented on the v7 viewport.
+     */
+  }, {
+    key: "focusRegion",
+    value: function focusRegion(region) {
+      var _this2 = this;
+      if (!this.instance || !region) return;
+
+      // Wait for the viewer to be ready before scrolling
+      if (!this.instance.isReady()) {
+        this.on("viewer:loaded", function () {
+          return _this2.focusRegion(region);
+        });
+        return;
+      }
+      var outer = this.instance.getSettings().outerObject;
+
+      // Jump to the page the region is on
+      var desiredPage = this.instance.getAllPageURIs().indexOf(region.imageURI);
+      this.instance.gotoPageByIndex(desiredPage);
+
+      // Vertical scroll to centre the region
+      var regionTop = this.instance.translateFromMaxZoomLevel(region.y);
+      var currentScrollTop = parseInt(outer.scrollTop(), 10);
+      outer.scrollTop(regionTop + currentScrollTop - outer.height() / 2 + region.height / 2);
+
+      // Horizontal scroll to centre the region
+      var regionLeft = this.instance.translateFromMaxZoomLevel(region.x);
+      outer.scrollLeft(regionLeft - outer.width() / 2 + region.width / 2);
+    }
+  }, {
+    key: "destroy",
+    value: function destroy() {
+      if (this.instance) this.instance.destroy();
+      this.instance = null;
+      this.eventHandles.forEach(function (handle) {
+        return diva.Events.unsubscribe(handle);
+      });
+      this.eventHandles.splice(0, this.eventHandles.length);
+    }
+  }]);
+}();
+
+
+/***/ },
+
+/***/ "./manuscript-detail/DivaBackendV7.js"
+/*!********************************************!*\
+  !*** ./manuscript-detail/DivaBackendV7.js ***!
+  \********************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ DivaBackendV7)
+/* harmony export */ });
+/* harmony import */ var _manifestMetadata__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./manifestMetadata */ "./manuscript-detail/manifestMetadata.js");
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
+function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+
+
+// OpenSeadragon version matching the one in diva.js v7's README. v7 references
+// it and expects window.OpenSeadragon to exist before its bundle runs.
+var OSD_SRC = "https://cdn.jsdelivr.net/npm/openseadragon@6.0.2/build/openseadragon/openseadragon.min.js";
+
+// Id of the <style> element Diva v7 injects its stylesheet into. v7 skips that
+// global injection if an element with this id already exists (diva.ts), so we
+// pre-create an empty one to keep v7's generic, unscoped CSS (.modal, .status,
+// .thumbs, ...) off the page; the equivalent rules ship scoped to #diva-wrapper,
+// generated from the vendored v7 styles at build time (see gulpfile.mjs
+// bundle:css).
+var DIVA_INLINE_STYLE_ID = "diva-inline-styles";
+
+/**
+ * Pre-empt Diva v7's global stylesheet injection by leaving an empty <style>
+ * element under the id it looks for. Safe to call more than once.
+ */
+function suppressDivaGlobalStyles() {
+  if (document.getElementById(DIVA_INLINE_STYLE_ID)) return;
+  var styleTag = document.createElement('style');
+  styleTag.id = DIVA_INLINE_STYLE_ID;
+  document.head.appendChild(styleTag);
+}
+
+/**
+ * Load the OpenSeadragon global from its CDN, resolving once available. The
+ * global check short-circuits once it has loaded, so this only injects a script
+ * on the first call (any redundant tag from a rare concurrent call is harmless).
+ */
+function loadOpenSeadragon() {
+  if (window.OpenSeadragon) return Promise.resolve();
+  return new Promise(function (resolve, reject) {
+    var script = document.createElement('script');
+    script.src = OSD_SRC;
+    script.async = true;
+    script.onload = function () {
+      return resolve();
+    };
+    script.onerror = function () {
+      return reject(new Error('Failed to load OpenSeadragon from ' + OSD_SRC));
+    };
+    document.head.appendChild(script);
+  });
+}
+
+/**
+ * Diva v7 backend for DivaAdapter.
+ *
+ * Implements (issue #942, Stage 3) the v7 viewer lifecycle: it lazily loads
+ * OpenSeadragon and the vendored v7 bundle, mounts the viewer, and adapts v7's
+ * public API (v7.4.0) to the adapter's backend-neutral events, tracking the
+ * current page index and page URIs along the way.
+ */
+var DivaBackendV7 = /*#__PURE__*/function () {
+  function DivaBackendV7(options) {
+    _classCallCheck(this, DivaBackendV7);
+    this.rootElementId = options.rootElementId;
+    this.manifestUrl = options.manifestUrl;
+    this.instance = null;
+    this.destroyed = false;
+
+    // Adapter event subscribers. DivaView subscribes synchronously right
+    // after initialize(), before the viewer exists, so on() only records
+    // callbacks here; they fire once the underlying viewer events arrive.
+    this.subscribers = {
+      'viewer:loaded': [],
+      'page:changed': [],
+      'document:loaded': [],
+      'manifest:loaded': []
+    };
+
+    // Current page index, tracked from v7's pagechange event.
+    this.currentIndex = 0;
+
+    // Page image URIs in v7's page order, filled once the viewer is ready.
+    this.pageURIs = [];
+
+    // True once v7's `ready` promise has resolved; per v7's README, page
+    // state must not be read nor viewer commands issued before then.
+    this.ready = false;
+    this.onPageChange = this.handlePageChange.bind(this);
+  }
+  return _createClass(DivaBackendV7, [{
+    key: "initialize",
+    value: function initialize() {
+      var _this = this;
+      // v7 exposes no manifest attribution, so fetch the manifest ourselves;
+      // kept off initialize()'s promise so a failed fetch can't reject it.
+      this.loadManifestMetadata();
+
+      // Each step is gated on `destroyed` so navigating away mid-load does not
+      // construct a viewer against a DOM node that no longer exists.
+      return loadOpenSeadragon().then(function () {
+        if (_this.destroyed) return undefined;
+        suppressDivaGlobalStyles();
+        return __webpack_require__.e(/*! import() | diva-v7 */ "diva-v7").then(__webpack_require__.t.bind(__webpack_require__, /*! diva7 */ "../../dependencies/diva.js.v7/build/diva.js", 23));
+      }).then(function () {
+        if (_this.destroyed) return undefined;
+        var Diva = window.Diva;
+        if (!Diva) throw new Error('Diva v7 bundle loaded but window.Diva is undefined');
+
+        // No acceptHeaders: /manifest-proxy/ uses DRF's JSONRenderer,
+        // which 406s anything other than application/json.
+        // showTitle: false — Cantus shows the title in its own header.
+        _this.instance = new Diva(_this.rootElementId, {
+          objectData: '/manifest-proxy/' + _this.manifestUrl,
+          showTitle: false
+        });
+        _this.instance.addEventListener('pagechange', _this.onPageChange);
+        return _this.instance.ready.then(function () {
+          return _this.handleViewerReady();
+        });
+      });
+    }
+
+    /**
+     * Fetch the IIIF manifest and emit 'manifest:loaded' with the flattened
+     * attribution metadata. Runs independently of initialize()'s load chain.
+     */
+  }, {
+    key: "loadManifestMetadata",
+    value: function loadManifestMetadata() {
+      var _this2 = this;
+      fetch('/manifest-proxy/' + this.manifestUrl).then(function (response) {
+        return response.json();
+      }).then(function (manifest) {
+        if (!_this2.destroyed) _this2.emit('manifest:loaded', (0,_manifestMetadata__WEBPACK_IMPORTED_MODULE_0__["default"])(manifest));
+      }).catch(function (error) {
+        console.error('Failed to load the IIIF manifest metadata', error); // eslint-disable-line no-console
+      });
+    }
+
+    /**
+     * Record a callback for an adapter event; see the constructor note on why
+     * dispatch is deferred. For 'page:changed' the callback receives
+     * { index, imageURI }; the load events pass no argument.
+     */
+  }, {
+    key: "on",
+    value: function on(event, callback) {
+      if (this.subscribers[event]) this.subscribers[event].push(callback);
+    }
+  }, {
+    key: "handleViewerReady",
+    value: function handleViewerReady() {
+      if (this.destroyed) return;
+
+      // Strip "/info.json" so each URI matches Folio.image_uri in Django/Solr.
+      this.pageURIs = this.instance.getPages().map(function (page) {
+        return page.primaryImage.id.replace(/\/info\.json$/, '');
+      });
+      this.currentIndex = this.instance.getState().currentPageIndex || 0;
+      this.ready = true;
+      this.emit('viewer:loaded');
+      this.emit('document:loaded');
+      this.emitPageChanged();
+    }
+  }, {
+    key: "handlePageChange",
+    value: function handlePageChange(event) {
+      this.currentIndex = event.detail.pageIndex;
+      if (this.ready) this.emitPageChanged();
+    }
+  }, {
+    key: "emitPageChanged",
+    value: function emitPageChanged() {
+      this.emit('page:changed', {
+        index: this.currentIndex,
+        imageURI: this.getCurrentPageURI()
+      });
+    }
+  }, {
+    key: "emit",
+    value: function emit(event, payload) {
+      this.subscribers[event].forEach(function (callback) {
+        return callback(payload);
+      });
+    }
+  }, {
+    key: "getCurrentPageURI",
+    value: function getCurrentPageURI() {
+      return this.pageURIs[this.currentIndex] || null;
+    }
+  }, {
+    key: "getAllPageURIs",
+    value: function getAllPageURIs() {
+      return this.pageURIs.slice();
+    }
+  }, {
+    key: "getCurrentPageIndex",
+    value: function getCurrentPageIndex() {
+      return this.currentIndex;
+    }
+
+    /** Go to the page with the given image URI, if the viewer has it. */
+  }, {
+    key: "gotoPageByURI",
+    value: function gotoPageByURI(uri) {
+      var index = this.pageURIs.indexOf(uri);
+      if (index >= 0) this.instance.goToPage(index);
+    }
+
+    // next()/previous() follow the current layout, advancing a full opening in
+    // a spread layout (both pages of an opening share one scroll position).
+  }, {
+    key: "goToNextPage",
+    value: function goToNextPage() {
+      this.instance.next();
+    }
+  }, {
+    key: "goToPreviousPage",
+    value: function goToPreviousPage() {
+      this.instance.previous();
+    }
+
+    // No-op: OpenSeadragon's autoResize reflows the viewer when its container resizes.
+  }, {
+    key: "resize",
+    value: function resize() {}
+
+    // No-op: v7 sets its layout from the manifest; the reader toggles it in the toolbar.
+  }, {
+    key: "changeView",
+    value: function changeView() {}
+  }, {
+    key: "setHighlights",
+    value: function setHighlights() {}
+
+    /**
+     * Go to an OMR result's page and zoom to its region, given in
+     * full-resolution image pixels.
+     */
+  }, {
+    key: "focusRegion",
+    value: function focusRegion(region) {
+      var _this3 = this;
+      // A search can run before the viewer is ready; retry once it is, so
+      // pageURIs is populated.
+      if (!this.ready) {
+        this.on('viewer:loaded', function () {
+          return _this3.focusRegion(region);
+        });
+        return;
+      }
+      var index = this.pageURIs.indexOf(region.imageURI);
+      if (index < 0) return;
+      this.instance.zoomToRegion(index, {
+        x: region.x,
+        y: region.y,
+        width: region.width,
+        height: region.height
+      });
+    }
+  }, {
+    key: "destroy",
+    value: function destroy() {
+      // Mark destroyed so an in-flight initialize() bails before constructing.
+      this.destroyed = true;
+      if (this.instance) {
+        this.instance.removeEventListener('pagechange', this.onPageChange);
+        this.instance.destroy();
+      }
+      this.instance = null;
+    }
+  }]);
+}();
+
+
+/***/ },
+
 /***/ "./manuscript-detail/DivaFolioAdvancerView.js"
 /*!****************************************************!*\
   !*** ./manuscript-detail/DivaFolioAdvancerView.js ***!
@@ -31958,57 +32606,38 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_2___default().ch
     "click @ui.firstChantFolioButton": "firstChantFolioCallbackHandler"
   },
   /**
-   * Get the stored Diva data.
+   * Get the Diva adapter.
    *
-   * @returns {*|jQuery}
+   * @returns {DivaAdapter}
    */
-  getDivaData: function getDivaData() {
-    return jquery__WEBPACK_IMPORTED_MODULE_1___default()("#diva-wrapper").data('diva');
+  getDivaAdapter: function getDivaAdapter() {
+    return manuscriptChannel.request('diva');
   },
   /**
-   * Increase the page by 1, or 2 if in 'Book' view.
+   * Advance to the next folio (one page, or a whole opening in book view).
    */
   nextButtonCallbackHandler: function nextButtonCallbackHandler(event) {
     // Don't follow the a href to "#"
     event.preventDefault();
-    this.changeDivaPage(function (index, divaData) {
-      var inBookView = divaData.getState().v === 'b';
-      return index + (inBookView ? 2 : 1);
-    });
+    this.getDivaAdapter().goToNextPage();
   },
   /**
-   * Decrease the page by 1, or 2 if in 'Book' view.
+   * Go back to the previous folio (one page, or a whole opening in book view).
    */
   previousButtonCallbackHandler: function previousButtonCallbackHandler(event) {
     // Don't follow the a href to "#"
     event.preventDefault();
-    this.changeDivaPage(function (index, divaData) {
-      var inBookView = divaData.getState().v === 'b';
-      return index - (inBookView ? 2 : 1);
-    });
+    this.getDivaAdapter().goToPreviousPage();
   },
   firstChantFolioCallbackHandler: function firstChantFolioCallbackHandler(event) {
     // Query which folio in the manuscript has the first chant
     var manuscript = manuscriptChannel.request('manuscript');
     var queryUrl = '/folio-set/manuscript/' + manuscript + '/';
-    var divaData = this.getDivaData();
+    var divaAdapter = this.getDivaAdapter();
     jquery__WEBPACK_IMPORTED_MODULE_1___default().get(queryUrl, function (data) {
       var firstFolioURI = data[0].image_uri;
-      divaData.gotoPageByName(firstFolioURI);
+      divaAdapter.gotoPageByURI(firstFolioURI);
     });
-  },
-  /**
-   *  Change the Diva page index.  numberChangeFunction is a function that
-   *  takes the current page index and returns the desired new page index.
-   *
-   * @param numberChangeFunction fn : int -> int
-   */
-  changeDivaPage: function changeDivaPage(numberChangeFunction) {
-    // Get DivaData and the curent page count
-    var divaData = this.getDivaData(),
-      currentPageIndex = divaData.getCurrentPageIndex();
-    // Tell Diva to go to the page specified by numberChangeFunction()
-    divaData.gotoPageByIndex(numberChangeFunction(currentPageIndex, divaData));
   }
 }));
 
@@ -32032,12 +32661,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! jquery */ "../../node_modules/jquery/dist/jquery.js");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var underscore__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! underscore */ "../../node_modules/underscore/modules/index-all.js");
-/* harmony import */ var diva__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! diva */ "../../dependencies/diva.js/build/diva.js");
-/* harmony import */ var diva__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(diva__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _DivaAdapter__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./DivaAdapter */ "./manuscript-detail/DivaAdapter.js");
 /* harmony import */ var _config_GlobalVars__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../config/GlobalVars */ "./config/GlobalVars.js");
 /* harmony import */ var _diva_template_html__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./diva.template.html */ "./manuscript-detail/diva.template.html");
 /* harmony import */ var _diva_template_html__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_diva_template_html__WEBPACK_IMPORTED_MODULE_6__);
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t.return || t.return(); } finally { if (u) throw o; } } }; }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
@@ -32061,8 +32688,7 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default().ch
     divaWrapper: '#diva-wrapper'
   },
   initialize: function initialize(options) {
-    underscore__WEBPACK_IMPORTED_MODULE_3__["default"].bindAll(this, 'propagateFolioChange', 'onViewerLoad', 'setImageURI', 'paintBoxes', 'updatePageAlias', 'gotoInputPage', 'getPageWhichMatchesAlias', 'onDocLoad', 'showPageSuggestions', 'onManifestLoad');
-    this.divaEventHandles = [];
+    underscore__WEBPACK_IMPORTED_MODULE_3__["default"].bindAll(this, 'propagateFolioChange', 'onViewerLoad', 'setImageURI', 'updatePageAlias', 'gotoInputPage', 'getPageWhichMatchesAlias', 'onDocLoad', 'showPageSuggestions', 'gotoSuggestedFolio', 'onManifestLoad');
 
     // Create a debounced function to alert the site that Diva has
     // changed the folio
@@ -32074,64 +32700,67 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default().ch
     this.listenTo(manuscriptChannel, 'change:imageURI', this.setImageURI);
     this.listenTo(manuscriptChannel, 'folioLoaded', this.updatePageAlias);
     this.toolbarParentObject = this.options.toolbarParentObject;
+    this._bindFolioNavigation();
 
     // TODO(wabain): get this from the manuscript channel for consistency
     this.manifestUrl = options.manifestUrl;
   },
+  /**
+   * Bind the folio label and the goto-folio form in the Cantus toolbar row.
+   * They are rendered by the parent view's template, outside this view's own
+   * element, so they exist before the viewer loads and are independent of
+   * the Diva backend in use.
+   */
+  _bindFolioNavigation: function _bindFolioNavigation() {
+    var _this = this;
+    this.folioLabelSpan = this.toolbarParentObject.find('#current-folio-label')[0];
+    this.gotoFolioInput = this.toolbarParentObject.find('#goto-folio-input');
+    this.gotoFolioSuggestions = this.toolbarParentObject.find('#goto-folio-suggestions');
+    this.toolbarParentObject.find('#goto-folio-form').on('submit', this.gotoInputPage);
+    this.gotoFolioInput.on('input focus', this.showPageSuggestions);
+    // A clicked suggestion still navigates before this hides the list,
+    // because its mousedown handler runs before the input loses focus.
+    this.gotoFolioInput.on('blur', function () {
+      return _this.gotoFolioSuggestions.hide();
+    });
+    this.gotoFolioSuggestions.on('mousedown', '.goto-folio-suggestion', this.gotoSuggestedFolio);
+  },
   onBeforeDestroy: function onBeforeDestroy() {
     // Uninitialize the Diva viewer, if it exists
-    if (this.divaInstance) {
-      // Call Diva's destructor
-      this.divaInstance.destroy();
-      this.divaInstance = null;
-
-      // Unsubscribe the event handlers
-      underscore__WEBPACK_IMPORTED_MODULE_3__["default"].forEach(this.divaEventHandles, function (handle) {
-        diva__WEBPACK_IMPORTED_MODULE_4___default().Events.unsubscribe(handle);
-      });
-      this.divaEventHandles.splice(this.divaEventHandles.length);
+    if (this.divaAdapter) {
+      // Tear down the viewer and unsubscribe the event handlers
+      this.divaAdapter.destroy();
+      this.divaAdapter = null;
+      manuscriptChannel.stopReplying('diva');
     }
   },
   /**
    * Initialize Diva and subscribe to its events.
    */
   initializeDiva: function initializeDiva() {
-    var manifestUrl = this.manifestUrl;
-    var options = {
-      toolbarParentObject: this.toolbarParentObject,
-      viewerWidthPadding: 0,
-      enableAutoTitle: false,
-      enableAutoWidth: false,
-      enableAutoHeight: false,
-      enableFilename: false,
-      enableImageTitles: false,
-      enableHighlight: true,
-      enableDownload: true,
-      fixedHeightGrid: true,
-      enableKeyScroll: false,
-      enableSpaceScroll: false,
-      enableCanvas: true,
-      objectData: '/manifest-proxy/' + manifestUrl,
-      blockMobileMove: false
-    };
-
+    var _this2 = this;
     // Destroy the diva div just in case
     this.ui.divaWrapper.empty();
-    // Initialize Diva
-    this.divaInstance = new (diva__WEBPACK_IMPORTED_MODULE_4___default())(this.ui.divaWrapper[0], options);
-    this.onDivaEvent("ViewerDidLoad", this.onViewerLoad);
-    this.onDivaEvent("ViewerDidLoad", this.propagateFolioChange);
-    this.onDivaEvent("VisiblePageDidChange", this.propagateFolioChange);
-    this.onDivaEvent("DocumentDidLoad", this.onDocLoad);
-    this.onDivaEvent("ManifestDidLoad", this.onManifestLoad);
-  },
-  /**
-   * Subscribe to a Diva event, registering it for automatic deregistration
-   * @param event
-   * @param callback
-   */
-  onDivaEvent: function onDivaEvent(event, callback) {
-    this.divaEventHandles.push(diva__WEBPACK_IMPORTED_MODULE_4___default().Events.subscribe(event, callback));
+    // Create the Diva adapter
+    this.divaAdapter = new _DivaAdapter__WEBPACK_IMPORTED_MODULE_4__["default"]({
+      rootElementId: 'diva-wrapper',
+      manifestUrl: this.manifestUrl,
+      toolbarParentObject: this.toolbarParentObject
+    });
+    // Initialize Diva. On the v7 backend initialize() is async (it lazily
+    // loads OpenSeadragon and the v7 bundle), so surface a load failure
+    // instead of leaving an unhandled rejection behind a blank viewer.
+    Promise.resolve(this.divaAdapter.initialize()).catch(function (error) {
+      console.error('Failed to initialize the Diva viewer', error); // eslint-disable-line no-console
+    });
+    manuscriptChannel.reply('diva', function () {
+      return _this2.divaAdapter;
+    });
+    this.divaAdapter.on("viewer:loaded", this.onViewerLoad);
+    this.divaAdapter.on("viewer:loaded", this.propagateFolioChange);
+    this.divaAdapter.on("page:changed", this.propagateFolioChange);
+    this.divaAdapter.on("document:loaded", this.onDocLoad);
+    this.divaAdapter.on("manifest:loaded", this.onManifestLoad);
   },
   /**
    * Workaround for a weird Chrome bug - sometimes setting the style on the
@@ -32143,6 +32772,8 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default().ch
    */
   onDocLoad: function onDocLoad() {
     var inner = this.ui.divaWrapper.find('.diva-inner');
+    // The v7 viewer has no .diva-inner element, so this v6-only fix is irrelevant.
+    if (!inner.length) return;
     var cssWidth = parseInt(inner[0].style.width, 10);
     if (cssWidth && cssWidth !== inner.width()) {
       /* eslint-disable no-console */
@@ -32153,7 +32784,7 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default().ch
     }
   },
   /**
-   * Update Diva's page index to show the folio name
+   * Update the folio label in the Cantus toolbar row, e.g. "Folio 006v (3 of 500)"
    */
   updatePageAlias: function updatePageAlias() {
     var folioNumber = manuscriptChannel.request('folio');
@@ -32163,68 +32794,77 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default().ch
       }
       var pageAlias = 'Folio ' + folioNumber;
     } else {
-      var imageIndex = this.divaInstance.getCurrentAliasedPageIndex();
+      var imageIndex = this.divaAdapter.getCurrentPageIndex() + 1;
       var pageAlias = 'Image ' + imageIndex;
     }
     manuscriptChannel.trigger('set:pageAlias', pageAlias);
-    this.folioNumberSpan.textContent = pageAlias;
+    var pagePosition = this.divaAdapter.getCurrentPageIndex() + 1 + ' of ' + this.divaAdapter.getAllPageURIs().length;
+    this.folioLabelSpan.textContent = pageAlias + ' (' + pagePosition + ')';
   },
   /**
-   * Replacement callback for the Diva page input submission
+   * Handle a goto-folio form submission. The first suggestion is taken as
+   * the destination, falling back to the typed value when there is none.
    */
   gotoInputPage: function gotoInputPage(event) {
     event.preventDefault();
-    // If the form was explicitly submitted by the user (eg. by clicking "Go"
-    // or pressing the Enter key), we take the first suggestion as the page
-    // destination. If the form was triggered by the user clicking a page
-    // suggestion, we take the clicked suggestion as the destination (this is already
-    // set in the Diva default handler for a "mousedown" event).
-    if (event.originalEvent) {
-      var inputSuggestions = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'input-suggestions');
-      var pageInput = jquery__WEBPACK_IMPORTED_MODULE_2___default()('.diva-input-suggestion:first', inputSuggestions);
-      var pageAlias = pageInput.text();
-    } else {
-      var pageInput = jquery__WEBPACK_IMPORTED_MODULE_2___default()(this.divaInstance.getInstanceSelector() + 'goto-page-input').get(0);
-      var pageAlias = pageInput.value;
-    }
+    var firstSuggestion = this.gotoFolioSuggestions.children().first().text();
+    this.gotoFolioSuggestions.hide();
+    this._gotoFolioAlias(firstSuggestion || this.gotoFolioInput.val());
+  },
+  /**
+   * Navigate to a clicked page suggestion. Bound to mousedown so it runs
+   * before the input's blur hides the suggestion list.
+   */
+  gotoSuggestedFolio: function gotoSuggestedFolio(event) {
+    var pageAlias = event.currentTarget.textContent;
+    this.gotoFolioInput.val(pageAlias);
+    this.gotoFolioSuggestions.hide();
+    this._gotoFolioAlias(pageAlias);
+  },
+  /**
+   * Jump the viewer to the folio with the given alias, alerting the user if
+   * it does not resolve to a page.
+   */
+  _gotoFolioAlias: function _gotoFolioAlias(pageAlias) {
     if (!pageAlias) return;
     this.getPageWhichMatchesAlias(pageAlias).done(underscore__WEBPACK_IMPORTED_MODULE_3__["default"].bind(function (page) {
-      this.divaInstance.gotoPageByName(page);
+      this.divaAdapter.gotoPageByURI(page);
     }, this)).fail(function () {
       alert("Invalid page number");
     });
   },
   /**
-   * 
-   * Replacement callback for the Diva page input search suggestions.
+   * Show suggestions under the goto-folio input while the user is typing.
    * Suggestions are taken from folio numbers in solr/Django db rather
    * than the IIIF manifest.
    */
-
-  showPageSuggestions: function showPageSuggestions(event) {
-    var inputSuggestions = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'input-suggestions');
+  showPageSuggestions: function showPageSuggestions() {
+    var _this3 = this;
     var manuscript = manuscriptChannel.request('manuscript');
-    var pageInput = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'goto-page-input');
-    var queryUrl = '/folio-set/manuscript/' + manuscript + '/?q=' + pageInput.val();
+    // The endpoint matches folio numbers with their leading zeros stripped
+    // (e.g. "83r" for folio "083r"), so strip any the user typed as well,
+    // making "83r", "083r" and "0083r" all suggest folio 083r.
+    var query = this.gotoFolioInput.val().replace(/^0+/, '');
+    var queryUrl = '/folio-set/manuscript/' + manuscript + '/?q=' + query;
     jquery__WEBPACK_IMPORTED_MODULE_2___default().get(queryUrl, function (data) {
-      inputSuggestions.empty();
+      _this3.gotoFolioSuggestions.empty();
       var _iterator = _createForOfIteratorHelper(data),
         _step;
       try {
         for (_iterator.s(); !(_step = _iterator.n()).done;) {
           var queryResult = _step.value;
-          var newInputSuggestion = document.createElement('div');
-          newInputSuggestion.setAttribute('class', 'diva-input-suggestion');
-          newInputSuggestion.textContent = queryResult.number;
-          inputSuggestions.append(newInputSuggestion);
+          var suggestion = document.createElement('div');
+          suggestion.setAttribute('class', 'goto-folio-suggestion');
+          suggestion.textContent = queryResult.number;
+          _this3.gotoFolioSuggestions.append(suggestion);
         }
       } catch (err) {
         _iterator.e(err);
       } finally {
         _iterator.f();
       }
+      _this3.gotoFolioSuggestions.show();
     });
-    inputSuggestions.css('display', 'block');
   },
   /**
    * Query Solr to convert a folio name to an image URI
@@ -32270,9 +32910,6 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default().ch
   onViewerLoad: function onViewerLoad() {
     this.trigger('loaded:viewer');
 
-    // Customize the toolbar
-    this._customizeToolbar();
-
     // Go to the predetermined initial folio if one is set
     var initialFolio = manuscriptChannel.request('folio') ? manuscriptChannel.request('folio') : manuscriptChannel.request('pageAlias');
     if (initialFolio !== null) {
@@ -32282,66 +32919,26 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default().ch
       }, this));
     } else {
       // If one is not set, then set the global folio to the Diva viewer's initial page
-      var imageURI = this.divaInstance.getCurrentPageFilename();
+      var imageURI = this.divaAdapter.getCurrentPageURI();
       manuscriptChannel.request('set:imageURI', imageURI, {
         replaceState: true
       });
     }
 
     // Store the list of filenames
-    this.divaFilenames = this.divaInstance.getFilenames();
+    this.divaFilenames = this.divaAdapter.getAllPageURIs();
 
     // Change initial view to document view
-    this.divaInstance.changeView('document');
+    this.divaAdapter.changeView('document');
   },
   /**
-   * Once the manifest is loaded, grab any attribution and rights information
-   * contained in the manifest and update the DOM to display it.
-   * NOTE: Diva contains a plug-in ("IIIFMetadata") that could theoretically
-   * be used to collect and show this data, but it errors if this data is
-   * improperly formatted in the IIIF, so we introduce this here to tolerate
-   * these cases.
-   * NOTE: At the moment, we only support the IIIF 2 API, since Diva only
-   * supports that version.
-   **/
-  onManifestLoad: function onManifestLoad(manifest) {
-    var attribution = manifest.attribution;
-    var logo = manifest.logo;
-    if (_typeof(logo) === "object") {
-      var logo_url = logo['@id'];
-    } else {
-      var logo_url = logo;
-    }
-    var licence = manifest.license;
-    this.imageAttributionMetadata = {
-      imageAttribution: attribution,
-      imageLogoUrl: logo_url,
-      imageLicence: licence
-    };
-  },
-  /** Do some awkward manual manipulation of the toolbar */
-  _customizeToolbar: function _customizeToolbar() {
-    // Rebind the go to page input
-    var input = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'goto-page');
-    input.off('submit');
-    input.on('submit', this.gotoInputPage);
-
-    // Rebind the go to page input focus
-    var pageSearch = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'goto-page-input');
-    pageSearch.off('input focus');
-    pageSearch.on('input focus', this.showPageSuggestions);
-
-    // Rename the current page label from Page to Folio
-    var pageLabel = this.toolbarParentObject.find('.diva-page-label')[0];
-    pageLabel.firstChild.textContent = '';
-
-    // Add an empty span to display the folio name
-    this.folioNumberSpan = document.createElement('span');
-    pageLabel.insertBefore(this.folioNumberSpan, pageLabel.firstChild.nextSibling);
-    pageLabel.insertBefore(jquery__WEBPACK_IMPORTED_MODULE_2___default()('<span>').text(' (')[0], this.folioNumberSpan.nextSibling);
-
-    // Add a closing parenthesis (the opening is within the page alias)
-    pageLabel.appendChild(document.createTextNode(')'));
+   * Store the image attribution metadata the adapter extracted from the IIIF
+   * manifest (already flattened to { imageAttribution, imageLogoUrl,
+   * imageLicence }) and announce it so the page can wire it into the model.
+   */
+  onManifestLoad: function onManifestLoad(metadata) {
+    this.imageAttributionMetadata = metadata;
+    this.trigger('loaded:manifest');
   },
   /**
    * Set the diva viewer to load a specific folio, based on the image URI
@@ -32349,116 +32946,23 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default().ch
    * @param imageURI
    */
   setImageURI: function setImageURI(imageURI) {
-    if (!this.divaInstance) return;
+    if (!this.divaAdapter) return;
 
     // Don't jump to the folio if we're already somewhere on it (this would just make Diva
     // jump to the top of the page)
-    if (imageURI === this.divaInstance.getCurrentPageFilename()) return;
-    this.divaInstance.gotoPageByName(imageURI);
+    if (imageURI === this.divaAdapter.getCurrentPageURI()) return;
+    this.divaAdapter.gotoPageByURI(imageURI);
   },
   /**
    * Change the page-wide folio value
    *
-   * @param {Number} index
-   * @param {String} fileName
+   * @param page the normalized { index, imageURI } from 'page:changed'
    */
-  propagateFolioChange: function propagateFolioChange(_, imageURI) {
-    // In the case that this is triggered by the 'ViewerDidLoad' event,
-    // Set the imageURI to be URI of the first page of the document
-    if (!imageURI) imageURI = this.divaInstance.getCurrentPageFilename();
+  propagateFolioChange: function propagateFolioChange(page) {
+    // When triggered by the 'viewer:loaded' event there is no page payload,
+    // so fall back to the URI of the document's current page.
+    var imageURI = page && page.imageURI ? page.imageURI : this.divaAdapter.getCurrentPageURI();
     this.triggerFolioChange(imageURI);
-  },
-  /**
-   * Draw boxes on the Diva viewer.  These usually correspond to
-   * music notation on a manuscript page.
-   * music notation on a manuscript page.
-   *
-   * @param boxSet [ {p,w,h,x,y}, ... ]
-   */
-  paintBoxes: function paintBoxes(boxSet) {
-    if (!this.divaInstance) return;
-
-    // Wait for the Diva instance to be ready
-    if (!this.divaInstance.isReady()) {
-      this.divaEventHandles.push(diva__WEBPACK_IMPORTED_MODULE_4___default().Events.subscribe("ViewerDidLoad", function () {
-        this.paintBoxes(boxSet);
-      }.bind(this)));
-      return;
-    }
-    this.divaInstance.resetHighlights();
-
-    // Use the Diva highlight plugin to draw the boxes
-    var highlightsByPageHash = {};
-    var pageList = [];
-    for (var i = 0; i < boxSet.length; i++) {
-      // Translate folio to Diva page
-      var pageFilename = boxSet[i].p;
-      var pageIndex = this.divaFilenames.indexOf(pageFilename);
-      if (highlightsByPageHash[pageIndex] === undefined) {
-        // Add page to the hash
-        highlightsByPageHash[pageIndex] = [];
-        pageList.push(pageIndex);
-      }
-      // Page is in the hash, so we add to it.
-      highlightsByPageHash[pageIndex].push({
-        'width': boxSet[i].w,
-        'height': boxSet[i].h,
-        'ulx': boxSet[i].x,
-        'uly': boxSet[i].y
-      });
-    }
-    // Now we need to add all of the pages to the Diva viewer
-    for (var j = 0; j < pageList.length; j++) {
-      this.divaInstance.highlightOnPage(pageList[j],
-      // The page number
-      highlightsByPageHash[pageList[j]] // List of boxes
-      );
-    }
-  },
-  /**
-    * Zoom Diva to a location.
-    *
-    * @param box
-    */
-  zoomToLocation: function zoomToLocation(box) {
-    if (!this.divaInstance) return;
-
-    // Wait for the Diva instance to be ready
-    if (!this.divaInstance.isReady()) {
-      this.divaEventHandles.push(diva__WEBPACK_IMPORTED_MODULE_4___default().Events.subscribe("ViewerDidLoad", function () {
-        this.zoomToLocation(box);
-      }.bind(this)));
-      return;
-    }
-
-    // Grab the diva internals to work with
-    var divaData = this.divaInstance;
-
-    // Do nothing if there's no box or if Diva is not initialized
-    if (!box || !divaData) return;
-    var divaSettings = divaData.getSettings();
-    // Now figure out the page that box is on
-    var divaOuter = divaSettings.outerObject;
-    var pageFilename = box.p;
-    var desiredPage = this.divaFilenames.indexOf(pageFilename);
-
-    // Now jump to that page
-    divaData.gotoPageByIndex(desiredPage);
-    // Get the height above top for that box
-    var boxTop = divaData.translateFromMaxZoomLevel(box.y);
-    var currentScrollTop = parseInt(divaOuter.scrollTop(), 10);
-
-    // TODO, find workaround since Diva 5 dropped 'averageHeights' and 'averageWidths'
-    // var zoomLevel = divaData.getZoomLevel();
-    var topMarginConsiderations = 0; // = divaSettings.averageHeights[zoomLevel] * divaSettings.adaptivePadding;
-    var leftMarginConsiderations = 0; // = divaSettings.averageWidths[zoomLevel] * divaSettings.adaptivePadding;
-
-    divaOuter.scrollTop(boxTop + currentScrollTop - divaOuter.height() / 2 + box.h / 2 + topMarginConsiderations);
-
-    // Now get the horizontal scroll
-    var boxLeft = divaData.translateFromMaxZoomLevel(box.x);
-    divaOuter.scrollLeft(boxLeft - divaOuter.width() / 2 + box.w / 2 + leftMarginConsiderations);
-    // Will include the padding between pages for best results
   }
 }));
 
@@ -32482,20 +32986,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var backbone_radio__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(backbone_radio__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var marionette__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! marionette */ "../../node_modules/backbone.marionette/lib/backbone.marionette.js");
 /* harmony import */ var marionette__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(marionette__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var diva__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! diva */ "../../dependencies/diva.js/build/diva.js");
-/* harmony import */ var diva__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(diva__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var search_SearchView__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! search/SearchView */ "./search/SearchView.js");
-/* harmony import */ var search_chant_search_ChantSearchProvider__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! search/chant-search/ChantSearchProvider */ "./search/chant-search/ChantSearchProvider.js");
-/* harmony import */ var search_omr_search_OMRSearchProvider__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! search/omr-search/OMRSearchProvider */ "./search/omr-search/OMRSearchProvider.js");
-/* harmony import */ var behaviors_FillViewportHeightBehavior__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! behaviors/FillViewportHeightBehavior */ "./behaviors/FillViewportHeightBehavior.js");
-/* harmony import */ var ui_SidenavView__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ui/SidenavView */ "./ui/SidenavView.js");
-/* harmony import */ var _folio_FolioView__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./folio/FolioView */ "./manuscript-detail/folio/FolioView.js");
-/* harmony import */ var _DivaView__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./DivaView */ "./manuscript-detail/DivaView.js");
-/* harmony import */ var _ManuscriptInfoView__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./ManuscriptInfoView */ "./manuscript-detail/ManuscriptInfoView.js");
-/* harmony import */ var _DivaFolioAdvancerView__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./DivaFolioAdvancerView */ "./manuscript-detail/DivaFolioAdvancerView.js");
-/* harmony import */ var _manuscript_template_html__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./manuscript.template.html */ "./manuscript-detail/manuscript.template.html");
-/* harmony import */ var _manuscript_template_html__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(_manuscript_template_html__WEBPACK_IMPORTED_MODULE_14__);
-
+/* harmony import */ var search_SearchView__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! search/SearchView */ "./search/SearchView.js");
+/* harmony import */ var search_chant_search_ChantSearchProvider__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! search/chant-search/ChantSearchProvider */ "./search/chant-search/ChantSearchProvider.js");
+/* harmony import */ var search_omr_search_OMRSearchProvider__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! search/omr-search/OMRSearchProvider */ "./search/omr-search/OMRSearchProvider.js");
+/* harmony import */ var behaviors_FillViewportHeightBehavior__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! behaviors/FillViewportHeightBehavior */ "./behaviors/FillViewportHeightBehavior.js");
+/* harmony import */ var ui_SidenavView__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ui/SidenavView */ "./ui/SidenavView.js");
+/* harmony import */ var _folio_FolioView__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./folio/FolioView */ "./manuscript-detail/folio/FolioView.js");
+/* harmony import */ var _DivaView__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./DivaView */ "./manuscript-detail/DivaView.js");
+/* harmony import */ var _ManuscriptInfoView__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./ManuscriptInfoView */ "./manuscript-detail/ManuscriptInfoView.js");
+/* harmony import */ var _DivaFolioAdvancerView__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./DivaFolioAdvancerView */ "./manuscript-detail/DivaFolioAdvancerView.js");
+/* harmony import */ var _manuscript_template_html__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./manuscript.template.html */ "./manuscript-detail/manuscript.template.html");
+/* harmony import */ var _manuscript_template_html__WEBPACK_IMPORTED_MODULE_13___default = /*#__PURE__*/__webpack_require__.n(_manuscript_template_html__WEBPACK_IMPORTED_MODULE_13__);
 
 
 
@@ -32519,8 +33020,8 @@ var manuscriptStateChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_2___default
  * @type {*|void}
  */
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (marionette__WEBPACK_IMPORTED_MODULE_3___default().View.extend({
-  template: (_manuscript_template_html__WEBPACK_IMPORTED_MODULE_14___default()),
-  behaviors: [behaviors_FillViewportHeightBehavior__WEBPACK_IMPORTED_MODULE_8__["default"]],
+  template: (_manuscript_template_html__WEBPACK_IMPORTED_MODULE_13___default()),
+  behaviors: [behaviors_FillViewportHeightBehavior__WEBPACK_IMPORTED_MODULE_7__["default"]],
   regions: {
     divaView: "#diva-column",
     folioView: "#folio",
@@ -32532,10 +33033,12 @@ var manuscriptStateChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_2___default
     resizer: '.resizer',
     divaColumn: "#diva-column",
     manuscriptDataColumn: '#manuscript-data-column',
-    folioDetailTab: '#manuscript-nav-folio-number'
+    folioDetailTab: '#manuscript-nav-folio-number',
+    manuscriptInfoButton: '#manuscript-info-target button'
   },
   events: {
-    'mousedown @ui.resizer': 'startResizing'
+    'mousedown @ui.resizer': 'startResizing',
+    'click @ui.manuscriptInfoButton': '_showInfoSidenav'
   },
   initialize: function initialize() {
     this._viewportContent = null;
@@ -32563,7 +33066,8 @@ var manuscriptStateChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_2___default
       updateDivaSize(); // eslint-disable-line no-use-before-define
     };
     var updateDivaSize = underscore__WEBPACK_IMPORTED_MODULE_1__["default"].throttle(function () {
-      diva__WEBPACK_IMPORTED_MODULE_4___default().Events.publish("PanelSizeDidChange");
+      var divaAdapter = manuscriptStateChannel.request('diva');
+      if (divaAdapter) divaAdapter.resize();
     }, 250);
     var stopResizing = function stopResizing() {
       $window.off('mousemove', executeResize);
@@ -32579,32 +33083,28 @@ var manuscriptStateChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_2___default
     this._configurePageLayout();
 
     // Initialize the Diva view
-    var divaView = new _DivaView__WEBPACK_IMPORTED_MODULE_11__["default"]({
+    var divaView = new _DivaView__WEBPACK_IMPORTED_MODULE_10__["default"]({
       manifestUrl: this.model.get("manifest_url"),
       toolbarParentObject: this.ui.toolbarRow
     });
 
-    // Create a "Manuscript Info" button in the Diva toolbar
-    this.listenToOnce(divaView, 'loaded:viewer', function () {
-      var manuscriptInfo = jquery__WEBPACK_IMPORTED_MODULE_0___default()('<div>').attr('id', 'manuscript-info-target');
-      var manuscriptInfoButton = jquery__WEBPACK_IMPORTED_MODULE_0___default()('<button>').addClass('btn btn-link btn-sm').text('Manuscript info');
-      manuscriptInfoButton.appendTo(manuscriptInfo);
-      jquery__WEBPACK_IMPORTED_MODULE_0___default()(manuscriptInfoButton).on('click', this._showInfoSidenav.bind(this));
-      manuscriptInfo.appendTo(this.ui.toolbarRow.find('.diva-tools-right'));
+    // Add the image attribution to the model once the manifest is loaded.
+    // Keyed on the manifest event rather than viewer load because on the v7
+    // backend the manifest fetch and the viewer load race.
+    this.listenToOnce(divaView, 'loaded:manifest', function () {
       this.model.set(divaView.imageAttributionMetadata);
     });
 
     // Initialize the search view
-    var chantSearchProvider = new search_chant_search_ChantSearchProvider__WEBPACK_IMPORTED_MODULE_6__["default"]({
+    var chantSearchProvider = new search_chant_search_ChantSearchProvider__WEBPACK_IMPORTED_MODULE_5__["default"]({
       additionalResultFields: ['genre', 'mode', 'feast', 'office', 'position']
     });
     chantSearchProvider.setRestriction('manuscript_id', '"' + this.model.get("id") + '"');
-    var notationSearchProvider = new search_omr_search_OMRSearchProvider__WEBPACK_IMPORTED_MODULE_7__["default"]({
-      divaView: divaView,
+    var notationSearchProvider = new search_omr_search_OMRSearchProvider__WEBPACK_IMPORTED_MODULE_6__["default"]({
       manuscript: this.model
     });
     var searchTerm = manuscriptStateChannel.request('search');
-    var searchView = new search_SearchView__WEBPACK_IMPORTED_MODULE_5__["default"]({
+    var searchView = new search_SearchView__WEBPACK_IMPORTED_MODULE_4__["default"]({
       searchTerm: searchTerm,
       providers: [chantSearchProvider, notationSearchProvider]
     });
@@ -32618,17 +33118,17 @@ var manuscriptStateChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_2___default
     });
 
     // Render the subviews
-    this.getRegion('folioView').show(new _folio_FolioView__WEBPACK_IMPORTED_MODULE_10__["default"]());
+    this.getRegion('folioView').show(new _folio_FolioView__WEBPACK_IMPORTED_MODULE_9__["default"]());
     this.getRegion('searchView').show(searchView);
-    this.getRegion('folioAdvancer').show(new _DivaFolioAdvancerView__WEBPACK_IMPORTED_MODULE_13__["default"]());
+    this.getRegion('folioAdvancer').show(new _DivaFolioAdvancerView__WEBPACK_IMPORTED_MODULE_12__["default"]());
 
     // Attach the info sidenav
     this._infoSidenavParent = jquery__WEBPACK_IMPORTED_MODULE_0___default()('<div class="manuscript-info-sidenav-container"></div>');
     this._infoSidenavParent.appendTo(document.body);
-    this._infoSidenav = new ui_SidenavView__WEBPACK_IMPORTED_MODULE_9__["default"]({
+    this._infoSidenav = new ui_SidenavView__WEBPACK_IMPORTED_MODULE_8__["default"]({
       el: this._infoSidenavParent,
       content: function content() {
-        return new _ManuscriptInfoView__WEBPACK_IMPORTED_MODULE_12__["default"]({
+        return new _ManuscriptInfoView__WEBPACK_IMPORTED_MODULE_11__["default"]({
           model: _this.model
         });
       }
@@ -32749,7 +33249,7 @@ var _ = __webpack_require__(/*! underscore */ "../../node_modules/underscore/mod
 module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
-__p+='<!-- SVGs are copied from Bootstrap\'s Icons library. Embedded directly here for customized weight styling.-->\n<div class="diva-folio-advancer-region">\n    <nav>\n        <ul class="pager text-end lh-1 my-3">\n            <li class="d-inline">\n                <a href="#" class="first-chant-folio py-2">\n                    <svg xmlns="http://www.w3.org/2000/svg"\n                         width="16"\n                         height="16"\n                         fill="currentColor"\n                         class="bi bi-box-arrow-in-right"\n                         viewBox="0 0 16 16"\n                         stroke="currentColor"\n                         stroke-width="5%">\n                        <path fill-rule="evenodd" d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0z" />\n                        <path fill-rule="evenodd" d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z" />\n                    </svg>\n                Go to first chant</a>\n            </li>\n            <li class="d-inline">\n                <a href="#" class="previous-folio py-2">\n                    <svg xmlns="http://www.w3.org/2000/svg"\n                         width="16"\n                         height="16"\n                         fill="currentColor"\n                         class="bi bi-chevron-up"\n                         viewBox="0 0 16 16"\n                         stroke="currentColor"\n                         stroke-width="5%">\n                        <path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708z" />\n                    </svg>\n                Previous Folio</a>\n            </li>\n            <li class="d-inline">\n                <a href="#" class="next-folio py-2">Next Folio\n                    <svg xmlns="http://www.w3.org/2000/svg"\n                         width="16"\n                         height="16"\n                         fill="currentColor"\n                         class="bi bi-chevron-down"\n                         viewBox="0 0 16 16"\n                         stroke="currentColor"\n                         stroke-width="5%">\n                        <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />\n                    </svg>\n                </a>\n            </li>\n        </ul>\n    </nav>\n</div>\n';
+__p+='<!-- SVGs are copied from Bootstrap\'s Icons library. Embedded directly here for customized weight styling.-->\n<div class="diva-folio-advancer-region">\n    <nav>\n        <ul class="pager lh-1 my-0 ps-0">\n            <li class="d-inline">\n                <a href="#" class="previous-folio py-2">\n                    <svg xmlns="http://www.w3.org/2000/svg"\n                         width="16"\n                         height="16"\n                         fill="currentColor"\n                         class="bi bi-chevron-left"\n                         viewBox="0 0 16 16"\n                         stroke="currentColor"\n                         stroke-width="5%">\n                        <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0" />\n                    </svg>\n                Previous</a>\n            </li>\n            <li class="d-inline">\n                <a href="#" class="next-folio py-2">Next\n                    <svg xmlns="http://www.w3.org/2000/svg"\n                         width="16"\n                         height="16"\n                         fill="currentColor"\n                         class="bi bi-chevron-right"\n                         viewBox="0 0 16 16"\n                         stroke="currentColor"\n                         stroke-width="5%">\n                        <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />\n                    </svg>\n                </a>\n            </li>\n            <li class="d-inline border-start ms-2 ps-2">\n                <a href="#" class="first-chant-folio py-2">\n                    <svg xmlns="http://www.w3.org/2000/svg"\n                         width="16"\n                         height="16"\n                         fill="currentColor"\n                         class="bi bi-box-arrow-in-right"\n                         viewBox="0 0 16 16"\n                         stroke="currentColor"\n                         stroke-width="5%">\n                        <path fill-rule="evenodd" d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0z" />\n                        <path fill-rule="evenodd" d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z" />\n                    </svg>\n                Go to first chant</a>\n            </li>\n        </ul>\n    </nav>\n</div>\n';
 }
 return __p;
 };
@@ -33630,6 +34130,51 @@ return __p;
 
 /***/ },
 
+/***/ "./manuscript-detail/manifestMetadata.js"
+/*!***********************************************!*\
+  !*** ./manuscript-detail/manifestMetadata.js ***!
+  \***********************************************/
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ extractImageAttribution)
+/* harmony export */ });
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+/**
+ * Pick a display string out of a IIIF v3 language map ({ en: ["..."], ... }),
+ * preferring English and otherwise the first language present. Multiple values
+ * are joined with <br> since the attribution is rendered as HTML.
+ */
+function pickLanguageValue(languageMap) {
+  if (!languageMap) return undefined;
+  var language = languageMap.en ? 'en' : Object.keys(languageMap)[0];
+  var values = languageMap[language];
+  return Array.isArray(values) ? values.join('<br>') : values;
+}
+
+/**
+ * Flatten a IIIF manifest's image-rights fields into the shape the manuscript
+ * info sidenav renders: { imageAttribution, imageLogoUrl, imageLicence }.
+ *
+ * Cantus serves both IIIF Presentation API v2 and v3 manifests, so each field
+ * tries the v3 location first and falls back to the v2 one.
+ */
+function extractImageAttribution(manifest) {
+  var provider = manifest.provider && manifest.provider[0];
+  var providerLogo = provider && provider.logo && provider.logo[0];
+  var v2Logo = manifest.logo;
+  if (v2Logo && _typeof(v2Logo) === 'object') v2Logo = v2Logo['@id'];
+  return {
+    imageAttribution: manifest.requiredStatement ? pickLanguageValue(manifest.requiredStatement.value) : manifest.attribution,
+    imageLogoUrl: providerLogo ? providerLogo.id : v2Logo,
+    imageLicence: manifest.rights || manifest.license
+  };
+}
+
+/***/ },
+
 /***/ "./manuscript-detail/manuscript-info.template.html"
 /*!*********************************************************!*\
   !*** ./manuscript-detail/manuscript-info.template.html ***!
@@ -33694,13 +34239,13 @@ var _ = __webpack_require__(/*! underscore */ "../../node_modules/underscore/mod
 module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
-__p+='<div id="toolbar-row">\n    <div class="toolbar-things"></div>\n</div>\n';
+__p+='<div id="toolbar-row">\n    <div class="toolbar-things"></div>\n    <span id="current-folio-label"></span>\n    <div id="manuscript-folio-advancer-container"></div>\n    <form id="goto-folio-form" autocomplete="off">\n        <input id="goto-folio-input" type="text" class="form-control form-control-sm" placeholder="Go to folio">\n        <button type="submit" class="btn btn-secondary btn-sm">Go</button>\n        <div id="goto-folio-suggestions"></div>\n    </form>\n    <div id="manuscript-info-target">\n        <button type="button" class="btn btn-link btn-sm">Manuscript info</button>\n    </div>\n</div>\n';
  if (viewer_warning) { 
 __p+='\n<div class="alert alert-warning alert-dismissible fade show" role="alert" style="margin: 1rem; margin-bottom: 0;">\n    <strong>Notice:</strong> '+
 ((__t=( viewer_warning ))==null?'':_.escape(__t))+
 '\n    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>\n</div>\n';
  } 
-__p+='\n<div class="manuscript-columns propagate-height">\n    <div id="diva-column" class="propagate-height"></div>\n    <div id="manuscript-data-column" class="propagate-height">\n        <div id="manuscript-folio-advancer-container"></div>\n        <div id="manuscript-nav-container">\n            <ul class="nav nav-tabs nav-justified mt-0">\n                <li class="nav-item">\n                    <a id="manuscript-nav-folio-number"\n                       class="nav-link active"\n                       data-bs-target="#manuscript-folio-pane"\n                       data-bs-toggle="tab"\n                       type="button"\n                       role="tab"\n                       aria-controls="manuscript-folio-pane"\n                       aria-selected="true"></a>\n                </li>\n                <li class="nav-item">\n                    <a class="nav-link" \n                    data-bs-target="#manuscript-search-pane" \n                    data-bs-toggle="tab" \n                    type="button" \n                    role="tab" \n                    aria-controls="manuscript-search-pane" \n                    aria-selected="false">Search Manuscript</a>\n                </li>\n            </ul>\n        </div>\n        <div id="manuscript-data-container" class="propagate-height">\n            <div class="resizer">\n                <div class="prong"></div>\n                <div class="prong"></div>\n            </div>\n            <div class="tab-content ps-2">\n                <div role="tabpanel"\n                    class="tab-pane active"\n                    id="manuscript-folio-pane">\n                    <div id="folio"></div>\n                </div>\n                <div role="tabpanel"\n                    class="tab-pane"\n                    id="manuscript-search-pane">\n                    <div id="manuscript-search"></div>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n';
+__p+='\n<div class="manuscript-columns propagate-height">\n    <div id="diva-column" class="propagate-height"></div>\n    <div id="manuscript-data-column" class="propagate-height">\n        <div id="manuscript-nav-container">\n            <ul class="nav nav-tabs nav-justified mt-0">\n                <li class="nav-item">\n                    <a id="manuscript-nav-folio-number"\n                       class="nav-link active"\n                       data-bs-target="#manuscript-folio-pane"\n                       data-bs-toggle="tab"\n                       type="button"\n                       role="tab"\n                       aria-controls="manuscript-folio-pane"\n                       aria-selected="true"></a>\n                </li>\n                <li class="nav-item">\n                    <a class="nav-link" \n                    data-bs-target="#manuscript-search-pane" \n                    data-bs-toggle="tab" \n                    type="button" \n                    role="tab" \n                    aria-controls="manuscript-search-pane" \n                    aria-selected="false">Search Manuscript</a>\n                </li>\n            </ul>\n        </div>\n        <div id="manuscript-data-container" class="propagate-height">\n            <div class="resizer">\n                <div class="prong"></div>\n                <div class="prong"></div>\n            </div>\n            <div class="tab-content ps-2">\n                <div role="tabpanel"\n                    class="tab-pane active"\n                    id="manuscript-folio-pane">\n                    <div id="folio"></div>\n                </div>\n                <div role="tabpanel"\n                    class="tab-pane"\n                    id="manuscript-search-pane">\n                    <div id="manuscript-search"></div>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n';
 }
 return __p;
 };
@@ -36259,14 +36804,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var backbone__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(backbone__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var marionette__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! marionette */ "../../node_modules/backbone.marionette/lib/backbone.marionette.js");
 /* harmony import */ var marionette__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(marionette__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var collections_SearchNotationResultCollection__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! collections/SearchNotationResultCollection */ "./collections/SearchNotationResultCollection.js");
-/* harmony import */ var utils_IncrementalClientSideLoader__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! utils/IncrementalClientSideLoader */ "./utils/IncrementalClientSideLoader.js");
-/* harmony import */ var _SearchResultHeadingView__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../SearchResultHeadingView */ "./search/SearchResultHeadingView.js");
-/* harmony import */ var _NeumeGalleryView__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./NeumeGalleryView */ "./search/omr-search/NeumeGalleryView.js");
-/* harmony import */ var _ContourChoiceView__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./ContourChoiceView */ "./search/omr-search/ContourChoiceView.js");
-/* harmony import */ var _IntervalChoiceView__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./IntervalChoiceView */ "./search/omr-search/IntervalChoiceView.js");
-/* harmony import */ var _InputView__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./InputView */ "./search/omr-search/InputView.js");
-/* harmony import */ var _ResultView__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./ResultView */ "./search/omr-search/ResultView.js");
+/* harmony import */ var backbone_radio__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! backbone.radio */ "../../node_modules/backbone.radio/build/backbone.radio.js");
+/* harmony import */ var backbone_radio__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(backbone_radio__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var collections_SearchNotationResultCollection__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! collections/SearchNotationResultCollection */ "./collections/SearchNotationResultCollection.js");
+/* harmony import */ var utils_IncrementalClientSideLoader__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! utils/IncrementalClientSideLoader */ "./utils/IncrementalClientSideLoader.js");
+/* harmony import */ var _SearchResultHeadingView__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../SearchResultHeadingView */ "./search/SearchResultHeadingView.js");
+/* harmony import */ var _NeumeGalleryView__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./NeumeGalleryView */ "./search/omr-search/NeumeGalleryView.js");
+/* harmony import */ var _ContourChoiceView__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./ContourChoiceView */ "./search/omr-search/ContourChoiceView.js");
+/* harmony import */ var _IntervalChoiceView__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./IntervalChoiceView */ "./search/omr-search/IntervalChoiceView.js");
+/* harmony import */ var _InputView__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./InputView */ "./search/omr-search/InputView.js");
+/* harmony import */ var _ResultView__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./ResultView */ "./search/omr-search/ResultView.js");
 
 
 
@@ -36278,6 +36825,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_3___default().channel('manuscript');
 
 /**
  * Provide support for searching OMR data via the search interface. Required
@@ -36290,7 +36839,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (marionette__WEBPACK_IMPORTED_MODULE_2___default().Object.extend({
   description: 'OMR Search',
   results: null,
-  divaView: null,
   manuscript: undefined,
   /**
    * Give a list of fields supported given the available search plugins
@@ -36326,12 +36874,9 @@ __webpack_require__.r(__webpack_exports__);
     underscore__WEBPACK_IMPORTED_MODULE_0__["default"].forEach(this.searchPlugins, function (plugin) {
       if (manuscriptModel.isPluginActivated(plugin.name)) this.fields.push.apply(this.fields, plugin.fields);
     }, this);
-
-    // The diva view which we will act upon!
-    this.divaView = options.divaView;
-    this.results = new collections_SearchNotationResultCollection__WEBPACK_IMPORTED_MODULE_3__["default"]();
-    this.displayedResults = new collections_SearchNotationResultCollection__WEBPACK_IMPORTED_MODULE_3__["default"]();
-    this.resultLoadingHandler = new utils_IncrementalClientSideLoader__WEBPACK_IMPORTED_MODULE_4__["default"](this.displayedResults, this.results);
+    this.results = new collections_SearchNotationResultCollection__WEBPACK_IMPORTED_MODULE_4__["default"]();
+    this.displayedResults = new collections_SearchNotationResultCollection__WEBPACK_IMPORTED_MODULE_4__["default"]();
+    this.resultLoadingHandler = new utils_IncrementalClientSideLoader__WEBPACK_IMPORTED_MODULE_5__["default"](this.displayedResults, this.results);
     this.listenTo(this.results, "sync", this.resultFetchCallback);
   },
   onSearch: function onSearch(query) {
@@ -36352,19 +36897,35 @@ __webpack_require__.r(__webpack_exports__);
     }
     return false;
   },
+  getDivaAdapter: function getDivaAdapter() {
+    return manuscriptChannel.request('diva');
+  },
   resultFetchCallback: function resultFetchCallback() {
-    this.divaView.paintBoxes(underscore__WEBPACK_IMPORTED_MODULE_0__["default"].flatten(this.results.map(function (model) {
+    var divaAdapter = this.getDivaAdapter();
+    if (!divaAdapter) return;
+    divaAdapter.setHighlights(underscore__WEBPACK_IMPORTED_MODULE_0__["default"].flatten(this.results.map(function (model) {
       return underscore__WEBPACK_IMPORTED_MODULE_0__["default"].map(model.get('boxes'), underscore__WEBPACK_IMPORTED_MODULE_0__["default"].clone);
     })));
     if (this.results.length > 0) this.zoomToResult(this.results.at(0));
   },
-  /** Stop displaying Diva boxes */
+  /** Stop displaying Diva highlights */
   clearDivaBoxes: function clearDivaBoxes() {
-    // If we pass an empty array, then all boxes are erased.
-    this.divaView.paintBoxes([]);
+    var divaAdapter = this.getDivaAdapter();
+    // If we pass an empty array, then all highlights are erased.
+    if (divaAdapter) divaAdapter.setHighlights([]);
   },
   zoomToResult: function zoomToResult(model) {
-    this.divaView.zoomToLocation(underscore__WEBPACK_IMPORTED_MODULE_0__["default"].clone(model.get('boxes')[0]));
+    var divaAdapter = this.getDivaAdapter();
+    if (!divaAdapter) return;
+    var box = model.get('boxes')[0];
+    if (!box) return;
+    divaAdapter.focusRegion({
+      imageURI: box.p,
+      x: box.x,
+      y: box.y,
+      width: box.w,
+      height: box.h
+    });
   },
   serializeData: function serializeData() {
     return {
@@ -36386,14 +36947,14 @@ __webpack_require__.r(__webpack_exports__);
     this.results.reset();
 
     // Input
-    var inputView = new _InputView__WEBPACK_IMPORTED_MODULE_9__["default"]({
+    var inputView = new _InputView__WEBPACK_IMPORTED_MODULE_10__["default"]({
       initialQuery: this.query
     });
     regions.searchInput.show(inputView);
 
     // Neume gallery
     if (field.type === 'neume_names' && this.neumeExemplars.length > 0) {
-      var gallery = new _NeumeGalleryView__WEBPACK_IMPORTED_MODULE_6__["default"]({
+      var gallery = new _NeumeGalleryView__WEBPACK_IMPORTED_MODULE_7__["default"]({
         collection: this.neumeExemplars
       });
       inputView.listenTo(gallery, 'use:neume', function (newQuery) {
@@ -36401,13 +36962,13 @@ __webpack_require__.r(__webpack_exports__);
       });
       regions.searchHelper.show(gallery);
     } else if (field.type === 'contour') {
-      var contourChoices = new _ContourChoiceView__WEBPACK_IMPORTED_MODULE_7__["default"]();
+      var contourChoices = new _ContourChoiceView__WEBPACK_IMPORTED_MODULE_8__["default"]();
       inputView.listenTo(contourChoices, 'use:contour', function (newQuery) {
         inputView.insertSearchString(newQuery, true);
       });
       regions.searchHelper.show(contourChoices);
     } else if (field.type === 'intervals') {
-      var intervalChoices = new _IntervalChoiceView__WEBPACK_IMPORTED_MODULE_8__["default"]();
+      var intervalChoices = new _IntervalChoiceView__WEBPACK_IMPORTED_MODULE_9__["default"]();
       inputView.listenTo(intervalChoices, 'use:interval', function (newQuery) {
         inputView.insertSearchString(newQuery, true);
       });
@@ -36417,14 +36978,14 @@ __webpack_require__.r(__webpack_exports__);
     }
 
     // Result heading
-    regions.searchResultHeading.show(new _SearchResultHeadingView__WEBPACK_IMPORTED_MODULE_5__["default"]({
+    regions.searchResultHeading.show(new _SearchResultHeadingView__WEBPACK_IMPORTED_MODULE_6__["default"]({
       collection: this.results,
       showLoading: true,
       getSearchMetadata: this.getSearchMetadata
     }));
 
     // Results
-    var resultView = new _ResultView__WEBPACK_IMPORTED_MODULE_10__["default"]({
+    var resultView = new _ResultView__WEBPACK_IMPORTED_MODULE_11__["default"]({
       collection: this.displayedResults
     });
     this.listenTo(resultView, 'continue:loading', this._continueLoadingResults);
@@ -39046,6 +39607,9 @@ function pageSnippetUrl(loc, dimens) {
 /******/ 		return module.exports;
 /******/ 	}
 /******/ 	
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = __webpack_modules__;
+/******/ 	
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat get default export */
 /******/ 	(() => {
@@ -39059,6 +39623,36 @@ function pageSnippetUrl(loc, dimens) {
 /******/ 		};
 /******/ 	})();
 /******/ 	
+/******/ 	/* webpack/runtime/create fake namespace object */
+/******/ 	(() => {
+/******/ 		var getProto = Object.getPrototypeOf ? (obj) => (Object.getPrototypeOf(obj)) : (obj) => (obj.__proto__);
+/******/ 		var leafPrototypes;
+/******/ 		// create a fake namespace object
+/******/ 		// mode & 1: value is a module id, require it
+/******/ 		// mode & 2: merge all properties of value into the ns
+/******/ 		// mode & 4: return value when already ns object
+/******/ 		// mode & 16: return value when it's Promise-like
+/******/ 		// mode & 8|1: behave like require
+/******/ 		__webpack_require__.t = function(value, mode) {
+/******/ 			if(mode & 1) value = this(value);
+/******/ 			if(mode & 8) return value;
+/******/ 			if(typeof value === 'object' && value) {
+/******/ 				if((mode & 4) && value.__esModule) return value;
+/******/ 				if((mode & 16) && typeof value.then === 'function') return value;
+/******/ 			}
+/******/ 			var ns = Object.create(null);
+/******/ 			__webpack_require__.r(ns);
+/******/ 			var def = {};
+/******/ 			leafPrototypes = leafPrototypes || [null, getProto({}), getProto([]), getProto(getProto)];
+/******/ 			for(var current = mode & 2 && value; (typeof current == 'object' || typeof current == 'function') && !~leafPrototypes.indexOf(current); current = getProto(current)) {
+/******/ 				Object.getOwnPropertyNames(current).forEach((key) => (def[key] = () => (value[key])));
+/******/ 			}
+/******/ 			def['default'] = () => (value);
+/******/ 			__webpack_require__.d(ns, def);
+/******/ 			return ns;
+/******/ 		};
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
 /******/ 		// define getter functions for harmony exports
@@ -39068,6 +39662,28 @@ function pageSnippetUrl(loc, dimens) {
 /******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
 /******/ 				}
 /******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/ensure chunk */
+/******/ 	(() => {
+/******/ 		__webpack_require__.f = {};
+/******/ 		// This file contains only the entry chunk.
+/******/ 		// The chunk loading function for additional chunks
+/******/ 		__webpack_require__.e = (chunkId) => {
+/******/ 			return Promise.all(Object.keys(__webpack_require__.f).reduce((promises, key) => {
+/******/ 				__webpack_require__.f[key](chunkId, promises);
+/******/ 				return promises;
+/******/ 			}, []));
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/get javascript chunk filename */
+/******/ 	(() => {
+/******/ 		// This function allow to reference async chunks
+/******/ 		__webpack_require__.u = (chunkId) => {
+/******/ 			// return url for filenames based on template
+/******/ 			return "cantus.chunk." + chunkId + ".min.js";
 /******/ 		};
 /******/ 	})();
 /******/ 	
@@ -39088,6 +39704,51 @@ function pageSnippetUrl(loc, dimens) {
 /******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
 /******/ 	})();
 /******/ 	
+/******/ 	/* webpack/runtime/load script */
+/******/ 	(() => {
+/******/ 		var inProgress = {};
+/******/ 		// data-webpack is not used as build has no uniqueName
+/******/ 		// loadScript function to load a script via script tag
+/******/ 		__webpack_require__.l = (url, done, key, chunkId) => {
+/******/ 			if(inProgress[url]) { inProgress[url].push(done); return; }
+/******/ 			var script, needAttach;
+/******/ 			if(key !== undefined) {
+/******/ 				var scripts = document.getElementsByTagName("script");
+/******/ 				for(var i = 0; i < scripts.length; i++) {
+/******/ 					var s = scripts[i];
+/******/ 					if(s.getAttribute("src") == url) { script = s; break; }
+/******/ 				}
+/******/ 			}
+/******/ 			if(!script) {
+/******/ 				needAttach = true;
+/******/ 				script = document.createElement('script');
+/******/ 		
+/******/ 				script.charset = 'utf-8';
+/******/ 				if (__webpack_require__.nc) {
+/******/ 					script.setAttribute("nonce", __webpack_require__.nc);
+/******/ 				}
+/******/ 		
+/******/ 		
+/******/ 				script.src = url;
+/******/ 			}
+/******/ 			inProgress[url] = [done];
+/******/ 			var onScriptComplete = (prev, event) => {
+/******/ 				// avoid mem leaks in IE.
+/******/ 				script.onerror = script.onload = null;
+/******/ 				clearTimeout(timeout);
+/******/ 				var doneFns = inProgress[url];
+/******/ 				delete inProgress[url];
+/******/ 				script.parentNode && script.parentNode.removeChild(script);
+/******/ 				doneFns && doneFns.forEach((fn) => (fn(event)));
+/******/ 				if(prev) return prev(event);
+/******/ 			}
+/******/ 			var timeout = setTimeout(onScriptComplete.bind(null, undefined, { type: 'timeout', target: script }), 120000);
+/******/ 			script.onerror = onScriptComplete.bind(null, script.onerror);
+/******/ 			script.onload = onScriptComplete.bind(null, script.onload);
+/******/ 			needAttach && document.head.appendChild(script);
+/******/ 		};
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/make namespace object */
 /******/ 	(() => {
 /******/ 		// define __esModule on exports
@@ -39097,6 +39758,101 @@ function pageSnippetUrl(loc, dimens) {
 /******/ 			}
 /******/ 			Object.defineProperty(exports, '__esModule', { value: true });
 /******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/publicPath */
+/******/ 	(() => {
+/******/ 		__webpack_require__.p = "/static/js/app/";
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/jsonp chunk loading */
+/******/ 	(() => {
+/******/ 		// no baseURI
+/******/ 		
+/******/ 		// object to store loaded and loading chunks
+/******/ 		// undefined = chunk not loaded, null = chunk preloaded/prefetched
+/******/ 		// [resolve, reject, Promise] = chunk loading, 0 = chunk loaded
+/******/ 		var installedChunks = {
+/******/ 			"cantus": 0
+/******/ 		};
+/******/ 		
+/******/ 		__webpack_require__.f.j = (chunkId, promises) => {
+/******/ 				// JSONP chunk loading for javascript
+/******/ 				var installedChunkData = __webpack_require__.o(installedChunks, chunkId) ? installedChunks[chunkId] : undefined;
+/******/ 				if(installedChunkData !== 0) { // 0 means "already installed".
+/******/ 		
+/******/ 					// a Promise means "currently loading".
+/******/ 					if(installedChunkData) {
+/******/ 						promises.push(installedChunkData[2]);
+/******/ 					} else {
+/******/ 						if(true) { // all chunks have JS
+/******/ 							// setup Promise in chunk cache
+/******/ 							var promise = new Promise((resolve, reject) => (installedChunkData = installedChunks[chunkId] = [resolve, reject]));
+/******/ 							promises.push(installedChunkData[2] = promise);
+/******/ 		
+/******/ 							// start chunk loading
+/******/ 							var url = __webpack_require__.p + __webpack_require__.u(chunkId);
+/******/ 							// create error before stack unwound to get useful stacktrace later
+/******/ 							var error = new Error();
+/******/ 							var loadingEnded = (event) => {
+/******/ 								if(__webpack_require__.o(installedChunks, chunkId)) {
+/******/ 									installedChunkData = installedChunks[chunkId];
+/******/ 									if(installedChunkData !== 0) installedChunks[chunkId] = undefined;
+/******/ 									if(installedChunkData) {
+/******/ 										var errorType = event && (event.type === 'load' ? 'missing' : event.type);
+/******/ 										var realSrc = event && event.target && event.target.src;
+/******/ 										error.message = 'Loading chunk ' + chunkId + ' failed.\n(' + errorType + ': ' + realSrc + ')';
+/******/ 										error.name = 'ChunkLoadError';
+/******/ 										error.type = errorType;
+/******/ 										error.request = realSrc;
+/******/ 										installedChunkData[1](error);
+/******/ 									}
+/******/ 								}
+/******/ 							};
+/******/ 							__webpack_require__.l(url, loadingEnded, "chunk-" + chunkId, chunkId);
+/******/ 						}
+/******/ 					}
+/******/ 				}
+/******/ 		};
+/******/ 		
+/******/ 		// no prefetching
+/******/ 		
+/******/ 		// no preloaded
+/******/ 		
+/******/ 		// no HMR
+/******/ 		
+/******/ 		// no HMR manifest
+/******/ 		
+/******/ 		// no on chunks loaded
+/******/ 		
+/******/ 		// install a JSONP callback for chunk loading
+/******/ 		var webpackJsonpCallback = (parentChunkLoadingFunction, data) => {
+/******/ 			var [chunkIds, moreModules, runtime] = data;
+/******/ 			// add "moreModules" to the modules object,
+/******/ 			// then flag all "chunkIds" as loaded and fire callback
+/******/ 			var moduleId, chunkId, i = 0;
+/******/ 			if(chunkIds.some((id) => (installedChunks[id] !== 0))) {
+/******/ 				for(moduleId in moreModules) {
+/******/ 					if(__webpack_require__.o(moreModules, moduleId)) {
+/******/ 						__webpack_require__.m[moduleId] = moreModules[moduleId];
+/******/ 					}
+/******/ 				}
+/******/ 				if(runtime) var result = runtime(__webpack_require__);
+/******/ 			}
+/******/ 			if(parentChunkLoadingFunction) parentChunkLoadingFunction(data);
+/******/ 			for(;i < chunkIds.length; i++) {
+/******/ 				chunkId = chunkIds[i];
+/******/ 				if(__webpack_require__.o(installedChunks, chunkId) && installedChunks[chunkId]) {
+/******/ 					installedChunks[chunkId][0]();
+/******/ 				}
+/******/ 				installedChunks[chunkId] = 0;
+/******/ 			}
+/******/ 		
+/******/ 		}
+/******/ 		
+/******/ 		var chunkLoadingGlobal = self["webpackChunk"] = self["webpackChunk"] || [];
+/******/ 		chunkLoadingGlobal.forEach(webpackJsonpCallback.bind(null, 0));
+/******/ 		chunkLoadingGlobal.push = webpackJsonpCallback.bind(null, chunkLoadingGlobal.push.bind(chunkLoadingGlobal));
 /******/ 	})();
 /******/ 	
 /************************************************************************/

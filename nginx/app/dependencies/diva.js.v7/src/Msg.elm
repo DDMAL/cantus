@@ -1,18 +1,23 @@
 module Msg exposing (Msg(..))
 
+import Auth
 import Filters exposing (FilterFloatValue, FilterIntValue, FilterStringValue, FilterToggle)
 import Http
 import IIIF.Presentation exposing (IIIFManifest, IIIFResource)
 
 
 type Msg
-    = ClientNotifiedFullscreenChanged Bool
+    = AuthEvent Auth.Event
+    | ClientRequestedLayoutMode String
+    | ClientRequestedResource String String
+    | ClientNotifiedFullscreenChanged Bool
     | ClientNotifiedPageChanged Int
     | ClientNotifiedPageChangedInstant Int
     | ClientNotifiedScrollThumbs
     | ServerRespondedWithCollectionItem String (Result Http.Error IIIFResource)
     | ServerRespondedWithManifestFromCollection String (Result Http.Error IIIFManifest)
     | ServerRespondedWithResource (Result Http.Error IIIFResource)
+    | ServerRespondedWithRequestedResource String String (Result Http.Error IIIFResource)
     | UserAppliedFilterJson
     | UserChangedZoomLevel Float
     | UserClickedCloseManifestInfo
@@ -24,7 +29,7 @@ type Msg
     | UserClickedPageViewImageChoice Int
     | UserClickedPageViewNext
     | UserClickedPageViewPrev
-    | UserClickedRange String (Maybe Int)
+    | UserClickedRange (Maybe Int)
     | UserClickedSaveFilteredImage
     | UserClickedThumbnail Int
     | UserClickedZoomIn
@@ -41,12 +46,14 @@ type Msg
     | UserStartedCollectionSidebarResize Int
     | UserStartedSidebarResize Int
     | UserToggledContents
+    | UserToggledCollectionSidebar
     | UserToggledFilter FilterToggle Bool
     | UserToggledFilterGroup String
     | UserToggledFullscreen
     | UserToggledMetadata
     | UserToggledPageViewFullscreen
     | UserToggledPageViewSidebar
+    | UserToggledRangeMetadata String
     | UserToggledShiftByOne
     | UserToggledSidebar
     | UserToggledThumbnails

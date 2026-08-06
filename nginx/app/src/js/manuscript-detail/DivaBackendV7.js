@@ -1,9 +1,8 @@
 import extractImageAttribution from './manifestMetadata';
 
-// OpenSeadragon version matching the one diva.js v7's own test harness loads.
-// v7 references OpenSeadragon as a global and expects window.OpenSeadragon to
-// exist before its bundle runs.
-const OSD_SRC = "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/5.0.1/openseadragon.min.js";
+// OpenSeadragon version matching the one in diva.js v7's README. v7 references
+// it and expects window.OpenSeadragon to exist before its bundle runs.
+const OSD_SRC = "https://cdn.jsdelivr.net/npm/openseadragon@6.0.2/build/openseadragon/openseadragon.min.js";
 
 // Id of the <style> element Diva v7 injects its stylesheet into. v7 skips that
 // global injection if an element with this id already exists (diva.ts), so we
@@ -49,8 +48,8 @@ function loadOpenSeadragon() {
  * Diva v7 backend for DivaAdapter.
  *
  * Implements (issue #942, Stage 3) the v7 viewer lifecycle: it lazily loads
- * OpenSeadragon and the vendored v7 bundle, mounts the viewer, and translates
- * v7's DOM CustomEvents into the adapter's backend-neutral events, tracking the
+ * OpenSeadragon and the vendored v7 bundle, mounts the viewer, and adapts v7's
+ * public API (v7.4.0) to the adapter's backend-neutral events, tracking the
  * current page index and page URIs along the way.
  */
 export default class DivaBackendV7 {
@@ -63,7 +62,7 @@ export default class DivaBackendV7 {
 
         // Adapter event subscribers. DivaView subscribes synchronously right
         // after initialize(), before the viewer exists, so on() only records
-        // callbacks here; they fire once the underlying DOM events arrive.
+        // callbacks here; they fire once the underlying viewer events arrive.
         this.subscribers = {
             'viewer:loaded': [],
             'page:changed': [],
@@ -71,26 +70,22 @@ export default class DivaBackendV7 {
             'manifest:loaded': []
         };
 
-        // Current page index, tracked from diva-page-change.
+        // Current page index, tracked from v7's pagechange event.
         this.currentIndex = 0;
 
-        // Page image URIs in v7's page order, filled on the first page render.
+        // Page image URIs in v7's page order, filled once the viewer is ready.
         this.pageURIs = [];
 
-        // The first diva-page-change is v7's reliable "ready" signal, so it also
-        // stands in for viewer:loaded / document:loaded; diva-loading-change
-        // reports loading:false before anything renders, so it cannot be used.
-        this.firstPageHandled = false;
+        // True once v7's `ready` promise has resolved; per v7's README, page
+        // state must not be read nor viewer commands issued before then.
+        this.ready = false;
 
-        // The element we listen on, and a stable bound handler so the same
-        // reference can be both added and removed.
-        this.viewerElement = null;
         this.onPageChange = this.handlePageChange.bind(this);
     }
 
     initialize() {
-        // v7 has no ManifestDidLoad event; fetch the manifest ourselves for the
-        // attribution, off the load chain so a fetch failure can't blank the viewer.
+        // v7 exposes no manifest attribution, so fetch the manifest ourselves;
+        // kept off initialize()'s promise so a failed fetch can't reject it.
         this.loadManifestMetadata();
 
         // Each step is gated on `destroyed` so navigating away mid-load does not
@@ -104,7 +99,7 @@ export default class DivaBackendV7 {
             })
             .then(() => {
                 if (this.destroyed)
-                    return;
+                    return undefined;
                 const Diva = window.Diva;
                 if (!Diva)
                     throw new Error('Diva v7 bundle loaded but window.Diva is undefined');
@@ -117,12 +112,9 @@ export default class DivaBackendV7 {
                     showTitle: false
                 });
 
-                // v7 dispatches its CustomEvents on the #main-viewer element with
-                // bubbles:false, so we listen on that element directly (a listener
-                // on #diva-wrapper would never fire). Elm renders it synchronously
-                // during construction, so it exists by now.
-                this.viewerElement = document.getElementById('main-viewer');
-                this.viewerElement.addEventListener('diva-page-change', this.onPageChange);
+                this.instance.addEventListener('pagechange', this.onPageChange);
+
+                return this.instance.ready.then(() => this.handleViewerReady());
             });
     }
 
@@ -152,20 +144,29 @@ export default class DivaBackendV7 {
             this.subscribers[event].push(callback);
     }
 
-    /**
-     * Track the new page index and re-emit the adapter's events. The first event
-     * also stands in for viewer:loaded / document:loaded (see firstPageHandled).
-     */
+    handleViewerReady() {
+        if (this.destroyed)
+            return;
+
+        // Strip "/info.json" so each URI matches Folio.image_uri in Django/Solr.
+        this.pageURIs = this.instance.getPages().map(
+            page => page.primaryImage.id.replace(/\/info\.json$/, ''));
+        this.currentIndex = this.instance.getState().currentPageIndex || 0;
+        this.ready = true;
+
+        this.emit('viewer:loaded');
+        this.emit('document:loaded');
+        this.emitPageChanged();
+    }
+
     handlePageChange(event) {
-        this.currentIndex = event.detail.index;
+        this.currentIndex = event.detail.pageIndex;
 
-        if (!this.firstPageHandled) {
-            this.firstPageHandled = true;
-            this.pageURIs = this.readPageURIs();
-            this.emit('viewer:loaded');
-            this.emit('document:loaded');
-        }
+        if (this.ready)
+            this.emitPageChanged();
+    }
 
+    emitPageChanged() {
         this.emit('page:changed', {
             index: this.currentIndex,
             imageURI: this.getCurrentPageURI()
@@ -174,23 +175,6 @@ export default class DivaBackendV7 {
 
     emit(event, payload) {
         this.subscribers[event].forEach(callback => callback(payload));
-    }
-
-    /**
-     * Read the page image URIs in v7's page order from the #main-viewer element.
-     *
-     * v7 stores per-page tile sources there as "<service-base>/info.json"; Cantus
-     * identifies folios by the bare service base URI (matching Folio.image_uri in
-     * Django/Solr and the OMR result coordinates), so strip the suffix. Reading
-     * from the viewer keeps the array index-aligned with v7's own pages, which
-     * drop any canvas that has no image.
-     *
-     * NOTE: `tileSources` is a TypeScript-private field, readable at runtime but
-     * not part of v7's public API (a future Diva bump could rename it).
-     */
-    readPageURIs() {
-        return this.viewerElement.tileSources.map(
-            tileSource => tileSource.replace(/\/info\.json$/, ''));
     }
 
     getCurrentPageURI() {
@@ -205,26 +189,21 @@ export default class DivaBackendV7 {
         return this.currentIndex;
     }
 
-    /** Scroll to the page with the given image URI, if the viewer has it. */
+    /** Go to the page with the given image URI, if the viewer has it. */
     gotoPageByURI(uri) {
-        this.viewerElement.scrollToIndex(this.pageURIs.indexOf(uri));
+        var index = this.pageURIs.indexOf(uri);
+        if (index >= 0)
+            this.instance.goToPage(index);
     }
 
+    // next()/previous() follow the current layout, advancing a full opening in
+    // a spread layout (both pages of an opening share one scroll position).
     goToNextPage() {
-        this.viewerElement.scrollToIndex(this.currentIndex + this.pageStep());
+        this.instance.next();
     }
 
     goToPreviousPage() {
-        this.viewerElement.scrollToIndex(this.currentIndex - this.pageStep());
-    }
-
-    /**
-     * Pages to advance per step: a full opening (two) in a two-page layout, one
-     * otherwise. The two pages of an opening share a scroll position, so a step
-     * of one would change the page index without moving the view.
-     */
-    pageStep() {
-        return this.viewerElement.layoutMode === 'single' ? 1 : 2;
+        this.instance.previous();
     }
 
     // No-op: OpenSeadragon's autoResize reflows the viewer when its container resizes.
@@ -233,17 +212,16 @@ export default class DivaBackendV7 {
     // No-op: v7 sets its layout from the manifest; the reader toggles it in the toolbar.
     changeView() {}
 
-    getInstanceSelector() { return null; }
     setHighlights() {}
 
     /**
-     * Scroll to an OMR result's page and zoom to its region, given in
+     * Go to an OMR result's page and zoom to its region, given in
      * full-resolution image pixels.
      */
     focusRegion(region) {
-        // A search can run before the viewer has loaded; retry once it has, so
+        // A search can run before the viewer is ready; retry once it is, so
         // pageURIs is populated.
-        if (!this.firstPageHandled) {
+        if (!this.ready) {
             this.on('viewer:loaded', () => this.focusRegion(region));
             return;
         }
@@ -252,38 +230,22 @@ export default class DivaBackendV7 {
         if (index < 0)
             return;
 
-        this.viewerElement.scrollToIndex(index);
-
-        // The page's tile image loads asynchronously; wait for it before mapping
-        // the region into viewport coordinates.
-        var zoomToRegionWhenLoaded = () => {
-            if (this.destroyed)
-                return;
-
-            var item = this.viewerElement.loadedItems.get(index);
-            if (item) {
-                var imageRect = new window.OpenSeadragon.Rect(
-                    region.x, region.y, region.width, region.height);
-                this.viewerElement.viewer.viewport.fitBounds(
-                    item.imageToViewportRectangle(imageRect));
-            } else if (this.viewerElement.loadingIndexes.has(index)) {
-                window.requestAnimationFrame(zoomToRegionWhenLoaded);
-            }
-        };
-        zoomToRegionWhenLoaded();
+        this.instance.zoomToRegion(index, {
+            x: region.x,
+            y: region.y,
+            width: region.width,
+            height: region.height
+        });
     }
 
     destroy() {
         // Mark destroyed so an in-flight initialize() bails before constructing.
         this.destroyed = true;
 
-        if (this.viewerElement) {
-            this.viewerElement.removeEventListener('diva-page-change', this.onPageChange);
-            this.viewerElement = null;
-        }
-
-        if (this.instance)
+        if (this.instance) {
+            this.instance.removeEventListener('pagechange', this.onPageChange);
             this.instance.destroy();
+        }
 
         this.instance = null;
     }

@@ -43,11 +43,13 @@ export default Marionette.View.extend({
         resizer: '.resizer',
         divaColumn: "#diva-column",
         manuscriptDataColumn: '#manuscript-data-column',
-        folioDetailTab: '#manuscript-nav-folio-number'
+        folioDetailTab: '#manuscript-nav-folio-number',
+        manuscriptInfoButton: '#manuscript-info-target button'
     },
 
     events: {
-        'mousedown @ui.resizer': 'startResizing'
+        'mousedown @ui.resizer': 'startResizing',
+        'click @ui.manuscriptInfoButton': '_showInfoSidenav'
     },
 
     initialize: function () {
@@ -108,16 +110,6 @@ export default Marionette.View.extend({
         var divaView = new DivaView({
             manifestUrl: this.model.get("manifest_url"),
             toolbarParentObject: this.ui.toolbarRow
-        });
-
-        // Create a "Manuscript Info" button in the Diva toolbar
-        this.listenToOnce(divaView, 'loaded:viewer', function () {
-            var manuscriptInfo = $('<div>').attr('id', 'manuscript-info-target');
-            var manuscriptInfoButton = $('<button>').addClass('btn btn-link btn-sm').text('Manuscript info');
-            manuscriptInfoButton.appendTo(manuscriptInfo);
-
-            $(manuscriptInfoButton).on('click', this._showInfoSidenav.bind(this));
-            manuscriptInfo.appendTo(this.ui.toolbarRow.find('.diva-tools-right'));
         });
 
         // Add the image attribution to the model once the manifest is loaded.
