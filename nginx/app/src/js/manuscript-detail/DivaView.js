@@ -66,8 +66,12 @@ export default Marionette.View.extend({
             manifestUrl: this.manifestUrl,
             toolbarParentObject: this.toolbarParentObject
         });
-        // Initialize Diva
-        this.divaAdapter.initialize();
+        // Initialize Diva. On the v7 backend initialize() is async (it lazily
+        // loads OpenSeadragon and the v7 bundle), so surface a load failure
+        // instead of leaving an unhandled rejection behind a blank viewer.
+        Promise.resolve(this.divaAdapter.initialize()).catch(function (error) {
+            console.error('Failed to initialize the Diva viewer', error); // eslint-disable-line no-console
+        });
 
         manuscriptChannel.reply('diva', () => this.divaAdapter);
 
@@ -88,6 +92,10 @@ export default Marionette.View.extend({
      */
     onDocLoad: function () {
         var inner = this.ui.divaWrapper.find('.diva-inner');
+        // The v7 viewer has no .diva-inner element, so this v6-only fix is irrelevant.
+        if (!inner.length)
+            return;
+
         var cssWidth = parseInt(inner[0].style.width, 10);
 
         if (cssWidth && cssWidth !== inner.width()) {
@@ -117,7 +125,10 @@ export default Marionette.View.extend({
             var pageAlias = 'Image ' + imageIndex;
         }
         manuscriptChannel.trigger('set:pageAlias', pageAlias);
-        this.folioNumberSpan.textContent = pageAlias;
+        // The folio label span only exists in the v6 toolbar; on v7 the alias
+        // will reach the right-panel tab via set:pageAlias above.
+        if (this.folioNumberSpan)
+            this.folioNumberSpan.textContent = pageAlias;
     },
 
     /**
@@ -252,33 +263,22 @@ export default Marionette.View.extend({
     },
 
     /**
-     * Once the manifest is loaded, grab any attribution and rights information
-     * contained in the manifest and update the DOM to display it.
-     * NOTE: Diva contains a plug-in ("IIIFMetadata") that could theoretically
-     * be used to collect and show this data, but it errors if this data is
-     * improperly formatted in the IIIF, so we introduce this here to tolerate
-     * these cases.
-     * NOTE: At the moment, we only support the IIIF 2 API, since Diva only
-     * supports that version.
-     **/
-    onManifestLoad: function (manifest) {
-        var attribution = manifest.attribution;
-        var logo = manifest.logo;
-        if (typeof logo === "object") {
-            var logo_url = logo['@id'];
-        } else {
-            var logo_url = logo;
-        }
-        var licence = manifest.license;
-        this.imageAttributionMetadata = {
-            imageAttribution: attribution,
-            imageLogoUrl: logo_url,
-            imageLicence: licence
-        };
+     * Store the image attribution metadata the adapter extracted from the IIIF
+     * manifest (already flattened to { imageAttribution, imageLogoUrl,
+     * imageLicence }) and announce it so the page can wire it into the model.
+     */
+    onManifestLoad: function (metadata) {
+        this.imageAttributionMetadata = metadata;
+        this.trigger('loaded:manifest');
     },
 
     /** Do some awkward manual manipulation of the toolbar */
     _customizeToolbar: function () {
+        // v7 owns its toolbar in Elm and exposes no instance selector to graft
+        // onto; its Cantus chrome is re-homed outside the viewer in Stage 3j.
+        if (!this.divaAdapter.getInstanceSelector())
+            return;
+
         // Rebind the go to page input
         var input = this.toolbarParentObject.find(this.divaAdapter.getInstanceSelector() + 'goto-page');
 

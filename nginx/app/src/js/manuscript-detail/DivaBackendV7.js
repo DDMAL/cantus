@@ -1,3 +1,5 @@
+import extractImageAttribution from './manifestMetadata';
+
 // OpenSeadragon version matching the one diva.js v7's own test harness loads.
 // v7 references OpenSeadragon as a global and expects window.OpenSeadragon to
 // exist before its bundle runs.
@@ -25,41 +27,31 @@ function suppressDivaGlobalStyles() {
 }
 
 /**
- * Inject the OpenSeadragon CDN script and resolve when loaded. Safe to call
- * more than once: reuses an already-loaded global or an in-flight script tag.
+ * Load the OpenSeadragon global from its CDN, resolving once available. The
+ * global check short-circuits once it has loaded, so this only injects a script
+ * on the first call (any redundant tag from a rare concurrent call is harmless).
  */
 function loadOpenSeadragon() {
     if (window.OpenSeadragon)
         return Promise.resolve();
 
     return new Promise((resolve, reject) => {
-        var existing = document.querySelector('script[data-diva-osd]');
-        if (existing) {
-            existing.addEventListener('load', () => resolve());
-            existing.addEventListener('error', reject);
-            return;
-        }
-
         var script = document.createElement('script');
         script.src = OSD_SRC;
         script.async = true;
-        script.setAttribute('data-diva-osd', '');
         script.onload = () => resolve();
-        script.onerror = reject;
+        script.onerror = () => reject(new Error('Failed to load OpenSeadragon from ' + OSD_SRC));
         document.head.appendChild(script);
     });
 }
 
 /**
- * Stub Diva v7 backend.
+ * Diva v7 backend for DivaAdapter.
  *
- * Stage 2 of the v6 -> v7 migration (issue #942) only proves the wiring: the
- * vendored v7 bundle, the webpack `diva7` alias, and the OpenSeadragon global
- * all load, and a v7 viewer mounts over the IIIF manifest. None of the
- * Cantus-facing behaviour (events, navigation, URI<->index, OMR focus, toolbar
- * chrome) is implemented yet -- those are migrated method-by-method in Stage 3.
- * In particular this backend deliberately does not emit "viewer:loaded", which
- * keeps DivaView's downstream toolbar/folio code dormant.
+ * Implements (issue #942, Stage 3) the v7 viewer lifecycle: it lazily loads
+ * OpenSeadragon and the vendored v7 bundle, mounts the viewer, and translates
+ * v7's DOM CustomEvents into the adapter's backend-neutral events, tracking the
+ * current page index and page URIs along the way.
  */
 export default class DivaBackendV7 {
     constructor(options) {
@@ -68,11 +60,41 @@ export default class DivaBackendV7 {
 
         this.instance = null;
         this.destroyed = false;
+
+        // Adapter event subscribers. DivaView subscribes synchronously right
+        // after initialize(), before the viewer exists, so on() only records
+        // callbacks here; they fire once the underlying DOM events arrive.
+        this.subscribers = {
+            'viewer:loaded': [],
+            'page:changed': [],
+            'document:loaded': [],
+            'manifest:loaded': []
+        };
+
+        // Current page index, tracked from diva-page-change.
+        this.currentIndex = 0;
+
+        // Page image URIs in v7's page order, filled on the first page render.
+        this.pageURIs = [];
+
+        // The first diva-page-change is v7's reliable "ready" signal, so it also
+        // stands in for viewer:loaded / document:loaded; diva-loading-change
+        // reports loading:false before anything renders, so it cannot be used.
+        this.firstPageHandled = false;
+
+        // The element we listen on, and a stable bound handler so the same
+        // reference can be both added and removed.
+        this.viewerElement = null;
+        this.onPageChange = this.handlePageChange.bind(this);
     }
 
     initialize() {
-        // Each step is gated on `destroyed` so navigating away mid-load does
-        // not construct a viewer against a DOM node that no longer exists.
+        // v7 has no ManifestDidLoad event; fetch the manifest ourselves for the
+        // attribution, off the load chain so a fetch failure can't blank the viewer.
+        this.loadManifestMetadata();
+
+        // Each step is gated on `destroyed` so navigating away mid-load does not
+        // construct a viewer against a DOM node that no longer exists.
         return loadOpenSeadragon()
             .then(() => {
                 if (this.destroyed)
@@ -94,16 +116,97 @@ export default class DivaBackendV7 {
                     objectData: '/manifest-proxy/' + this.manifestUrl,
                     showTitle: false
                 });
+
+                // v7 dispatches its CustomEvents on the #main-viewer element with
+                // bubbles:false, so we listen on that element directly (a listener
+                // on #diva-wrapper would never fire). Elm renders it synchronously
+                // during construction, so it exists by now.
+                this.viewerElement = document.getElementById('main-viewer');
+                this.viewerElement.addEventListener('diva-page-change', this.onPageChange);
             });
     }
 
-    // --- Stage 3 will implement these on top of the v7 / OSD APIs. ---
-    on() {}
+    /**
+     * Fetch the IIIF manifest and emit 'manifest:loaded' with the flattened
+     * attribution metadata. Runs independently of initialize()'s load chain.
+     */
+    loadManifestMetadata() {
+        fetch('/manifest-proxy/' + this.manifestUrl)
+            .then(response => response.json())
+            .then(manifest => {
+                if (!this.destroyed)
+                    this.emit('manifest:loaded', extractImageAttribution(manifest));
+            })
+            .catch(error => {
+                console.error('Failed to load the IIIF manifest metadata', error); // eslint-disable-line no-console
+            });
+    }
+
+    /**
+     * Record a callback for an adapter event; see the constructor note on why
+     * dispatch is deferred. For 'page:changed' the callback receives
+     * { index, imageURI }; the load events pass no argument.
+     */
+    on(event, callback) {
+        if (this.subscribers[event])
+            this.subscribers[event].push(callback);
+    }
+
+    /**
+     * Track the new page index and re-emit the adapter's events. The first event
+     * also stands in for viewer:loaded / document:loaded (see firstPageHandled).
+     */
+    handlePageChange(event) {
+        this.currentIndex = event.detail.index;
+
+        if (!this.firstPageHandled) {
+            this.firstPageHandled = true;
+            this.pageURIs = this.readPageURIs();
+            this.emit('viewer:loaded');
+            this.emit('document:loaded');
+        }
+
+        this.emit('page:changed', {
+            index: this.currentIndex,
+            imageURI: this.getCurrentPageURI()
+        });
+    }
+
+    emit(event, payload) {
+        this.subscribers[event].forEach(callback => callback(payload));
+    }
+
+    /**
+     * Read the page image URIs in v7's page order from the #main-viewer element.
+     *
+     * v7 stores per-page tile sources there as "<service-base>/info.json"; Cantus
+     * identifies folios by the bare service base URI (matching Folio.image_uri in
+     * Django/Solr and the OMR result coordinates), so strip the suffix. Reading
+     * from the viewer keeps the array index-aligned with v7's own pages, which
+     * drop any canvas that has no image.
+     *
+     * NOTE: `tileSources` is a TypeScript-private field, readable at runtime but
+     * not part of v7's public API (a future Diva bump could rename it).
+     */
+    readPageURIs() {
+        return this.viewerElement.tileSources.map(
+            tileSource => tileSource.replace(/\/info\.json$/, ''));
+    }
+
+    getCurrentPageURI() {
+        return this.pageURIs[this.currentIndex] || null;
+    }
+
+    getAllPageURIs() {
+        return this.pageURIs.slice();
+    }
+
+    getCurrentPageIndex() {
+        return this.currentIndex;
+    }
+
     resize() {}
     gotoPageByURI() {}
-    getCurrentPageURI() { return null; }
-    getAllPageURIs() { return []; }
-    getCurrentPageIndex() { return 0; }
     goToNextPage() {}
     goToPreviousPage() {}
     changeView() {}
@@ -114,6 +217,11 @@ export default class DivaBackendV7 {
     destroy() {
         // Mark destroyed so an in-flight initialize() bails before constructing.
         this.destroyed = true;
+
+        if (this.viewerElement) {
+            this.viewerElement.removeEventListener('diva-page-change', this.onPageChange);
+            this.viewerElement = null;
+        }
 
         if (this.instance)
             this.instance.destroy();
