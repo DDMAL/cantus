@@ -2,7 +2,6 @@ import $ from 'jquery';
 import _ from 'underscore';
 import Radio from 'backbone.radio';
 import Marionette from 'marionette';
-import diva from 'diva';
 
 import SearchView from "search/SearchView";
 import ChantSearchProvider from "search/chant-search/ChantSearchProvider";
@@ -85,7 +84,9 @@ export default Marionette.View.extend({
         };
 
         var updateDivaSize = _.throttle(function () {
-            diva.Events.publish("PanelSizeDidChange");
+            var divaAdapter = manuscriptStateChannel.request('diva');
+            if (divaAdapter)
+                divaAdapter.resize();
         }, 250);
 
         var stopResizing = function () {
@@ -129,7 +130,6 @@ export default Marionette.View.extend({
         chantSearchProvider.setRestriction('manuscript_id', '"' + this.model.get("id") + '"');
 
         var notationSearchProvider = new OMRSearchProvider({
-            divaView: divaView,
             manuscript: this.model
         });
 
