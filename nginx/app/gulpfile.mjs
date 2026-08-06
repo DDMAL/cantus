@@ -102,31 +102,31 @@ gulp.task('build:js', gulp.series('clean:js', 'bundle:js'), function (cb) {
  */
 
 
-// Derive a #diva-wrapper-scoped copy of Diva v7's stylesheet from the vendored
-// source at build time. Diva v7 injects this CSS globally and its
-// generic class names (.modal, .status, .thumbs, ...) collide with Bootstrap/
-// Cantus; v7 renders its whole UI inside #diva-wrapper, so scoping it there
-// isolates it (DivaBackendV7 suppresses v7's own global injection). Generating
-// from the vendored files keeps this in sync automatically on a Diva upgrade --
-// there is no committed scoped copy to regenerate by hand.
-var DIVA7_STYLE_DIR = './dependencies/diva.js.v7/src/styles/';
-// Concatenation order matches Diva v7's own scripts/minify-css.mjs.
-var DIVA7_STYLE_FILES = ['theme', 'app', 'sidebar', 'toolbar', 'modal', 'collection'];
+// Derive a #diva-wrapper-scoped copy of Diva's stylesheet from the vendored
+// source at build time. Diva injects this CSS globally and its generic class
+// names (.modal, .status, .thumbs, ...) collide with Bootstrap/Cantus; Diva
+// renders its whole UI inside #diva-wrapper, so scoping it there isolates it
+// (DivaBackend suppresses Diva's own global injection). Generating from the
+// vendored files keeps this in sync automatically on a Diva upgrade -- there is
+// no committed scoped copy to regenerate by hand.
+var DIVA_STYLE_DIR = './dependencies/diva.js/src/styles/';
+// Concatenation order matches Diva's own scripts/minify-css.mjs.
+var DIVA_STYLE_FILES = ['theme', 'app', 'sidebar', 'toolbar', 'modal', 'collection'];
 
-function generateScopedDiva7Css() {
-    var body = DIVA7_STYLE_FILES
+function generateScopedDivaCss() {
+    var body = DIVA_STYLE_FILES
         .map(function (name) {
-            return fs.readFileSync(path.join(DIVA7_STYLE_DIR, name + '.css'), 'utf8');
+            return fs.readFileSync(path.join(DIVA_STYLE_DIR, name + '.css'), 'utf8');
         })
         .join('\n')
-        // v7 declares its design tokens on :root; rebind them to the wrapper so
+        // Diva declares its design tokens on :root; rebind them to the wrapper so
         // var(--diva-*) still resolves once everything is nested under it.
         .replace(/:root/g, '&');
 
     var compiled = dartSass.compileString('#diva-wrapper {\n' + body + '\n}\n').css;
 
     fs.mkdirSync('./.tmp', { recursive: true });
-    var outPath = './.tmp/diva7-viewer.css';
+    var outPath = './.tmp/diva-viewer.css';
     fs.writeFileSync(outPath, compiled);
     return outPath;
 }
@@ -134,8 +134,7 @@ function generateScopedDiva7Css() {
 gulp.task('bundle:css', function () {
     var sources = [
         './src/styles/styles.scss',
-        './dependencies/diva.js/build/diva.css',
-        generateScopedDiva7Css()
+        generateScopedDivaCss()
     ];
 
     var isScssFile = /\.scss$/;

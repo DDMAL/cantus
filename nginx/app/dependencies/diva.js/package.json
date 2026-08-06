@@ -1,69 +1,51 @@
 {
   "name": "diva.js",
-  "version": "6.0.2",
-  "description": "Diva.js",
-  "main": "build/diva.js",
-  "scripts": {
-    "test": "npm run build:production && karma start",
-    "lint": "jshint --reporter=node_modules/jshint-stylish source/js test",
-    "develop": "webpack-dev-server",
-    "build:develop": "webpack --progress",
-    "build:production": "NODE_ENV=production webpack --progress"
-  },
+  "version": "7.4.1",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/DDMAL/diva.js.git"
   },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/DDMAL/diva.js/issues"
+  "main": "./build/diva.js",
+  "module": "./build/diva.esm.js",
+  "types": "./build/diva-esm.d.ts",
+  "browser": "./build/diva.js",
+  "exports": {
+    ".": {
+      "types": "./build/diva-esm.d.ts",
+      "import": "./build/diva.esm.js",
+      "default": "./build/diva.js"
+    }
   },
-  "homepage": "https://github.com/DDMAL/diva.js#readme",
-  "dependencies": {
-    "array.prototype.fill": "^1.0.2",
-    "extend": "^3.0.2",
-    "lodash": "^4.17.15",
-    "url-search-params": "^1.0.2",
-    "whatwg-fetch": "^2.0.4"
+  "files": [
+    "build/diva.js",
+    "build/diva.debug.js",
+    "build/diva.esm.js",
+    "build/*.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "docs": "typedoc --options config/typedoc.json",
+    "docs:check": "typedoc --options config/typedoc.json --emit none",
+    "format": "find src -name \"*.ts\" -print0 | xargs -0 clang-format -i",
+    "develop": "chokidar \"src/**/*\" \"scripts/elm-esm.sh\" \"Makefile\" -c \"make build-dev\"",
+    "test": "elm-test-rs && yarn docs:check",
+    "test:browser": "playwright test",
+    "test:types": "tsc -p type-tests/tsconfig.json"
   },
   "devDependencies": {
-    "babel-core": "^6.21.0",
-    "babel-loader": "^8.0.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-register": "^6.18.0",
-    "chai": "^4.1.2",
-    "clean-webpack-plugin": "^0.1.19",
-    "connect": "^3.5.0",
-    "copy-webpack-plugin": "^4.5.2",
-    "css-loader": "^1.0.0",
-    "debug": "^3.1.0",
-    "del": "^3.0.0",
-    "es6-promise": "^4.2.4",
-    "istanbul-instrumenter-loader": "^3.0.1",
-    "jshint": "^2.9.6",
-    "jshint-stylish": "^2.2.1",
-    "karma": "^4.0.1",
-    "karma-babel-preprocessor": "^7.0.0",
-    "karma-chrome-launcher": "^2.2.0",
-    "karma-coverage-istanbul-reporter": "^2.0.2",
-    "karma-mocha": "^1.3.0",
-    "karma-mocha-reporter": "^2.2.5",
-    "karma-webpack": "^3.0.0",
-    "lodash.maxby": "^4.6.0",
-    "mini-css-extract-plugin": "^0.4.2",
-    "mocha": "^5.2.0",
-    "node-sass": "^4.12.0",
-    "postcss-loader": "^3.0.0",
-    "puppeteer": "^1.19.0",
-    "sass-loader": "^7.1.0",
-    "style-loader": "^0.23.0",
-    "webpack": "^4.17.1",
-    "webpack-cli": "^3.1.0",
-    "webpack-dev-server": ">=3.1.11"
-  },
-  "divaOptions": {
-    "mainEntry": "diva.js",
-    "mainVarName": "Diva"
+    "@playwright/test": "^1.61.1",
+    "@swc/cli": "^0.7.8",
+    "@swc/core": "^1.15.8",
+    "@types/openseadragon": "^5.0.2",
+    "chokidar-cli": "^3.0.0",
+    "elm-test-rs": "^3.0.2-0",
+    "esbuild": "^0.28.1",
+    "lightningcss": "^1.31.1",
+    "openseadragon": "^6.0.2",
+    "openseadragon5": "npm:openseadragon@5.0.1",
+    "typedoc": "^0.28.20",
+    "typescript": "^5.9.3"
   }
 }
