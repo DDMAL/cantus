@@ -8,6 +8,7 @@ from django.http import HttpResponseRedirect
 import re
 import json
 import urllib.request
+from urllib.parse import urlsplit, urlunsplit
 import threading
 
 
@@ -99,6 +100,24 @@ class MapFoliosView(APIView):
         return HttpResponseRedirect("/admin/map_folios/")
 
 
+def _normalize_scheme_to_https(url):
+    """
+    Rewrite a bare "http://" URL to "https://", leaving everything else
+    untouched. IIIF image service @id values are sometimes returned as
+    "http://" by the source (e.g. some digital libraries mirror the
+    scheme of the incoming manifest request), and since these image URLs
+    are fetched directly by the viewer in the browser (unlike the
+    manifest JSON itself, which is shielded via ManifestProxyView), an
+    "http://" value gets blocked as mixed content on the https site.
+    """
+    if not url:
+        return url
+    parts = urlsplit(url)
+    if parts.scheme == "http":
+        parts = parts._replace(scheme="https")
+    return urlunsplit(parts)
+
+
 def _extract_uris_from_manifest(manifest_url):
     """
     Downloads the IIIF manifest from the provided url and extracts
@@ -114,7 +133,7 @@ def _extract_uris_from_manifest(manifest_url):
     manifest_data = json.loads(manifest_json.read().decode("utf-8"))
     for canvas in manifest_data["sequences"][0]["canvases"]:
         service = canvas["images"][0]["resource"]["service"]
-        uri = service["@id"]
+        uri = _normalize_scheme_to_https(service["@id"])
         uris.append(uri)
         path_tail = "default.jpg"
         uris_objs.append(
