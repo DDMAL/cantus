@@ -3,7 +3,9 @@
     <div class="module">
         <h2 class="fieldset-heading">Neume Exemplars</h2>
         <div class="flex-container">
+            {% if object_id %}
             <a href="{% url 'pick-neume-exemplars-view' object_id %}">Pick neume exemplars here.</a>
+            {% endif %}
         </div>
     </div>
 {% endblock %}

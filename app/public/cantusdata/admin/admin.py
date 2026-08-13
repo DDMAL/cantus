@@ -34,6 +34,7 @@ class ManuscriptAdmin(ModelAdmin):  # type: ignore[type-arg]
             "Metadata",
             {
                 "fields": [
+                    "id",
                     "name",
                     "siglum",
                     "siglum_slug",
@@ -78,6 +79,13 @@ class ManuscriptAdmin(ModelAdmin):  # type: ignore[type-arg]
         "dbl_folio_img",
     )
     list_display = ("name", "siglum", "public", "chants_loaded", "is_mapped")
+
+    def get_readonly_fields(
+        self, request: HttpRequest, obj: Manuscript | None = None
+    ) -> tuple[str, ...]:
+        if obj:
+            return self.readonly_fields + ("id",)
+        return self.readonly_fields
 
     @admin.action(description="Imports the chants associated \
         with the selected manuscript(s)")

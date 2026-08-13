@@ -120,16 +120,17 @@ export default Marionette.View.extend({
     },
 
     /**
-     * Handle a goto-folio form submission. The first suggestion is taken as
-     * the destination, falling back to the typed value when there is none.
+     * Handle a goto-folio form submission. The typed value is the destination:
+     * suggestions navigate on click, and a click fills the input first. It
+     * deliberately does not fall back to the first suggestion (a partial entry
+     * should fail rather than silently resolve to a folio the user did not name).
      */
     gotoInputPage: function (event) {
         event.preventDefault();
 
-        var firstSuggestion = this.gotoFolioSuggestions.children().first().text();
         this.gotoFolioSuggestions.hide();
 
-        this._gotoFolioAlias(firstSuggestion || this.gotoFolioInput.val());
+        this._gotoFolioAlias(this.gotoFolioInput.val());
     },
 
     /**

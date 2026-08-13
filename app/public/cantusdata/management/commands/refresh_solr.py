@@ -51,7 +51,14 @@ class Command(BaseCommand):
         if options["all"]:
             record_types = list(self.TYPE_MAPPING.keys())
         else:
-            record_types = options["record_type"]
+            # When invoked via the CLI, argparse (nargs=1) always produces a
+            # list here. But this command is also invoked via call_command()
+            # with a bare string (eg. from import_folio_mapping), which
+            # doesn't go through argparse, so both shapes need to be handled.
+            record_type = options["record_type"]
+            record_types = (
+                record_type if isinstance(record_type, list) else [record_type]
+            )
 
         for record_type in record_types:
             # Remove the trailing 's' to make the type singular

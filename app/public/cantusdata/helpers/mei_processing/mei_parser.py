@@ -276,46 +276,57 @@ class MEIParser:
                 - The system number that the neume is on.
             - The first 'nc' element (neume component) of the next syllable (if it exists).
                 If there is no next syllable, this value is None.
+
+        A page can have multiple 'staff' elements (one per system/line of
+        music on the page), each containing a single 'layer' with its own
+        sequence of 'syllable' and 'sb' children. These are flattened into a
+        single sequence, in document order across all staves on the page, so
+        that every staff's content is included (not just the first).
         """
         system = 1
-        # Find the first syllable in the file, and iterate through
-        # all its 'syllable' and 'sb' siblings.
-        first_syllable = self.mei.find(f".//{self.MEINS}syllable")
-        if first_syllable is not None:
-            elem_iterator = first_syllable.itersiblings(
-                tag=[f"{self.MEINS}syllable", f"{self.MEINS}sb"]
+        elements: List[etree._Element] = []
+        for staff in self.mei.iter(f"{self.MEINS}staff"):
+            for layer in staff.findall(f"{self.MEINS}layer"):
+                elements.extend(
+                    layer.iterchildren(
+                        tag=[f"{self.MEINS}syllable", f"{self.MEINS}sb"]
+                    )
+                )
+
+        for index, current_elem in enumerate(elements):
+            if current_elem.tag == f"{self.MEINS}sb":
+                system += 1
+                continue
+            current_syl = current_elem.find(f"{self.MEINS}syl")
+            syllable_neumes_list: List[Tuple[etree._Element, int]] = []
+            # Iterate through the syllable's neumes and any
+            # sb tags that may be contained by the syllable.
+            # If an sb tag, increment
+            # the system counter.
+            # If a neume, add it to the list of syllable neumes
+            # to pass out of the iterator.
+            neume_sb_iterator = current_elem.iter(
+                f"{self.MEINS}neume", f"{self.MEINS}sb"
             )
-            current_elem: Optional[etree._Element] = first_syllable
-            while current_elem is not None:
-                if current_elem.tag == f"{self.MEINS}syllable":
-                    current_syl = current_elem.find(f"{self.MEINS}syl")
-                    syllable_neumes_list: List[Tuple[etree._Element, int]] = []
-                    # Iterate through the syllable's neumes and any
-                    # sb tags that may be contained by the syllable.
-                    # If an sb tag, increment
-                    # the system counter.
-                    # If a neume, add it to the list of syllable neumes
-                    # to pass out of the iterator.
-                    neume_sb_iterator = current_elem.iter(
-                        f"{self.MEINS}neume", f"{self.MEINS}sb"
-                    )
-                    for neume_or_sb_elem in neume_sb_iterator:
-                        if neume_or_sb_elem.tag == f"{self.MEINS}sb":
-                            system += 1
-                        else:
-                            syllable_neumes_list.append((neume_or_sb_elem, system))
-                    next_syllable = next(
-                        current_elem.itersiblings(tag=f"{self.MEINS}syllable"), None
-                    )
-                    next_nc = None
-                    if next_syllable is not None:
-                        next_neume = next_syllable.find(f"{self.MEINS}neume")
-                        if next_neume is not None:
-                            next_nc = next_neume.find(f"{self.MEINS}nc")
-                    yield current_syl, syllable_neumes_list, next_nc
-                elif current_elem.tag == f"{self.MEINS}sb":
+            for neume_or_sb_elem in neume_sb_iterator:
+                if neume_or_sb_elem.tag == f"{self.MEINS}sb":
                     system += 1
-                current_elem = next(elem_iterator, None)
+                else:
+                    syllable_neumes_list.append((neume_or_sb_elem, system))
+            next_syllable = next(
+                (
+                    elem
+                    for elem in elements[index + 1 :]
+                    if elem.tag == f"{self.MEINS}syllable"
+                ),
+                None,
+            )
+            next_nc = None
+            if next_syllable is not None:
+                next_neume = next_syllable.find(f"{self.MEINS}neume")
+                if next_neume is not None:
+                    next_nc = next_neume.find(f"{self.MEINS}nc")
+            yield current_syl, syllable_neumes_list, next_nc
 
     def _remove_empty_neumes_and_syllables(self) -> None:
         """
