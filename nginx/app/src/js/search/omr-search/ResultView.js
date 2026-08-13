@@ -26,10 +26,8 @@ export default Marionette.CollectionView.extend({
         table: 'table'
     },
 
-    childEvents: function () {
-        return {
-            showResult: this.triggerZoomToResult
-        };
+    childViewEvents: {
+        showResult: 'triggerZoomToResult'
     },
 
     initialize: function () {
@@ -49,8 +47,8 @@ export default Marionette.CollectionView.extend({
         this.ui.tableWrapper.hide();
     },
 
-    triggerZoomToResult: function (view) {
-        this.trigger('zoomToResult', view.model);
+    triggerZoomToResult: function (model) {
+        this.trigger('zoomToResult', model);
     },
 
     onRender: function () {

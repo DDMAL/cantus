@@ -1,6 +1,7 @@
 import _ from "underscore";
 import Backbone from "backbone";
 import Marionette from "marionette";
+import Radio from "backbone.radio";
 
 import SearchNotationResultCollection from "collections/SearchNotationResultCollection";
 import IncrementalClientSideLoader from "utils/IncrementalClientSideLoader";
@@ -11,6 +12,8 @@ import ContourChoiceView from "./ContourChoiceView";
 import IntervalChoiceView from "./IntervalChoiceView";
 import InputView from "./InputView";
 import ResultView from "./ResultView";
+
+var manuscriptChannel = Radio.channel('manuscript');
 
 /**
  * Provide support for searching OMR data via the search interface. Required
@@ -24,7 +27,6 @@ export default Marionette.Object.extend({
     description: 'OMR Search',
 
     results: null,
-    divaView: null,
     manuscript: undefined,
 
     /**
@@ -80,9 +82,6 @@ export default Marionette.Object.extend({
                 this.fields.push.apply(this.fields, plugin.fields);
         }, this);
 
-        // The diva view which we will act upon!
-        this.divaView = options.divaView;
-
         this.results = new SearchNotationResultCollection();
         this.displayedResults = new SearchNotationResultCollection();
         this.resultLoadingHandler = new IncrementalClientSideLoader(this.displayedResults, this.results);
@@ -115,9 +114,18 @@ export default Marionette.Object.extend({
         return false;
     },
 
+    getDivaAdapter: function ()
+    {
+        return manuscriptChannel.request('diva');
+    },
+
     resultFetchCallback: function()
     {
-        this.divaView.paintBoxes(_.flatten(this.results.map(function (model)
+        var divaAdapter = this.getDivaAdapter();
+        if (!divaAdapter)
+            return;
+
+        divaAdapter.setHighlights(_.flatten(this.results.map(function (model)
         {
             return _.map(model.get('boxes'), _.clone);
         })));
@@ -126,16 +134,32 @@ export default Marionette.Object.extend({
             this.zoomToResult(this.results.at(0));
     },
 
-    /** Stop displaying Diva boxes */
+    /** Stop displaying Diva highlights */
     clearDivaBoxes: function ()
     {
-        // If we pass an empty array, then all boxes are erased.
-        this.divaView.paintBoxes([]);
+        var divaAdapter = this.getDivaAdapter();
+        // If we pass an empty array, then all highlights are erased.
+        if (divaAdapter)
+            divaAdapter.setHighlights([]);
     },
 
     zoomToResult: function(model)
     {
-        this.divaView.zoomToLocation(_.clone(model.get('boxes')[0]));
+        var divaAdapter = this.getDivaAdapter();
+        if (!divaAdapter)
+            return;
+
+        var box = model.get('boxes')[0];
+        if (!box)
+            return;
+
+        divaAdapter.focusRegion({
+            imageURI: box.p,
+            x: box.x,
+            y: box.y,
+            width: box.w,
+            height: box.h
+        });
     },
 
     serializeData: function()

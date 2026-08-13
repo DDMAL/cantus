@@ -60,14 +60,14 @@ export default Marionette.View.extend({
      * Trigger a fold event when the chant is collapsed by Bootstrap
      */
     _triggerFoldChant: function () {
-        this.trigger('fold:chant');
+        this.trigger('fold:chant', this);
     },
 
     /**
      * Trigger a unfold event when the chant is expanded by Bootstrap
      */
     _triggerUnfoldChant: function () {
-        this.trigger('unfold:chant');
+        this.trigger('unfold:chant', this);
     },
 
     /**

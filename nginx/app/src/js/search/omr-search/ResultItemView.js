@@ -16,7 +16,7 @@ export default Marionette.View.extend({
     events: {
         'click .result-target': function (event) {
             event.preventDefault();
-            this.trigger('showResult');
+            this.trigger('showResult', this.model);
         }
     },
 

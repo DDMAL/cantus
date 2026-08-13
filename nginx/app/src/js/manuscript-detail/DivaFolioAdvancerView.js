@@ -26,67 +26,43 @@ export default Marionette.View.extend({
     },
 
     /**
-     * Get the stored Diva data.
+     * Get the Diva adapter.
      *
-     * @returns {*|jQuery}
+     * @returns {DivaAdapter}
      */
-    getDivaData: function () {
+    getDivaAdapter: function () {
         return manuscriptChannel.request('diva');
     },
 
     /**
-     * Increase the page by 1, or 2 if in 'Book' view.
+     * Advance to the next folio (one page, or a whole opening in book view).
      */
     nextButtonCallbackHandler: function (event) {
         // Don't follow the a href to "#"
         event.preventDefault();
 
-        this.changeDivaPage(
-            function (index, divaData) {
-                var inBookView = divaData.getState().v === 'b';
-                return index + (inBookView ? 2 : 1);
-            }
-        );
+        this.getDivaAdapter().goToNextPage();
     },
 
     /**
-     * Decrease the page by 1, or 2 if in 'Book' view.
+     * Go back to the previous folio (one page, or a whole opening in book view).
      */
     previousButtonCallbackHandler: function (event) {
         // Don't follow the a href to "#"
         event.preventDefault();
 
-        this.changeDivaPage(
-            function (index, divaData) {
-                var inBookView = divaData.getState().v === 'b';
-                return index - (inBookView ? 2 : 1);
-            }
-        );
+        this.getDivaAdapter().goToPreviousPage();
     },
 
     firstChantFolioCallbackHandler: function (event) {
         // Query which folio in the manuscript has the first chant
         var manuscript = manuscriptChannel.request('manuscript');
         var queryUrl = '/folio-set/manuscript/' + manuscript + '/';
-        var divaData = this.getDivaData();
+        var divaAdapter = this.getDivaAdapter();
         $.get(queryUrl,
             function (data) {
                 var firstFolioURI = data[0].image_uri;
-                divaData.gotoPageByURI(firstFolioURI);
+                divaAdapter.gotoPageByURI(firstFolioURI);
             })
-    },
-
-    /**
-     *  Change the Diva page index.  numberChangeFunction is a function that
-     *  takes the current page index and returns the desired new page index.
-     *
-     * @param numberChangeFunction fn : int -> int
-     */
-    changeDivaPage: function (numberChangeFunction) {
-        // Get DivaData and the curent page count
-        var divaData = this.getDivaData(),
-            currentPageIndex = divaData.settings.activePageIndex;
-        // Tell Diva to go to the page specified by numberChangeFunction()
-        divaData.gotoPageByIndex(numberChangeFunction(currentPageIndex, divaData));
     }
 });

@@ -58,8 +58,12 @@ $navbar-dark-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w
 @import "bootswatch";
 @import "sidenav";
 
-$zindex-diva-fullscreen: $zindex-modal;
-$zindex-diva-canvas: $zindex-diva-fullscreen + 5;
+// Shared control grey for the manuscript viewer so the Diva toolbar/sidebar
+// buttons read as one set with the site's own controls.
+$diva-control-bg: #eee;
+$diva-control-bg-hover: #e2e2e2;
+$diva-control-border: #dadada;
+$diva-control-border-hover: #bbb;
 
 // Volpiano font
 @font-face {
@@ -100,9 +104,81 @@ pre.preformatted-text {
     max-width: 60%;
 }
 
-#manuscript-info-target {
-    float: right;
+#toolbar-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 24px;
+    border-bottom: 1px solid $border-color;
 
+    .pager a {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        vertical-align: middle;
+    }
+
+    #current-folio-label,
+    #manuscript-folio-advancer-container {
+        white-space: nowrap;
+    }
+
+    #goto-folio-form {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        #goto-folio-input {
+            width: 160px;
+            padding-top: 2px;
+            padding-bottom: 2px;
+            font-weight: $body-font-weight;
+        }
+
+        #goto-folio-input,
+        .btn {
+            height: 32px;
+            min-height: 0;
+            font-size: 1rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+        }
+    }
+
+    #goto-folio-suggestions {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        min-width: 100%;
+        max-height: 50vh;
+        overflow-y: auto;
+        background-color: #fff;
+        border: 1px solid $border-color;
+        z-index: $zindex-dropdown;
+
+        .goto-folio-suggestion {
+            padding: 2px 10px;
+            cursor: pointer;
+
+            &:hover {
+                background-color: $gray-lighter;
+            }
+        }
+    }
+
+    #manuscript-info-target {
+        order: 1;
+        margin-left: auto;
+    }
+}
+
+#manuscript-info-target {
     // FIXME: This should actually be the padding for all .btn-sm elements; the Bootstrap button padding was
     // inconsistently tweaked
     .btn-sm {
@@ -110,22 +186,38 @@ pre.preformatted-text {
     }
 }
 
-.manuscript-info-sidenav-container .sidenav {
-    @include sidenav-size($width: 350px, $position: right);
+// Clip the off-canvas panel to the viewport so parking it past the right
+// edge doesn't extend the page's scroll width.
+.manuscript-info-sidenav-container {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: $zindex-modal-backdrop;
+
+    .sidenav {
+        @include sidenav-size($width: 350px, $position: right);
+        pointer-events: auto;
+    }
 }
 
 .manuscript-info {
-    padding: 0 15px;
+    padding: 18px 15px;
 
     dl {
         margin-bottom: 0;
     }
 }
 
-#manuscript-nav-container {
-    // Subtract 1px from margins so that the borders are flush with the container's
-    margin-top: -1px;
-    margin-left: -1px;
+// Diva insets its own UI (.diva-app padding), so match that on the data
+// column to line the tabs up with the top of the viewer.
+#manuscript-data-column {
+    padding-top: 12px;
+}
+
+// Give the folio and search panels breathing room inside the tab body.
+.tab-content {
+    padding: 12px 15px;
 }
 
 .volpiano,
@@ -295,6 +387,73 @@ body.propagate-height {
     }
 }
 
+// Diva sizes its whole UI from the #diva-wrapper mount node downward using
+// height:100% / flex, so the wrapper and the Elm root it mounts (.diva-app) must
+// fill the height of the diva column -- make that height explicit or Diva's flex
+// chain collapses the OpenSeadragon canvas.
+#diva-column #diva-wrapper {
+    height: 100%;
+
+    .diva-app {
+        height: 100%;
+    }
+}
+
+// Cantus presents the manifest attribution in its own "Manuscript info"
+// sidenav, so hide Diva's built-in trigger for the raw-manifest modal.
+#diva-wrapper .canvas-toolbar-item[data-tooltip="Manifest Info"] {
+    display: none;
+}
+
+// ... and its requiredStatement dock at the bottom of the viewer, shown for
+// manuscripts whose manifest declares one -- same attribution, same sidenav.
+// The extra #diva-column id outweighs Diva's own display:flex, which ships later
+// in the bundle at equal specificity.
+#diva-column #diva-wrapper .required-statement-dock {
+    display: none;
+}
+
+#diva-wrapper .canvas-label {
+    display: none;
+}
+
+// hide the page label overlay by Diva
+#diva-wrapper .diva-page-overlay-label {
+    display: none !important;
+}
+
+// Match Diva's toolbar and sidebar styles to the Cantus frontend.
+#diva-column #diva-wrapper {
+    --diva-accent: #{$brand-primary};
+    --diva-surface: #{$diva-control-bg};
+
+    .canvas-toolbar-section {
+        gap: 6px;
+    }
+
+    .canvas-toolbar-item {
+        width: 34px;
+        height: 34px;
+    }
+
+    .canvas-toolbar-button {
+        width: 34px;
+        height: 34px;
+        background-color: $diva-control-bg;
+        border-color: $diva-control-border;
+
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        &:hover {
+            background-color: $diva-control-bg-hover;
+            border-color: $diva-control-border-hover;
+        }
+    }
+}
+
 .modal-dialog {
     max-width: 90%;
     width: 50%;
@@ -357,105 +516,6 @@ body.propagate-height {
     }
 }
 
-.diva-tools {
-    margin-top: 0;
-    padding: 20px 15px;
-    min-height: 70px;
-    border-right: 1px solid $border-color;
-    border-bottom: 1px solid $border-color;
-
-    .diva-button {
-        border-color: #DADADA;
-        background-color: #E7E7E7;
-        height: 30px;
-
-        &:hover {
-            border-color: #BBB;
-            background-color: #D3D3D3;
-        }
-
-        &.diva-button-text {
-            line-height: 30px;
-        }
-    }
-
-    .diva-buttons-label,
-    .diva-page-label {
-        padding: 5px 10px !important;
-        line-height: 1.5 !important;
-        margin: 0;
-    }
-
-    .diva-goto-form,
-    .diva-input {
-        line-height: inherit;
-    }
-
-    .diva-input {
-        height: 30px;
-        border-color: #c6c6c6;
-    }
-}
-
-.diva-tools.diva-fullscreen-tools {
-    width: auto;
-    min-width: 260px;
-    height: 120px;
-    padding: 10px;
-
-    .diva-buttons-label,
-    .diva-page-label,
-    .diva-page-nav {
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-    }
-
-    // Hide the extra button that was stuck into the Diva toolbar
-    #manuscript-info-target {
-        display: none;
-    }
-}
-
-.diva-outer {
-    border: none;
-    border-right: 1px solid $border-color;
-    min-width: 0;
-}
-
-// Integrate Diva z-index values with the Bootstrap z-index hierarchy
-.diva-outer.diva-fullscreen {
-    z-index: $zindex-diva-fullscreen;
-}
-
-.diva-popup,
-.diva-tools.diva-fullscreen-tools {
-    z-index: $zindex-diva-fullscreen + 1;
-}
-
-#diva-canvas-backdrop {
-    z-index: $zindex-diva-canvas;
-}
-
-#diva-canvas-wrapper {
-    z-index: $zindex-diva-canvas + 1;
-}
-
-#diva-canvas {
-    z-index: $zindex-diva-canvas + 2;
-}
-
-#diva-canvas-tools {
-    z-index: $zindex-diva-canvas + 3;
-}
-
-#diva-canvas-toolbar div {
-    z-index: $zindex-diva-canvas + 4;
-}
-
-.canvas-throbber {
-    z-index: $zindex-diva-canvas + 5;
-}
-
 .search-input .form-control:focus {
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
     border-color: #66afe9;
@@ -496,10 +556,6 @@ body.propagate-height {
 
 .search-input-group {
     margin-bottom: 15px;
-}
-
-#manuscript-search {
-    margin-top: 21px;
 }
 
 #menu-sidenav {
@@ -550,7 +606,7 @@ body.propagate-height {
 
 .pager {
     a {
-        font-size: 12px;
+        font-size: 1rem;
         font-weight: 300;
         padding-right: 1em;
         padding-left: 1em;
@@ -565,22 +621,27 @@ body.propagate-height {
 }
 
 .nav-tabs.nav-justified {
-    li a {
-        background-color: #e7e7e7;
-        color: #222222;
+    border-bottom: 1px solid $border-color;
 
-        .active {
-            background-color: #ffffff;
-            color: #6f6f6f;
-            border: 1px solid #dddddd;
-            border-bottom-color: #ffffff;
-            cursor: default;
-
-        }
+    .nav-link {
+        padding-top: 7px;
+        padding-bottom: 8px;
+        border: 0;
+        border-bottom: 1px solid transparent;
+        border-radius: 0;
+        background-color: transparent;
+        color: $gray;
+        font-weight: $body-font-weight;
 
         &:hover:not(.active) {
-            background-color: #eeeeee;
             color: $brand-primary;
+            border-bottom-color: $gray-lighter;
+        }
+
+        &.active {
+            color: $brand-primary;
+            font-weight: 400;
+            border-bottom-color: $brand-primary;
         }
     }
 }

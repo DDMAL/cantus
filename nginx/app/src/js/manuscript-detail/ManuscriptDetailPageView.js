@@ -1,8 +1,6 @@
 import $ from 'jquery';
-import _ from 'underscore';
 import Radio from 'backbone.radio';
 import Marionette from 'marionette';
-import diva from 'diva';
 
 import SearchView from "search/SearchView";
 import ChantSearchProvider from "search/chant-search/ChantSearchProvider";
@@ -44,11 +42,12 @@ export default Marionette.View.extend({
         resizer: '.resizer',
         divaColumn: "#diva-column",
         manuscriptDataColumn: '#manuscript-data-column',
-        folioDetailTab: '#manuscript-nav-folio-number'
+        manuscriptInfoButton: '#manuscript-info-target button'
     },
 
     events: {
-        'mousedown @ui.resizer': 'startResizing'
+        'mousedown @ui.resizer': 'startResizing',
+        'click @ui.manuscriptInfoButton': '_showInfoSidenav'
     },
 
     initialize: function () {
@@ -80,13 +79,8 @@ export default Marionette.View.extend({
 
             divaColumn.css('width', (100 - newWidthPercentage) + '%');
             panes.css('width', newWidthPercentage + '%');
-
-            updateDivaSize(); // eslint-disable-line no-use-before-define
+            // OpenSeadragon's autoResize re-fits the viewer to the resized column.
         };
-
-        var updateDivaSize = _.throttle(function () {
-            diva.Events.publish("PanelSizeDidChange");
-        }, 250);
 
         var stopResizing = function () {
             $window.off('mousemove', executeResize);
@@ -109,15 +103,10 @@ export default Marionette.View.extend({
             toolbarParentObject: this.ui.toolbarRow
         });
 
-        // Create a "Manuscript Info" button in the Diva toolbar
-        this.listenToOnce(divaView, 'loaded:viewer', function () {
-            var manuscriptInfo = $('<div>').attr('id', 'manuscript-info-target');
-            var manuscriptInfoButton = $('<button>').addClass('btn btn-link btn-sm').text('Manuscript info');
-            manuscriptInfoButton.appendTo(manuscriptInfo);
-
-            $(manuscriptInfoButton).on('click', this._showInfoSidenav.bind(this));
-            manuscriptInfo.appendTo(this.ui.toolbarRow.find('.diva-tools-right'));
-
+        // Add the image attribution to the model once the manifest is loaded.
+        // Keyed on the manifest event rather than viewer load because the
+        // manifest fetch and the viewer load race.
+        this.listenToOnce(divaView, 'loaded:manifest', function () {
             this.model.set(divaView.imageAttributionMetadata);
         });
 
@@ -129,7 +118,6 @@ export default Marionette.View.extend({
         chantSearchProvider.setRestriction('manuscript_id', '"' + this.model.get("id") + '"');
 
         var notationSearchProvider = new OMRSearchProvider({
-            divaView: divaView,
             manuscript: this.model
         });
 
@@ -177,10 +165,6 @@ export default Marionette.View.extend({
             this._viewportContent = null;
             this._updateViewport();
         });
-    },
-
-    onAttach: function () {
-        this.listenTo(manuscriptStateChannel, 'set:pageAlias', this._updateFolioTabNumber);
     },
 
     onDestroy() {
@@ -245,10 +229,6 @@ export default Marionette.View.extend({
 
     onWindowResized: function () {
         this._updateViewport();
-    },
-
-    _updateFolioTabNumber: function (pageAlias) {
-        this.ui.folioDetailTab.text(pageAlias);
     }
 });
 

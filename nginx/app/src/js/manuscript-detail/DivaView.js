@@ -3,9 +3,7 @@ import Radio from 'backbone.radio';
 import $ from 'jquery';
 import _ from "underscore";
 
-import "diva";
-
-const diva = window.Diva;
+import DivaAdapter from './DivaAdapter';
 
 import GlobalVars from '../config/GlobalVars';
 
@@ -27,11 +25,9 @@ export default Marionette.View.extend({
 
     initialize: function (options) {
         _.bindAll(this, 'propagateFolioChange', 'onViewerLoad', 'setImageURI',
-            'paintBoxes', 'updatePageAlias', 'gotoInputPage',
-            'getPageWhichMatchesAlias', 'onDocLoad', 'showPageSuggestions',
-            'onManifestLoad');
-
-        this.divaEventHandles = [];
+            'updatePageAlias', 'gotoInputPage',
+            'getPageWhichMatchesAlias', 'showPageSuggestions',
+            'gotoSuggestedFolio', 'onManifestLoad');
 
         // Create a debounced function to alert the site that Diva has
         // changed the folio
@@ -43,25 +39,38 @@ export default Marionette.View.extend({
         this.listenTo(manuscriptChannel, 'folioLoaded', this.updatePageAlias);
 
         this.toolbarParentObject = this.options.toolbarParentObject;
+        this._bindFolioNavigation();
 
         // TODO(wabain): get this from the manuscript channel for consistency
         this.manifestUrl = options.manifestUrl;
     },
 
+    /**
+     * Bind the folio label and the goto-folio form in the Cantus toolbar row.
+     * They are rendered by the parent view's template, outside this view's own
+     * element, so they exist before the viewer loads and are independent of
+     * the Diva backend in use.
+     */
+    _bindFolioNavigation: function () {
+        this.folioLabelSpan = this.toolbarParentObject.find('#current-folio-label')[0];
+        this.gotoFolioInput = this.toolbarParentObject.find('#goto-folio-input');
+        this.gotoFolioSuggestions = this.toolbarParentObject.find('#goto-folio-suggestions');
+
+        this.toolbarParentObject.find('#goto-folio-form').on('submit', this.gotoInputPage);
+        this.gotoFolioInput.on('input focus', this.showPageSuggestions);
+        // A clicked suggestion still navigates before this hides the list,
+        // because its mousedown handler runs before the input loses focus.
+        this.gotoFolioInput.on('blur', () => this.gotoFolioSuggestions.hide());
+        this.gotoFolioSuggestions.on('mousedown', '.goto-folio-suggestion', this.gotoSuggestedFolio);
+    },
+
     onBeforeDestroy: function () {
         // Uninitialize the Diva viewer, if it exists
-        if (this.divaInstance) {
-            // Call Diva's destructor
-            this.divaInstance.destroy();
-            this.divaInstance = null;
+        if (this.divaAdapter) {
+            // Tear down the viewer and unsubscribe the event handlers
+            this.divaAdapter.destroy();
+            this.divaAdapter = null;
             manuscriptChannel.stopReplying('diva');
-
-            // Unsubscribe the event handlers
-            _.forEach(this.divaEventHandles, function (handle) {
-                diva.Events.unsubscribe(handle);
-            });
-
-            this.divaEventHandles.splice(this.divaEventHandles.length);
         }
     },
 
@@ -69,80 +78,30 @@ export default Marionette.View.extend({
      * Initialize Diva and subscribe to its events.
      */
     initializeDiva: function () {
-        var manifestUrl = this.manifestUrl;
-
-        var options = {
-            toolbarParentObject: this.toolbarParentObject[0],
-            viewerWidthPadding: 0,
-
-            enableAutoTitle: false,
-            enableAutoWidth: false,
-            enableAutoHeight: false,
-            enableFilename: false,
-            enableImageTitles: false,
-
-            enableHighlight: true,
-            enableDownload: true,
-
-            fixedHeightGrid: true,
-
-            enableKeyScroll: false,
-            enableSpaceScroll: false,
-            enableCanvas: true,
-
-            objectData: '/manifest-proxy/' + manifestUrl,
-
-            blockMobileMove: false
-        };
-
         // Destroy the diva div just in case
         this.ui.divaWrapper.empty();
-        // Initialize Diva
-        this.divaInstance = new diva('diva-wrapper', options);
-        manuscriptChannel.reply('diva', () => this.divaInstance);
+        // Create the Diva adapter
+        this.divaAdapter = new DivaAdapter({
+            rootElementId: 'diva-wrapper',
+            manifestUrl: this.manifestUrl
+        });
+        // initialize() is async (it lazily loads OpenSeadragon and the Diva
+        // bundle), so surface a load failure instead of leaving an unhandled
+        // rejection behind a blank viewer.
+        Promise.resolve(this.divaAdapter.initialize()).catch(function (error) {
+            console.error('Failed to initialize the Diva viewer', error); // eslint-disable-line no-console
+        });
 
-        this.onDivaEvent("ViewerDidLoad", this.onViewerLoad);
-        this.onDivaEvent("ViewerDidLoad", this.propagateFolioChange);
-        this.onDivaEvent("VisiblePageDidChange", this.propagateFolioChange);
-        this.onDivaEvent("DocumentDidLoad", this.onDocLoad);
-        this.onDivaEvent("ManifestDidLoad", this.onManifestLoad);
+        manuscriptChannel.reply('diva', () => this.divaAdapter);
+
+        this.divaAdapter.on("viewer:loaded", this.onViewerLoad);
+        this.divaAdapter.on("viewer:loaded", this.propagateFolioChange);
+        this.divaAdapter.on("page:changed", this.propagateFolioChange);
+        this.divaAdapter.on("manifest:loaded", this.onManifestLoad);
     },
 
     /**
-     * Subscribe to a Diva event, registering it for automatic deregistration
-     * @param event
-     * @param callback
-     */
-    onDivaEvent: function (event, callback) {
-        this.divaEventHandles.push(diva.Events.subscribe(event, callback));
-    },
-
-    /**
-     * Workaround for a weird Chrome bug - sometimes setting the style on the
-     * diva-inner element doesn't work. The CSS value is changed, but the width
-     * of the element itself is not. Manually re-applying the change in the Developer
-     * Console makes it work, so it doesn't seem to be a styling issue.
-     *
-     * When this happens, setting the width to a different but close value seems to work.
-     */
-    onDocLoad: function () {
-        var inner = this.ui.divaWrapper.find('.diva-inner');
-        var cssWidth = parseInt(inner[0].style.width, 10);
-
-        if (cssWidth && cssWidth !== inner.width()) {
-            /* eslint-disable no-console */
-            console.warn(
-                "Trying to mitigate a Diva zooming bug...\n" +
-                "If you're not using Chrome, you shouldn't be seeing this.\n" +
-                "See https://github.com/DDMAL/cantus/issues/206");
-            /* eslint-enable no-console */
-
-            inner[0].style.width = (cssWidth + 1) + 'px';
-        }
-    },
-
-    /**
-     * Update Diva's page index to show the folio name
+     * Update the folio label in the Cantus toolbar row, e.g. "Folio 006v (3 of 500)"
      */
     updatePageAlias: function () {
         let folioNumber = manuscriptChannel.request('folio');
@@ -152,76 +111,79 @@ export default Marionette.View.extend({
             }
             var pageAlias = 'Folio ' + folioNumber;
         } else {
-            let imageIndex = this.divaInstance.settings.activePageIndex + 1;
+            let imageIndex = this.divaAdapter.getCurrentPageIndex() + 1;
             var pageAlias = 'Image ' + imageIndex;
         }
-        manuscriptChannel.trigger('set:pageAlias', pageAlias);
 
-        // Diva's own page-label span (.diva-page-label's first child) is
-        // repopulated by Diva itself on every page change, independently of
-        // this custom label. _customizeToolbar only clears it once at setup,
-        // so it must be re-cleared here on every update or it reappears
-        // alongside (before) our custom label on subsequent navigation.
-        var pageLabel = this.toolbarParentObject.find('.diva-page-label')[0];
-        if (pageLabel && pageLabel.firstChild) {
-            pageLabel.firstChild.textContent = '';
-        }
-
-        this.folioNumberSpan.textContent = pageAlias;
+        var pagePosition = (this.divaAdapter.getCurrentPageIndex() + 1) + ' of ' + this.divaAdapter.getAllPageURIs().length;
+        this.folioLabelSpan.textContent = pageAlias + ' (' + pagePosition + ')';
     },
 
     /**
-     * Replacement callback for the Diva page input submission
+     * Handle a goto-folio form submission. The typed value is the destination:
+     * suggestions navigate on click, and a click fills the input first. It
+     * deliberately does not fall back to the first suggestion (a partial entry
+     * should fail rather than silently resolve to a folio the user did not name).
      */
     gotoInputPage: function (event) {
         event.preventDefault();
-        // Always read the input's current value directly. Diva's own suggestion
-        // click handler sets this value before dispatching the submit event, so
-        // this is correct whether the user typed and submitted directly or
-        // clicked a suggestion. (Previously this branched on event.originalEvent
-        // to instead use the first rendered suggestion on direct submission, but
-        // the un-debounced, unordered suggestion requests race with typing and
-        // can leave stale or empty suggestions in place at submit time.)
-        var pageInput = $(this.divaInstance.getInstanceSelector() + 'goto-page-input').get(0);
-        var pageAlias = pageInput.value;
 
+        this.gotoFolioSuggestions.hide();
+
+        this._gotoFolioAlias(this.gotoFolioInput.val());
+    },
+
+    /**
+     * Navigate to a clicked page suggestion. Bound to mousedown so it runs
+     * before the input's blur hides the suggestion list.
+     */
+    gotoSuggestedFolio: function (event) {
+        var pageAlias = event.currentTarget.textContent;
+
+        this.gotoFolioInput.val(pageAlias);
+        this.gotoFolioSuggestions.hide();
+
+        this._gotoFolioAlias(pageAlias);
+    },
+
+    /**
+     * Jump the viewer to the folio with the given alias, alerting the user if
+     * it does not resolve to a page.
+     */
+    _gotoFolioAlias: function (pageAlias) {
         if (!pageAlias)
             return;
 
         this.getPageWhichMatchesAlias(pageAlias).done(_.bind(function (page) {
-            this.divaInstance.gotoPageByURI(page);
-
+            this.divaAdapter.gotoPageByURI(page);
         }, this)).fail(function () {
             alert("Invalid page number");
         });
     },
+
     /**
-     * 
-     * Replacement callback for the Diva page input search suggestions.
+     * Show suggestions under the goto-folio input while the user is typing.
      * Suggestions are taken from folio numbers in solr/Django db rather
      * than the IIIF manifest.
      */
-
-    showPageSuggestions: function showPageSuggestions(event) {
-        var inputSuggestions = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'input-suggestions');
+    showPageSuggestions: function () {
         var manuscript = manuscriptChannel.request('manuscript');
+        // The endpoint matches folio numbers with their leading zeros stripped
+        // (e.g. "83r" for folio "083r"), so strip any the user typed as well,
+        // making "83r", "083r" and "0083r" all suggest folio 083r.
+        var query = this.gotoFolioInput.val().replace(/^0+/, '');
+        var queryUrl = '/folio-set/manuscript/' + manuscript + '/?q=' + query;
 
-        var pageInput = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'goto-page-input');
-
-        var queryUrl = '/folio-set/manuscript/' + manuscript + '/?q=' + pageInput.val();
-        $.get(queryUrl,
-            function (data) {
-                inputSuggestions.empty();
-                for (const queryResult of data) {
-                    var newInputSuggestion = document.createElement('div');
-                    newInputSuggestion.setAttribute('class', 'diva-input-suggestion');
-                    newInputSuggestion.textContent = queryResult.number;
-                    inputSuggestions.append(newInputSuggestion);
-                }
+        $.get(queryUrl, (data) => {
+            this.gotoFolioSuggestions.empty();
+            for (const queryResult of data) {
+                var suggestion = document.createElement('div');
+                suggestion.setAttribute('class', 'goto-folio-suggestion');
+                suggestion.textContent = queryResult.number;
+                this.gotoFolioSuggestions.append(suggestion);
             }
-        )
-
-        inputSuggestions.css('display', 'block');
+            this.gotoFolioSuggestions.show();
+        });
     },
     /**
      * Query Solr to convert a folio name to an image URI
@@ -273,9 +235,6 @@ export default Marionette.View.extend({
     onViewerLoad: function () {
         this.trigger('loaded:viewer');
 
-        // Customize the toolbar
-        this._customizeToolbar();
-
         // Go to the predetermined initial folio if one is set
         var initialFolio = manuscriptChannel.request('folio') ? manuscriptChannel.request('folio') : manuscriptChannel.request('pageAlias');
         if (initialFolio !== null) {
@@ -286,69 +245,22 @@ export default Marionette.View.extend({
         }
         else {
             // If one is not set, then set the global folio to the Diva viewer's initial page
-            var imageURI = this.divaInstance.getCurrentPageURI();
+            var imageURI = this.divaAdapter.getCurrentPageURI();
             manuscriptChannel.request('set:imageURI', imageURI, { replaceState: true });
         }
 
         // Store the list of filenames
-        this.divaFilenames = this.divaInstance.getAllPageURIs();
-
-        // Change initial view to document view
-        this.divaInstance.changeView('document');
+        this.divaFilenames = this.divaAdapter.getAllPageURIs();
     },
 
     /**
-     * Once the manifest is loaded, grab any attribution and rights information
-     * contained in the manifest and update the DOM to display it.
-     * NOTE: Diva contains a plug-in ("IIIFMetadata") that could theoretically
-     * be used to collect and show this data, but it errors if this data is
-     * improperly formatted in the IIIF, so we introduce this here to tolerate
-     * these cases.
-     * NOTE: At the moment, we only support the IIIF 2 API, since Diva only
-     * supports that version.
-     **/
-    onManifestLoad: function (manifest) {
-        var attribution = manifest.attribution;
-        var logo = manifest.logo;
-        if (typeof logo === "object") {
-            var logo_url = logo['@id'];
-        } else {
-            var logo_url = logo;
-        }
-        var licence = manifest.license;
-        this.imageAttributionMetadata = {
-            imageAttribution: attribution,
-            imageLogoUrl: logo_url,
-            imageLicence: licence
-        };
-    },
-
-    /** Do some awkward manual manipulation of the toolbar */
-    _customizeToolbar: function () {
-        // Rebind the go to page input
-        var input = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'goto-page');
-
-        input.off('submit');
-        input.on('submit', this.gotoInputPage);
-
-        // Rebind the go to page input focus
-        var pageSearch = this.toolbarParentObject.find(this.divaInstance.getInstanceSelector() + 'goto-page-input');
-
-        pageSearch.off('input focus');
-        pageSearch.on('input focus', this.showPageSuggestions)
-
-        // Rename the current page label from Page to Folio
-        var pageLabel = this.toolbarParentObject.find('.diva-page-label')[0];
-        pageLabel.firstChild.textContent = '';
-
-        // Add an empty span to display the folio name
-        this.folioNumberSpan = document.createElement('span');
-        pageLabel.insertBefore(this.folioNumberSpan, pageLabel.firstChild.nextSibling);
-
-        pageLabel.insertBefore($('<span>').text(' (')[0], this.folioNumberSpan.nextSibling);
-
-        // Add a closing parenthesis (the opening is within the page alias)
-        pageLabel.appendChild(document.createTextNode(')'));
+     * Store the image attribution metadata the adapter extracted from the IIIF
+     * manifest (already flattened to { imageAttribution, imageLogoUrl,
+     * imageLicence }) and announce it so the page can wire it into the model.
+     */
+    onManifestLoad: function (metadata) {
+        this.imageAttributionMetadata = metadata;
+        this.trigger('loaded:manifest');
     },
 
     /**
@@ -357,104 +269,27 @@ export default Marionette.View.extend({
      * @param imageURI
      */
     setImageURI: function (imageURI) {
-        if (!this.divaInstance)
+        if (!this.divaAdapter)
             return;
 
         // Don't jump to the folio if we're already somewhere on it (this would just make Diva
         // jump to the top of the page)
-        if (imageURI === this.divaInstance.getCurrentPageURI())
+        if (imageURI === this.divaAdapter.getCurrentPageURI())
             return;
 
-        this.divaInstance.gotoPageByURI(imageURI);
+        this.divaAdapter.gotoPageByURI(imageURI);
     },
 
     /**
      * Change the page-wide folio value
      *
-     * @param {Number} index
-     * @param {String} fileName
+     * @param page the normalized { index, imageURI } from 'page:changed'
      */
-    propagateFolioChange: function (_, imageURI) {
-        // In the case that this is triggered by the 'ViewerDidLoad' event,
-        // Set the imageURI to be URI of the first page of the document
-        if (!imageURI)
-            imageURI = this.divaInstance.getCurrentPageURI();
+    propagateFolioChange: function (page) {
+        // When triggered by the 'viewer:loaded' event there is no page payload,
+        // so fall back to the URI of the document's current page.
+        var imageURI = (page && page.imageURI) ? page.imageURI : this.divaAdapter.getCurrentPageURI();
 
         this.triggerFolioChange(imageURI);
-    },
-
-    /**
-     * Draw boxes on the Diva viewer.  These usually correspond to
-     * music notation on a manuscript page.
-     * music notation on a manuscript page.
-     *
-     * @param boxSet [ {p,w,h,x,y}, ... ]
-     */
-    paintBoxes: function (boxSet) {
-        if (!this.divaInstance)
-            return;
-
-        // Wait for the Diva instance to be ready
-        if (!this.divaInstance.isReady()) {
-            this.divaEventHandles.push(diva.Events.subscribe("ViewerDidLoad", function () {
-                this.paintBoxes(boxSet);
-            }.bind(this)));
-            return;
-        }
-
-        // NOTE: The Diva v6 highlight plugin has been removed. OMR search result
-        // highlighting is not currently supported. This should be revisited when
-        // Diva v6 provides a replacement highlighting API.
-    },
-
-    /**
-      * Zoom Diva to a location.
-      *
-      * @param box
-      */
-    zoomToLocation: function (box) {
-        if (!this.divaInstance)
-            return;
-
-        // Wait for the Diva instance to be ready
-        if (!this.divaInstance.isReady()) {
-            this.divaEventHandles.push(diva.Events.subscribe("ViewerDidLoad", function () {
-                this.zoomToLocation(box);
-            }.bind(this)));
-            return;
-        }
-
-        // Grab the diva internals to work with
-        var divaData = this.divaInstance;
-
-        // Do nothing if there's no box or if Diva is not initialized
-        if (!box || !divaData)
-            return;
-
-        var divaSettings = divaData.getSettings();
-        // Now figure out the page that box is on
-        var divaOuter = divaSettings.outerObject;
-
-        var pageFilename = box.p;
-        var desiredPage = this.divaFilenames.indexOf(pageFilename);
-
-        // Now jump to that page
-        divaData.gotoPageByIndex(desiredPage);
-        // Get the height above top for that box
-        var boxTop = divaData.translateFromMaxZoomLevel(box.y);
-        var currentScrollTop = parseInt(divaOuter.scrollTop(), 10);
-
-        // TODO, find workaround since Diva 5 dropped 'averageHeights' and 'averageWidths'
-        // var zoomLevel = divaData.getZoomLevel();
-        var topMarginConsiderations = 0; // = divaSettings.averageHeights[zoomLevel] * divaSettings.adaptivePadding;
-        var leftMarginConsiderations = 0; // = divaSettings.averageWidths[zoomLevel] * divaSettings.adaptivePadding;
-
-        divaOuter.scrollTop(boxTop + currentScrollTop - (divaOuter.height() / 2) + (box.h / 2) +
-            topMarginConsiderations);
-
-        // Now get the horizontal scroll
-        var boxLeft = divaData.translateFromMaxZoomLevel(box.x);
-        divaOuter.scrollLeft(boxLeft - (divaOuter.width() / 2) + (box.w / 2) + leftMarginConsiderations);
-        // Will include the padding between pages for best results
     }
 });

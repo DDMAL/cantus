@@ -36,9 +36,10 @@ module.exports = configureBuildMode({
         modules: [APP_DIR, 'node_modules'],
         alias: {
             marionette: 'backbone.marionette',
-            // Alias diva and link-watcher so that webpack looks in the
-            // `dependencies` directory for them.
+            // Alias diva, openseadragon, and link-watcher so that webpack looks
+            // in the `dependencies` directory for them.
             diva: path.resolve(__dirname, "dependencies/diva.js/build/diva.js"),
+            openseadragon: path.resolve(__dirname, "dependencies/openseadragon/openseadragon.min.js"),
             'link-watcher': path.resolve(__dirname, "dependencies/link-watcher/dist/link-watcher.js"),
         },
 
