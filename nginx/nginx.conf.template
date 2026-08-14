@@ -52,6 +52,12 @@ http {
 
     keepalive_timeout 5;
 
+    # Some third-party IIIF servers advertise their image services over http.
+    # The viewer fetches each image's info.json, which the browser blocks as
+    # mixed content when we are served over https. Upgrading the request keeps
+    # the advertised URLs intact, so they still match the image_uri we store.
+    add_header Content-Security-Policy "upgrade-insecure-requests" always;
+
     # path for static files
     root /code;
 
