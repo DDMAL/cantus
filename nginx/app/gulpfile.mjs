@@ -102,42 +102,7 @@ gulp.task('build:js', gulp.series('clean:js', 'bundle:js'), function (cb) {
  */
 
 
-// Derive a #diva-wrapper-scoped copy of Diva's stylesheet from the vendored
-// source at build time. Diva injects this CSS globally and its generic class
-// names (.modal, .status, .thumbs, ...) collide with Bootstrap/Cantus; Diva
-// renders its whole UI inside #diva-wrapper, so scoping it there isolates it
-// (DivaBackend suppresses Diva's own global injection). Generating from the
-// vendored files keeps this in sync automatically on a Diva upgrade -- there is
-// no committed scoped copy to regenerate by hand.
-var DIVA_STYLE_DIR = './dependencies/diva.js/src/styles/';
-// Concatenation order matches Diva's own scripts/minify-css.mjs.
-var DIVA_STYLE_FILES = ['theme', 'app', 'sidebar', 'toolbar', 'modal', 'collection'];
-
-function generateScopedDivaCss() {
-    var body = DIVA_STYLE_FILES
-        .map(function (name) {
-            return fs.readFileSync(path.join(DIVA_STYLE_DIR, name + '.css'), 'utf8');
-        })
-        .join('\n')
-        // Diva declares its design tokens on :root; rebind them to the wrapper so
-        // var(--diva-*) still resolves once everything is nested under it.
-        .replace(/:root/g, '&');
-
-    var compiled = dartSass.compileString('#diva-wrapper {\n' + body + '\n}\n').css;
-
-    fs.mkdirSync('./.tmp', { recursive: true });
-    var outPath = './.tmp/diva-viewer.css';
-    fs.writeFileSync(outPath, compiled);
-    return outPath;
-}
-
 gulp.task('bundle:css', function () {
-    var sources = [
-        './src/styles/styles.scss',
-        generateScopedDivaCss()
-    ];
-
-    var isScssFile = /\.scss$/;
     var isCssFile = /\.css$/;
     var isDevBuild = !yargs.release;
 
@@ -147,8 +112,8 @@ gulp.task('bundle:css', function () {
         })
         .pipe(autoprefixer);
 
-    return gulp.src(sources, { base: './src/styles/', sourcemaps: isDevBuild })
-        .pipe(gulpif(isScssFile, compileScss()))
+    return gulp.src('./src/styles/styles.scss', { base: './src/styles/', sourcemaps: isDevBuild })
+        .pipe(compileScss())
         .pipe(concat('cantus-min.css'))
         .pipe(gulp.dest('../static/css', { sourcemaps: '.' }))
         .pipe(gulpif(isCssFile, livereload())); // Don't reload for sourcemaps

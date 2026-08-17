@@ -32017,25 +32017,6 @@ function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" 
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 
 
-// Id of the <style> element Diva injects its stylesheet into. Diva skips that
-// global injection if an element with this id already exists, so we pre-create
-// an empty one to keep Diva's generic, unscoped CSS (.modal, .status, .thumbs,
-// ...) off the page; the equivalent rules ship scoped to #diva-wrapper,
-// generated from the vendored Diva styles at build time (see gulpfile.mjs
-// bundle:css).
-var DIVA_INLINE_STYLE_ID = "diva-inline-styles";
-
-/**
- * Pre-empt Diva's global stylesheet injection by leaving an empty <style>
- * element under the id it looks for. Safe to call more than once.
- */
-function suppressDivaGlobalStyles() {
-  if (document.getElementById(DIVA_INLINE_STYLE_ID)) return;
-  var styleTag = document.createElement('style');
-  styleTag.id = DIVA_INLINE_STYLE_ID;
-  document.head.appendChild(styleTag);
-}
-
 /**
  * Load OpenSeadragon and expose it as the window.OpenSeadragon global that
  * Diva's bundle reads before it runs. OSD is vendored locally
@@ -32103,7 +32084,6 @@ var DivaBackend = /*#__PURE__*/function () {
       // construct a viewer against a DOM node that no longer exists.
       return loadOpenSeadragon().then(function () {
         if (_this.destroyed) return undefined;
-        suppressDivaGlobalStyles();
         return __webpack_require__.e(/*! import() | diva */ "diva").then(__webpack_require__.t.bind(__webpack_require__, /*! diva */ "../../dependencies/diva.js/build/diva.js", 23));
       }).then(function () {
         if (_this.destroyed) return undefined;
@@ -32499,14 +32479,15 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default().ch
     this.folioLabelSpan.textContent = pageAlias + ' (' + pagePosition + ')';
   },
   /**
-   * Handle a goto-folio form submission. The first suggestion is taken as
-   * the destination, falling back to the typed value when there is none.
+   * Handle a goto-folio form submission. The typed value is the destination:
+   * suggestions navigate on click, and a click fills the input first. It
+   * deliberately does not fall back to the first suggestion (a partial entry
+   * should fail rather than silently resolve to a folio the user did not name).
    */
   gotoInputPage: function gotoInputPage(event) {
     event.preventDefault();
-    var firstSuggestion = this.gotoFolioSuggestions.children().first().text();
     this.gotoFolioSuggestions.hide();
-    this._gotoFolioAlias(firstSuggestion || this.gotoFolioInput.val());
+    this._gotoFolioAlias(this.gotoFolioInput.val());
   },
   /**
    * Navigate to a clicked page suggestion. Bound to mousedown so it runs
