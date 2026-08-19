@@ -288,10 +288,22 @@ class MEIParser:
         for staff in self.mei.iter(f"{self.MEINS}staff"):
             for layer in staff.findall(f"{self.MEINS}layer"):
                 elements.extend(
-                    layer.iterchildren(
-                        tag=[f"{self.MEINS}syllable", f"{self.MEINS}sb"]
-                    )
+                    layer.iterchildren(tag=[f"{self.MEINS}syllable", f"{self.MEINS}sb"])
                 )
+
+        # Discard any leading 'sb' elements before the first syllable (eg. a
+        # system break before the first syllable of the piece). These aren't
+        # meaningful without a preceding syllable to attach a system number
+        # to, and counting them would shift every subsequent system number.
+        first_syllable_index = next(
+            (
+                i
+                for i, elem in enumerate(elements)
+                if elem.tag == f"{self.MEINS}syllable"
+            ),
+            len(elements),
+        )
+        elements = elements[first_syllable_index:]
 
         for index, current_elem in enumerate(elements):
             if current_elem.tag == f"{self.MEINS}sb":
