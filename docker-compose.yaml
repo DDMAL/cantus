@@ -10,6 +10,7 @@ services:
     command: /code/django-config.sh
     volumes:
       - ./app/public:/code/public
+      - ./data/mei-files:/code/mei-files
       - django_static_volume:/code/static
     depends_on:
       postgres:
@@ -26,6 +27,7 @@ services:
       - RABBIT_USER=${RABBIT_USER}
       - RABBIT_PASSWORD=${RABBIT_PASSWORD}
       - RABBIT_VHOST=${RABBIT_VHOST}
+      - MEI_FILES_DIR=${MEI_FILES_DIR}
 
   postgres:
     build: ./postgres
@@ -78,6 +80,7 @@ services:
     container_name: cantus-celery-1
     volumes:
       - ./app/public:/code/public
+      - ./data/mei-files:/code/mei-files
     command: [ "/code/.venv/bin/python", "/code/.venv/bin/celery", "-A", "cantusdata", "worker", "-l", "INFO", "-c", "1" ]
     environment:
       - APP_VERSION=${APP_VERSION}
@@ -88,6 +91,7 @@ services:
       - RABBIT_USER=${RABBIT_USER}
       - RABBIT_PASSWORD=${RABBIT_PASSWORD}
       - RABBIT_VHOST=${RABBIT_VHOST}
+      - MEI_FILES_DIR=${MEI_FILES_DIR}
     restart: always
 
   cantaloupe:

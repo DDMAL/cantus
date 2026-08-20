@@ -276,6 +276,58 @@ Go to the Cantus Ultimus admin page and ensure that the "Neume Search" and "Pitc
 When you navigate to that manuscript's detail view, OMR search should be available in the search panel.
 
 
+### Receiving MEI from an OMR pipeline
+
+MEI can also arrive over the API instead of through the curated repository, so
+that an external OMR pipeline (Mothra) can hand finished work straight to Cantus
+Ultimus for review. Submissions are invisible to readers until an admin
+publishes them.
+
+**Setting up the credential.** Create the service account the depositing
+application authenticates as, and give it the printed token:
+
+```bash
+# in the running app container
+python manage.py create_deposit_user
+```
+
+The account holds a DRF token and the `add_meisubmission` / `view_meisubmission`
+permissions, both visible in the admin. Re-running the command is safe; it keeps
+the existing token unless `--rotate-token` is given. Since DRF allows one token
+per user, rotating without downtime means creating a second account
+(`--username mothra-next`) and cutting over.
+
+**Depositing.** One folio per request:
+
+```
+POST /api/mei-submissions/
+Authorization: Token <key>
+
+{"manuscript_id": 123723, "folio_number": "001r", "mei": "<?xml ...>",
+ "submitter": "<username>", "comment": "corrected in Neon"}
+```
+
+The submission is rejected unless the manuscript exists, the folio exists **and
+is already mapped to an image**, and the MEI parses and contains neumes — so a
+row in the review queue is known to be publishable. Re-posting identical content
+returns the existing submission rather than opening a second review.
+`GET /api/mei-submissions/?submitter=<username>` reports status and any reviewer
+feedback.
+
+**Reviewing.** Submissions appear under *MEI submissions* in the admin. Select
+rows and use "Publish selected submissions" to publish; open a row to request a
+correction or refuse it, both of which require a note explaining why, since that
+note is all the submitter sees. Publishing runs in the background: it writes the
+MEI into the MEI files volume, reindexes that one folio in Solr, and attaches the
+"neume-search" and "pitch-search" plugins so the search panel appears. The row
+reads `PUBLISHED` only once the folio really is indexed — watch the Task Results
+page. A correction is a new submission, not an edit, so the queue doubles as the
+history.
+
+Deployed environments keep these files on a persistent volume; see
+[`k8s/MEI_FILES.md`](k8s/MEI_FILES.md) for the volume, its seeding, and recovery.
+
+
 ## Manuscript Inventory
 
 | Name                                                                                                       | Provenance         | Siglum                         | Cantus DB Record | IIIF Manifest | Supported | Served on cantus.simssa.ca | Notes                                                 |

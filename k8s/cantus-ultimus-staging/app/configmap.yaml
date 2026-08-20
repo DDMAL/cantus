@@ -14,3 +14,6 @@ data:
   RABBIT_HOST: "rabbitmq-staging"
   SOLR_HOST: "solr-staging"
   EXTRA_ALLOWED_HOSTS: "app-staging,cantus.staging.simssa.ca"
+  # Live tree of MEI files read by index_manuscript_mei, backed by the
+  # cantus-mei-files PVC (NFS). Mounted at this path in app and celery.
+  MEI_FILES_DIR: "/code/mei-files"

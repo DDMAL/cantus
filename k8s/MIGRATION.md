@@ -112,6 +112,11 @@ kubectl apply -f k8s/cantus-ultimus/solr/
 # 3. Cantaloupe (nginx proxies to it)
 kubectl apply -f k8s/cantus-ultimus/cantaloupe/
 
+# 4. MEI files volume (app and celery both mount it) -- see MEI_FILES.md for
+#    the NFS export and permissions it needs on the storage server first
+kubectl apply -f k8s/cantus-ultimus/mei-files-pv.yaml
+kubectl apply -f k8s/cantus-ultimus/mei-files-pvc.yaml
+
 kubectl apply -f k8s/cantus-ultimus/app/
 # run migrate in the pod after the pod is ready
 
