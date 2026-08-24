@@ -5,6 +5,7 @@ from tempfile import mkdtemp
 
 from django.conf import settings
 from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.test import TestCase, override_settings
 from solr.core import SolrConnection  # type: ignore
 
@@ -203,6 +204,42 @@ class PublishedSubmissionCommandsTestCase(TestCase):
         self.assertTrue(path.exists(exported))
         with open(exported, encoding="utf-8") as written:
             self.assertEqual(written.read(), self.mei)
+
+    def test_export_refuses_a_filename_that_escapes_the_directory(self) -> None:
+        """
+        mei_filename interpolates the folio number without transforming it, and
+        the export opens that name for writing. Folio numbers are canonical
+        Folio.number values so none carry a separator today -- but the write
+        must be contained by check rather than by that assumption.
+        """
+        outside = path.join(self.export_dir, "escaped.mei")
+        MEISubmission.objects.filter(pk=self.submission.pk).update(
+            folio_number="../escaped"
+        )
+        with self.assertRaises(CommandError) as raised:
+            call_command(
+                "export_published_submissions",
+                "123723",
+                "--out",
+                self.export_dir,
+                stdout=StringIO(),
+            )
+        self.assertIn("outside the export directory", str(raised.exception))
+        self.assertFalse(path.exists(outside))
+
+    def test_export_refuses_a_nested_path_in_the_filename(self) -> None:
+        MEISubmission.objects.filter(pk=self.submission.pk).update(
+            folio_number="nested/001r"
+        )
+        with self.assertRaises(CommandError):
+            call_command(
+                "export_published_submissions",
+                "123723",
+                "--out",
+                self.export_dir,
+                stdout=StringIO(),
+            )
+        self.assertFalse(path.exists(path.join(self.export_dir, "123723", "nested")))
 
     def test_export_ignores_unpublished_submissions(self) -> None:
         self.submission.status = SubmissionStatus.PENDING

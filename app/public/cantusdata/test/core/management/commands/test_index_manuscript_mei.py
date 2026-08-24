@@ -4,6 +4,7 @@ from django.core.management import call_command
 from django.test import TestCase
 from django.conf import settings
 
+from cantusdata.management.commands.index_manuscript_mei import escape_solr_phrase
 from cantusdata.models import Manuscript, Folio
 from cantusdata.test.core.helpers.mei_processing.test_mei_tokenizer import (
     calculate_expected_total_ngrams,
@@ -253,6 +254,91 @@ class IndexManuscriptMeiFolioScopingTestCase(TestCase):
                 call_command("index_manuscript_mei", "123723", "--mei-dir", staging_dir)
         finally:
             shutil.rmtree(staging_dir, ignore_errors=True)
+
+
+class FlushIndexEscapingTestCase(TestCase):
+    """
+    The folio is interpolated into a quoted Solr phrase that becomes a *delete*.
+    Folio numbers are canonical Folio.number values today, so none carry a quote
+    -- but an unescaped one would close the phrase early and leave the remainder
+    as query syntax, deleting more of the index than the caller named.
+    """
+
+    solr_conn = SolrConnection(settings.SOLR_TEST_SERVER)
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        manuscript = Manuscript.objects.create(id=123723)
+        for number in ("001r", "001v"):
+            Folio.objects.create(
+                number=number, image_uri=f"folio-{number}", manuscript=manuscript
+            )
+
+    def setUp(self) -> None:
+        call_command("index_manuscript_mei", "123723", "--flush-index")
+        call_command("index_manuscript_mei", "123723", "--mei-dir", TEST_MEI_FILES_PATH)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        call_command("index_manuscript_mei", "123723", "--flush-index")
+        super().tearDownClass()
+
+    def total_indexed(self) -> int:
+        results = self.solr_conn.query(
+            "*:*", fq="type:omr_ngram AND manuscript_id:123723", rows=0
+        )
+        return int(results.numFound)
+
+    def test_escaping_is_applied_to_quotes_and_backslashes(self) -> None:
+        self.assertEqual(escape_solr_phrase("001r"), "001r")
+        self.assertEqual(escape_solr_phrase('a"b'), 'a\\"b')
+        # The backslash is doubled first, so the escape added for the quote is
+        # not itself escaped away.
+        self.assertEqual(escape_solr_phrase('a\\"b'), 'a\\\\\\"b')
+
+    def folio_count(self, folio: str) -> int:
+        results = self.solr_conn.query(
+            "*:*",
+            fq=f'type:omr_ngram AND manuscript_id:123723 AND folio:"{folio}"',
+            rows=0,
+        )
+        return int(results.numFound)
+
+    def test_an_injected_folio_does_not_widen_the_delete(self) -> None:
+        """
+        The payload is deliberately balanced: `001r" OR folio:"001v` closes the
+        phrase and opens another, so unescaped it becomes the perfectly valid
+        `folio:"001r" OR folio:"001v"` and deletes both folios. An unbalanced
+        payload would only earn a Solr syntax error; this one silently deletes
+        more than it names, which is the case worth pinning.
+
+        Escaped, it names one folio that does not exist, so nothing goes.
+        """
+        before_001r = self.folio_count("001r")
+        before_001v = self.folio_count("001v")
+        self.assertGreater(before_001r, 0)
+        self.assertGreater(before_001v, 0)
+
+        call_command(
+            "index_manuscript_mei",
+            "123723",
+            "--flush-index",
+            "--folio",
+            '001r" OR folio:"001v',
+        )
+
+        self.assertEqual(self.folio_count("001r"), before_001r)
+        self.assertEqual(self.folio_count("001v"), before_001v)
+
+    def test_a_real_folio_is_still_flushed(self) -> None:
+        """The escaping must not break the ordinary case it wraps."""
+        before = self.total_indexed()
+        call_command(
+            "index_manuscript_mei", "123723", "--flush-index", "--folio", "001r"
+        )
+        after = self.total_indexed()
+        self.assertLess(after, before)
+        self.assertGreater(after, 0)
 
 
 class IndexManuscriptMeiNullImageUriTestCase(TestCase):

@@ -3,6 +3,7 @@ from shutil import rmtree
 from tempfile import mkdtemp
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 from solr.core import SolrConnection  # type: ignore
 
@@ -31,6 +32,7 @@ class PublishMEISubmissionTaskTestCase(TestCase):
             cls.mei = mei_file.read()
 
     def setUp(self) -> None:
+        self.reviewer = User.objects.create_user(username="reviewer", is_staff=True)
         self.mei_dir = mkdtemp(prefix="mei-files-test-")
         self.manuscript = Manuscript.objects.create(
             id=123723, siglum="CDN-Hsmu M2149.L4"
@@ -53,7 +55,13 @@ class PublishMEISubmissionTaskTestCase(TestCase):
             submitter="asadra",
         )
 
-    def publish(self, submission: MEISubmission) -> None:
+    def publish(self, submission: MEISubmission, claim: bool = True) -> None:
+        # The admin claims a submission into PUBLISHING before dispatching, and
+        # the task publishes nothing that is not claimed, so the helper claims
+        # too -- otherwise every test here would exercise the refusal path
+        # instead of the publication it means to test.
+        if claim:
+            self.assertTrue(submission.claim_for_publication(self.reviewer))
         with override_settings(MEI_FILES_DIR=self.mei_dir):
             result = publish_mei_submission_task.apply(
                 kwargs={
@@ -80,6 +88,83 @@ class PublishMEISubmissionTaskTestCase(TestCase):
 
         submission.refresh_from_db()
         self.assertEqual(submission.published_path, expected)
+
+    def test_an_unclaimed_submission_is_not_published(self) -> None:
+        """
+        The task is the last line of defence: a row nobody claimed must not have
+        its file written or its folio reindexed, however the task was queued.
+        """
+        submission = self.make_submission()
+        self.publish(submission, claim=False)
+
+        expected = path.join(self.mei_dir, "123723", "cdn-hsmu-m2149l4_001r.mei")
+        self.assertFalse(path.exists(expected))
+        self.assertEqual(self.indexed_count(), 0)
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, SubmissionStatus.PENDING)
+
+    def test_a_superseded_submission_is_not_published(self) -> None:
+        """
+        A deposit arriving after the claim cannot pull the row out from under the
+        task -- the supersede only rewrites PENDING rows -- but a row superseded
+        *before* being queued must still be refused.
+        """
+        submission = self.make_submission()
+        MEISubmission.objects.filter(pk=submission.pk).update(
+            status=SubmissionStatus.SUPERSEDED
+        )
+        self.publish(submission, claim=False)
+        self.assertEqual(self.indexed_count(), 0)
+
+    def test_publishing_the_same_submission_twice_indexes_it_once(self) -> None:
+        """
+        The duplicate this whole mechanism exists to prevent. The second task
+        finds the row already PUBLISHED rather than PENDING, so it does not run a
+        second --replace pass whose delete/index phases could interleave with the
+        first and leave the folio indexed twice.
+        """
+        submission = self.make_submission()
+        self.publish(submission)
+        after_first = self.indexed_count()
+        self.assertGreater(after_first, 0)
+
+        # Whatever queued it a second time -- a double click, a second reviewer,
+        # a retry -- the claim is gone and the task must decline.
+        self.publish(submission, claim=False)
+        self.assertEqual(self.indexed_count(), after_first)
+
+    def test_a_failed_publication_returns_the_row_to_the_queue(self) -> None:
+        """
+        Otherwise a failure strands the row in PUBLISHING, which the admin offers
+        no transition out of -- neither published nor reviewable.
+        """
+        submission = self.make_submission()
+        self.assertTrue(submission.claim_for_publication(self.reviewer))
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, SubmissionStatus.PUBLISHING)
+
+        not_a_dir = path.join(self.mei_dir, "this-is-a-file")
+        with open(not_a_dir, "w", encoding="utf-8") as blocker:
+            blocker.write("")
+        with override_settings(MEI_FILES_DIR=not_a_dir):
+            result = publish_mei_submission_task.apply(
+                kwargs={
+                    "manuscript_ids": [submission.manuscript_id],
+                    "submission_id": submission.pk,
+                }
+            )
+        self.assertFalse(result.successful())
+
+        submission.refresh_from_db()
+        self.assertEqual(submission.status, SubmissionStatus.PENDING)
+        self.assertTrue(submission.can_transition_to(SubmissionStatus.PUBLISHED))
+
+    def test_a_claim_can_only_be_won_once(self) -> None:
+        submission = self.make_submission()
+        self.assertTrue(submission.claim_for_publication(self.reviewer))
+        # A second reviewer holding their own copy of the same row.
+        rival = MEISubmission.objects.get(pk=submission.pk)
+        self.assertFalse(rival.claim_for_publication(self.reviewer))
 
     def test_publishing_indexes_the_folio(self) -> None:
         submission = self.make_submission()
@@ -128,9 +213,11 @@ class PublishMEISubmissionTaskTestCase(TestCase):
         self.assertIn(existing, self.manuscript.plugins.all())
 
     def test_publishing_is_idempotent_for_plugins(self) -> None:
-        submission = self.make_submission()
-        self.publish(submission)
-        self.publish(submission)
+        # Two submissions rather than the same one twice: a published row cannot
+        # be published again, so a second publication of the same folio is by
+        # definition a second submission.
+        self.publish(self.make_submission())
+        self.publish(self.make_submission())
         self.assertEqual(self.manuscript.plugins.count(), 2)
         self.assertEqual(Plugin.objects.count(), 2)
 
@@ -176,6 +263,9 @@ class PublishMEISubmissionTaskTestCase(TestCase):
                 dupe.write("<mei/>")
 
         submission = self.make_submission()
+        # Claimed, so this exercises the ambiguity guard rather than stopping at
+        # the claim check.
+        self.assertTrue(submission.claim_for_publication(self.reviewer))
         with override_settings(MEI_FILES_DIR=self.mei_dir):
             result = publish_mei_submission_task.apply(
                 kwargs={
@@ -185,6 +275,7 @@ class PublishMEISubmissionTaskTestCase(TestCase):
             )
         self.assertFalse(result.successful())
         submission.refresh_from_db()
+        # Back in the queue, not stranded in PUBLISHING.
         self.assertEqual(submission.status, SubmissionStatus.PENDING)
 
     def test_no_partial_files_are_left_behind(self) -> None:

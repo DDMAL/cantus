@@ -32,6 +32,30 @@ from .mei_parsing_types import (
 PITCH_CLASS = {"c": 0, "d": 2, "e": 4, "f": 5, "g": 7, "a": 9, "b": 11}
 
 
+def _build_parser() -> "etree.XMLParser":
+    """
+    The parser used for every MEI document, including submitted ones.
+
+    These are lxml's own defaults as of lxml 5, not a change of behaviour: an
+    external entity is already refused and the network is already unreachable.
+    They are stated explicitly because they have not always been the defaults --
+    `resolve_entities` was True before lxml 5.0, where an entity declared
+    SYSTEM "file:///..." would be expanded into the document -- and MEI now
+    arrives from outside over the deposit API. Naming them keeps that guarantee
+    a property of this parser rather than of whichever lxml happens to satisfy
+    the version range.
+
+    `resolve_entities="internal"` keeps entities declared in the document's own
+    internal subset working, which is what the default does today; only external
+    ones are refused.
+    """
+    return etree.XMLParser(
+        resolve_entities="internal",
+        no_network=True,
+        load_dtd=False,
+    )
+
+
 class MEIParser:
     """
     A class providing methods for parsing MEI files into python types.
@@ -54,7 +78,7 @@ class MEIParser:
 
     def __init__(self, mei_file: str):
         self.mei_file = mei_file
-        self.mei = etree.parse(self.mei_file)
+        self.mei = etree.parse(self.mei_file, parser=_build_parser())
         self._remove_empty_neumes_and_syllables()
         self.zones = self.parse_zones()
         self.syllables = self.parse_mei()

@@ -13,6 +13,24 @@ MEI4_DIR = path.join("/code", "production-mei-files")
 FOLIO_NUMBER_REGEX = re.compile(r"[a-zA-Z]?\d+[a-z]?")
 
 
+def escape_solr_phrase(value: str) -> str:
+    """
+    Escape a value being interpolated into a quoted Solr phrase.
+
+    Only the backslash and the double quote mean anything inside quotes, and the
+    backslash has to go first or it would escape the escapes added after it.
+
+    Folio numbers currently reach this as either an operator's --folio argument
+    or a Folio.number read back from the database, so none of them contain a
+    quote today. That is a property of the data rather than a guarantee, and the
+    query built from it is a *delete*: a stray quote would end the phrase early
+    and leave the rest of the folio number as loose query syntax, against an
+    index whose contents are then removed. Cheaper to escape than to rely on
+    every folio number that ever reaches the database being well behaved.
+    """
+    return value.replace("\\", "\\\\").replace('"', '\\"')
+
+
 class Command(BaseCommand):
     help = (
         "This command indexes the contents of MEI files in Solr, using"
@@ -181,7 +199,7 @@ class Command(BaseCommand):
         """
         query = f"type:omr_ngram AND manuscript_id:{manuscript_id}"
         if folio is not None:
-            query += f' AND folio:"{folio}"'
+            query += f' AND folio:"{escape_solr_phrase(folio)}"'
         solr_conn.delete_query(query)
         solr_conn.commit()
 

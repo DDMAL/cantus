@@ -1,7 +1,7 @@
-from os import makedirs, path
+from os import makedirs, path, sep
 from typing import Any
 
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import BaseCommand, CommandError, CommandParser
 
 from cantusdata.models.mei_submission import MEISubmission, SubmissionStatus
 
@@ -31,6 +31,30 @@ class Command(BaseCommand):
             ),
         )
 
+    def resolve_target(self, destination: str, submission: MEISubmission) -> str:
+        """
+        Where one submission's MEI is written, once confirmed to be inside
+        `destination`.
+
+        mei_filename is built from the manuscript's siglum, which slugify
+        flattens, and the folio number, which is not transformed at all. Folio
+        numbers reaching here are canonical Folio.number values, so none of them
+        currently contain a separator -- but this opens a file for writing from
+        a database-derived name, and a name that escaped the directory would
+        overwrite whatever it landed on. Checked rather than assumed.
+        """
+        filename = submission.mei_filename
+        target = path.normpath(path.join(destination, filename))
+        contained = path.abspath(target).startswith(path.abspath(destination) + sep)
+        if path.dirname(filename) or not contained:
+            raise CommandError(
+                f"Submission {submission.pk} (f. {submission.folio_number}) would be "
+                f"written to {target!r}, outside the export directory. Its folio "
+                "number contains a path separator; fix the folio record before "
+                "exporting."
+            )
+        return target
+
     def handle(self, *args: Any, **options: Any) -> None:
         manuscript_id = options["manuscript_id"]
         submissions = MEISubmission.objects.filter(
@@ -45,7 +69,7 @@ class Command(BaseCommand):
         destination = path.join(options["out_dir"], str(manuscript_id))
         makedirs(destination, exist_ok=True)
         for submission in submissions:
-            target = path.join(destination, submission.mei_filename)
+            target = self.resolve_target(destination, submission)
             with open(target, "w", encoding="utf-8") as out_file:
                 out_file.write(submission.mei)
             self.stdout.write(

@@ -55,22 +55,43 @@ def publish_mei_submission_task(self, *args, **kwargs):
     submission = MEISubmission.objects.select_related("manuscript").get(
         pk=kwargs["submission_id"]
     )
+    # Only a row this task still owns may be published. The admin claims the
+    # submission into PUBLISHING before dispatching, so anything else here means
+    # the claim is not ours: the row was already published by a task that won a
+    # race, was superseded by a newer deposit, was refused, or was queued by
+    # something that skipped the claim. Writing the file and reindexing anyway
+    # would republish content a reviewer has moved on from, and two concurrent
+    # --replace passes over one folio can interleave into the duplicate n-grams
+    # --replace exists to prevent.
+    if submission.status != SubmissionStatus.PUBLISHING:
+        return {
+            "submission_id": submission.pk,
+            "skipped": f"not claimed for publication (status {submission.status})",
+        }
+
     manuscript = submission.manuscript
 
-    published_path = write_submission_to_mei_dir(submission)
+    try:
+        published_path = write_submission_to_mei_dir(submission)
 
-    call_command(
-        "index_manuscript_mei",
-        str(manuscript.pk),
-        "--folio",
-        submission.folio_number,
-        "--replace",
-        "--mei-dir",
-        settings.MEI_FILES_DIR,
-    )
+        call_command(
+            "index_manuscript_mei",
+            str(manuscript.pk),
+            "--folio",
+            submission.folio_number,
+            "--replace",
+            "--mei-dir",
+            settings.MEI_FILES_DIR,
+        )
 
-    for plugin_name in NOTATION_SEARCH_PLUGINS:
-        manuscript.plugins.add(get_plugin_by_slug(plugin_name))
+        for plugin_name in NOTATION_SEARCH_PLUGINS:
+            manuscript.plugins.add(get_plugin_by_slug(plugin_name))
+    except Exception:
+        # Put it back in the queue rather than stranding it in PUBLISHING, which
+        # the admin offers no way out of. The reviewer can retry once whatever
+        # failed -- an unwritable volume, an unreachable Solr -- is fixed.
+        submission.release_claim()
+        raise
 
     submission.status = SubmissionStatus.PUBLISHED
     submission.published_path = published_path

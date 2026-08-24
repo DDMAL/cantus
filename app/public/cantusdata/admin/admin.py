@@ -1,8 +1,10 @@
+from functools import partial
 from typing import Any
 
 from django.contrib import admin, messages
 from django.contrib.admin import ModelAdmin
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.db import transaction
 from django.db.models import Model
 from django.db.models.query import QuerySet
 from django.forms import ModelForm
@@ -349,15 +351,30 @@ class MEISubmissionAdmin(ModelAdmin):  # type: ignore[type-arg]
         if chosen == form.initial_status:  # type: ignore[attr-defined]
             super().save_model(request, obj, form, change)
             return
-        obj.reviewed_by = request.user  # type: ignore[assignment]
-        obj.reviewed_at = timezone.now()
         if chosen == SubmissionStatus.PUBLISHED:
-            # Publishing is the task's job, including flipping the status, so the
-            # row only reads PUBLISHED once the folio really is indexed.
+            # Publishing is the task's job, including flipping the status to
+            # PUBLISHED, so the row only reads PUBLISHED once the folio really is
+            # indexed. Until then it must not read PENDING either, or a second
+            # reviewer could publish the same folio again while this task runs --
+            # so the row is claimed into PUBLISHING, atomically, and only a
+            # winning claim dispatches. reviewed_by/reviewed_at are set by the
+            # claim itself for the same reason.
             obj.status = form.initial_status  # type: ignore[attr-defined]
             super().save_model(request, obj, form, change)
+            if not obj.claim_for_publication(request.user):
+                self.message_user(
+                    request,
+                    (
+                        "This submission is already being published, or has "
+                        "already been reviewed. Nothing was queued."
+                    ),
+                    level=messages.WARNING,
+                )
+                return
             self._queue_publication(request, [obj])
             return
+        obj.reviewed_by = request.user  # type: ignore[assignment]
+        obj.reviewed_at = timezone.now()
         super().save_model(request, obj, form, change)
 
     @admin.action(description="Publish selected submissions")
@@ -381,22 +398,44 @@ class MEISubmissionAdmin(ModelAdmin):  # type: ignore[type-arg]
             )
         if not publishable:
             return
-        for submission in publishable:
-            submission.reviewed_by = request.user  # type: ignore[assignment]
-            submission.reviewed_at = timezone.now()
-            submission.save()
-        self._queue_publication(request, publishable)
+        # can_transition_to above is a read, so it cannot decide ownership: two
+        # reviewers acting at once would both pass it. The claim is the atomic
+        # step that does, so only submissions this request actually claimed are
+        # dispatched.
+        claimed = [s for s in publishable if s.claim_for_publication(request.user)]
+        lost = len(publishable) - len(claimed)
+        if lost:
+            self.message_user(
+                request,
+                (
+                    f"Skipped {lost} submission(s) already being published by "
+                    "someone else."
+                ),
+                level=messages.WARNING,
+            )
+        if not claimed:
+            return
+        self._queue_publication(request, claimed)
 
     def _queue_publication(
         self, request: HttpRequest, submissions: list[MEISubmission]
     ) -> None:
         for submission in submissions:
-            publish_mei_submission_task.apply_async(
-                kwargs={
-                    # Read by NewTaskResultAdmin to label the task; required.
-                    "manuscript_ids": [submission.manuscript_id],
-                    "submission_id": submission.pk,
-                }
+            # on_commit, not a bare apply_async: the claim above is not visible
+            # to other connections until this request's transaction commits, and
+            # a worker is quite capable of picking the task up before that and
+            # reading the row as still PENDING -- which the task now refuses.
+            # Queuing after commit also means a rolled-back request queues
+            # nothing at all.
+            transaction.on_commit(
+                partial(
+                    publish_mei_submission_task.apply_async,
+                    kwargs={
+                        # Read by NewTaskResultAdmin to label the task; required.
+                        "manuscript_ids": [submission.manuscript_id],
+                        "submission_id": submission.pk,
+                    },
+                )
             )
         self.message_user(
             request,

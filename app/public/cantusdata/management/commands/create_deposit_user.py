@@ -2,7 +2,7 @@ from typing import Any
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import BaseCommand, CommandError, CommandParser
 from rest_framework.authtoken.models import Token
 
 DEFAULT_USERNAME = "mothra"
@@ -38,6 +38,46 @@ class Command(BaseCommand):
             ),
         )
 
+    def reject_unless_service_account(self, user: Any) -> None:
+        """
+        Refuse to issue a deposit token for anything but a service account.
+
+        The checks are what distinguishes the account this command creates from
+        one belonging to a person: no admin access, no permissions beyond the
+        deposit set, and no usable password. The password check is the one that
+        catches the likeliest accident -- an ordinary reader account, which is
+        non-staff and unprivileged and would otherwise pass.
+
+        Permissions are read with get_all_permissions() rather than the
+        user_permissions relation so that anything conferred by a group counts
+        too.
+        """
+        problems = []
+        if user.is_superuser:
+            problems.append("is a superuser")
+        if user.is_staff:
+            problems.append("has admin access")
+        if user.has_usable_password():
+            problems.append("has a password, so it belongs to a person")
+
+        if not user.is_superuser:
+            # Skipped for a superuser, whose get_all_permissions() is every
+            # permission there is -- already reported above, and not worth
+            # enumerating into the error.
+            expected = {f"cantusdata.{codename}" for codename in DEPOSIT_PERMISSIONS}
+            extra = sorted(set(user.get_all_permissions()) - expected)
+            if extra:
+                problems.append(f"holds unrelated permissions ({', '.join(extra)})")
+
+        if problems:
+            raise CommandError(
+                f"'{user.get_username()}' {' and '.join(problems)}, so it is not a "
+                "deposit service account. Refusing to grant it deposit permissions "
+                "or issue it an API token -- a token authenticates as this account, "
+                "and nothing here has been changed. Pass --username to name a "
+                "dedicated service account instead."
+            )
+
     def handle(self, *args: Any, **options: Any) -> None:
         username = options["username"]
         user_model = get_user_model()
@@ -52,6 +92,13 @@ class Command(BaseCommand):
             user.save()
             self.stdout.write(f"Created service account '{username}'.")
         else:
+            # An existing account is only safe to reuse if it is already a
+            # service account. Otherwise this command would grant a human --
+            # or an admin -- the deposit permissions and print a bearer token
+            # for them, which is a mistake a single typo in --username is enough
+            # to make, and one that prints a durable credential to the terminal
+            # rather than failing.
+            self.reject_unless_service_account(user)
             self.stdout.write(f"Service account '{username}' already exists.")
 
         permissions = Permission.objects.filter(

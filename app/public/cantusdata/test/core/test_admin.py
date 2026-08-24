@@ -21,6 +21,7 @@ class MEISubmissionAdminTestCase(TestCase):
 
     def setUp(self) -> None:
         self.client.login(username="ahankins", password="hahaha")
+        self.user = User.objects.get(username="ahankins")
         self.manuscript = Manuscript.objects.create(
             id=123723, siglum="CDN-Hsmu M2149.L4"
         )
@@ -81,8 +82,14 @@ class MEISubmissionAdminTestCase(TestCase):
         The row only reads PUBLISHED once the folio really is indexed, so the
         form leaves the status alone and the task flips it.
         """
+        # captureOnCommitCallbacks because the task is queued from on_commit --
+        # a TestCase never commits, so without this the dispatch never runs and
+        # the assertions below would pass against a task that was never sent.
         with patch(PUBLISH_TASK) as task:
-            response = self.review(status=SubmissionStatus.PUBLISHED, review_note="")
+            with self.captureOnCommitCallbacks(execute=True):
+                response = self.review(
+                    status=SubmissionStatus.PUBLISHED, review_note=""
+                )
         self.assertEqual(response.status_code, 302)
         task.apply_async.assert_called_once()
         kwargs = task.apply_async.call_args.kwargs["kwargs"]
@@ -91,8 +98,11 @@ class MEISubmissionAdminTestCase(TestCase):
         self.assertEqual(kwargs["manuscript_ids"], [self.manuscript.pk])
 
         self.submission.refresh_from_db()
-        self.assertEqual(self.submission.status, SubmissionStatus.PENDING)
+        # Claimed, not PENDING: the row must stop being publishable the moment it
+        # is dispatched, and not read PUBLISHED until the folio is really indexed.
+        self.assertEqual(self.submission.status, SubmissionStatus.PUBLISHING)
         self.assertIsNotNone(self.submission.reviewed_at)
+        self.assertEqual(self.submission.reviewed_by.username, "ahankins")
 
     def test_a_reviewed_submission_cannot_be_reviewed_again(self) -> None:
         self.submission.status = SubmissionStatus.REFUSED
@@ -118,15 +128,19 @@ class MEISubmissionAdminTestCase(TestCase):
             submitter="asadra",
         )
         with patch(PUBLISH_TASK) as task:
-            response = self.client.post(
-                reverse("admin:cantusdata_meisubmission_changelist"),
-                {
-                    "action": "publish_submissions",
-                    "_selected_action": [self.submission.pk, other.pk],
-                },
-            )
+            with self.captureOnCommitCallbacks(execute=True):
+                response = self.client.post(
+                    reverse("admin:cantusdata_meisubmission_changelist"),
+                    {
+                        "action": "publish_submissions",
+                        "_selected_action": [self.submission.pk, other.pk],
+                    },
+                )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(task.apply_async.call_count, 2)
+        for submission in (self.submission, other):
+            submission.refresh_from_db()
+            self.assertEqual(submission.status, SubmissionStatus.PUBLISHING)
 
     def test_publish_action_skips_already_reviewed_submissions(self) -> None:
         self.submission.status = SubmissionStatus.PUBLISHED
@@ -142,6 +156,51 @@ class MEISubmissionAdminTestCase(TestCase):
             )
         task.apply_async.assert_not_called()
         self.assertContains(response, "already been reviewed")
+
+    def test_a_submission_being_published_cannot_be_published_again(self) -> None:
+        """
+        The window this closes: while the task runs, the row used to stay PENDING,
+        so a second reviewer -- or the same one clicking twice -- could queue the
+        same folio again. Two `index_manuscript_mei --folio --replace` passes over
+        one folio can interleave their delete and index phases and leave it
+        indexed twice, which is the duplication --replace exists to prevent.
+        """
+        self.assertTrue(self.submission.claim_for_publication(self.user))
+
+        with patch(PUBLISH_TASK) as task:
+            with self.captureOnCommitCallbacks(execute=True):
+                response = self.client.post(
+                    reverse("admin:cantusdata_meisubmission_changelist"),
+                    {
+                        "action": "publish_submissions",
+                        "_selected_action": [self.submission.pk],
+                    },
+                    follow=True,
+                )
+        task.apply_async.assert_not_called()
+        self.assertContains(response, "already been reviewed")
+
+    def test_two_concurrent_publishes_dispatch_one_task(self) -> None:
+        """Only the reviewer who wins the claim gets to queue the work."""
+        first = MEISubmission.objects.get(pk=self.submission.pk)
+        second = MEISubmission.objects.get(pk=self.submission.pk)
+
+        self.assertTrue(first.claim_for_publication(self.user))
+        self.assertFalse(second.claim_for_publication(self.user))
+
+        self.submission.refresh_from_db()
+        self.assertEqual(self.submission.status, SubmissionStatus.PUBLISHING)
+
+    def test_nothing_is_queued_if_the_request_rolls_back(self) -> None:
+        """
+        on_commit is what ties the dispatch to the transaction: a request that
+        never commits must not leave a task pointing at a row that does not exist
+        in the state the worker will read.
+        """
+        with patch(PUBLISH_TASK) as task:
+            # No captureOnCommitCallbacks: nothing commits, so nothing dispatches.
+            self.review(status=SubmissionStatus.PUBLISHED, review_note="")
+        task.apply_async.assert_not_called()
 
     # --- the MEI itself -------------------------------------------------
 

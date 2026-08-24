@@ -66,8 +66,47 @@ never applies manifests. Editing the YAML in this repo does nothing on its own:
 ```bash
 kubectl apply -f k8s/cantus-ultimus/mei-files-pv.yaml
 kubectl apply -f k8s/cantus-ultimus/mei-files-pvc.yaml
-kubectl apply -f k8s/cantus-ultimus/app/
-kubectl apply -f k8s/cantus-ultimus/celery/
+kubectl apply -f k8s/cantus-ultimus/app/configmap.yaml
+kubectl apply -f k8s/cantus-ultimus/app/deployment.yaml
+kubectl apply -f k8s/cantus-ultimus/celery/deployment.yaml
+```
+
+**Name the files, never the directory.** `kubectl apply -f
+k8s/cantus-ultimus/app/` also applies `secret.yaml`, whose `stringData` holds
+the literal string `<value>` for `DJANGO_SECRET_KEY`, `POSTGRES_PASSWORD`, and
+`RABBIT_PASSWORD` -- the repo copy is a template, and the real values live only
+in the cluster. Applying it overwrites the live `app-secret` with placeholders,
+which does not fail and does not restart anything: the site keeps running on the
+env vars its current pods already read, and loses the database and the broker at
+the next pod restart, whenever that happens to be.
+
+Apply these **before** the merge that deploys the code. Both Deployments pin
+`image: ghcr.io/ddmal/cantus-app:main-latest`, so applying them while production
+runs the current `main` rolls the volume mount in without changing the code;
+applying them after CI has run `kubectl set image` would drag the image back to
+whatever `main-latest` points at. Getting the mount in first also matters because
+`MEI_FILES_DIR` defaults to `/code/mei-files` whether or not anything is mounted
+there -- new code on an unmounted pod publishes into the container's own
+filesystem, reporting success and losing the file at the next restart.
+
+Check that the mount really is the NFS export, and that root can write to it
+-- under the default `root_squash` the mount succeeds and only the writes fail,
+which surfaces much later as a failed publish task rather than as a mount error:
+
+```bash
+kubectl exec deploy/celery -n cantus-ultimus -- mount | grep mei-files
+kubectl exec deploy/celery -n cantus-ultimus -- touch /code/mei-files/.wtest
+kubectl exec deploy/celery -n cantus-ultimus -- ls -l /code/mei-files/.wtest
+```
+
+The test file must come back owned by `root`, not `nobody`.
+
+Migrations come *after* the code deploy, not here: `0007_meisubmission` ships
+with the new image, so there is nothing to apply until CI has rolled it out.
+Once it has:
+
+```bash
+kubectl exec deploy/app -n cantus-ultimus -- python manage.py migrate
 ```
 
 ## Seeding

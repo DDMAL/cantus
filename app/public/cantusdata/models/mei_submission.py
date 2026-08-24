@@ -2,11 +2,21 @@ import hashlib
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from django.utils.text import slugify
 
 
 class SubmissionStatus(models.TextChoices):
     PENDING = "PENDING", "Pending review"
+    # Claimed by a publication task that has not finished yet. Exists so that
+    # claiming is a single atomic UPDATE off PENDING: the row stops being
+    # publishable the instant it is dispatched, rather than staying PENDING for
+    # the length of the task and letting a second reviewer -- or a second click
+    # -- queue the same folio again. It also puts the row out of reach of the
+    # supersede in MEISubmissionCreateSerializer.create, which only rewrites
+    # PENDING rows, so a deposit arriving mid-publish cannot pull the row out
+    # from under the running task.
+    PUBLISHING = "PUBLISHING", "Publishing"
     PUBLISHED = "PUBLISHED", "Published"
     CORRECTION_REQUESTED = "CORRECTION_REQUESTED", "Correction requested"
     REFUSED = "REFUSED", "Refused"
@@ -138,3 +148,45 @@ class MEISubmission(models.Model):
     def can_transition_to(self, status: str) -> bool:
         """A submission may be reviewed exactly once, out of PENDING."""
         return self.status == SubmissionStatus.PENDING and status in REVIEW_OUTCOMES
+
+    def claim_for_publication(self, reviewer: object) -> bool:
+        """
+        Take this submission out of the queue and mark it as being published.
+
+        Returns whether the claim succeeded. The filter on PENDING is the whole
+        point: the UPDATE is the single atomic step that decides which of two
+        concurrent reviewers owns the publication, so only the caller that gets
+        True may dispatch a task. Publishing twice would run two
+        `index_manuscript_mei --folio --replace` passes over one folio, and
+        their delete/index phases can interleave into exactly the duplicate
+        n-grams that --replace exists to prevent.
+
+        The instance is updated in memory to match, so a caller that goes on to
+        read `status` sees the claimed value rather than a stale PENDING.
+        """
+        claimed_at = timezone.now()
+        updated = MEISubmission.objects.filter(
+            pk=self.pk, status=SubmissionStatus.PENDING
+        ).update(
+            status=SubmissionStatus.PUBLISHING,
+            reviewed_by=reviewer,
+            reviewed_at=claimed_at,
+        )
+        if not updated:
+            return False
+        self.status = SubmissionStatus.PUBLISHING
+        self.reviewed_by = reviewer  # type: ignore[assignment]
+        self.reviewed_at = claimed_at
+        return True
+
+    def release_claim(self) -> None:
+        """
+        Return a claimed submission to the queue after a failed publication.
+
+        Without this a failed task would strand the row in PUBLISHING, where it
+        is neither published nor reviewable -- the admin offers no transition
+        out of it, by design.
+        """
+        MEISubmission.objects.filter(
+            pk=self.pk, status=SubmissionStatus.PUBLISHING
+        ).update(status=SubmissionStatus.PENDING)

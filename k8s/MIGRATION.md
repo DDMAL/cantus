@@ -119,6 +119,12 @@ kubectl apply -f k8s/cantus-ultimus/mei-files-pvc.yaml
 
 kubectl apply -f k8s/cantus-ultimus/app/
 # run migrate in the pod after the pod is ready
+# NOTE: applying the whole app/ directory is correct HERE, on a fresh cluster,
+# because the Prerequisites above had you fill in secret.yaml's <value>
+# placeholders first. Never re-run it against a cluster that is already serving:
+# the repo copy is a template, so it would overwrite the live app-secret with
+# those placeholders and break the database and broker at the next pod restart.
+# To change a running deployment, name the file: see k8s/MEI_FILES.md#applying.
 
 # 5. Celery
 kubectl apply -f k8s/cantus-ultimus/celery/
