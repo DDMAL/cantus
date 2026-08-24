@@ -19,6 +19,7 @@ from cantusdata.views.manuscript_glyph_set import ManuscriptGlyphSetView
 from cantusdata.views.map_folios import MapFoliosView
 from cantusdata.views.load_chants import LoadChantsView
 from cantusdata.views.manifest_proxy import ManifestProxyView
+from cantusdata.views.mei_submission import MEISubmissionView
 from cantusdata.views.neume_exemplars import (
     NeumeSetAPIView,
     PickNeumeExemplarsView,
@@ -126,6 +127,14 @@ urlpatterns = [
         "notation-search/",
         SearchNotationView.as_view(),
         name="search-notation-view",
+    ),
+    # MEI deposits from external OMR pipelines. POST files one folio's MEI for
+    # admin review; GET reports a submitter's submission statuses. Token-
+    # authenticated, see views/mei_submission.py.
+    path(
+        "api/mei-submissions/",
+        MEISubmissionView.as_view(),
+        name="mei-submission-view",
     ),
 ]
 

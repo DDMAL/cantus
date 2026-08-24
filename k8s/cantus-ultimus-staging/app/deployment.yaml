@@ -41,6 +41,9 @@ spec:
             secretKeyRef:
               name: app-secret-staging
               key: RABBIT_PASSWORD
+        volumeMounts:
+        - name: mei-files
+          mountPath: /code/mei-files
         readinessProbe:
           tcpSocket:
             port: 8001
@@ -59,3 +62,7 @@ spec:
           limits:
             cpu: "1"
             memory: "2Gi"
+      volumes:
+      - name: mei-files
+        persistentVolumeClaim:
+          claimName: mei-files-staging-pvc

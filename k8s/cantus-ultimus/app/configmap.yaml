@@ -18,3 +18,6 @@ data:
   SOLR_HOST: "solr"
   # Add any additional hostnames the app should accept (comma-separated)
   EXTRA_ALLOWED_HOSTS: "app,cantus.simssa.ca"
+  # Live tree of MEI files read by index_manuscript_mei, backed by the
+  # cantus-mei-files PVC (NFS). Mounted at this path in app and celery.
+  MEI_FILES_DIR: "/code/mei-files"

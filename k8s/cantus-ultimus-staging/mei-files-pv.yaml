@@ -1,0 +1,35 @@
+# Static NFS PersistentVolume for the live tree of MEI files.
+#
+# index_manuscript_mei reads MEI from a directory; the production-mei-files
+# submodule is COPY'd into the app image (app/Dockerfile), so anything written
+# beside it inside a running container is lost on the next deploy. Published MEI
+# deposits therefore live here instead, shared by the app and celery pods →
+# ReadWriteMany. Mounted at /code/mei-files in both Deployments.
+#
+# The export must exist on the server before a pod starts: a static PV binds
+# Bound regardless, and a missing path only shows up as
+# "mount.nfs4: ... No such file or directory" with the pod in ContainerCreating.
+# It needs an /etc/exports entry + `exportfs -ra`, not just a mkdir, and must sit
+# inside the NFSv4 pseudo-root.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mei-files-staging-pv
+  labels:
+    app: cantus-ultimus
+    component: mei-files
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""          # static binding, no dynamic provisioner
+  mountOptions:
+    - nfsvers=4.1
+  nfs:
+    server: 192.168.236.171                # cantus-data storage VM
+    path: /srv/nfs/cantus-staging/mei_files
+  claimRef:
+    namespace: cantus-ultimus
+    name: mei-files-staging-pvc

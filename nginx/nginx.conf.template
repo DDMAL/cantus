@@ -70,9 +70,18 @@ http {
       alias /code/manifests/;
     }
 
+    # Two static trees are served under /static/: the gulp-built frontend at
+    # /code/static, and collectstatic's output (admin, DRF) at
+    # /code/static/django. $uri alone only ever finds the first, so name the
+    # second explicitly -- try_files resolves each argument against `root`,
+    # which is why a bare "django/$uri" pointed at /code/django/static/... .
+    location ~ ^/static/(?<asset>.+)$ {
+      try_files /static/$asset /static/django/$asset @proxy_to_app;
+    }
+
     location / {
       # checks for static file, if not found proxy to app
-      try_files $uri django/$uri @proxy_to_app;
+      try_files $uri @proxy_to_app;
     }
 
     location @proxy_to_app {

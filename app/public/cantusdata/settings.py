@@ -141,12 +141,25 @@ REST_FRAMEWORK = {
         # "rest_framework_jsonp.renderers.JSONPRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
     ),
+    # NOTE: there is no DEFAULT_PERMISSION_CLASSES here, so DRF's default of
+    # AllowAny applies. Any view that writes must set permission_classes itself.
     # 'DEFAULT_PERMISSION_CLASSES': [
     #     'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     # ]
+    "DEFAULT_THROTTLE_RATES": {
+        # Applied by MEISubmissionCreateView via ScopedRateThrottle. A leaked
+        # deposit token can only fill the review queue; this bounds that.
+        "mei_deposit": "300/hour",
+    },
 }
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
+
+# The live tree of MEI files that index_manuscript_mei reads. Backed by a
+# persistent volume in deployed environments (the production-mei-files submodule
+# baked into the image is not writable across restarts). See
+# management/commands/seed_mei_files.py for how it is populated.
+MEI_FILES_DIR = os.environ.get("MEI_FILES_DIR", "/code/mei-files")
 
 _solr_host = os.environ.get("SOLR_HOST", "solr")
 SOLR_SERVER = os.environ.get(

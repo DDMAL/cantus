@@ -6,6 +6,8 @@ from django.conf import settings
 from cantusdata.views.search_notation import SearchNotationView, NotationSearchException
 from cantusdata.models import Manuscript, Folio
 
+from solr.core import SolrConnection  # type: ignore[import-untyped]
+
 
 class TestSearchNotationView(APITestCase):
     search_notation_view = SearchNotationView()
@@ -163,6 +165,38 @@ class TestSearchNotationView(APITestCase):
             response_data = response.json()
             self.assertIn("results", response_data)
             self.assertIn("numFound", response_data)
+
+    def test_get_result_whose_document_has_no_image_uri(self) -> None:
+        """
+        Documents indexed before image_uri was normalised carry no such field --
+        Solr drops a null rather than storing it. Reading it by key raised
+        KeyError, so a single unmapped folio turned every query whose result
+        page reached it into a 500. The folio must come back unlocatable, not
+        fatal.
+        """
+        solr_conn = SolrConnection(settings.SOLR_TEST_SERVER)
+        source = solr_conn.query(
+            "*:*", fq="type:omr_ngram AND manuscript_id:123723", rows=1
+        ).results[0]
+        # _version_ would make this an optimistic-concurrency update, not an add.
+        doc = {
+            k: v
+            for k, v in source.items()
+            if k not in ("image_uri", "score") and not k.startswith("_")
+        }
+        doc["id"] = "no-image-uri-test-doc"
+        doc["folio"] = "998r"
+        solr_conn.add_many([doc])
+        solr_conn.commit()
+        self.addCleanup(solr_conn.commit)
+        self.addCleanup(solr_conn.delete_query, 'id:"no-image-uri-test-doc"')
+
+        results, num_found = self.search_notation_view.do_query(
+            123723, 'folio:"998r"', 100, 0
+        )
+        self.assertEqual(num_found, 1)
+        self.assertEqual(results[0]["boxes"][0]["p"], "")
+        self.assertEqual(results[0]["boxes"][0]["f"], "998r")
 
     @classmethod
     def tearDownClass(cls) -> None:
