@@ -171,6 +171,12 @@ def write_submission_to_mei_dir(submission):
         staged.write(submission.mei)
         staged_path = staged.name
     try:
+        # NamedTemporaryFile creates at 0600 and os.replace preserves that mode,
+        # so without this a published deposit lands stricter than the curated
+        # files beside it. It reads fine while the pods run as root, and stops
+        # reading the moment they do not -- a non-root USER in the image, or an
+        # export that goes back to root_squash.
+        os.chmod(staged_path, 0o644)
         os.replace(staged_path, destination)
     except OSError:
         os.unlink(staged_path)

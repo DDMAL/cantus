@@ -1,5 +1,6 @@
-from os import listdir, makedirs, path
+from os import listdir, makedirs, path, stat
 from shutil import rmtree
+from stat import S_IMODE
 from tempfile import mkdtemp
 
 from django.conf import settings
@@ -88,6 +89,20 @@ class PublishMEISubmissionTaskTestCase(TestCase):
 
         submission.refresh_from_db()
         self.assertEqual(submission.published_path, expected)
+
+    def test_published_files_are_readable_beside_the_curated_ones(self) -> None:
+        """
+        NamedTemporaryFile stages at 0600 and os.replace carries that mode onto
+        the destination, so without an explicit chmod a published folio is
+        readable only by the user that wrote it. That is invisible while the
+        pods run as root and breaks as soon as they do not, so the mode is
+        pinned here rather than left to whatever tempfile happens to do.
+        """
+        submission = self.make_submission()
+        self.publish(submission)
+
+        written = path.join(self.mei_dir, "123723", "cdn-hsmu-m2149l4_001r.mei")
+        self.assertEqual(S_IMODE(stat(written).st_mode), 0o644)
 
     def test_an_unclaimed_submission_is_not_published(self) -> None:
         """
