@@ -2,11 +2,12 @@ from typing import Any
 
 from django.contrib import admin, messages
 from django.contrib.admin import ModelAdmin
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Model
 from django.db.models.query import QuerySet
 from django.forms import ModelForm
 from django.http import HttpRequest, HttpResponse
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
@@ -202,7 +203,11 @@ class MEISubmissionAdmin(ModelAdmin):  # type: ignore[type-arg]
         "submitter",
         "status",
         "submitted_at",
+        "mei_download",
     )
+    # "manuscript" is displayed for every row, and mei_summary reaches through it
+    # for the siglum; without this each row costs its own query for it.
+    list_select_related = ("manuscript",)
     list_filter = ("status", "manuscript")
     search_fields = ("submitter", "folio_number")
     date_hierarchy = "submitted_at"
@@ -276,12 +281,31 @@ class MEISubmissionAdmin(ModelAdmin):  # type: ignore[type-arg]
         """Size and a download link, rather than 120 KB of XML in a textarea."""
         if not obj.pk:
             return ""
-        size_kb = len(obj.mei.encode("utf-8")) / 1024
+        # The size is formatted before it reaches format_html: format_html
+        # escapes each argument into a string first, so a "{:.1f}" placeholder
+        # raises ValueError -- which the admin catches, rendering the whole
+        # field as "-" and silently swallowing the download link.
+        size_kb = f"{len(obj.mei.encode('utf-8')) / 1024:.1f}"
         return format_html(
-            '{:.1f} KB &mdash; <a href="{}">download {}</a>',
+            '{} KB &mdash; <a href="{}" download>download {}</a>',
             size_kb,
             reverse("admin:cantusdata_meisubmission_mei", args=[obj.pk]),
             obj.mei_filename,
+        )
+
+    @admin.display(description="MEI")
+    def mei_download(self, obj: MEISubmission) -> str:
+        """
+        The same download, offered from the queue: a reviewer working through a
+        batch can collect the files without opening each submission first.
+
+        Deliberately barer than mei_summary -- no size, no filename -- because a
+        changelist row already names the manuscript and folio, and the size is
+        not what anyone is scanning the column for.
+        """
+        return format_html(
+            '<a href="{}" download>download</a>',
+            reverse("admin:cantusdata_meisubmission_mei", args=[obj.pk]),
         )
 
     def get_urls(self) -> list[Any]:
@@ -296,7 +320,17 @@ class MEISubmissionAdmin(ModelAdmin):  # type: ignore[type-arg]
         ] + super().get_urls()
 
     def download_mei(self, request: HttpRequest, pk: int) -> HttpResponse:
-        submission = MEISubmission.objects.get(pk=pk)
+        """
+        Serve the submitted MEI as a file, so a reviewer can open it in an MEI
+        viewer before deciding.
+
+        admin_view() only establishes that the caller is staff, so the view
+        permission for this model is checked here as well; and a stale link to a
+        deleted submission should be a 404, not a 500.
+        """
+        submission = get_object_or_404(MEISubmission, pk=pk)
+        if not self.has_view_permission(request, submission):
+            raise PermissionDenied
         response = HttpResponse(submission.mei, content_type="application/xml")
         response["Content-Disposition"] = (
             f'attachment; filename="{submission.mei_filename}"'

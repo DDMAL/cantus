@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
@@ -39,6 +40,10 @@ class MEISubmissionAdminTestCase(TestCase):
         return reverse(
             "admin:cantusdata_meisubmission_change", args=[self.submission.pk]
         )
+
+    @property
+    def download_url(self) -> str:
+        return reverse("admin:cantusdata_meisubmission_mei", args=[self.submission.pk])
 
     def review(self, **fields: str) -> object:
         return self.client.post(self.change_url, fields)
@@ -141,10 +146,46 @@ class MEISubmissionAdminTestCase(TestCase):
     # --- the MEI itself -------------------------------------------------
 
     def test_mei_can_be_downloaded(self) -> None:
-        response = self.client.get(
-            reverse("admin:cantusdata_meisubmission_mei", args=[self.submission.pk])
-        )
+        response = self.client.get(self.download_url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/xml")
         self.assertIn("cdn-hsmu-m2149l4_001r.mei", response["Content-Disposition"])
         self.assertEqual(response.content.decode(), "<mei>notation</mei>")
+
+    def test_the_change_form_offers_the_download(self) -> None:
+        """
+        The endpoint above being reachable is not enough: the reviewer can only
+        use it if the change form actually renders a link to it. It did not --
+        the size was interpolated with a "{:.1f}" placeholder, which format_html
+        cannot apply to the string it escapes its arguments into, and the
+        ValueError that raised made the admin render the whole field as its
+        empty-value dash instead.
+        """
+        response = self.client.get(self.change_url)
+        self.assertContains(response, self.download_url)
+        self.assertContains(response, "cdn-hsmu-m2149l4_001r.mei")
+        # 18 bytes of "<mei>notation</mei>"... the point is a number, not a dash.
+        self.assertContains(response, "0.0 KB")
+
+    def test_the_changelist_offers_the_download_too(self) -> None:
+        """A reviewer working a batch should not have to open each row first."""
+        response = self.client.get(reverse("admin:cantusdata_meisubmission_changelist"))
+        self.assertContains(response, self.download_url)
+
+    def test_downloading_a_submission_that_is_gone_is_a_404(self) -> None:
+        missing = reverse(
+            "admin:cantusdata_meisubmission_mei", args=[self.submission.pk]
+        )
+        self.submission.delete()
+        self.assertEqual(self.client.get(missing).status_code, 404)
+
+    def test_staff_without_view_permission_cannot_download(self) -> None:
+        """
+        admin_view() only establishes that the caller is staff, which is not the
+        same as being allowed to read this model.
+        """
+        outsider = User.objects.create_user(
+            username="outsider", password="hahaha", is_staff=True
+        )
+        self.client.force_login(outsider)
+        self.assertEqual(self.client.get(self.download_url).status_code, 403)
