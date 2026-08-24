@@ -29,7 +29,7 @@ RETURNED_FIELDS = [
 class SolrQueryResultItem(TypedDict):
     manuscript_id: int
     folio: str
-    image_uri: str
+    image_uri: NotRequired[str]
     pitch_names: str
     contour: str
     semitone_intervals: str
@@ -139,7 +139,11 @@ class SearchNotationView(APIView):
         num_found = response["response"]["numFound"]
         results = []
         for d in request_results:
-            boxes = self.create_boxes(d["location_json"], d["image_uri"], d["folio"])
+            # Documents indexed for a folio with no image mapping carry no
+            # image_uri at all; they are still searchable, just not locatable.
+            boxes = self.create_boxes(
+                d["location_json"], d.get("image_uri", ""), d["folio"]
+            )
             result: NotationSearchResultItem = {
                 "boxes": boxes,
                 "contour": d["contour"].split("_"),

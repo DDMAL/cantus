@@ -159,7 +159,9 @@ class Command(BaseCommand):
             for doc in ngram_docs:
                 doc["manuscript_id"] = manuscript_id
                 doc["folio"] = folio_number
-                doc["image_uri"] = folio_map.get(folio_number, "")
+                # `or ""` because Folio.image_uri is nullable: a None here would
+                # be dropped by Solr, leaving the document without the field.
+                doc["image_uri"] = folio_map.get(folio_number) or ""
             solr_conn.add_many(ngram_docs)
             solr_conn.commit()
         return None

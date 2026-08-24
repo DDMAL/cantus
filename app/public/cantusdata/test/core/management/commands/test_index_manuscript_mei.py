@@ -253,3 +253,56 @@ class IndexManuscriptMeiFolioScopingTestCase(TestCase):
                 call_command("index_manuscript_mei", "123723", "--mei-dir", staging_dir)
         finally:
             shutil.rmtree(staging_dir, ignore_errors=True)
+
+
+class IndexManuscriptMeiNullImageUriTestCase(TestCase):
+    """
+    Folio.image_uri is nullable, and a folio can carry a null one while still
+    having an MEI file: the command's "folio missing from the database" branch
+    compares against "", so a None slips past it and is never repaired.
+
+    A None reaching Solr is dropped rather than stored, leaving documents with
+    no image_uri field at all -- which SearchNotationView then read by key,
+    raising KeyError and returning a 500 for any query whose result page held
+    one. The documents must carry an empty image_uri instead.
+    """
+
+    solr_conn = SolrConnection(settings.SOLR_TEST_SERVER)
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        manuscript = Manuscript.objects.create(id=123723)
+        # No image_uri, so both are stored as NULL.
+        Folio.objects.create(number="001r", manuscript=manuscript)
+        Folio.objects.create(number="001v", manuscript=manuscript)
+
+    def setUp(self) -> None:
+        call_command("index_manuscript_mei", "123723", "--flush-index")
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        call_command("index_manuscript_mei", "123723", "--flush-index")
+        super().tearDownClass()
+
+    def test_documents_for_a_null_image_uri_folio_still_carry_the_field(self) -> None:
+        call_command(
+            "index_manuscript_mei",
+            "123723",
+            "--mei-dir",
+            TEST_MEI_FILES_PATH,
+        )
+        # Scoped to 001r: folio 999r is absent from the database entirely, so it
+        # takes the #891 branch and picks up the "" default rather than the None.
+        results = self.solr_conn.query(
+            "*:*",
+            fq='type:omr_ngram AND manuscript_id:123723 AND folio:"001r"',
+            rows=200,
+        )
+        self.assertGreater(len(results.results), 0)
+        missing = [d for d in results.results if "image_uri" not in d]
+        self.assertEqual(
+            missing,
+            [],
+            "every indexed document should carry an image_uri, empty or not",
+        )
+        self.assertTrue(all(d["image_uri"] == "" for d in results.results))
