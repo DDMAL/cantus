@@ -46,9 +46,9 @@ spec:
         resources:
           requests:
             cpu: "500m"
-            memory: "1Gi"
+            memory: "512Mi"
           limits:
-            cpu: "2"
+            cpu: "1"
             # 3Gi provides headroom above -Xmx2g for JVM metaspace, threads, and OS overhead.
             # Setting limits equal to -Xmx causes OOMKill.
             memory: "3Gi"

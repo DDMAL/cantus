@@ -46,9 +46,9 @@ spec:
         resources:
           requests:
             cpu: "500m"
-            memory: "1Gi"
+            memory: "512Mi"
           limits:
-            cpu: "2"
+            cpu: "1"
             memory: "3Gi"
       volumes:
       - name: cantaloupe-images
