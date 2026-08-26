@@ -163,9 +163,30 @@ class MEIParser:
             return {
                 "pname": pname,
                 "octave": int(octave),
-                "bounding_box": self._get_element_zone(neume_comp),
+                "bounding_box": self._get_neume_component_zone(neume_comp),
             }
         return None
+
+    def _get_neume_component_zone(self, neume_comp: etree._Element) -> Zone:
+        """
+        Get the bounding box for a neume component ('nc' element).
+
+        Some encodings put the zone reference on the whole enclosing 'neume'
+        element rather than on each individual 'nc' (one bounding box per
+        neume figure, not per note) -- this is valid MEI5, just a different
+        convention from encodings that give every neume component its own
+        facs. If the component itself has no facs, fall back to its parent
+        neume's facs rather than reporting no zone at all.
+
+        :param neume_comp: An 'nc' element from an MEI file
+        :return: The bounding box for this neume component
+        """
+        zone = self._get_element_zone(neume_comp)
+        if zone["coordinates"] == (-1, -1, -1, -1):
+            parent = neume_comp.getparent()
+            if parent is not None:
+                return self._get_element_zone(parent)
+        return zone
 
     def _parse_neume(
         self,
