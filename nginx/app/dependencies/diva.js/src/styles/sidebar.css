@@ -2,6 +2,7 @@
 
 .diva-sidebar-panel {
   width: 320px;
+  flex: 0 0 auto;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -119,7 +120,8 @@
   background: var(--diva-dark-bg);
 }
 
-.diva-thumbs-image--protected {
+.diva-thumbs-image--protected,
+.diva-thumbs-image--unavailable {
   min-height: 96px;
   background: var(--diva-dark-bg);
 }
