@@ -1,10 +1,21 @@
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
-from django.http import Http404, JsonResponse
+from rest_framework import status
+from django.http import JsonResponse
 from cantusdata.helpers.postprocess_iiif import iiif_fn, iiif_default_fns
 import re
 import requests
-import json
+
+# Some libraries reject the default python-requests User-Agent: Gallica answers
+# "403 Access Interdit" to it, which broke both F-Pn manuscripts (see #937).
+MANIFEST_REQUEST_HEADERS = {
+    "User-Agent": "CantusUltimus/1.0 (+https://cantus.simssa.ca)",
+}
+
+# Wait 5 seconds for the connection and 30 seconds for the body. These requests
+# used to have no timeout at all, so a library that stopped responding would
+# keep the gunicorn workers busy with a 600 second timeout.
+MANIFEST_REQUEST_TIMEOUT = (5, 30)
 
 
 class ManifestProxyView(APIView):
@@ -27,11 +38,27 @@ class ManifestProxyView(APIView):
         format_ = kwargs.get("format", None)
         if format_:
             manifest_url += f".{format_}"
+
         try:
-            manifest_data = json.loads(requests.get(manifest_url).text)
-            manifest_data = postprocessing(manifest_data)
-            for fn in iiif_default_fns:
-                manifest_data = fn(manifest_data)
-            return JsonResponse(manifest_data)
-        except requests.exceptions.RequestException as e:
-            raise Http404("Could not retrieve manifest from given url")
+            response = requests.get(
+                manifest_url,
+                headers=MANIFEST_REQUEST_HEADERS,
+                timeout=MANIFEST_REQUEST_TIMEOUT,
+            )
+            response.raise_for_status()
+            manifest_data = response.json()
+            if not isinstance(manifest_data, dict):
+                raise ValueError("the manifest is not a JSON object")
+        except (requests.exceptions.RequestException, ValueError):
+            # A response that is not JSON ends up here too, because requests
+            # raises its own JSONDecodeError, which is also a RequestException.
+            # So does JSON that parses but is not a manifest at all.
+            return JsonResponse(
+                {"error": "Could not retrieve manifest from given url"},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+        manifest_data = postprocessing(manifest_data)
+        for fn in iiif_default_fns:
+            manifest_data = fn(manifest_data)
+        return JsonResponse(manifest_data)
