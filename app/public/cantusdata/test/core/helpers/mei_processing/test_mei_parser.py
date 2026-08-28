@@ -206,7 +206,7 @@ class MEIParserTestCase(TestCase):
                 "mei_processing",
                 "test_mei_files",
                 "991961",
-                "0123_corr - mei5.mei",
+                "LU-1961_0123.mei",
             )
         )
         syllables = parser.syllables
