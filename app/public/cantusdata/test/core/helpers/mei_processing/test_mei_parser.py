@@ -186,6 +186,48 @@ class MEIParserTestCase(TestCase):
             }
             self.assertEqual(syllables[-1], expected_last_syllable)
 
+    def test_neume_component_zone_falls_back_to_parent_neume(self) -> None:
+        """
+        The Liber Usualis corpus (manuscript 991961) encodes facs on the
+        enclosing 'neume' element rather than on each individual 'nc' --
+        one bounding box per neume figure, not per note. Before this fix,
+        _get_element_zone found no facs on the 'nc' itself and returned the
+        (-1,-1,-1,-1) "not found" sentinel for every neume component in the
+        whole corpus, breaking OMR search-result thumbnails and click-to-
+        focus (both consume these coordinates directly).
+        """
+        parser = MEIParser(
+            path.join(
+                BASE_DIR,
+                "cantusdata",
+                "test",
+                "core",
+                "helpers",
+                "mei_processing",
+                "test_mei_files",
+                "991961",
+                "LU-1961_0123.mei",
+            )
+        )
+        syllables = parser.syllables
+        with self.subTest("First neume's own facs resolves normally"):
+            first_neume = syllables[0]["neumes"][0]
+            self.assertEqual(
+                first_neume["bounding_box"],
+                {"coordinates": (288, 940, 305, 980), "rotate": 0.0},
+            )
+        with self.subTest("Neume components with no facs of their own inherit it"):
+            components = syllables[0]["neumes"][0]["neume_components"]
+            self.assertEqual(len(components), 2)
+            for component in components:
+                self.assertEqual(
+                    component["bounding_box"],
+                    {"coordinates": (288, 940, 305, 980), "rotate": 0.0},
+                )
+                self.assertNotEqual(
+                    component["bounding_box"]["coordinates"], (-1, -1, -1, -1)
+                )
+
     def test_get_contour_from_interval(self) -> None:
         self.assertEqual(get_contour_from_interval(0), "r")
         self.assertEqual(get_contour_from_interval(1), "u")
