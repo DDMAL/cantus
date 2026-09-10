@@ -7,3 +7,17 @@ data:
   RABBITMQ_DEFAULT_USER: "cantus_admin"
   RABBITMQ_DEFAULT_VHOST: "cantus_ultimus"
   RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "+S 2:2 +sbwt none +sbwtdcpu none +sbwtdio none"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-extra-conf
+  namespace: cantus-ultimus
+data:
+  30-memory.conf: |
+    # RabbitMQ 3.11 detects the container memory limit via cgroup v1 paths that
+    # do not exist on this cgroup v2 host, so it falls back to /proc/meminfo and
+    # sizes its watermark against node RAM (2.31Gi) rather than the 512Mi limit.
+    # Without this, the broker's own publisher-blocking alarm can never fire and
+    # the kernel OOM-kills it instead. 384MiB, leaving 128MiB under the limit.
+    vm_memory_high_watermark.absolute = 402653184

@@ -28,23 +28,34 @@ spec:
               name: rabbitmq-secret-staging
               key: RABBITMQ_DEFAULT_PASS
         readinessProbe:
-          exec:
-            command: ["rabbitmq-diagnostics", "-q", "ping"]
+          tcpSocket:
+            port: 5672
           initialDelaySeconds: 20
-          periodSeconds: 30
-          timeoutSeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
           failureThreshold: 3
         livenessProbe:
           exec:
             command: ["rabbitmq-diagnostics", "-q", "ping"]
           initialDelaySeconds: 60
-          periodSeconds: 30
+          periodSeconds: 60
           timeoutSeconds: 10
           failureThreshold: 3
         resources:
           requests:
-            cpu: "250m"
+            cpu: "100m"
             memory: "256Mi"
           limits:
             cpu: "1"
             memory: "512Mi"
+        volumeMounts:
+        # subPath: mounting the directory would mask the image's own
+        # 10-defaults.conf / 20-management_agent...conf drop-ins.
+        - name: extra-conf
+          mountPath: /etc/rabbitmq/conf.d/30-memory.conf
+          subPath: 30-memory.conf
+      volumes:
+      - name: extra-conf
+        configMap:
+          name: rabbitmq-extra-conf-staging
+
