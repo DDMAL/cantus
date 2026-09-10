@@ -29,15 +29,18 @@ spec:
               key: RABBITMQ_DEFAULT_PASS
         readinessProbe:
           exec:
-            command: ["rabbitmq-diagnostics", "ping"]
+            command: ["rabbitmq-diagnostics", "-q", "ping"]
           initialDelaySeconds: 20
-          periodSeconds: 10
-          failureThreshold: 5
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
         livenessProbe:
           exec:
-            command: ["rabbitmq-diagnostics", "ping"]
+            command: ["rabbitmq-diagnostics", "-q", "ping"]
           initialDelaySeconds: 60
-          periodSeconds: 20
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
         resources:
           requests:
             cpu: "250m"
