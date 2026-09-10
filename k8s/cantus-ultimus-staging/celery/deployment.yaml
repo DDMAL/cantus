@@ -63,11 +63,14 @@ spec:
           timeoutSeconds: 10
         resources:
           requests:
-            cpu: "250m"
-            memory: "256Mi"
+            cpu: "50m"
+            memory: "192Mi"
           limits:
+            # 500m throttled celery ~10% of CFS periods: its work arrives as short
+            # sub-second bursts, so it needs a full core briefly even though its
+            # 1-minute average peak is only ~70m.
             cpu: "1"
-            memory: "1Gi"
+            memory: "768Mi"
       volumes:
       - name: mei-files
         persistentVolumeClaim:

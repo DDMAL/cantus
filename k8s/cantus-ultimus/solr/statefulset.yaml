@@ -30,26 +30,39 @@ spec:
         # at /var/solr/data/cantus_ultimus_1/conf/ is not shadowed by the PVC.
         - name: solr-data
           mountPath: /var/solr/data/cantus_ultimus_1/data
+        # startupProbe holds liveness/readiness off until the core is actually
+        # serving. Opening a cold core takes ~100s on the larger index, which
+        # is close enough to liveness's 60s+3x20s budget to risk a kill loop.
+        # timeoutSeconds is set explicitly everywhere: the 1s default is under
+        # the ~800ms a cold admin/ping takes (warm is ~4ms).
+        startupProbe:
+          httpGet:
+            path: /solr/cantus_ultimus_1/admin/ping?wt=json
+            port: 8983
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
         readinessProbe:
           httpGet:
             path: /solr/cantus_ultimus_1/admin/ping?wt=json
             port: 8983
-          initialDelaySeconds: 30
           periodSeconds: 10
-          failureThreshold: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
         livenessProbe:
           httpGet:
             path: /solr/cantus_ultimus_1/admin/ping?wt=json
             port: 8983
-          initialDelaySeconds: 60
           periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 3
         resources:
           requests:
-            cpu: "1"
+            cpu: "150m"
             memory: "1Gi"
           limits:
-            cpu: "3"
-            memory: "3Gi"
+            cpu: "2"
+            memory: "1536Mi"
       volumes:
       - name: solr-data
         persistentVolumeClaim:

@@ -45,10 +45,12 @@ spec:
           periodSeconds: 30
         resources:
           requests:
-            cpu: "500m"
-            memory: "512Mi"
+            cpu: "50m"
+            memory: "192Mi"
           limits:
-            cpu: "1"
+            cpu: "500m"
+            # 3Gi provides headroom above -Xmx2g for JVM metaspace, threads, and OS overhead.
+            # Setting limits equal to -Xmx causes OOMKill.
             memory: "3Gi"
       volumes:
       - name: cantaloupe-images

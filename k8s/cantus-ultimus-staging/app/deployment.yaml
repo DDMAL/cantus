@@ -57,11 +57,11 @@ spec:
           periodSeconds: 20
         resources:
           requests:
-            cpu: "250m"
-            memory: "256Mi"
+            cpu: "50m"
+            memory: "448Mi"
           limits:
-            cpu: "1"
-            memory: "2Gi"
+            cpu: "500m"
+            memory: "1Gi"
       volumes:
       - name: mei-files
         persistentVolumeClaim:

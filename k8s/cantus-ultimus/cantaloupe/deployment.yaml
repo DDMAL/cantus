@@ -45,8 +45,8 @@ spec:
           periodSeconds: 30
         resources:
           requests:
-            cpu: "500m"
-            memory: "512Mi"
+            cpu: "100m"
+            memory: "256Mi"
           limits:
             cpu: "1"
             # 3Gi provides headroom above -Xmx2g for JVM metaspace, threads, and OS overhead.
