@@ -1,26 +1,5 @@
 import extractImageAttribution from './manifestMetadata';
 
-// Id of the <style> element Diva injects its stylesheet into. Diva skips that
-// global injection if an element with this id already exists, so we pre-create
-// an empty one to keep Diva's generic, unscoped CSS (.modal, .status, .thumbs,
-// ...) off the page; the equivalent rules ship scoped to #diva-wrapper,
-// generated from the vendored Diva styles at build time (see gulpfile.mjs
-// bundle:css).
-const DIVA_INLINE_STYLE_ID = "diva-inline-styles";
-
-/**
- * Pre-empt Diva's global stylesheet injection by leaving an empty <style>
- * element under the id it looks for. Safe to call more than once.
- */
-function suppressDivaGlobalStyles() {
-    if (document.getElementById(DIVA_INLINE_STYLE_ID))
-        return;
-
-    var styleTag = document.createElement('style');
-    styleTag.id = DIVA_INLINE_STYLE_ID;
-    document.head.appendChild(styleTag);
-}
-
 /**
  * Load OpenSeadragon and expose it as the window.OpenSeadragon global that
  * Diva's bundle reads before it runs. OSD is vendored locally
@@ -92,7 +71,6 @@ export default class DivaBackend {
             .then(() => {
                 if (this.destroyed)
                     return undefined;
-                suppressDivaGlobalStyles();
                 return import(/* webpackChunkName: "diva" */ 'diva');
             })
             .then(() => {

@@ -401,19 +401,19 @@ body.propagate-height {
 
 // Cantus presents the manifest attribution in its own "Manuscript info"
 // sidenav, so hide Diva's built-in trigger for the raw-manifest modal.
-#diva-wrapper .canvas-toolbar-item[data-tooltip="Manifest Info"] {
+#diva-wrapper .diva-canvas-toolbar-item[data-tooltip="Manifest Info"] {
     display: none;
 }
 
 // ... and its requiredStatement dock at the bottom of the viewer, shown for
 // manuscripts whose manifest declares one -- same attribution, same sidenav.
-// The extra #diva-column id outweighs Diva's own display:flex, which ships later
-// in the bundle at equal specificity.
-#diva-column #diva-wrapper .required-statement-dock {
+// Diva injects its stylesheet at runtime, so it lands after ours; the id prefix
+// keeps this hide winning over Diva's own display:flex.
+#diva-column #diva-wrapper .diva-required-statement-dock {
     display: none;
 }
 
-#diva-wrapper .canvas-label {
+#diva-wrapper .diva-canvas-label {
     display: none;
 }
 
@@ -427,16 +427,16 @@ body.propagate-height {
     --diva-accent: #{$brand-primary};
     --diva-surface: #{$diva-control-bg};
 
-    .canvas-toolbar-section {
+    .diva-canvas-toolbar-section {
         gap: 6px;
     }
 
-    .canvas-toolbar-item {
+    .diva-canvas-toolbar-item {
         width: 34px;
         height: 34px;
     }
 
-    .canvas-toolbar-button {
+    .diva-canvas-toolbar-button {
         width: 34px;
         height: 34px;
         background-color: $diva-control-bg;
