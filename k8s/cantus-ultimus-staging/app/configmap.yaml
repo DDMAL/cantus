@@ -13,7 +13,11 @@ data:
   RABBIT_VHOST: "cantus_ultimus_staging"
   RABBIT_HOST: "rabbitmq-staging"
   SOLR_HOST: "solr-staging"
-  EXTRA_ALLOWED_HOSTS: "app-staging,cantus.staging.simssa.ca"
+  # The in-cluster FQDN is needed by Mothra's MEI deposit calls, which reach
+  # Django directly rather than through nginx: nginx's default_server returns
+  # 444 for any Host outside its server_name list, and a cross-namespace
+  # caller can only use the FQDN, never the bare Service name.
+  EXTRA_ALLOWED_HOSTS: "app-staging,cantus.staging.simssa.ca,app-staging.cantus-ultimus.svc.cluster.local"
   # Live tree of MEI files read by index_manuscript_mei, backed by the
   # cantus-mei-files PVC (NFS). Mounted at this path in app and celery.
   MEI_FILES_DIR: "/code/mei-files"
