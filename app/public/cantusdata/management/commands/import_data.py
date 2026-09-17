@@ -8,10 +8,30 @@ from cantusdata.helpers.chant_importer import ChantImporter
 from cantusdata.helpers.source_importer import SourceImporter
 import urllib.request
 import urllib
+from urllib.parse import urlsplit, urlunsplit
 from io import StringIO
 from cantusdata.settings import BASE_DIR
 from os import path
 import csv
+
+
+def _normalize_scheme_to_https(url):
+    """
+    Rewrite a bare "http://" URL to "https://", leaving everything else
+    (host, path, query, fragment) untouched. Some digital library sources
+    (e.g. e-codices) mirror the scheme of the request into URIs embedded in
+    their IIIF manifests; if we ever store one of these as "http://" while
+    Cantus itself is served over https, browsers block the resulting
+    requests as mixed content. Storing "https://" up front avoids that,
+    and this normalization is applied on import so a stale "http://" value
+    in manifests.csv can't silently reintroduce the bug on a future reimport.
+    """
+    if not url:
+        return url
+    parts = urlsplit(url)
+    if parts.scheme == "http":
+        parts = parts._replace(scheme="https")
+    return urlunsplit(parts)
 
 
 class Command(BaseCommand):
@@ -134,7 +154,7 @@ class Command(BaseCommand):
 
             for row in iiif_reader:
                 siglum = row["siglum"]
-                manifest_url = row["manifest_url"]
+                manifest_url = _normalize_scheme_to_https(row["manifest_url"].strip())
                 qs = Manuscript.objects.filter(siglum=siglum)
                 if len(qs) > 0:
                     mobj = qs[0]
