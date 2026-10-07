@@ -87,6 +87,7 @@ export default Marionette.Object.extend({
         this.resultLoadingHandler = new IncrementalClientSideLoader(this.displayedResults, this.results);
 
         this.listenTo(this.results, "sync", this.resultFetchCallback);
+        this.listenTo(manuscriptChannel, 'highlight:selected', this.selectResultAt);
     },
 
     onSearch: function (query)
@@ -121,14 +122,13 @@ export default Marionette.Object.extend({
 
     resultFetchCallback: function()
     {
+        // A response landing after a switch to text search would redraw the
+        // highlights the list's teardown cleared.
         var divaAdapter = this.getDivaAdapter();
-        if (!divaAdapter)
+        if (!divaAdapter || this.resultView.isDestroyed())
             return;
 
-        divaAdapter.setHighlights(_.flatten(this.results.map(function (model)
-        {
-            return _.map(model.get('boxes'), _.clone);
-        })));
+        divaAdapter.setHighlights(this.results.pluck('boxes'));
 
         if (this.results.length > 0)
             this.zoomToResult(this.results.at(0));
@@ -143,6 +143,15 @@ export default Marionette.Object.extend({
             divaAdapter.setHighlights([]);
     },
 
+    /** Mark the result whose box was clicked in the viewer; its row may not be loaded yet. */
+    selectResultAt: function (selection)
+    {
+        while (this.displayedResults.length <= selection.resultIndex && this.resultLoadingHandler.hasMore())
+            this.resultLoadingHandler.continueLoading();
+
+        this.resultView.setSelectedResult(this.displayedResults.at(selection.resultIndex) || null);
+    },
+
     zoomToResult: function(model)
     {
         var divaAdapter = this.getDivaAdapter();
@@ -153,13 +162,15 @@ export default Marionette.Object.extend({
         if (!box)
             return;
 
+        this.resultView.setSelectedResult(model);
+
         divaAdapter.focusRegion({
             imageURI: box.p,
             x: box.x,
             y: box.y,
             width: box.w,
             height: box.h
-        });
+        }, this.results.indexOf(model));
     },
 
     serializeData: function()
@@ -236,6 +247,8 @@ export default Marionette.Object.extend({
         var resultView = new ResultView({
             collection: this.displayedResults
         });
+
+        this.resultView = resultView;
 
         this.listenTo(resultView, 'continue:loading', this._continueLoadingResults);
         this.listenTo(resultView, 'zoomToResult', this.zoomToResult);

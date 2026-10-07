@@ -12640,6 +12640,18 @@ body.propagate-height {
   border-color: #bbb;
 }
 
+#diva-column #diva-wrapper {
+  --diva-annotation-fill: rgba(194, 52, 46, 0.1);
+  --diva-annotation-stroke: #555;
+  --diva-annotation-stroke-width: 1.5;
+  --diva-annotation-fill-hover: rgba(194, 52, 46, 0.15);
+  --diva-annotation-stroke-hover: #c2342e;
+}
+
+.search-notation-result-list {
+  --bs-table-active-bg: rgba(194, 52, 46, 0.12);
+}
+
 .modal-dialog {
   max-width: 90%;
   width: 50%;
