@@ -47,6 +47,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # First, so it times every other middleware and sees the final response.
+    "cantusdata.metrics.middleware.MetricsMiddleware",
     "django.middleware.security.SecurityMiddleware",  # Migration: + django 3.1
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -169,6 +171,13 @@ SOLR_ADMIN = os.environ.get("SOLR_ADMIN", f"http://{_solr_host}:8983/solr/admin"
 SOLR_TEST_SERVER = os.environ.get(
     "SOLR_TEST_SERVER", f"http://{_solr_host}:8983/solr/cantus-test"
 )
+# Seconds to wait on Solr: for requests made while serving a page, and for the
+# large batches the indexing and maintenance commands send.
+SOLR_TIMEOUT = float(os.environ.get("SOLR_TIMEOUT", "10"))
+SOLR_INDEX_TIMEOUT = float(os.environ.get("SOLR_INDEX_TIMEOUT", "120"))
+
+# One JSON line per search on stdout (cantusdata/metrics/search_log.py).
+SEARCH_EVENT_LOG = os.environ.get("SEARCH_EVENT_LOG", "True") == "True"
 
 LOGGING_CONFIG = None
 
