@@ -73,6 +73,7 @@ export default Marionette.Object.extend({
         this.query = query;
 
         this.clearDivaBoxes();
+        this.abortPendingRequest();
 
         if (!this.query)
         {
@@ -85,9 +86,23 @@ export default Marionette.Object.extend({
                 manuscript: this.manuscript
             }, this.searchOptions.toJSON()));
 
-            this.resultLoadingHandler.fetch();
+            this.pendingRequest = this.resultLoadingHandler.fetch();
         }
         return false;
+    },
+
+    /**
+     * Abort a search still in progress, so that its results can't arrive after,
+     * and replace, those of a newer search. The heading's error state from the
+     * abort is replaced straight away by the newer search's loading state, or
+     * cleared by the reset of an empty search.
+     */
+    abortPendingRequest: function ()
+    {
+        if (this.pendingRequest)
+            this.pendingRequest.abort();
+
+        this.pendingRequest = null;
     },
 
     getDivaAdapter: function ()
@@ -197,6 +212,7 @@ export default Marionette.Object.extend({
 
     onDestroy: function ()
     {
+        this.abortPendingRequest();
         this.stopListening();
     }
 });
