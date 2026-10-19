@@ -5,6 +5,7 @@ from cantusdata.helpers.search_utils import (
     get_transpositions,
     translate_interval_query_direction,
     volpiano_to_pitch_names,
+    normalize_search_text,
 )
 
 
@@ -90,3 +91,30 @@ class SearchUtilsTestCase(TestCase):
         with self.subTest("No notes"):
             self.assertIsNone(volpiano_to_pitch_names("1---3"))
             self.assertIsNone(volpiano_to_pitch_names(""))
+
+    def test_normalize_search_text(self) -> None:
+        with self.subTest("Hyphenated syllables join into words"):
+            self.assertEqual(
+                normalize_search_text("Ps. 50. Mi- se-rére mé-i, Dé-us"),
+                "ps 50 miserere mei deus",
+            )
+        with self.subTest("Line-continuation marks join syllables"):
+            self.assertEqual(
+                normalize_search_text("non e-rubé¬ scam: exspé¬ ctant"),
+                "non erubescam exspectant",
+            )
+        with self.subTest("Accents and ligatures are spelled out"):
+            self.assertEqual(
+                normalize_search_text("saécu-la Cǽli cœli Œ"), "saecula caeli coeli oe"
+            )
+        with self.subTest("Without joining, hyphens separate syllables"):
+            self.assertEqual(
+                normalize_search_text("Mi- se-rére mi¬\nse-ricórdi-am", False),
+                "mi se rere mi se ricordi am",
+            )
+        with self.subTest("Joining works across a line break"):
+            self.assertEqual(
+                normalize_search_text("mi¬\nse-ricórdi-am"), "misericordiam"
+            )
+        with self.subTest("Punctuation-only text is empty"):
+            self.assertEqual(normalize_search_text(" ¬ — : "), "")

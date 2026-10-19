@@ -10,6 +10,7 @@ from cantusdata.views.folio import FolioList, FolioDetail
 from cantusdata.views.search import SearchView
 from cantusdata.views.suggestion import SuggestionView
 from cantusdata.views.search_notation import SearchNotationView
+from cantusdata.views.search_text import SearchMEITextView
 from cantusdata.views.chant_set import (
     FolioChantSetView,
     ManuscriptChantSetView,
@@ -127,6 +128,12 @@ urlpatterns = [
         "notation-search/",
         SearchNotationView.as_view(),
         name="search-notation-view",
+    ),
+    # Search of the text lines in MEI files
+    path(
+        "text-search/",
+        SearchMEITextView.as_view(),
+        name="search-mei-text-view",
     ),
     # MEI deposits from external OMR pipelines. POST files one folio's MEI for
     # admin review; GET reports a submitter's submission statuses. Token-

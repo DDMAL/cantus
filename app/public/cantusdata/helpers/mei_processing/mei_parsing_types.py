@@ -140,3 +140,59 @@ class NgramDocument(TypedDict):
     id: NotRequired[str]
     type: NotRequired[Literal["omr_ngram"]]
     image_uri: NotRequired[str]
+
+
+class TextLine(TypedDict):
+    """A type for a line of text (an MEI 'l' element), such as a line of
+    OCR'd text in a manuscript without syllable-aligned lyrics.
+
+    text: The text of the line, as encoded.
+    bounding_box: The zone of the line.
+    """
+
+    text: str
+    bounding_box: Zone
+
+
+class TextLineDocument(TypedDict):
+    """
+    A type for documents indexed into Solr so that a manuscript's lines of
+    text can be searched.
+
+    location_json: A JSON string with the bounding box of the line (see
+        NgramDocument).
+    text_line_stored: The text of the line, as encoded, for display.
+    line_order_i: The position of the line among the lines of its file, so
+        results can be listed in page order.
+
+    Searchable text, normalized by search_utils.normalize_search_text with
+    syllables joined (fields ending "_t") or separated ("_syl_t"):
+        text_line_t / text_line_syl_t: the line.
+        text_next_t / text_next_syl_t: the following line in the file, if any.
+        text_window_t / text_window_syl_t: the line and the following line
+            together, so that a search can continue onto the next line.
+
+    If there is a following line, it is also stored for display:
+        next_text_line_stored: its text, as encoded.
+        next_location_stored: a JSON string with its bounding box.
+
+    The following are added when the document is indexed (see NgramDocument):
+        manuscript_id, folio, image_uri.
+    """
+
+    location_json: str
+    text_line_stored: str
+    line_order_i: int
+    text_line_t: str
+    text_line_syl_t: str
+    text_window_t: str
+    text_window_syl_t: str
+    text_next_t: NotRequired[str]
+    text_next_syl_t: NotRequired[str]
+    next_text_line_stored: NotRequired[str]
+    next_location_stored: NotRequired[str]
+    id: str
+    type: Literal["mei_text_line"]
+    manuscript_id: NotRequired[str]
+    folio: NotRequired[str]
+    image_uri: NotRequired[str]

@@ -7,12 +7,14 @@ can then be indexed by a search engine (i.e. for this project, Solr).
 import uuid
 from typing import List, Tuple, Optional
 from cantusdata.helpers.neume_helpers import NeumeName
+from cantusdata.helpers.search_utils import normalize_search_text
 from .mei_parser import MEIParser
 from .mei_parsing_types import (
     Neume,
     NeumeComponent,
     ContourType,
     NgramDocument,
+    TextLineDocument,
     Zone,
 )
 from .bounding_box_utils import combine_bounding_boxes, stringify_bounding_boxes
@@ -230,3 +232,48 @@ class MEITokenizer(MEIParser):
                         doc["neume_names"] = "_".join(ngram_neume_names)
                         ngram_docs.append(doc)
         return ngram_docs
+
+    def create_text_line_documents(self) -> List[TextLineDocument]:
+        """
+        Create a document for each line of text in the MEI file, so that
+        text that is not aligned to syllables (e.g. OCR'd text) can be
+        searched. Lines with no searchable words are skipped.
+
+        Each document also carries the following line in the file, so a
+        search can continue onto it (see TextLineDocument). That is the next
+        line in the order the MEI encodes them, which is the reading order
+        only as far as the encoding follows it.
+
+        :return: A list of TextLineDocuments.
+        """
+        lines = [
+            line
+            for line in self.parse_text_lines()
+            if normalize_search_text(line["text"])
+        ]
+        text_line_docs: List[TextLineDocument] = []
+        for order, line in enumerate(lines):
+            next_line = lines[order + 1] if order + 1 < len(lines) else None
+            # The line break is kept so that a hyphen or "¬" ending the line
+            # joins the word it splits, as it does within a line.
+            window_text = line["text"] + ("\n" + next_line["text"] if next_line else "")
+            doc: TextLineDocument = {
+                "location_json": stringify_bounding_boxes([line["bounding_box"]]),
+                "text_line_stored": line["text"],
+                "line_order_i": order,
+                "text_line_t": normalize_search_text(line["text"]),
+                "text_line_syl_t": normalize_search_text(line["text"], False),
+                "text_window_t": normalize_search_text(window_text),
+                "text_window_syl_t": normalize_search_text(window_text, False),
+                "id": str(uuid.uuid4()),
+                "type": "mei_text_line",
+            }
+            if next_line:
+                doc["text_next_t"] = normalize_search_text(next_line["text"])
+                doc["text_next_syl_t"] = normalize_search_text(next_line["text"], False)
+                doc["next_text_line_stored"] = next_line["text"]
+                doc["next_location_stored"] = stringify_bounding_boxes(
+                    [next_line["bounding_box"]]
+                )
+            text_line_docs.append(doc)
+        return text_line_docs

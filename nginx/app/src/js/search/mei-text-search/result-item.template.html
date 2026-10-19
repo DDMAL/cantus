@@ -1,0 +1,8 @@
+<td><%= _.result(boxes[0], 'f') %></td>
+<td>
+    <a href="#" class="result-target">
+        <% _.forEach(lines, function (line, index) { %>
+            <% if (index > 0) { %><br><% } %><%- line %>
+        <% }); %>
+    </a>
+</td>
