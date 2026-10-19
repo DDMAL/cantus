@@ -8,6 +8,8 @@ from cantusdata.renderers import templated_view_renderers
 from django.http import Http404, HttpResponseNotFound
 from django.shortcuts import render
 from rest_framework.response import Response
+from cantusdata.metrics.definitions import MANUSCRIPT_VIEWS
+from cantusdata.metrics.labels import classify_client, manuscript_label
 
 
 class ManuscriptList(generics.ListAPIView):
@@ -37,6 +39,12 @@ class ManuscriptDetail(generics.RetrieveAPIView):
         try:
             instance = self.get_object()
             serializer = self.get_serializer(instance)
+            # The HTML route only serves the app shell, which then fetches this
+            # same URL as JSON: counting the JSON fetch counts each open once.
+            if request.accepted_renderer.format == "json":
+                MANUSCRIPT_VIEWS.labels(
+                    manuscript_label(instance.pk), classify_client(request)
+                ).inc()
             return Response(serializer.data)
         except Http404:
             return HttpResponseNotFound(

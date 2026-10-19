@@ -6,9 +6,14 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import DjangoModelPermissions
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 from rest_framework.serializers import BaseSerializer
 from rest_framework.throttling import ScopedRateThrottle
 
+from cantusdata.metrics.definitions import (
+    MEI_SUBMISSION_SIZE,
+    MEI_SUBMISSIONS_RECEIVED,
+)
 from cantusdata.models.mei_submission import MEISubmission
 from cantusdata.serializers.mei_submission import (
     MEISubmissionCreateSerializer,
@@ -54,19 +59,52 @@ class MEISubmissionView(generics.ListCreateAPIView):  # type: ignore[type-arg]
         return queryset
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        # The authenticated service account, not the body's free-text submitter.
+        account = request.user.get_username()
+        mei = request.data.get("mei")
+        if isinstance(mei, str):
+            MEI_SUBMISSION_SIZE.observe(len(mei.encode("utf-8")))
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except ValidationError as exc:
+            MEI_SUBMISSIONS_RECEIVED.labels(
+                "invalid", rejection_reason(exc.detail), account
+            ).inc()
+            raise
         # A resubmission of byte-identical content is the same request arriving
         # twice, not a second thing to review, so report the review that already
         # exists instead of creating another.
         duplicate = serializer.find_duplicate()  # type: ignore[union-attr]
         if duplicate is not None:
+            MEI_SUBMISSIONS_RECEIVED.labels("duplicate", "none", account).inc()
             return Response(
                 MEISubmissionStatusSerializer(duplicate).data,
                 status=status.HTTP_200_OK,
             )
         submission = serializer.save()
+        MEI_SUBMISSIONS_RECEIVED.labels("created", "none", account).inc()
         return Response(
             MEISubmissionStatusSerializer(submission).data,
             status=status.HTTP_201_CREATED,
         )
+
+
+# The fields a deposit can be rejected over, most specific first.
+_REJECTION_FIELDS = (
+    "manuscript_id",
+    "folio_number",
+    "mei",
+    "submitter",
+    "comment",
+    "non_field_errors",
+)
+
+
+def rejection_reason(detail: Any) -> str:
+    """The field a rejected deposit failed on, as a bounded metric label."""
+    if isinstance(detail, dict):
+        for field in _REJECTION_FIELDS:
+            if field in detail:
+                return field
+    return "other"

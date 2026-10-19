@@ -8,6 +8,7 @@ from cantusdata.helpers.mei_processing.mei_validation import (
     MEIValidationError,
     validate_mei_document,
 )
+from cantusdata.metrics.definitions import MEI_SUBMISSIONS_SUPERSEDED
 from cantusdata.models.folio import Folio
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.mei_submission import MEISubmission, SubmissionStatus
@@ -157,11 +158,12 @@ class MEISubmissionCreateSerializer(serializers.Serializer[MEISubmission]):
             # One live row per folio in the review queue: an earlier pending
             # submission for the same folio is history, not a second thing to
             # review.
-            MEISubmission.objects.filter(
+            superseded = MEISubmission.objects.filter(
                 manuscript=validated_data["manuscript"],
                 folio_number=validated_data["folio_number"],
                 status=SubmissionStatus.PENDING,
             ).update(status=SubmissionStatus.SUPERSEDED)
+            MEI_SUBMISSIONS_SUPERSEDED.inc(superseded)
             return MEISubmission.objects.create(
                 manuscript=validated_data["manuscript"],
                 folio=validated_data["folio"],

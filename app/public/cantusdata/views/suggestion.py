@@ -1,9 +1,13 @@
+import time
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.conf import settings
 
-import solr
-import requests
+from cantusdata.helpers.solr_client import solr_get
+from cantusdata.metrics.definitions import SUGGEST_REQUESTS
+from cantusdata.metrics.events import elapsed_ms
+from cantusdata.metrics.labels import classify_client
+from cantusdata.metrics.search_log import log_search
 
 
 class SuggestionView(APIView):
@@ -30,10 +34,10 @@ class SuggestionView(APIView):
         if field not in ["office", "genre", "feast"]:
             return Response()
 
-        solr_server = settings.SOLR_SERVER
-        results = requests.get(
-            f"{solr_server}/select",
-            params={
+        started = time.perf_counter()
+        results = solr_get(
+            "suggest",
+            {
                 "q": "*:*",
                 "rows": 0,
                 "facet": "true",
@@ -44,9 +48,21 @@ class SuggestionView(APIView):
                 "facet.contains.ignoreCase": "true",
             },
         )
+        SUGGEST_REQUESTS.labels(
+            field, "success" if results.status_code == 200 else "error"
+        ).inc()
         if results.status_code == 200:
             facet_counts = results.json()["facet_counts"]["facet_fields"][field]
             # The names of the facets (ie. the suggestions) are in the even indices of the list
             facet_counts = facet_counts[::2]
             suggestion_objs = [{"term": term} for term in facet_counts]
+            log_search(
+                "suggest",
+                field=field,
+                term=query,
+                manuscript_id=None if manuscript_id == "*" else manuscript_id,
+                num_found=len(suggestion_objs),
+                client=classify_client(request),
+                duration_ms=elapsed_ms(started),
+            )
             return Response(suggestion_objs)

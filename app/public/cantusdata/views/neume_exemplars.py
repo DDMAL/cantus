@@ -6,7 +6,6 @@ from rest_framework.request import Request
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import ListModelMixin
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from django.conf import settings
 from django.views.generic import TemplateView
 from django.db.models.query import QuerySet
 from django.http import HttpResponse
@@ -16,6 +15,8 @@ from django.shortcuts import redirect
 import requests
 from requests import Response as RequestsResponse
 
+from cantusdata.helpers.solr_client import solr_get
+from cantusdata.metrics.definitions import NEUME_EXEMPLAR_SAVES
 from cantusdata.models import Manuscript, NeumeExemplar
 from cantusdata.models.neume_exemplar import EXEMPLAR_IMAGE_SIDE_LENGTH
 from cantusdata.helpers.iiif_helpers import construct_image_api_url
@@ -120,9 +121,7 @@ class NeumeSetAPIView(APIView):
             "start": start,
             "fl": "*",
         }
-        response: RequestsResponse = requests.get(
-            f"{settings.SOLR_SERVER}/select", timeout=10, params=params
-        )
+        response: RequestsResponse = solr_get("neume_set", params)
         response.raise_for_status()
         results_json = response.json()["response"]
         if results_json["numFound"] > 0:
@@ -217,6 +216,7 @@ class NeumeExemplarsAPIView(ListModelMixin, GenericAPIView):  # type: ignore[typ
             serializer = self.get_serializer(data=exemplars_to_save, many=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        NEUME_EXEMPLAR_SAVES.labels(str(self.kwargs["pk"])).inc()
         messages.success(request, "Neume exemplars saved successfully.")
         return redirect(
             reverse("admin:cantusdata_manuscript_change", args=[self.kwargs["pk"]])
@@ -282,11 +282,7 @@ class PickNeumeExemplarsView(TemplateView):
             "q": f"manuscript_id:{manuscript.pk} AND type:omr_ngram",
             "rows": 1,
         }
-        omr_ngram_request = requests.get(
-            f"{settings.SOLR_SERVER}/select",
-            params=params,
-            timeout=10,
-        )
+        omr_ngram_request = solr_get("exemplar_check", params)
         omr_ngram_request.raise_for_status()
         num_omr_ngrams_found: int = omr_ngram_request.json()["response"]["numFound"]
         return num_omr_ngrams_found > 0
@@ -309,11 +305,7 @@ class PickNeumeExemplarsView(TemplateView):
             "facet.field": "neume_names",
             "facet.mincount": 1,
         }
-        omr_ngram_request = requests.get(
-            f"{settings.SOLR_SERVER}/select",
-            params=params,
-            timeout=10,
-        )
+        omr_ngram_request = solr_get("exemplar_check", params)
         omr_ngram_request.raise_for_status()
         # Facets are returned as a list of alternating neume names and counts.
         neume_names: list[str | int] = omr_ngram_request.json()["facet_counts"][

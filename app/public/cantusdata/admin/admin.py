@@ -16,6 +16,7 @@ from django.utils.html import format_html
 from django_celery_results.admin import TaskResultAdmin  # type: ignore[import-untyped]
 from django_celery_results.models import TaskResult  # type: ignore[import-untyped]
 
+from cantusdata.metrics.events import record_mei_review
 from cantusdata.models.chant import Chant
 from cantusdata.models.folio import Folio
 from cantusdata.models.manuscript import Manuscript
@@ -186,6 +187,13 @@ class MEISubmissionReviewForm(ModelForm):  # type: ignore[type-arg]
                 }
             )
         return cleaned
+
+
+# Metric labels for the review outcomes chosen in the change form.
+REVIEW_ACTION_LABELS = {
+    SubmissionStatus.CORRECTION_REQUESTED: "request_correction",
+    SubmissionStatus.REFUSED: "refuse",
+}
 
 
 class MEISubmissionAdmin(ModelAdmin):  # type: ignore[type-arg]
@@ -372,10 +380,12 @@ class MEISubmissionAdmin(ModelAdmin):  # type: ignore[type-arg]
                 )
                 return
             self._queue_publication(request, [obj])
+            record_mei_review(obj, "publish", "form")
             return
         obj.reviewed_by = request.user  # type: ignore[assignment]
         obj.reviewed_at = timezone.now()
         super().save_model(request, obj, form, change)
+        record_mei_review(obj, REVIEW_ACTION_LABELS[chosen], "form")
 
     @admin.action(description="Publish selected submissions")
     def publish_submissions(
@@ -416,6 +426,8 @@ class MEISubmissionAdmin(ModelAdmin):  # type: ignore[type-arg]
         if not claimed:
             return
         self._queue_publication(request, claimed)
+        for submission in claimed:
+            record_mei_review(submission, "publish", "bulk")
 
     def _queue_publication(
         self, request: HttpRequest, submissions: list[MEISubmission]

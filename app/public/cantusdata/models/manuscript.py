@@ -5,6 +5,7 @@ from django.utils.text import slugify
 import threading
 
 from cantusdata.models.neume_exemplar import NeumeExemplar
+from cantusdata.metrics.events import counting_failures
 
 
 class IsMapped(models.TextChoices):
@@ -68,7 +69,7 @@ class Manuscript(models.Model):
         if (self.public != self._last_public_value) and self.chants_loaded:
             # The public property has changed, we need to refresh the Solr chants
             thread = threading.Thread(
-                target=call_command,
+                target=counting_failures("manuscript_refresh_solr", call_command),
                 args=("refresh_solr", "chants", str(self.id)),
                 kwargs={},
             )
