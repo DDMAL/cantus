@@ -21,7 +21,10 @@ spec:
         imagePullPolicy: Always
         command: ["/code/django-config.sh"]
         ports:
-        - containerPort: 8001
+        - name: http
+          containerPort: 8001
+        - name: metrics
+          containerPort: 9100
         envFrom:
         - configMapRef:
             name: app-config
@@ -44,6 +47,8 @@ spec:
         volumeMounts:
         - name: mei-files
           mountPath: /code/mei-files
+        - name: prometheus-multiproc
+          mountPath: /tmp/prometheus-multiproc
         readinessProbe:
           tcpSocket:
             port: 8001
@@ -66,3 +71,6 @@ spec:
       - name: mei-files
         persistentVolumeClaim:
           claimName: mei-files-pvc
+      # Per-worker metric files, merged by the gunicorn master on :9100.
+      - name: prometheus-multiproc
+        emptyDir: {}

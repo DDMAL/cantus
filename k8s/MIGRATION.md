@@ -310,6 +310,58 @@ Once the k8s deployment is verified:
 
 ---
 
+## Monitoring
+
+Production is scraped by the cluster's kube-prometheus-stack (namespace
+`monitoring`), which picks up any ServiceMonitor/PodMonitor labelled
+`release: kube-prom-stack`. Staging is deliberately not scraped: it shares this
+namespace, and the monitors match only the production labels (`app: app`, not
+`app: app-staging`).
+
+| Target (job) | Where | Port |
+|---|---|---|
+| `cantus-app` | gunicorn master, merging the 4 workers' metrics | 9100 |
+| `cantus-celery` | celery worker main process (`/code/celery-worker.sh`) | 9101 |
+| `cantus-metrics-exporter` | `metrics-exporter/` Deployment: inventory gauges from Postgres + Solr, scraped every 60s | 9102 |
+| `cantus-rabbitmq` | built-in `rabbitmq_prometheus` plugin (`/metrics` and per-queue `/metrics/detailed`) | 15692 |
+| `cantus-solr` | `solr-exporter` sidecar in the Solr StatefulSet | 9854 |
+
+None of these ports goes through nginx or the ingress.
+
+Apply **after** the merge that adds the metrics code has deployed, the reverse
+of the MEI-files order: the celery Deployment now runs `/code/celery-worker.sh`,
+which does not exist in older images. As above, name the files, never the
+`app/` directory:
+
+```bash
+kubectl apply -f k8s/cantus-ultimus/app/deployment.yaml
+kubectl apply -f k8s/cantus-ultimus/app/service.yaml
+kubectl apply -f k8s/cantus-ultimus/celery/deployment.yaml
+kubectl apply -f k8s/cantus-ultimus/solr/statefulset.yaml   # restarts Solr: ~100s to reopen the core
+kubectl apply -f k8s/cantus-ultimus/solr/service.yaml
+
+# RabbitMQ has no PVC, so the restart this apply causes drops any queued
+# task. Check the queues are empty first:
+kubectl exec deploy/rabbitmq -n cantus-ultimus -- rabbitmqctl list_queues name messages consumers
+kubectl apply -f k8s/cantus-ultimus/rabbitmq/deployment.yaml
+kubectl apply -f k8s/cantus-ultimus/rabbitmq/service.yaml
+
+kubectl apply -f k8s/cantus-ultimus/metrics-exporter/deployment.yaml
+kubectl apply -f k8s/cantus-ultimus/monitoring/
+```
+
+CI only updates `metrics-exporter` and the `solr-exporter` sidecar once they
+exist, so the deploy that runs before these applies does not fail.
+
+Verify that all five jobs are UP at http://prometheus.internal.simssa.ca/
+→ Status → Targets, or from the cluster:
+
+```bash
+kubectl exec deploy/app -n cantus-ultimus -- curl -s localhost:9100/metrics | grep -c '^cantus_'
+```
+
+---
+
 ## Rollback
 
 If issues arise after cutover, revert DNS to the old server IP.

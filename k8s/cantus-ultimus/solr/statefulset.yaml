@@ -21,7 +21,8 @@ spec:
         image: ghcr.io/ddmal/cantus-solr:main-latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 8983
+        - name: http
+          containerPort: 8983
         env:
         - name: SOLR_SECURITY_MANAGER_ENABLED
           value: "false"
@@ -63,6 +64,38 @@ spec:
           limits:
             cpu: "2"
             memory: "1536Mi"
+      # Polls Solr's metrics API over localhost every SCRAPE_INTERVAL seconds and
+      # serves the result on :9854. It ships in the Solr image, so it is set to
+      # the same tag as the solr container.
+      - name: solr-exporter
+        image: ghcr.io/ddmal/cantus-solr:main-latest
+        imagePullPolicy: Always
+        command: ["/opt/solr/modules/prometheus-exporter/bin/solr-exporter"]
+        ports:
+        - name: metrics
+          containerPort: 9854
+        env:
+        - name: PORT
+          value: "9854"
+        - name: SOLR_URL
+          value: "http://localhost:8983/solr"
+        - name: CONFIG_FILE
+          value: "/opt/solr/modules/prometheus-exporter/conf/solr-exporter-config.xml"
+        - name: SCRAPE_INTERVAL
+          value: "60"
+        - name: NUM_THREADS
+          value: "2"
+        - name: JAVA_HEAP
+          value: "128m"
+        # No readiness probe: a sidecar's readiness is the pod's, and an
+        # unready exporter must not take Solr out of the solr Service.
+        resources:
+          requests:
+            cpu: "25m"
+            memory: "192Mi"
+          limits:
+            cpu: "250m"
+            memory: "320Mi"
       volumes:
       - name: solr-data
         persistentVolumeClaim:

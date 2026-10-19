@@ -1,0 +1,28 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: cantus-metrics-exporter
+  namespace: cantus-ultimus
+  labels:
+    release: kube-prom-stack
+spec:
+  namespaceSelector:
+    matchNames:
+    - cantus-ultimus
+  selector:
+    matchLabels:
+      app: metrics-exporter
+  podMetricsEndpoints:
+  # Every scrape queries Postgres and Solr, and the data changes slowly, so it
+  # is scraped once a minute with room for a slow collection.
+  - port: metrics
+    path: /metrics
+    interval: 60s
+    scrapeTimeout: 30s
+    relabelings:
+    - action: replace
+      replacement: cantus-metrics-exporter
+      targetLabel: job
+    - action: replace
+      replacement: production
+      targetLabel: env

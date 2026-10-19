@@ -1,0 +1,26 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cantus-app
+  namespace: cantus-ultimus
+  labels:
+    release: kube-prom-stack
+spec:
+  namespaceSelector:
+    matchNames:
+    - cantus-ultimus
+  # Production only: the staging Service carries no `app: app` label.
+  selector:
+    matchLabels:
+      app: app
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 30s
+    relabelings:
+    - action: replace
+      replacement: cantus-app
+      targetLabel: job
+    - action: replace
+      replacement: production
+      targetLabel: env

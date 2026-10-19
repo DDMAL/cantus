@@ -3,9 +3,15 @@ kind: Service
 metadata:
   name: solr
   namespace: cantus-ultimus
+  labels:
+    app: solr
 spec:
   selector:
     app: solr
   ports:
-  - port: 8983
+  - name: http
+    port: 8983
     targetPort: 8983
+  - name: metrics
+    port: 9854
+    targetPort: 9854

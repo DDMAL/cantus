@@ -3,9 +3,15 @@ kind: Service
 metadata:
   name: rabbitmq
   namespace: cantus-ultimus
+  labels:
+    app: rabbitmq
 spec:
   selector:
     app: rabbitmq
   ports:
-  - port: 5672
+  - name: amqp
+    port: 5672
     targetPort: 5672
+  - name: metrics
+    port: 15692
+    targetPort: 15692
