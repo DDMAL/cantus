@@ -81,7 +81,7 @@ services:
     volumes:
       - ./app/public:/code/public
       - ./data/mei-files:/code/mei-files
-    command: [ "/code/.venv/bin/python", "/code/.venv/bin/celery", "-A", "cantusdata", "worker", "-l", "INFO", "-c", "1" ]
+    command: [ "/code/celery-worker.sh" ]
     environment:
       - APP_VERSION=${APP_VERSION}
       - DEVELOPMENT=${DEVELOPMENT}
