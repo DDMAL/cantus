@@ -11,6 +11,7 @@ from cantusdata.helpers.search_utils import (
     validate_query,
     get_transpositions,
     translate_interval_query_direction,
+    volpiano_to_pitch_names,
 )
 
 RETURNED_FIELDS = [
@@ -84,6 +85,13 @@ class SearchNotationView(APIView):
         """
         Format the query and query type into a string for solr.
         """
+        if q_type == "volpiano":
+            # Volpiano is case-sensitive (uppercase marks liquescents) and is
+            # not space-separated, so it skips the normalization below.
+            pitch_names = volpiano_to_pitch_names(q)
+            if pitch_names is None:
+                raise NotationSearchException("Invalid query.")
+            return f"pitch_names:{'_'.join(pitch_names)}"
         normalized_q_elems = q.lower().split()
         q_valid = validate_query(normalized_q_elems, q_type)
         if not q_valid:
