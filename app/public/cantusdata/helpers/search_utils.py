@@ -3,6 +3,8 @@ A collection of functions used by search views to validate and process
 queries.
 """
 
+import re
+import unicodedata
 from typing import Optional
 
 from cantusdata.helpers.neume_helpers import NEUME_NAMES
@@ -164,3 +166,25 @@ def translate_interval_query_direction(query_terms: list[str]) -> list[str]:
             magnitude = term[1:]
             solr_query.append(f"{direction}{magnitude}")
     return solr_query
+
+
+def normalize_search_text(text: str, join_syllables: bool = True) -> str:
+    """
+    Reduce text to space-separated lowercase ASCII words, so that OCR'd chant
+    text and a user's query can be compared.
+
+    With `join_syllables`, hyphens and line-continuation marks ("¬") join the
+    syllables around them, even across a line break, so hyphenated chant text
+    ("Mi- se-rére") matches the whole word ("miserere"). Without it, they
+    separate syllables, so text is matched as printed. Accents are dropped and
+    "æ"/"œ" are spelled out, since editions and users differ in whether they
+    write them.
+
+    e.g. normalize_search_text("Ps. 50. Mi- se-rére mé-i,") returns
+    "ps 50 miserere mei", or "ps 50 mi se rere me i" without join_syllables
+    """
+    text = unicodedata.normalize("NFKD", text.lower())
+    text = "".join(char for char in text if not unicodedata.combining(char))
+    text = text.replace("æ", "ae").replace("œ", "oe")
+    text = re.sub(r"[-¬]\s*", "" if join_syllables else " ", text)
+    return " ".join(re.findall(r"[a-z0-9]+", text))

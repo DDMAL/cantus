@@ -114,8 +114,9 @@ class SearchNotationView(APIView):
             q_str = "_".join(normalized_q_elems)
         return f"{q_type}:{q_str}"
 
+    @staticmethod
     def create_boxes(
-        self, locations: list[dict[str, int]], image_uri: str, folio: str
+        locations: list[dict[str, int]], image_uri: str, folio: str
     ) -> list[dict[str, Union[int, str]]]:
         boxes: list[dict[str, Union[int, str]]] = []
         for location in locations:
