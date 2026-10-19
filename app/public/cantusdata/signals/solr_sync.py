@@ -10,11 +10,18 @@ and Solr records, and exposes control for doing intensive DB manipulations
 """
 
 import contextlib
-import solr
+import time
+from collections import Counter
 
 from django.db.models.signals import post_save, post_delete
 from django.conf import settings
 
+from ..helpers.solr_client import make_solr
+from ..metrics.definitions import (
+    SOLR_SYNC_DOCUMENTS,
+    SOLR_SYNC_DURATION,
+    SOLR_SYNC_SESSIONS,
+)
 from ..models import Manuscript, Chant, Folio
 
 
@@ -110,13 +117,27 @@ class SynchronizationSession(object):
         additions = set(self._additions)
         deletions = set(self._deletions)
         self._executing_flag = True
-        conn = solr.SolrConnection(self.solr_server_url)
+        started = time.perf_counter()
+        outcome = "error"
+        try:
+            # A session can carry a whole import, or a full refresh after a
+            # migration, so it gets the indexing timeout.
+            conn = make_solr(
+                "sync", url=self.solr_server_url, timeout=settings.SOLR_INDEX_TIMEOUT
+            )
 
-        for deleted in deletions:
-            deleted.delete_from_solr(conn)
+            for deleted in deletions:
+                deleted.delete_from_solr(conn)
 
-        conn.add_many([added.create_solr_record() for added in additions])
-        conn.commit()
+            conn.add_many([added.create_solr_record() for added in additions])
+            conn.commit()
+            outcome = "success"
+        finally:
+            SOLR_SYNC_SESSIONS.labels(outcome).inc()
+            SOLR_SYNC_DURATION.observe(time.perf_counter() - started)
+        for action, records in (("delete", deletions), ("add", additions)):
+            for record_type, count in Counter(map(_record_type, records)).items():
+                SOLR_SYNC_DOCUMENTS.labels(action, record_type).inc(count)
         self._executing_flag = False
 
     def schedule_update(self, model, is_new=False):
@@ -143,6 +164,10 @@ class SynchronizationSession(object):
         self._additions.update(Manuscript.objects.all())
         self._additions.update(Folio.objects.all())
         self._additions.update(Chant.objects.all())
+
+
+def _record_type(record):
+    return "all" if isinstance(record, DbFlusher) else type(record).__name__.lower()
 
 
 class DbFlusher(object):

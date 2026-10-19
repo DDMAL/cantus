@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.conf import settings
-import solr
+
+from cantusdata.helpers.solr_client import make_solr
 
 
 class Command(BaseCommand):
@@ -8,7 +9,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         self.stdout.write("Flushing chant data from Solr...")
-        solrconn = solr.SolrConnection(settings.SOLR_SERVER)
+        solrconn = make_solr("admin", timeout=settings.SOLR_INDEX_TIMEOUT)
         # Kill chants
         solrconn.delete_query("type:cantusdata_chant")
         solrconn.commit()

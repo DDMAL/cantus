@@ -1,6 +1,6 @@
 import urllib.parse
-from django.conf import settings
-import solr
+
+from cantusdata.helpers.solr_client import InstrumentedSolr, make_solr
 
 
 class SolrSearch(object):
@@ -25,8 +25,10 @@ class SolrSearch(object):
 
     """
 
+    metrics_operation = "search"
+
     def __init__(self, request, additional_query_params=None):
-        self.server = solr.Solr(settings.SOLR_SERVER)
+        self.server = make_solr(self.metrics_operation, cls=InstrumentedSolr)
         # self.query_dict = query_dict
         self.request = request
         self.additional_query_params = additional_query_params
@@ -108,5 +110,7 @@ class SolrSearch(object):
 
 
 class SolrSearchQueryless(SolrSearch):
+    metrics_operation = "glyph_set"
+
     def _parse_request(self):
         self.parsed_request = urllib.parse.parse_qs(self.request)

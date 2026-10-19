@@ -3,7 +3,7 @@ from cantusdata.models.chant import Chant
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.models.folio import Folio
 from cantusdata import settings
-import solr
+from cantusdata.helpers.solr_client import make_solr
 
 
 class Command(BaseCommand):
@@ -44,7 +44,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        solr_conn = solr.SolrConnection(settings.SOLR_SERVER)
+        solr_conn = make_solr("refresh", timeout=settings.SOLR_INDEX_TIMEOUT)
         # Parse arguments
         manuscript_ids = options["manuscript_ids"]
         types = []

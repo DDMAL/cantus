@@ -2,10 +2,10 @@ import os
 import signal
 from abc import ABCMeta, abstractmethod
 from multiprocessing import Pool
-from django.conf import settings
 
 import pymei
-import solr
+
+from cantusdata.helpers.solr_client import make_solr
 
 DEFAULT_MIN_GRAM = 2
 DEFAULT_MAX_GRAM = 10
@@ -32,7 +32,7 @@ class AbstractMEIConverter(metaclass=ABCMeta):
         self.doc = pymei.documentFromFile(str(file_name), False).getMeiDocument()
         self.page_number = getPageNumber(file_name)
 
-        solrconn = solr.SolrConnection(settings.SOLR_SERVER)
+        solrconn = make_solr("mei_index")
         self.image_uri = getImageURI(file_name, manuscript_id, solrconn)
 
     @classmethod

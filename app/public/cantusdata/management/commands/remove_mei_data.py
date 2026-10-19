@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.conf import settings
-import solr
+
+from cantusdata.helpers.solr_client import make_solr
 
 
 class Command(BaseCommand):
@@ -22,7 +23,7 @@ class Command(BaseCommand):
         self.stdout.write(
             "Removing {0} music notation data from Solr...".format(manuscript)
         )
-        solrconn = solr.SolrConnection(settings.SOLR_SERVER)
+        solrconn = make_solr("admin", timeout=settings.SOLR_INDEX_TIMEOUT)
         solrconn.delete_query(
             "type:cantusdata_music_notation AND siglum_slug:{0}".format(siglum)
         )

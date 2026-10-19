@@ -6,6 +6,7 @@ from django.core.management.base import BaseCommand, CommandParser
 from django.conf import settings
 from solr.core import SolrConnection  # type: ignore[import-untyped]
 
+from cantusdata.helpers.solr_client import make_solr
 from cantusdata.helpers.mei_processing.mei_tokenizer import MEITokenizer
 from cantusdata.models.folio import Folio
 
@@ -106,7 +107,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args: Any, **options: Any) -> None:
-        solr_conn = SolrConnection(settings.SOLR_SERVER)
+        solr_conn = make_solr("mei_index", timeout=settings.SOLR_INDEX_TIMEOUT)
         manuscript_id = options["manuscript_id"][0]
         folio_filter: Optional[str] = options.get("folio")
         if options.get("flush_index"):
