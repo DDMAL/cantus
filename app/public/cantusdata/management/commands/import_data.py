@@ -5,7 +5,9 @@ from cantusdata.models.folio import Folio
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.signals.solr_sync import solr_synchronizer
 from cantusdata.helpers.chant_importer import ChantImporter
-from cantusdata.helpers.source_importer import SourceImporter
+from cantusdata.helpers.source_importer import CANTUSDB_TIMEOUT, SourceImporter
+from cantusdata.metrics.definitions import CHANTS_IMPORTED
+from cantusdata.metrics.tracking import track_external
 import urllib.request
 import urllib
 from io import StringIO
@@ -112,7 +114,12 @@ class Command(BaseCommand):
 
     def import_chant_data(self, **options):
         mobj = Manuscript.objects.get(id=options["manuscript_id"])
-        scsv = urllib.request.urlopen(mobj.csv_export_url).read().decode("utf-8")
+        with track_external("cantusdb", mobj.csv_export_url):
+            scsv = (
+                urllib.request.urlopen(mobj.csv_export_url, timeout=CANTUSDB_TIMEOUT)
+                .read()
+                .decode("utf-8")
+            )
         task = options.get("task", None)
         # csv module can't handle csv as strings, so making it a file
         fcsv = StringIO(scsv)
@@ -123,6 +130,7 @@ class Command(BaseCommand):
             chant_count = importer.import_csv(fcsv)
         # Save the new chants
         importer.save(task=task)
+        CHANTS_IMPORTED.labels(str(mobj.pk)).inc(chant_count)
         self.stdout.write(f"Successfully imported {chant_count} chants into database.")
 
     @transaction.atomic
