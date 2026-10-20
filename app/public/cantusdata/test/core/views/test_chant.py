@@ -15,6 +15,14 @@ class ChantViewTestCase(APITransactionTestCase):
     def test_get_list(self):
         response = self.client.get("/chants/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Paginated: never the whole table in one response.
+        self.assertEqual(response.data["count"], Chant.objects.count())
+        self.assertIn("results", response.data)
+
+    def test_list_page_size_is_capped(self):
+        response = self.client.get("/chants/", {"page_size": 100000})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertLessEqual(len(response.data["results"]), 1000)
 
     def test_get_detail(self):
         # Grab the first manuscript that exists

@@ -15,6 +15,26 @@ class FolioViewTestCase(APITransactionTestCase):
     def test_get_list(self):
         response = self.client.get("/folios/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], Folio.objects.count())
+
+    def test_lookup_is_a_plain_list(self):
+        # The viewer reads response[0] (DivaView.js), so no pagination here.
+        folio = Folio.objects.get(number="123")
+        response = self.client.get(
+            "/folios/", {"number": "123", "manuscript": folio.manuscript_id}
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]["number"], "123")
+
+    def test_lookup_input_cannot_break_the_query(self):
+        # `(` alone is an invalid database regex; a non-numeric id is no id.
+        for params in (
+            {"number": "(", "manuscript": "3"},
+            {"number": "1", "manuscript": "abc"},
+        ):
+            with self.subTest(params=params):
+                response = self.client.get("/folios/", params)
+                self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_detail(self):
         # Grab the first manuscript that exists
