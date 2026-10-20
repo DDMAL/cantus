@@ -84,16 +84,24 @@ class _PublicManuscripts:
 
     def __init__(self) -> None:
         self._lock = threading.Lock()
-        self._loaded_at = 0.0
+        # None until the first load. Not 0.0: time.monotonic() counts from
+        # boot, so on a machine up for less than TTL_SECONDS a zero would look
+        # fresh and the snapshot would never load.
+        self._loaded_at: Optional[float] = None
         self._ids: frozenset[str] = frozenset()
-        self._by_manifest: dict[str, str] = {}
         self._manifest_hosts: frozenset[str] = frozenset()
 
+    def _is_fresh(self) -> bool:
+        return (
+            self._loaded_at is not None
+            and time.monotonic() - self._loaded_at < self.TTL_SECONDS
+        )
+
     def _refresh_if_stale(self) -> None:
-        if time.monotonic() - self._loaded_at < self.TTL_SECONDS:
+        if self._is_fresh():
             return
         with self._lock:
-            if time.monotonic() - self._loaded_at < self.TTL_SECONDS:
+            if self._is_fresh():
                 return
             # Imported here: labels is imported while the app registry loads.
             from cantusdata.models.manuscript import Manuscript
@@ -109,9 +117,6 @@ class _PublicManuscripts:
                 # snapshot and try again on the next call.
                 return
             self._ids = frozenset(str(pk) for pk, _ in rows)
-            self._by_manifest = {
-                normalize_manifest_url(url): str(pk) for pk, url in rows if url
-            }
             self._manifest_hosts = frozenset(
                 host for _, url in rows if url and (host := _hostname(url))
             )
@@ -122,17 +127,13 @@ class _PublicManuscripts:
         value = str(manuscript_id)
         return value if value in self._ids else OTHER
 
-    def id_for_manifest(self, manifest_url: str) -> str:
-        self._refresh_if_stale()
-        return self._by_manifest.get(normalize_manifest_url(manifest_url), OTHER)
-
     def is_manifest_host(self, host: str) -> bool:
         self._refresh_if_stale()
         return host in self._manifest_hosts
 
     def reset(self) -> None:
         """Forget the snapshot (for tests, which create manuscripts)."""
-        self._loaded_at = 0.0
+        self._loaded_at = None
 
 
 public_manuscripts = _PublicManuscripts()
@@ -141,11 +142,6 @@ public_manuscripts = _PublicManuscripts()
 def manuscript_label(manuscript_id: Any) -> str:
     """The id itself if it names a public manuscript, else OTHER."""
     return public_manuscripts.id_label(manuscript_id)
-
-
-def normalize_manifest_url(url: str) -> str:
-    """Scheme and trailing slash dropped: the proxy may see either http or https."""
-    return re.sub(r"^https?://", "", url.strip()).rstrip("/")
 
 
 def _hostname(url: str) -> Optional[str]:

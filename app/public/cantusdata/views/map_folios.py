@@ -231,4 +231,9 @@ def _save_mapping(request):
                 continue
             data.append({"folio": fol, "uri": index})
 
-    map_folio_task.apply_async(kwargs={"manuscript_ids": manuscript_id, "data": data})
+    map_folio_task.apply_async(
+        kwargs={"manuscript_ids": manuscript_id, "data": data},
+        # What the Task Results admin stores and shows. The full kwargs would
+        # be truncated (the mapping lists every folio) into unreadable text.
+        kwargsrepr=repr({"manuscript_ids": manuscript_id}),
+    )

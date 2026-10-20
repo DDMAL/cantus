@@ -1,3 +1,6 @@
+import ast
+import json
+import re
 from functools import partial
 from typing import Any
 
@@ -460,22 +463,61 @@ class MEISubmissionAdmin(ModelAdmin):  # type: ignore[type-arg]
         )
 
 
+# For task_kwargs that are not a complete literal: Celery truncates long
+# argument reprs, as it did for map-folios tasks before they sent a short one.
+_MANUSCRIPT_IDS = re.compile(r"'manuscript_ids':\s*(\[[^\]]*\]|'[^']*'|\d+)")
+
+
+def task_manuscript_ids(task_kwargs: str | None) -> list[int]:
+    """
+    The manuscript ids in a TaskResult's stored kwargs, or [] if unreadable.
+
+    The text is never executed. RECEIVED rows (tasks.task_received_handler)
+    hold str(kwargs); later states hold Celery's kwargs repr inside a JSON
+    string.
+    """
+    if not task_kwargs:
+        return []
+    text = task_kwargs
+    try:
+        decoded = json.loads(text)
+    except ValueError:
+        decoded = None
+    if isinstance(decoded, str):
+        text = decoded
+    try:
+        kwargs = ast.literal_eval(text)
+    except (ValueError, SyntaxError, TypeError, MemoryError, RecursionError):
+        match = _MANUSCRIPT_IDS.search(text)
+        if match is None:
+            return []
+        try:
+            kwargs = {"manuscript_ids": ast.literal_eval(match.group(1))}
+        except (ValueError, SyntaxError):
+            return []
+    if not isinstance(kwargs, dict):
+        return []
+    ids = kwargs.get("manuscript_ids", [])
+    if not isinstance(ids, (list, tuple)):
+        ids = [ids]
+    manuscript_ids = []
+    for value in ids:
+        try:
+            manuscript_ids.append(int(value))
+        except (TypeError, ValueError):
+            continue
+    return manuscript_ids
+
+
 class NewTaskResultAdmin(TaskResultAdmin):  # type: ignore[misc]
     list_display = ("task_name", "date_done", "status", "get_task_manuscript_ids")
     list_filter = ("status", "date_done", "task_name")
 
     @admin.display(description="Manuscript(s)")
     def get_task_manuscript_ids(self, obj: TaskResult) -> list[Manuscript]:
-        if obj.status == "RECEIVED":
-            obj_man_ids = eval(obj.task_kwargs)["manuscript_ids"]
-        else:
-            obj_man_ids = eval(obj.task_kwargs[1:-1])["manuscript_ids"]
-        if not isinstance(obj_man_ids, list):
-            obj_man_ids = [obj_man_ids]
-        task_manuscripts = [
-            man for man in Manuscript.objects.filter(id__in=obj_man_ids)
-        ]
-        return task_manuscripts
+        return list(
+            Manuscript.objects.filter(id__in=task_manuscript_ids(obj.task_kwargs))
+        )
 
 
 admin.site.register(Manuscript, ManuscriptAdmin)

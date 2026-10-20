@@ -2,6 +2,8 @@
 
 import urllib
 
+from cantusdata.helpers.manifests import normalize_manifest_url
+
 
 def d_ka_aug_lx(datadict):
     """
@@ -84,3 +86,16 @@ iiif_fn = {
 }
 
 iiif_default_fns = [normalize_iiif3_service_type]
+
+# iiif_fn by normalized URL, so a manifest matches however its URL was spelled.
+_iiif_fn_by_url = {normalize_manifest_url(url): fn for url, fn in iiif_fn.items()}
+
+
+def postprocess_manifest(manifest_url, datadict):
+    """Apply the manifest's own fix, if it has one, then the defaults."""
+    fix = _iiif_fn_by_url.get(normalize_manifest_url(manifest_url))
+    if fix is not None:
+        datadict = fix(datadict)
+    for fn in iiif_default_fns:
+        datadict = fn(datadict)
+    return datadict

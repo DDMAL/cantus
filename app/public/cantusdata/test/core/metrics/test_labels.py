@@ -1,7 +1,10 @@
+from unittest.mock import patch
+
 from django.test import RequestFactory, SimpleTestCase, TestCase
 
 from cantusdata.metrics.labels import (
     OTHER,
+    _PublicManuscripts,
     classify_client,
     manuscript_label,
     notation_type_label,
@@ -117,16 +120,15 @@ class ManuscriptLabelTestCase(TestCase):
         self.assertEqual(manuscript_label(902), OTHER)
         self.assertEqual(manuscript_label(999999), OTHER)
 
-    def test_manifest_urls_map_to_their_manuscript_whatever_the_scheme(self) -> None:
-        self.assertEqual(
-            public_manuscripts.id_for_manifest(
-                "http://iiif.example-library.org/ms/901/manifest.json"
-            ),
-            "901",
-        )
-        self.assertEqual(
-            public_manuscripts.id_for_manifest("https://elsewhere.org/x.json"), OTHER
-        )
+    def test_the_snapshot_loads_on_a_freshly_booted_machine(self) -> None:
+        # time.monotonic() counts from boot: on a CI runner (or a node that just
+        # rebooted) it is smaller than the refresh interval, which must not
+        # make a never-loaded snapshot look fresh.
+        with patch("cantusdata.metrics.labels.time.monotonic", return_value=60.0):
+            fresh = _PublicManuscripts()
+            self.assertEqual(fresh.id_label(901), "901")
+            fresh.reset()
+            self.assertEqual(fresh.id_label(901), "901")
 
     def test_only_known_hosts_become_upstream_labels(self) -> None:
         self.assertEqual(
