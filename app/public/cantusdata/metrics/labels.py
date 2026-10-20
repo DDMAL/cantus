@@ -86,7 +86,6 @@ class _PublicManuscripts:
         self._lock = threading.Lock()
         self._loaded_at = 0.0
         self._ids: frozenset[str] = frozenset()
-        self._by_manifest: dict[str, str] = {}
         self._manifest_hosts: frozenset[str] = frozenset()
 
     def _refresh_if_stale(self) -> None:
@@ -109,9 +108,6 @@ class _PublicManuscripts:
                 # snapshot and try again on the next call.
                 return
             self._ids = frozenset(str(pk) for pk, _ in rows)
-            self._by_manifest = {
-                normalize_manifest_url(url): str(pk) for pk, url in rows if url
-            }
             self._manifest_hosts = frozenset(
                 host for _, url in rows if url and (host := _hostname(url))
             )
@@ -121,10 +117,6 @@ class _PublicManuscripts:
         self._refresh_if_stale()
         value = str(manuscript_id)
         return value if value in self._ids else OTHER
-
-    def id_for_manifest(self, manifest_url: str) -> str:
-        self._refresh_if_stale()
-        return self._by_manifest.get(normalize_manifest_url(manifest_url), OTHER)
 
     def is_manifest_host(self, host: str) -> bool:
         self._refresh_if_stale()
@@ -141,11 +133,6 @@ public_manuscripts = _PublicManuscripts()
 def manuscript_label(manuscript_id: Any) -> str:
     """The id itself if it names a public manuscript, else OTHER."""
     return public_manuscripts.id_label(manuscript_id)
-
-
-def normalize_manifest_url(url: str) -> str:
-    """Scheme and trailing slash dropped: the proxy may see either http or https."""
-    return re.sub(r"^https?://", "", url.strip()).rstrip("/")
 
 
 def _hostname(url: str) -> Optional[str]:

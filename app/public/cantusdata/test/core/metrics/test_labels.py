@@ -117,17 +117,6 @@ class ManuscriptLabelTestCase(TestCase):
         self.assertEqual(manuscript_label(902), OTHER)
         self.assertEqual(manuscript_label(999999), OTHER)
 
-    def test_manifest_urls_map_to_their_manuscript_whatever_the_scheme(self) -> None:
-        self.assertEqual(
-            public_manuscripts.id_for_manifest(
-                "http://iiif.example-library.org/ms/901/manifest.json"
-            ),
-            "901",
-        )
-        self.assertEqual(
-            public_manuscripts.id_for_manifest("https://elsewhere.org/x.json"), OTHER
-        )
-
     def test_only_known_hosts_become_upstream_labels(self) -> None:
         self.assertEqual(
             upstream_host_label("https://iiif.example-library.org/anything"),
