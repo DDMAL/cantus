@@ -1,0 +1,28 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cantus-solr
+  namespace: cantus-ultimus
+  labels:
+    release: kube-prom-stack
+spec:
+  namespaceSelector:
+    matchNames:
+    - cantus-ultimus
+  # Production only: the staging Service carries no `app: solr` label.
+  selector:
+    matchLabels:
+      app: solr
+  endpoints:
+  # The solr-exporter sidecar refreshes every 60s (SCRAPE_INTERVAL), so a
+  # faster scrape would only re-read the same values.
+  - port: metrics
+    path: /metrics
+    interval: 60s
+    relabelings:
+    - action: replace
+      replacement: cantus-solr
+      targetLabel: job
+    - action: replace
+      replacement: production
+      targetLabel: env

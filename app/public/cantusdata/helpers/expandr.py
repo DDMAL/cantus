@@ -4,6 +4,8 @@ import requests
 
 from django.conf import settings
 
+from cantusdata.metrics.tracking import track_external
+
 
 def expand_mode(mode_code: str) -> str:
     """
@@ -51,9 +53,10 @@ class GenreExpander:
         Loads the genre list from the CantusDB API and returns a dictionary mapping
         genre codes to genre descriptions.
         """
-        response = requests.get(
-            self.cantus_db_api_endpoint, headers=self.request_headers, timeout=5
-        )
+        with track_external("cantusdb_genres", self.cantus_db_api_endpoint):
+            response = requests.get(
+                self.cantus_db_api_endpoint, headers=self.request_headers, timeout=5
+            )
         response.raise_for_status()
         genre_map: dict[str, str] = {
             x["name"]: x["description"] for x in response.json()["genres"]

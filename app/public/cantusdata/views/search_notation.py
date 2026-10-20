@@ -1,3 +1,4 @@
+import time
 from typing import Any, TypedDict, Union, Optional, NotRequired
 
 import requests
@@ -12,6 +13,20 @@ from cantusdata.helpers.search_utils import (
     get_transpositions,
     translate_interval_query_direction,
 )
+from cantusdata.metrics.definitions import (
+    NOTATION_SEARCH_QUERY_LENGTH,
+    NOTATION_SEARCH_REQUESTS,
+    NOTATION_SEARCH_RESULTS,
+)
+from cantusdata.metrics.events import elapsed_ms
+from cantusdata.metrics.labels import (
+    OTHER,
+    classify_client,
+    manuscript_label,
+    notation_type_label,
+)
+from cantusdata.metrics.search_log import log_search
+from cantusdata.metrics.tracking import track_solr
 
 RETURNED_FIELDS = [
     "manuscript_id",
@@ -61,6 +76,50 @@ class SearchNotationView(APIView):
         q = request.GET.get("q", None)
         stype = request.GET.get("type", None)
         manuscript_param = request.GET.get("manuscript_id", None)
+        started = time.perf_counter()
+        type_label = notation_type_label(stype)
+        manuscript = (
+            manuscript_label(manuscript_param)
+            if manuscript_param and manuscript_param.isdigit()
+            else OTHER
+        )
+        client = classify_client(request)
+        outcome = "error"
+        num_found: Optional[int] = None
+        try:
+            response = self._search(request, q, stype, manuscript_param)
+            num_found = response.data["numFound"]
+            outcome = "hits" if num_found else "no_hits"
+            return response
+        except NotationSearchException:
+            outcome = "invalid_query"
+            raise
+        finally:
+            NOTATION_SEARCH_REQUESTS.labels(
+                type_label, manuscript, outcome, client
+            ).inc()
+            if num_found is not None:
+                NOTATION_SEARCH_RESULTS.labels(type_label).observe(num_found)
+                NOTATION_SEARCH_QUERY_LENGTH.labels(type_label).observe(
+                    len((q or "").split())
+                )
+            log_search(
+                "notation",
+                field=type_label,
+                term=q or "",
+                manuscript_id=manuscript_param,
+                num_found=num_found,
+                client=client,
+                duration_ms=elapsed_ms(started),
+            )
+
+    def _search(
+        self,
+        request: Request,
+        q: Optional[str],
+        stype: Optional[str],
+        manuscript_param: Optional[str],
+    ) -> Response:
         rows_param = request.GET.get("rows", "100")
         start_param = request.GET.get("start", "0")
 
@@ -134,7 +193,13 @@ class SearchNotationView(APIView):
             f"{settings.SOLR_SERVER}/select?q=*:*&fq={query_str_w_manuscript}"
             f"&fl={','.join(RETURNED_FIELDS)}&sort=folio+asc&rows={rows}&start={start}"
         )
-        response = requests.get(complete_query_str, timeout=10).json()
+        with track_solr("notation_search") as tracked:
+            solr_response = requests.get(
+                complete_query_str, timeout=settings.SOLR_TIMEOUT
+            )
+            if not solr_response.ok:
+                tracked.outcome = "error"
+        response = solr_response.json()
         request_results: list[SolrQueryResultItem] = response["response"]["docs"]
         num_found = response["response"]["numFound"]
         results = []

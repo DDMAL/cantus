@@ -17,7 +17,11 @@ spec:
       - name: rabbitmq
         image: rabbitmq:3.11
         ports:
-        - containerPort: 5672
+        - name: amqp
+          containerPort: 5672
+        # rabbitmq_prometheus is enabled by default in the official image.
+        - name: metrics
+          containerPort: 15692
         envFrom:
         - configMapRef:
             name: rabbitmq-config

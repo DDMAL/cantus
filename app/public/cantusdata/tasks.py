@@ -1,5 +1,6 @@
 import os
 import tempfile
+import time
 
 from cantusdata.celery import app
 from django.conf import settings
@@ -7,6 +8,13 @@ from django.core.management import call_command
 from django.utils import timezone
 from celery.signals import task_received
 from django_celery_results.models import TaskResult
+
+from cantusdata.metrics.definitions import (
+    CHANT_IMPORT_RUNS,
+    FOLIO_MAPPING_RUNS,
+    MEI_PUBLISH,
+    MEI_PUBLISH_DURATION,
+)
 
 # Attached to a manuscript when its notation is first published, because the
 # client only renders the notation-search fields for manuscripts carrying these
@@ -24,13 +32,18 @@ NOTATION_SEARCH_PLUGINS = ("Neume Search", "Pitch Search")
 @app.task(name="import-chants", bind=True)
 def chant_import_task(self, *args, **kwargs):
     manuscript_ids = kwargs["manuscript_ids"]
-    for man_id in manuscript_ids:
-        call_command(
-            "import_data",
-            "chants",
-            f"--manuscript-id={man_id}",
-            task=self,
-        )
+    try:
+        for man_id in manuscript_ids:
+            call_command(
+                "import_data",
+                "chants",
+                f"--manuscript-id={man_id}",
+                task=self,
+            )
+    except Exception:
+        CHANT_IMPORT_RUNS.labels("failure").inc()
+        raise
+    CHANT_IMPORT_RUNS.labels("success").inc()
 
 
 @app.task(name="publish-mei-submission", bind=True)
@@ -52,6 +65,7 @@ def publish_mei_submission_task(self, *args, **kwargs):
     # Celery at startup, before the app registry is necessarily ready.
     from cantusdata.models.mei_submission import MEISubmission, SubmissionStatus
 
+    started = time.perf_counter()
     submission = MEISubmission.objects.select_related("manuscript").get(
         pk=kwargs["submission_id"]
     )
@@ -64,6 +78,7 @@ def publish_mei_submission_task(self, *args, **kwargs):
     # --replace passes over one folio can interleave into the duplicate n-grams
     # --replace exists to prevent.
     if submission.status != SubmissionStatus.PUBLISHING:
+        MEI_PUBLISH.labels("skipped").inc()
         return {
             "submission_id": submission.pk,
             "skipped": f"not claimed for publication (status {submission.status})",
@@ -91,12 +106,15 @@ def publish_mei_submission_task(self, *args, **kwargs):
         # the admin offers no way out of. The reviewer can retry once whatever
         # failed -- an unwritable volume, an unreachable Solr -- is fixed.
         submission.release_claim()
+        MEI_PUBLISH.labels("failed").inc()
         raise
 
     submission.status = SubmissionStatus.PUBLISHED
     submission.published_path = published_path
     submission.reviewed_at = submission.reviewed_at or timezone.now()
     submission.save()
+    MEI_PUBLISH.labels("published").inc()
+    MEI_PUBLISH_DURATION.observe(time.perf_counter() - started)
     return {"submission_id": submission.pk, "published_path": published_path}
 
 
@@ -186,12 +204,17 @@ def write_submission_to_mei_dir(submission):
 
 @app.task(name="map-folios", bind=True)
 def map_folio_task(self, *args, **kwargs):
-    call_command(
-        "import_folio_mapping",
-        manuscripts=[kwargs["manuscript_ids"]],
-        mapping_data=[kwargs["data"]],
-        task=self,
-    )
+    try:
+        call_command(
+            "import_folio_mapping",
+            manuscripts=[kwargs["manuscript_ids"]],
+            mapping_data=[kwargs["data"]],
+            task=self,
+        )
+    except Exception:
+        FOLIO_MAPPING_RUNS.labels("failure").inc()
+        raise
+    FOLIO_MAPPING_RUNS.labels("success").inc()
 
 
 @task_received.connect

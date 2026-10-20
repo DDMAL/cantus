@@ -3,9 +3,15 @@ kind: Service
 metadata:
   name: app
   namespace: cantus-ultimus
+  labels:
+    app: app
 spec:
   selector:
     app: app
   ports:
-  - port: 8001
+  - name: http
+    port: 8001
     targetPort: 8001
+  - name: metrics
+    port: 9100
+    targetPort: 9100

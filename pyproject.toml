@@ -16,6 +16,7 @@ requests = "^2.32.3"
 solrpy = { git = "https://github.com/search5/solrpy", tag = "rel-1-0-0"}
 django-extensions = "^4.0.0"
 ipython = "^9.13.0"
+prometheus-client = ">=0.21,<1"
 
 [tool.poetry.group.debug]
 optional = true

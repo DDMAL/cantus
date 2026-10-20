@@ -4,6 +4,7 @@ from cantusdata.models.manuscript import Manuscript
 from django.core.management import call_command
 from django.db import transaction
 import csv
+from cantusdata.metrics.definitions import FOLIOS_MAPPED
 
 
 class Command(BaseCommand):
@@ -85,6 +86,7 @@ class Command(BaseCommand):
             self.stdout.write(f"Starting import process for manuscript {manuscript_id}")
 
             # Iterate through rows in the mapping_data.
+            mapped = 0
             for index, row in enumerate(mapping_data):
                 folio = row["folio"]
                 uri = row["uri"]
@@ -102,6 +104,7 @@ class Command(BaseCommand):
 
                 folio_obj.image_uri = uri
                 folio_obj.save()
+                mapped += 1
 
                 if task:
                     task.update_state(state="STARTED", meta={"folios_imported": index})
@@ -109,6 +112,7 @@ class Command(BaseCommand):
                     self.stdout.write(f"Imported {index} folios")
 
             manuscript.save()
+            FOLIOS_MAPPED.labels(str(manuscript_id)).inc(mapped)
 
             self.stdout.write(
                 f"All folios of manuscript {manuscript_id} have been imported"

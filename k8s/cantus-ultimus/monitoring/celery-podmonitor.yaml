@@ -1,0 +1,26 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: cantus-celery
+  namespace: cantus-ultimus
+  labels:
+    release: kube-prom-stack
+spec:
+  namespaceSelector:
+    matchNames:
+    - cantus-ultimus
+  # Production only: staging pods are labelled `app: celery-staging`.
+  selector:
+    matchLabels:
+      app: celery
+  podMetricsEndpoints:
+  - port: metrics
+    path: /metrics
+    interval: 30s
+    relabelings:
+    - action: replace
+      replacement: cantus-celery
+      targetLabel: job
+    - action: replace
+      replacement: production
+      targetLabel: env

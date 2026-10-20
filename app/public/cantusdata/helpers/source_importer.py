@@ -1,6 +1,11 @@
 from urllib import request
 import json
 
+from cantusdata.metrics.tracking import track_external
+
+# Seconds to wait on any one CANTUS Database read; the CSV exports are large.
+CANTUSDB_TIMEOUT = 60
+
 
 class SourceImporter:
     """
@@ -19,7 +24,10 @@ class SourceImporter:
         :return: a list of character source ID's
         """
         sources_url = f"{self.cdb_base_url}/json-sources/"
-        sources_response = request.urlopen(sources_url).read()
+        with track_external("cantusdb", sources_url):
+            sources_response = request.urlopen(
+                sources_url, timeout=CANTUSDB_TIMEOUT
+            ).read()
         sources_json = json.loads(sources_response)
         source_ids = sources_json.keys()
         return source_ids
@@ -33,7 +41,10 @@ class SourceImporter:
         :return: a parsed json object containing source data
         """
         source_url = f"{self.cdb_base_url}/json-node/{source_id}"
-        source_response = request.urlopen(source_url).read()
+        with track_external("cantusdb", source_url):
+            source_response = request.urlopen(
+                source_url, timeout=CANTUSDB_TIMEOUT
+            ).read()
         source_json = json.loads(source_response)
         return source_json
 
@@ -43,7 +54,10 @@ class SourceImporter:
         name for a given source.
         """
         prov_json_url = f"{self.cdb_base_url}/provenance/{source_id}/json"
-        prov_json_response = request.urlopen(prov_json_url).read()
+        with track_external("cantusdb", prov_json_url):
+            prov_json_response = request.urlopen(
+                prov_json_url, timeout=CANTUSDB_TIMEOUT
+            ).read()
         prov_json = json.loads(prov_json_response)
         return prov_json["name"]
 

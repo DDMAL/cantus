@@ -1,0 +1,43 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cantus-rabbitmq
+  namespace: cantus-ultimus
+  labels:
+    release: kube-prom-stack
+spec:
+  namespaceSelector:
+    matchNames:
+    - cantus-ultimus
+  # Production only: the staging Service carries no `app: rabbitmq` label.
+  selector:
+    matchLabels:
+      app: rabbitmq
+  endpoints:
+  # Node-level totals: connections, memory, alarms, uptime.
+  - port: metrics
+    path: /metrics
+    interval: 30s
+    relabelings:
+    - action: replace
+      replacement: cantus-rabbitmq
+      targetLabel: job
+    - action: replace
+      replacement: production
+      targetLabel: env
+  # Per-queue depth and consumers (rabbitmq_detailed_queue_*), which the
+  # aggregated /metrics endpoint does not break down by queue.
+  - port: metrics
+    path: /metrics/detailed
+    params:
+      family:
+      - queue_coarse_metrics
+      - queue_consumer_count
+    interval: 30s
+    relabelings:
+    - action: replace
+      replacement: cantus-rabbitmq
+      targetLabel: job
+    - action: replace
+      replacement: production
+      targetLabel: env

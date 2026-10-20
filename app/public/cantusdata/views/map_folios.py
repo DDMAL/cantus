@@ -4,6 +4,8 @@ from rest_framework.renderers import TemplateHTMLRenderer
 from cantusdata.models.folio import Folio
 from cantusdata.models.manuscript import Manuscript
 from cantusdata.tasks import map_folio_task
+from cantusdata.metrics.events import counting_failures
+from cantusdata.metrics.tracking import track_external
 from django.http import HttpResponseRedirect
 import re
 import json
@@ -91,7 +93,11 @@ class MapFoliosView(APIView):
 
     def post(self, request):
         try:
-            thread = threading.Thread(target=_save_mapping, args=(request,), kwargs={})
+            thread = threading.Thread(
+                target=counting_failures("map_folios", _save_mapping),
+                args=(request,),
+                kwargs={},
+            )
             thread.start()
         except Exception as e:
             return Response({"error": e})
@@ -110,8 +116,9 @@ def _extract_uris_from_manifest(manifest_url):
     """
     uris_objs = []
     uris = []
-    manifest_json = urllib.request.urlopen(manifest_url)
-    manifest_data = json.loads(manifest_json.read().decode("utf-8"))
+    with track_external("iiif_mapping", manifest_url):
+        manifest_json = urllib.request.urlopen(manifest_url, timeout=30)
+        manifest_data = json.loads(manifest_json.read().decode("utf-8"))
     for canvas in manifest_data["sequences"][0]["canvases"]:
         service = canvas["images"][0]["resource"]["service"]
         uri = service["@id"]

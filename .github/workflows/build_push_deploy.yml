@@ -23,7 +23,9 @@ jobs:
             context: .
             file: ./app/Dockerfile
             image: cantus-app
-            build_args: DEVELOPMENT=False
+            build_args: |
+              DEVELOPMENT=False
+              GIT_SHA=${{ github.sha }}
           - name: nginx
             context: .
             file: ./nginx/Dockerfile
@@ -100,13 +102,31 @@ jobs:
           kubectl set image deployment/celery celery=ghcr.io/${OWNER}/cantus-app:${TAG} -n cantus-ultimus
           kubectl set image deployment/nginx nginx=ghcr.io/${OWNER}/cantus-nginx:${TAG} -n cantus-ultimus
           kubectl set image deployment/cantaloupe cantaloupe=ghcr.io/${OWNER}/cantus-cantaloupe:${TAG} -n cantus-ultimus
-          kubectl set image statefulset/solr solr=ghcr.io/${OWNER}/cantus-solr:${TAG} -n cantus-ultimus
+          # The metrics pieces are only updated once their manifests have been
+          # applied (see k8s/MIGRATION.md#monitoring), so a deploy before that
+          # does not fail on a missing Deployment or container.
+          SOLR_CONTAINERS=$(kubectl get statefulset/solr -n cantus-ultimus \
+            -o jsonpath='{.spec.template.spec.containers[*].name}')
+          if echo "$SOLR_CONTAINERS" | grep -qw solr-exporter; then
+            kubectl set image statefulset/solr \
+              solr=ghcr.io/${OWNER}/cantus-solr:${TAG} \
+              solr-exporter=ghcr.io/${OWNER}/cantus-solr:${TAG} -n cantus-ultimus
+          else
+            kubectl set image statefulset/solr solr=ghcr.io/${OWNER}/cantus-solr:${TAG} -n cantus-ultimus
+          fi
+          if kubectl get deployment/metrics-exporter -n cantus-ultimus >/dev/null 2>&1; then
+            kubectl set image deployment/metrics-exporter \
+              metrics-exporter=ghcr.io/${OWNER}/cantus-app:${TAG} -n cantus-ultimus
+          fi
 
       - name: Wait for rollouts
         run: |
           kubectl rollout status deployment/app -n cantus-ultimus --timeout=300s
           kubectl rollout status deployment/nginx -n cantus-ultimus --timeout=300s
           kubectl rollout status deployment/celery -n cantus-ultimus --timeout=300s
+          if kubectl get deployment/metrics-exporter -n cantus-ultimus >/dev/null 2>&1; then
+            kubectl rollout status deployment/metrics-exporter -n cantus-ultimus --timeout=300s
+          fi
 
   deploy-staging:
     if: github.event_name == 'workflow_dispatch'

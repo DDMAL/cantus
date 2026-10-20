@@ -46,7 +46,7 @@ class Command(BaseCommand):
             req_start = time.time()
 
             try:
-                response = requests.get(status_url)
+                response = requests.get(status_url, timeout=5)
             except requests.ConnectionError:
                 if last_state != "failed":
                     self.stderr.write("Connection failed...")

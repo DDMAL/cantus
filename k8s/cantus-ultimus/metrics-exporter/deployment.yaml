@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-exporter
+  namespace: cantus-ultimus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metrics-exporter
+  template:
+    metadata:
+      labels:
+        app: metrics-exporter
+    spec:
+      imagePullSecrets:
+      - name: ghcr-pull-secret
+      containers:
+      # Inventory gauges (manuscripts, MEI queue, DB vs Solr counts, ...) are
+      # computed from Postgres and Solr when scraped, so they run here rather
+      # than in the gunicorn workers that serve users.
+      - name: metrics-exporter
+        image: ghcr.io/ddmal/cantus-app:main-latest
+        imagePullPolicy: Always
+        command:
+        - /code/.venv/bin/python
+        - manage.py
+        - serve_metrics
+        - --port
+        - "9102"
+        ports:
+        - name: metrics
+          containerPort: 9102
+        envFrom:
+        - configMapRef:
+            name: app-config
+        env:
+        - name: DJANGO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: DJANGO_SECRET_KEY
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: POSTGRES_PASSWORD
+        # A readiness check is a full collection (DB and Solr queries), so it is
+        # infrequent and given most of a scrape's time budget.
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: 9102
+          initialDelaySeconds: 20
+          periodSeconds: 60
+          timeoutSeconds: 25
+        livenessProbe:
+          tcpSocket:
+            port: 9102
+          initialDelaySeconds: 20
+          periodSeconds: 30
+        resources:
+          requests:
+            cpu: "20m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"

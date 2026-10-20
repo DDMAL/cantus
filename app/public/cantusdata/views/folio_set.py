@@ -1,10 +1,11 @@
-from django.conf import settings
 from django.http import Http404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
 from cantusdata.renderers.csv_renderer import CSVRenderer
-import solr
+from cantusdata.helpers.solr_client import make_solr
+from cantusdata.metrics.definitions import FOLIO_VIEWS
+from cantusdata.metrics.labels import classify_client, manuscript_label
 
 FOLIO_FIELDS = [
     "type",
@@ -22,13 +23,17 @@ class ManuscriptFolioSetView(APIView):
     )
 
     def get(self, request, *args, **kwargs):
-        solrconn = solr.SolrConnection(settings.SOLR_SERVER)
+        solrconn = make_solr("folio_set")
 
         manuscript_id = kwargs["pk"]
 
         # If the request contains an image_uri parameter, return the folio(s)
         # associated with that image.
         if "image_uri" in kwargs:
+            # The viewer looks up the folio shown on every page turn.
+            FOLIO_VIEWS.labels(
+                manuscript_label(manuscript_id), classify_client(request)
+            ).inc()
             image_uri = kwargs["image_uri"]
             composed_request = f'''type:"cantusdata_folio" AND
                  manuscript_id:{manuscript_id} AND image_uri:"{image_uri}"'''
