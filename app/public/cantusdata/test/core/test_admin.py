@@ -1,11 +1,15 @@
+import json
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import RequestFactory, SimpleTestCase, TestCase
 from django.urls import reverse
+from django_celery_results.models import TaskResult
 
+from cantusdata.admin.admin import task_manuscript_ids
 from cantusdata.models import Folio, Manuscript, MEISubmission
 from cantusdata.models.mei_submission import SubmissionStatus
+from cantusdata.views.map_folios import _save_mapping
 
 PUBLISH_TASK = "cantusdata.admin.admin.publish_mei_submission_task"
 
@@ -248,3 +252,93 @@ class MEISubmissionAdminTestCase(TestCase):
         )
         self.client.force_login(outsider)
         self.assertEqual(self.client.get(self.download_url).status_code, 403)
+
+
+class TaskManuscriptIdsTestCase(SimpleTestCase):
+    """Reading manuscript ids out of stored task kwargs, without executing them."""
+
+    def test_both_stored_shapes(self) -> None:
+        # RECEIVED rows: str(kwargs). Later states: the kwargs repr as JSON.
+        self.assertEqual(task_manuscript_ids("{'manuscript_ids': [1, 2]}"), [1, 2])
+        self.assertEqual(
+            task_manuscript_ids(json.dumps("{'manuscript_ids': [3]}")), [3]
+        )
+
+    def test_single_and_string_ids(self) -> None:
+        self.assertEqual(task_manuscript_ids("{'manuscript_ids': 7}"), [7])
+        # map-folios sends the id as posted, a string.
+        self.assertEqual(task_manuscript_ids("{'manuscript_ids': '123723'}"), [123723])
+
+    def test_truncated_reprs_still_name_their_manuscript(self) -> None:
+        truncated = json.dumps(
+            "{'manuscript_ids': '123723', 'data': [{'folio': '001r', 'uri': 'x'}, ...]}"
+        )
+        self.assertEqual(task_manuscript_ids(truncated), [123723])
+
+    def test_unreadable_values_give_nothing(self) -> None:
+        for raw in (
+            None,
+            "",
+            "garbage",
+            "[1, 2]",
+            "{'other': 1}",
+            "{'manuscript_ids': ['x']}",
+        ):
+            with self.subTest(raw=raw):
+                self.assertEqual(task_manuscript_ids(raw), [])
+
+    def test_code_is_never_executed(self) -> None:
+        with patch("os.system") as system:
+            self.assertEqual(
+                task_manuscript_ids("__import__('os').system('touch /tmp/pwned')"), []
+            )
+            self.assertEqual(
+                task_manuscript_ids(
+                    json.dumps("{'manuscript_ids': __import__('os').system('x')}")
+                ),
+                [],
+            )
+        system.assert_not_called()
+
+
+class TaskResultAdminTestCase(TestCase):
+    fixtures = ["1_users"]
+
+    def test_the_task_list_survives_unreadable_kwargs(self) -> None:
+        manuscript = Manuscript.objects.create(id=123723, siglum="CDN-Hsmu M2149.L4")
+        TaskResult.objects.create(
+            task_id="received",
+            status="RECEIVED",
+            task_name="import-chants",
+            task_kwargs="{'manuscript_ids': [123723]}",
+        )
+        TaskResult.objects.create(
+            task_id="truncated",
+            status="SUCCESS",
+            task_name="map-folios",
+            task_kwargs=json.dumps("{'manuscript_ids': '123723', 'data': [{'fo..."),
+        )
+        TaskResult.objects.create(
+            task_id="garbage", status="FAILURE", task_name="x", task_kwargs="garbage"
+        )
+        self.client.login(username="ahankins", password="hahaha")
+        response = self.client.get(
+            reverse("admin:django_celery_results_taskresult_changelist")
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, str(manuscript))
+
+    def test_folio_mapping_tasks_store_a_short_kwargs_repr(self) -> None:
+        Manuscript.objects.create(id=123723, siglum="CDN-Hsmu M2149.L4")
+        request = RequestFactory().post(
+            "/admin/map_folios/",
+            {"manuscript_id": "123723", "https://images.example/1": "001r"},
+        )
+        with patch("cantusdata.views.map_folios.map_folio_task") as task:
+            _save_mapping(request)
+        options = task.apply_async.call_args.kwargs
+        self.assertEqual(options["kwargsrepr"], "{'manuscript_ids': '123723'}")
+        self.assertEqual(
+            options["kwargs"]["data"],
+            [{"folio": "001r", "uri": "https://images.example/1"}],
+        )
