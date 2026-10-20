@@ -149,11 +149,9 @@ Import the manuscripts and chants
 ```sh
 # Import the manuscripts
 $ docker-compose exec app python manage.py import_data manuscripts
-Deleting old manuscripts data...
-Starting manuscript import process.
+Fetching sources from CANTUS Database...
 # It should take about 5 minutes to import the data.
-Successfully imported 155 manuscripts into database.
-Waiting for Solr to finish...
+Created 155, updated 0, unchanged 0, failed 0, pruned 0.
 Done.
 
 # Import the IIIF manifest urls
@@ -162,6 +160,8 @@ Deleting old iiif data...
 Waiting for Solr to finish...
 Done.
 ```
+
+`import_data manuscripts` is safe to run again on a live site to pick up changes from CANTUS Database. It updates each manuscript's CANTUS Database metadata in place and never touches what was set up here: visibility, imported chants, folio mappings, manifests or plugins. Sources that have disappeared from CANTUS Database are only listed. Add `--prune` to delete those of them that have nothing local attached (no chants, folios, manifest, plugins or MEI submissions, and not public). If more than a fifth of the sources fail to download, nothing is changed.
 
 An additional command is included to import chants associated with a specific manuscript
 
