@@ -84,15 +84,24 @@ class _PublicManuscripts:
 
     def __init__(self) -> None:
         self._lock = threading.Lock()
-        self._loaded_at = 0.0
+        # None until the first load. Not 0.0: time.monotonic() counts from
+        # boot, so on a machine up for less than TTL_SECONDS a zero would look
+        # fresh and the snapshot would never load.
+        self._loaded_at: Optional[float] = None
         self._ids: frozenset[str] = frozenset()
         self._manifest_hosts: frozenset[str] = frozenset()
 
+    def _is_fresh(self) -> bool:
+        return (
+            self._loaded_at is not None
+            and time.monotonic() - self._loaded_at < self.TTL_SECONDS
+        )
+
     def _refresh_if_stale(self) -> None:
-        if time.monotonic() - self._loaded_at < self.TTL_SECONDS:
+        if self._is_fresh():
             return
         with self._lock:
-            if time.monotonic() - self._loaded_at < self.TTL_SECONDS:
+            if self._is_fresh():
                 return
             # Imported here: labels is imported while the app registry loads.
             from cantusdata.models.manuscript import Manuscript
@@ -124,7 +133,7 @@ class _PublicManuscripts:
 
     def reset(self) -> None:
         """Forget the snapshot (for tests, which create manuscripts)."""
-        self._loaded_at = 0.0
+        self._loaded_at = None
 
 
 public_manuscripts = _PublicManuscripts()
