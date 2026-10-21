@@ -51,7 +51,7 @@ export default Marionette.Object.extend({
                 },
                 {
                     name: 'Pitch (invariant)',
-                    type: 'pitch_names_invariant'
+                    type: 'pitch_names_transposed'
                 },
                 {
                     name: 'Contour',
