@@ -1,11 +1,8 @@
-from django.db import models
+from django.db import models, transaction
 from django.db.models.query import QuerySet
-from django.core.management import call_command
 from django.utils.text import slugify
-import threading
 
 from cantusdata.models.neume_exemplar import NeumeExemplar
-from cantusdata.metrics.events import counting_failures
 
 
 class IsMapped(models.TextChoices):
@@ -67,14 +64,22 @@ class Manuscript(models.Model):
         )
 
         if (self.public != self._last_public_value) and self.chants_loaded:
-            # The public property has changed, we need to refresh the Solr chants
-            thread = threading.Thread(
-                target=counting_failures("manuscript_refresh_solr", call_command),
-                args=("refresh_solr", "chants", str(self.id)),
-                kwargs={},
+            # Each chant's Solr record carries its manuscript's visibility, so
+            # the chants must be reindexed. Only once this save is committed:
+            # before that, the worker would read the old value. robust=True
+            # keeps a broker outage from failing a save that has already been
+            # committed (cantus_solr_chant_visibility_mismatch reports it).
+            # Imported here: the tasks module imports other apps' models.
+            from cantusdata.tasks import refresh_manuscript_chants_task
+
+            manuscript_ids = [self.pk]
+            transaction.on_commit(
+                lambda: refresh_manuscript_chants_task.apply_async(
+                    kwargs={"manuscript_ids": manuscript_ids}
+                ),
+                robust=True,
             )
-            thread.start()
-            self._last_public_value = self.public
+        self._last_public_value = self.public
 
     def __str__(self):
         return "{}, {}".format(self.provenance, self.siglum)

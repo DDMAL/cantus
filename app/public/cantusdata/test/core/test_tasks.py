@@ -8,10 +8,14 @@ from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 from solr.core import SolrConnection  # type: ignore
 
-from cantusdata.models import Folio, Manuscript, MEISubmission
+from cantusdata.models import Chant, Folio, Manuscript, MEISubmission
 from cantusdata.models.mei_submission import SubmissionStatus
 from cantusdata.models.plugin import Plugin
-from cantusdata.tasks import NOTATION_SEARCH_PLUGINS, publish_mei_submission_task
+from cantusdata.tasks import (
+    NOTATION_SEARCH_PLUGINS,
+    publish_mei_submission_task,
+    refresh_manuscript_chants_task,
+)
 
 MEI_FIXTURE = path.join(
     settings.TEST_MEI_FILES_PATH, "123723", "cdn-hsmu-m2149l4_001r.mei"
@@ -298,3 +302,29 @@ class PublishMEISubmissionTaskTestCase(TestCase):
         self.publish(submission)
         written = listdir(path.join(self.mei_dir, "123723"))
         self.assertEqual(written, ["cdn-hsmu-m2149l4_001r.mei"])
+
+
+class RefreshManuscriptChantsTaskTestCase(TestCase):
+    solr_conn = SolrConnection(settings.SOLR_TEST_SERVER)
+
+    def tearDown(self) -> None:
+        self.solr_conn.delete_query("type:cantusdata_chant AND manuscript_id:4343")
+        self.solr_conn.commit()
+
+    def test_chants_take_their_manuscripts_current_visibility(self) -> None:
+        manuscript = Manuscript.objects.create(
+            id=4343, name="Visibility", public=True, chants_loaded=True
+        )
+        folio = Folio.objects.create(number="001r", manuscript=manuscript)
+        for sequence in (1, 2):
+            Chant.objects.create(manuscript=manuscript, folio=folio, sequence=sequence)
+        # Behind Solr's back, so only the task can bring the chants in line.
+        Manuscript.objects.filter(pk=4343).update(public=False)
+
+        refresh_manuscript_chants_task.apply(kwargs={"manuscript_ids": [4343]})
+
+        indexed = self.solr_conn.query(
+            "type:cantusdata_chant AND manuscript_id:4343", rows=10, fields="public"
+        )
+        self.assertEqual(indexed.numFound, 2)
+        self.assertEqual({doc["public"] for doc in indexed.results}, {False})

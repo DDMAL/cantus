@@ -94,6 +94,9 @@ class Command(BaseCommand):
                     objects = model.objects.filter(id__in=manuscript_ids)
                 else:
                     objects = model.objects.filter(manuscript__id__in=manuscript_ids)
+            if model == Chant:
+                # A chant's Solr record reads its manuscript and folio.
+                objects = objects.select_related("manuscript", "folio")
 
             solr_records = []
             nb_obj = len(objects)

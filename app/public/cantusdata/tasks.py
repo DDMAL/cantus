@@ -202,6 +202,21 @@ def write_submission_to_mei_dir(submission):
     return destination
 
 
+@app.task(name="refresh-manuscript-chants", bind=True)
+def refresh_manuscript_chants_task(self, *args, **kwargs):
+    """
+    Reindex a manuscript's chants after its visibility changed.
+
+    kwargs:
+        manuscript_ids: [<manuscript id>], also read by the Task Results admin.
+    """
+    call_command(
+        "refresh_solr",
+        record_type="chants",
+        manuscript_ids=[str(pk) for pk in kwargs["manuscript_ids"]],
+    )
+
+
 @app.task(name="map-folios", bind=True)
 def map_folio_task(self, *args, **kwargs):
     try:

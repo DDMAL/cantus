@@ -1,9 +1,12 @@
+from unittest.mock import patch
+
 import solr
 
-from django.test import TransactionTestCase
+from django.test import TestCase, TransactionTestCase
 from django.conf import settings
 
 from cantusdata.models.manuscript import Manuscript
+from cantusdata.tasks import refresh_manuscript_chants_task
 from cantusdata.models.chant import Chant
 from cantusdata.models.folio import Folio
 
@@ -109,3 +112,44 @@ class ManuscriptModelTestCase(TransactionTestCase):
 
         indexed = solrconn.query("type:cantusdata_manuscript AND item_id:{}".format(pk))
         self.assertEqual(indexed.numFound, 0)
+
+
+class ManuscriptVisibilityChangeTestCase(TestCase):
+    """
+    Each chant's Solr record carries its manuscript's visibility, so a change
+    to `public` has to reindex the chants -- after the save commits, or the
+    worker would read the old value.
+    """
+
+    def setUp(self):
+        Manuscript.objects.create(
+            id=4242, name="Toggled", public=True, chants_loaded=True
+        )
+
+    def save_with(self, **fields):
+        manuscript = Manuscript.objects.get(pk=4242)
+        for field, value in fields.items():
+            setattr(manuscript, field, value)
+        manuscript.save()
+        return manuscript
+
+    def test_a_visibility_change_reindexes_after_commit(self):
+        with patch.object(refresh_manuscript_chants_task, "apply_async") as dispatch:
+            with self.captureOnCommitCallbacks() as callbacks:
+                self.save_with(public=False)
+            dispatch.assert_not_called()
+            for callback in callbacks:
+                callback()
+        dispatch.assert_called_once_with(kwargs={"manuscript_ids": [4242]})
+
+    def test_saves_that_keep_visibility_reindex_nothing(self):
+        with patch.object(refresh_manuscript_chants_task, "apply_async") as dispatch:
+            with self.captureOnCommitCallbacks(execute=True):
+                self.save_with(name="Renamed")
+        dispatch.assert_not_called()
+
+    def test_manuscripts_without_chants_reindex_nothing(self):
+        with patch.object(refresh_manuscript_chants_task, "apply_async") as dispatch:
+            with self.captureOnCommitCallbacks(execute=True):
+                self.save_with(chants_loaded=False, public=False)
+        dispatch.assert_not_called()
