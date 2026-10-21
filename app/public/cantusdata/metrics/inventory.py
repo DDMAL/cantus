@@ -305,17 +305,23 @@ class InventoryCollector(Collector):
     def _solr_families(self) -> list[Metric]:
         from cantusdata.models import Manuscript
 
-        manuscript_ids = list(
+        tracked = list(
             Manuscript.objects.filter(
                 Q(public=True) | Q(chants_loaded=True)
-            ).values_list("pk", flat=True)
+            ).values_list("pk", "public", "chants_loaded")
         )
         # manuscript_id is a point field without docValues, which Solr will not
-        # facet on, so n-grams are counted with one facet query per manuscript
-        # instead -- all in the same request as the document types.
-        ngram_queries = {
-            f"type:omr_ngram AND manuscript_id:{pk}": str(pk) for pk in manuscript_ids
-        }
+        # facet on, so per-manuscript counts are facet queries instead -- all in
+        # the same request as the document types. Each query maps back to the
+        # family and manuscript it counts for.
+        queries: dict[str, tuple[str, str]] = {}
+        for pk, public, chants_loaded in tracked:
+            queries[f"type:omr_ngram AND manuscript_id:{pk}"] = ("ngrams", str(pk))
+            if chants_loaded:
+                # Chants whose Solr visibility differs from their manuscript's.
+                visible = "true" if public else "false"
+                query = f"type:cantusdata_chant AND manuscript_id:{pk} AND -public:{visible}"
+                queries[query] = ("visibility", str(pk))
         response = solr_get(
             "inventory",
             {
@@ -325,7 +331,7 @@ class InventoryCollector(Collector):
                 "facet.field": "type",
                 "facet.limit": -1,
                 "facet.mincount": 1,
-                "facet.query": list(ngram_queries),
+                "facet.query": list(queries),
             },
             timeout=SOLR_TIMEOUT_SECONDS,
         )
@@ -345,6 +351,14 @@ class InventoryCollector(Collector):
             "Notation-search n-gram documents indexed, per manuscript (0: none).",
             labels=["manuscript_id"],
         )
+        visibility = GaugeMetricFamily(
+            "cantus_solr_chant_visibility_mismatch",
+            "Chants whose visibility in Solr differs from their manuscript's "
+            "(should be 0: search would show or hide them wrongly).",
+            labels=["manuscript_id"],
+        )
+        families = {"ngrams": ngrams, "visibility": visibility}
         for query, count in facets.get("facet_queries", {}).items():
-            ngrams.add_metric([ngram_queries[query]], count)
-        return [documents, ngrams]
+            family, manuscript_id = queries[query]
+            families[family].add_metric([manuscript_id], count)
+        return [documents, ngrams, visibility]

@@ -91,6 +91,16 @@ class InventoryCollectorTestCase(TestCase):
         self.assertEqual(value("cantus_db_records", record_type="chant"), 2)
         self.assertEqual(value("cantus_django_unapplied_migrations"), 0)
 
+    def test_chants_with_stale_visibility_are_counted(self) -> None:
+        key = (
+            "cantus_solr_chant_visibility_mismatch",
+            frozenset({("manuscript_id", str(self.live.pk))}),
+        )
+        self.assertEqual(self.collect()[key], 0)
+        # Hidden in the database, still visible in Solr.
+        Manuscript.objects.filter(pk=self.live.pk).update(public=False)
+        self.assertEqual(self.collect()[key], 2)
+
     def test_solr_side_is_read_without_errors(self) -> None:
         samples = self.collect()
         # The Solr test core is shared by the whole run, so other tests' records
