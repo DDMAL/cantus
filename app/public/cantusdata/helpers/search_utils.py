@@ -3,7 +3,50 @@ A collection of functions used by search views to validate and process
 queries.
 """
 
+import re
+import unicodedata
+from typing import Optional
+
 from cantusdata.helpers.neume_helpers import NEUME_NAMES
+
+# Volpiano note characters and the pitch names they represent. Uppercase
+# letters are liquescent forms of the same pitch; "(" and ")" are the
+# liquescent forms of "8" and "9".
+VOLPIANO_PITCH_NAMES: dict[str, str] = {
+    "8": "f",
+    "9": "g",
+    "a": "a",
+    "b": "b",
+    "c": "c",
+    "d": "d",
+    "e": "e",
+    "f": "f",
+    "g": "g",
+    "h": "a",
+    "j": "b",
+    "k": "c",
+    "l": "d",
+    "m": "e",
+    "n": "f",
+    "o": "g",
+    "p": "a",
+    "q": "b",
+    "r": "c",
+    "s": "d",
+}
+VOLPIANO_PITCH_NAMES.update(
+    {
+        char.upper(): pname
+        for char, pname in VOLPIANO_PITCH_NAMES.items()
+        if char.isalpha()
+    }
+)
+VOLPIANO_PITCH_NAMES.update({"(": "f", ")": "g"})
+
+# Volpiano characters that are not notes: clefs, spacing, barlines, and
+# flat/natural signs. OMR n-grams store pitch names without accidentals,
+# so none of these can narrow a search of the MEI.
+VOLPIANO_IGNORED_CHARS = set("12-34567 iwxyzIWXYZ")
 
 
 def validate_intervals_query_word(word: str) -> bool:
@@ -73,6 +116,28 @@ def get_transpositions(sequence: list[str]) -> list[list[str]]:
     return transpositions
 
 
+def volpiano_to_pitch_names(volpiano: str) -> Optional[list[str]]:
+    """
+    Convert a Volpiano string into the sequence of pitch names it contains,
+    so that it can be searched against OMR n-grams.
+
+    Octave is dropped (OMR n-grams do not record it), and clefs, spacing,
+    barlines and accidentals are skipped (see VOLPIANO_IGNORED_CHARS).
+
+    e.g. volpiano_to_pitch_names("1---f--gh--3") returns ["f", "g", "a"]
+
+    :return: the pitch names, or None if the string contains a character
+        that is not Volpiano or contains no notes
+    """
+    pitch_names: list[str] = []
+    for char in volpiano:
+        if char in VOLPIANO_PITCH_NAMES:
+            pitch_names.append(VOLPIANO_PITCH_NAMES[char])
+        elif char not in VOLPIANO_IGNORED_CHARS:
+            return None
+    return pitch_names or None
+
+
 def translate_interval_query_direction(query_terms: list[str]) -> list[str]:
     """
     Translate the terms of an interval query (alphanumeric strings; e.g. "u3", "d2", "r")
@@ -101,3 +166,25 @@ def translate_interval_query_direction(query_terms: list[str]) -> list[str]:
             magnitude = term[1:]
             solr_query.append(f"{direction}{magnitude}")
     return solr_query
+
+
+def normalize_search_text(text: str, join_syllables: bool = True) -> str:
+    """
+    Reduce text to space-separated lowercase ASCII words, so that OCR'd chant
+    text and a user's query can be compared.
+
+    With `join_syllables`, hyphens and line-continuation marks ("¬") join the
+    syllables around them, even across a line break, so hyphenated chant text
+    ("Mi- se-rére") matches the whole word ("miserere"). Without it, they
+    separate syllables, so text is matched as printed. Accents are dropped and
+    "æ"/"œ" are spelled out, since editions and users differ in whether they
+    write them.
+
+    e.g. normalize_search_text("Ps. 50. Mi- se-rére mé-i,") returns
+    "ps 50 miserere mei", or "ps 50 mi se rere me i" without join_syllables
+    """
+    text = unicodedata.normalize("NFKD", text.lower())
+    text = "".join(char for char in text if not unicodedata.combining(char))
+    text = text.replace("æ", "ae").replace("œ", "oe")
+    text = re.sub(r"[-¬]\s*", "" if join_syllables else " ", text)
+    return " ".join(re.findall(r"[a-z0-9]+", text))
