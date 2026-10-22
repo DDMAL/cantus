@@ -1,10 +1,11 @@
 import time
 
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from cantusdata.serializers.search import SearchSerializer
-from cantusdata.helpers.solrsearch import SolrSearch
+from cantusdata.helpers.solrsearch import InvalidSearch, SolrSearch
 from cantusdata.metrics.definitions import (
     SEARCH_REQUESTS,
     SEARCH_RESULT_OFFSET,
@@ -28,10 +29,14 @@ class SearchView(APIView):
     def get(self, request, *args, **kwargs):
         querydict = request.GET
 
-        s = SolrSearch(request, {"public": "true"})
-
-        if not querydict:
+        # ?format=json alone (DRF's format override) is still an empty search.
+        if not any(key != "format" for key in querydict):
             return Response({"query": "", "numFound": 0, "results": []})
+
+        try:
+            s = SolrSearch(request, {"public": "true"})
+        except InvalidSearch as error:
+            return Response({"detail": str(error)}, status=status.HTTP_400_BAD_REQUEST)
 
         # Search for fifteen rows by default
         s.solr_params.setdefault("rows", 15)
@@ -68,7 +73,7 @@ class SearchView(APIView):
             )
 
         result = {
-            "query": querydict["q"],
+            "query": query,
             "numFound": search_results.numFound,
             "results": search_results,
         }

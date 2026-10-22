@@ -3,6 +3,10 @@ import urllib.parse
 from cantusdata.helpers.solr_client import InstrumentedSolr, make_solr
 
 
+class InvalidSearch(ValueError):
+    """A search request with parameters that cannot be turned into a query."""
+
+
 class SolrSearch(object):
     """
     This class is a helper class for translating between query parameters
@@ -35,6 +39,11 @@ class SolrSearch(object):
         self.parsed_request = {}
         self.prepared_query = ""
         self.solr_params = {}
+        # Restrictions the caller imposes (e.g. public:true). Sent as filter
+        # queries, never joined to the user's query: a q starting with local
+        # params ({!lucene v=...}) makes Solr ignore the rest of that string,
+        # but cannot touch an fq. Kept out of solr_params, which views echo.
+        self.filter_queries = []
         self._parse_request()
         self._prepare_query()
 
@@ -68,7 +77,9 @@ class SolrSearch(object):
         return res
 
     def _do_query(self):
-        return self.server.select(self.prepared_query, **self.solr_params)
+        return self.server.select(
+            self.prepared_query, fq=self.filter_queries, **self.solr_params
+        )
 
     def _parse_request(self):
         qdict = self.request.GET
@@ -79,7 +90,7 @@ class SolrSearch(object):
         arr = []
         if self.additional_query_params:
             for k, v in self.additional_query_params.items():
-                arr.append("{0}:({1})".format(k, v))
+                self.filter_queries.append("{0}:({1})".format(k, v))
         if self.parsed_request:
             for k, v in self.parsed_request.items():
                 if not v:
@@ -87,8 +98,15 @@ class SolrSearch(object):
                 if k == "q":
                     if v[0] != "":
                         arr.insert(0, "{0}".format(v[0]))
+                elif k == "format":
+                    # DRF's format override (?format=json), not a field.
+                    continue
                 elif k in ("start", "rows"):
                     # Start and row parameters are single integers
+                    if not v[0].isdigit():
+                        raise InvalidSearch(
+                            f"{k} must be a non-negative integer, not {v[0]!r}."
+                        )
                     self.solr_params[k] = int(v[0])
                 elif k == "sort":
                     # Treat sort as a string, not a one-element tuple
