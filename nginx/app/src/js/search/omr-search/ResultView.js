@@ -57,6 +57,16 @@ export default Marionette.CollectionView.extend({
         // We can't use the events hash for this because it relies on events
         // bubbling, and the scroll event does not bubble
         this.ui.tableWrapper.on('scroll', this._handleScroll);
+
+        // On a tall screen the first rows may not fill the panel, leaving
+        // nothing to scroll, so also check whenever the list changes size. Do
+        // it on the next frame, or the browser logs a ResizeObserver error.
+        this._resizeObserver = new ResizeObserver(() => requestAnimationFrame(() => this._loadResultsIfAtEnd()));
+        this._resizeObserver.observe(this.ui.tableWrapper[0]);
+    },
+
+    onDestroy: function () {
+        this._resizeObserver.disconnect();
     },
 
     /**
@@ -64,7 +74,13 @@ export default Marionette.CollectionView.extend({
      * @private
      */
     _loadResultsIfAtEnd: function () {
-        if (lastChildVisible(this, this.ui.tableWrapper))
+        // A queued frame or throttled scroll call can run after the view is
+        // destroyed, when this.ui holds selectors instead of elements.
+        if (this.isDestroyed())
+            return;
+
+        // A hidden list reports every row as in view, which would load them all.
+        if (this.ui.tableWrapper.is(':visible') && lastChildVisible(this, this.ui.tableWrapper))
             this.trigger('continue:loading');
     }
 });
