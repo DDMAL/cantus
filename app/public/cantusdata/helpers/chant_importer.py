@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import transaction
 from cantusdata.models.chant import Chant
 from cantusdata.models.folio import Folio
@@ -120,18 +119,5 @@ class ChantImporter:
                     )
 
     def _delete_existing_chants(self):
-        manuscript_pks = set(
-            chant.manuscript.pk for (chant, _, _) in self.new_chant_info
-        )
-        if settings.DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
-            # sqlite has trouble with bulk deletion so we need to delete in increments
-            increment = 100
-            chants = [
-                chant.pk
-                for chant in Chant.objects.filter(manuscript__pk__in=manuscript_pks)
-            ]
-            for i in range(0, len(chants), increment):
-                # Can't delete a slice so we need to query again
-                Chant.objects.filter(pk__in=chants[i : i + increment]).delete()
-        else:
-            Chant.objects.filter(manuscript__pk__in=manuscript_pks).delete()
+        # Chants only: folios are reused, and carry the image mapping.
+        Chant.objects.filter(manuscript=self.manuscript).delete()

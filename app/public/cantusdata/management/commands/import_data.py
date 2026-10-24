@@ -35,6 +35,8 @@ MAX_FAILED_FRACTION = 0.2
 # --prune trusts the source list only if it is at least this much of what we
 # already have; a truncated list must not read as mass deletion.
 MIN_LISTED_FRACTION_FOR_PRUNE = 0.5
+# Known IIIF manifests by siglum, applied by `import_data iiif`.
+MANIFESTS_CSV = BASE_DIR / "data_dumps" / "manifests.csv"
 
 
 class Command(BaseCommand):
@@ -71,28 +73,20 @@ class Command(BaseCommand):
             self.stdout.write("Done.")
             return
         with solr_synchronizer.get_session():
-            self.stdout.write(f"Deleting old {options['type']} data...")
             task = options.get("task", None)
             if options["type"] == "chants":
                 # manuscript-id is not optional for chants
                 if options["manuscript_id"] is None:
                     self.stdout.write("Please provide a manuscript-id. Doing nothing.")
-                else:
-                    if task:
-                        task.update_state(
-                            state="STARTED",
-                            meta={"chants_processed": 0, "chants_loaded": 0},
-                        )
-                    Chant.objects.filter(
-                        manuscript__id=options["manuscript_id"]
-                    ).delete()
-                    self.stdout.write("Deleting old folio data...")
-                    Folio.objects.filter(
-                        manuscript__id=options["manuscript_id"]
-                    ).delete()
-                    self.import_chant_data(**options)
+                    return
+                if task:
+                    task.update_state(
+                        state="STARTED",
+                        meta={"chants_processed": 0, "chants_loaded": 0},
+                    )
+                self.import_chant_data(**options)
             elif options["type"] == "iiif":
-                Manuscript.objects.all().update(manifest_url="")
+                self.stdout.write("Applying manifests...")
                 self.import_iiif_data()
             self.stdout.write("Waiting for Solr to finish...")
         # Register that chants are loaded for this manuscript
@@ -240,13 +234,16 @@ class Command(BaseCommand):
         return blockers
 
     def import_chant_data(self, **options):
+        """
+        Replace a manuscript's chants with CANTUS Database's current export.
+
+        The export is downloaded before anything changes, and the old chants are
+        replaced in one transaction, so a failure at any point leaves them as
+        they were. Folios are never deleted: they carry the image mapping, neume
+        exemplars and MEI submissions, and the importer reuses them.
+        """
         mobj = Manuscript.objects.get(id=options["manuscript_id"])
-        with track_external("cantusdb", mobj.csv_export_url):
-            scsv = (
-                urllib.request.urlopen(mobj.csv_export_url, timeout=CANTUSDB_TIMEOUT)
-                .read()
-                .decode("utf-8")
-            )
+        scsv = self._download_chant_csv(mobj)
         task = options.get("task", None)
         # csv module can't handle csv as strings, so making it a file
         fcsv = StringIO(scsv)
@@ -255,23 +252,92 @@ class Command(BaseCommand):
             chant_count = importer.import_csv(fcsv, task)
         else:
             chant_count = importer.import_csv(fcsv)
-        # Save the new chants
-        importer.save(task=task)
+        # Replace the old chants with the new ones
+        importer.save(delete_existing=True, task=task)
         CHANTS_IMPORTED.labels(str(mobj.pk)).inc(chant_count)
         self.stdout.write(f"Successfully imported {chant_count} chants into database.")
+        self._report_folios(mobj, importer.new_folios)
 
-    @transaction.atomic
+    def _download_chant_csv(self, mobj):
+        with track_external("cantusdb", mobj.csv_export_url):
+            return (
+                urllib.request.urlopen(mobj.csv_export_url, timeout=CANTUSDB_TIMEOUT)
+                .read()
+                .decode("utf-8")
+            )
+
+    def _report_folios(self, mobj, new_folios):
+        """List the folios an admin may need to look at after an import."""
+        stale = Folio.objects.filter(manuscript=mobj, chant__isnull=True).order_by(
+            "number"
+        )
+        if stale:
+            self.stdout.write(
+                f"{len(stale)} folio(s) have no chants after this import and were "
+                "kept: "
+                + ", ".join(
+                    f"{folio.number}{' (mapped)' if folio.image_uri else ''}"
+                    for folio in stale
+                )
+            )
+        if new_folios:
+            numbers = ", ".join(folio.number for folio in new_folios)
+            if mobj.is_mapped == "MAPPED":
+                self.stdout.write(
+                    f"{len(new_folios)} new folio(s) have no image yet; map them "
+                    f"with Map Folios in the admin: {numbers}"
+                )
+            else:
+                self.stdout.write(f"{len(new_folios)} new folio(s): {numbers}")
+
     def import_iiif_data(self):
-        with open(
-            f"{BASE_DIR}/data_dumps/manifests.csv", "r", encoding="utf-8"
-        ) as file:
-            iiif_reader = csv.DictReader(file)
+        """
+        Fill in missing manifest URLs from MANIFESTS_CSV.
 
-            for row in iiif_reader:
-                siglum = row["siglum"]
-                manifest_url = row["manifest_url"]
-                qs = Manuscript.objects.filter(siglum=siglum)
-                if len(qs) > 0:
-                    mobj = qs[0]
-                    mobj.manifest_url = manifest_url
-                    mobj.save()
+        A manifest already set is never overwritten: it may have been entered or
+        corrected by hand, and the manuscript's folio mapping was made against
+        it. Differences are listed for someone to settle deliberately.
+        """
+        with open(MANIFESTS_CSV, "r", encoding="utf-8") as file:
+            rows = [
+                (row["siglum"].strip(), row["manifest_url"].strip())
+                for row in csv.DictReader(file)
+            ]
+        filled = unchanged = 0
+        differs, unmatched, ambiguous = [], [], []
+        with transaction.atomic():
+            for siglum, manifest_url in rows:
+                matches = list(Manuscript.objects.filter(siglum=siglum))
+                if not matches:
+                    unmatched.append(siglum)
+                    continue
+                if len(matches) > 1:
+                    ambiguous.append(siglum)
+                    continue
+                (manuscript,) = matches
+                current = (manuscript.manifest_url or "").strip()
+                if not current:
+                    manuscript.manifest_url = manifest_url
+                    manuscript.save(update_fields=["manifest_url"])
+                    filled += 1
+                elif current == manifest_url:
+                    unchanged += 1
+                else:
+                    differs.append((manuscript, current, manifest_url))
+        self.stdout.write(
+            f"Filled {filled}, unchanged {unchanged}, kept {len(differs)} that "
+            f"differ, {len(unmatched)} unmatched, {len(ambiguous)} ambiguous."
+        )
+        for manuscript, current, manifest_url in differs:
+            self.stdout.write(
+                f"  {manuscript.pk} {manuscript.siglum} "
+                f"({'public' if manuscript.public else 'private'}, "
+                f"{manuscript.is_mapped.lower()}) keeps {current} "
+                f"(CSV: {manifest_url})"
+            )
+        if unmatched:
+            self.stdout.write(f"  No manuscript with siglum: {', '.join(unmatched)}")
+        if ambiguous:
+            self.stdout.write(
+                f"  Several manuscripts share siglum, skipped: {', '.join(ambiguous)}"
+            )

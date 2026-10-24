@@ -156,7 +156,8 @@ Done.
 
 # Import the IIIF manifest urls
 $ docker-compose exec app python manage.py import_data iiif
-Deleting old iiif data...
+Applying manifests...
+Filled 43, unchanged 0, kept 0 that differ, 14 unmatched, 0 ambiguous.
 Waiting for Solr to finish...
 Done.
 ```
@@ -213,7 +214,7 @@ Of all the manuscripts in the list displayed in the admin interface, only a hand
 
 IIIF Manifest files can be found within libraries such as [Gallica](https://gallica.bnf.fr/accueil/en/content/accueil-en?mode=desktop), [e-codices](https://www.e-codices.unifr.ch/en), and others.
 
-A list of known manifests is maintained in `app/public/data_dumps/manifests.csv` and is automatically applied to the database by running `import_data iiif`. When a IIIF Manifest is located for a specific manuscript, the URL can be included in the manuscript's metadata manually:
+A list of known manifests is maintained in `app/public/data_dumps/manifests.csv` and is applied to the database by running `import_data iiif`. The import only fills in manuscripts that have no manifest yet: a manifest already set (entered by hand, or corrected since) is never overwritten, because the manuscript's folio mapping was made against it. Where the CSV and the database disagree, the import lists both values so that one of them can be corrected deliberately. When a IIIF Manifest is located for a specific manuscript, the URL can be included in the manuscript's metadata manually:
 
 Click on the Manuscript's entry.
 
