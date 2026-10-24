@@ -454,6 +454,23 @@ body.propagate-height {
     }
 }
 
+// OMR search-result boxes. Fills stay faint: any fill lowers the contrast
+// between ink and parchment by its alpha.
+#diva-column #diva-wrapper {
+    --diva-annotation-fill: #{rgba($brand-primary, 0.1)};
+    --diva-annotation-stroke: #555;
+    --diva-annotation-stroke-width: 1.5;
+
+    // Diva reuses the hover tokens for `.is-selected`.
+    --diva-annotation-fill-hover: #{rgba($brand-primary, 0.15)};
+    --diva-annotation-stroke-hover: #{$brand-primary};
+}
+
+// Selected OMR result row (ResultView sets table-active).
+.search-notation-result-list {
+    --bs-table-active-bg: #{rgba($brand-primary, 0.12)};
+}
+
 .modal-dialog {
     max-width: 90%;
     width: 50%;

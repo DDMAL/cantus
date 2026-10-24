@@ -34,6 +34,16 @@ export default Marionette.CollectionView.extend({
         this._handleScroll = _.throttle(_.bind(this._loadResultsIfAtEnd, this), 250);
     },
 
+    setSelectedResult: function (model) {
+        this.children.each(function (childView) {
+            childView.$el.toggleClass('table-active', childView.model === model);
+        });
+
+        var selectedView = model && this.children.findByModel(model);
+        if (selectedView)
+            selectedView.el.scrollIntoView({ block: 'nearest' });
+    },
+
     updateTable: function () {
         if (this.collection.length) {
             this.ui.tableWrapper.show();

@@ -98,6 +98,7 @@ export default Marionette.View.extend({
         this.divaAdapter.on("viewer:loaded", this.propagateFolioChange);
         this.divaAdapter.on("page:changed", this.propagateFolioChange);
         this.divaAdapter.on("manifest:loaded", this.onManifestLoad);
+        this.divaAdapter.on("highlight:selected", selection => manuscriptChannel.trigger('highlight:selected', selection));
     },
 
     /**
