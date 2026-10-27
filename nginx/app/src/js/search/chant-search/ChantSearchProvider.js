@@ -68,12 +68,22 @@ export default Marionette.Object.extend({
      *   search type is Volpiano) the chant's Volpiano
      * - `restriction`: object with field: value mappings of restrictions
      *   to apply to all queries made by the controller
+     * - `unavailableReason`: if given, chant records cannot be searched for
+     *   this source (e.g. it has none), so every field is disabled, with
+     *   this as the reason shown to the user
      */
     initialize: function () {
         _.bindAll(this, 'search', 'setRestriction', 'getSearchMetadata');
 
         // Set options
         this.restrictions = this.getOption('restrictions') || {};
+
+        var unavailableReason = this.getOption('unavailableReason');
+        if (unavailableReason) {
+            this.fields = _.map(this.fields, function (field) {
+                return _.extend({}, field, { disabled: true, disabledReason: unavailableReason });
+            });
+        }
 
         // Initialize search input model
         this.searchParameters = new SearchInput();

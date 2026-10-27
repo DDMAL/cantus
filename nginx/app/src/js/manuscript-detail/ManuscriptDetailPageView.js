@@ -112,7 +112,9 @@ export default Marionette.View.extend({
 
         // Initialize the search view
         var chantSearchProvider = new ChantSearchProvider({
-            additionalResultFields: ['genre', 'mode', 'feast', 'office', 'position']
+            additionalResultFields: ['genre', 'mode', 'feast', 'office', 'position'],
+            unavailableReason: this.model.get('chants_loaded') ? null :
+                'This manuscript has no chant records from Cantus Database'
         });
 
         chantSearchProvider.setRestriction('manuscript_id', '"' + this.model.get("id") + '"');

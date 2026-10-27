@@ -10,8 +10,11 @@
                         <%- provider.description %>
                     </li>
                     <% _.forEach(provider.fields, function (field, fieldIndex) { %>
-                    <li>
-                        <a href="#" class="dropdown-item" data-provider-index="<%= providerIndex %>" data-field-index="<%= fieldIndex %>">
+                    <% // The reason goes on the li: a disabled item takes no pointer events, so its own title never shows %>
+                    <li<% if (field.disabled) { %> title="<%- field.disabledReason %>"<% } %>>
+                        <a href="#" class="dropdown-item<%= field.disabled ? ' disabled' : '' %>"
+                           <% if (field.disabled) { %>aria-disabled="true" tabindex="-1"<% } %>
+                           data-provider-index="<%= providerIndex %>" data-field-index="<%= fieldIndex %>">
                             <%- field.name %>
                         </a>
                     </li>
