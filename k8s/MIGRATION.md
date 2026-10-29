@@ -325,8 +325,10 @@ namespace, and the monitors match only the production labels (`app: app`, not
 | `cantus-metrics-exporter` | `metrics-exporter/` Deployment: inventory gauges from Postgres + Solr, scraped every 60s | 9102 |
 | `cantus-rabbitmq` | built-in `rabbitmq_prometheus` plugin (`/metrics` and per-queue `/metrics/detailed`) | 15692 |
 | `cantus-solr` | `solr-exporter` sidecar in the Solr StatefulSet | 9854 |
+| `cantus-edge` | `monitoring/edge-probe.yaml`: the cluster's blackbox exporter fetching `/`, `/manuscripts/?format=json` and `/search/?q=kyrie&format=json` from outside, every 60s | — |
 
-None of these ports goes through nginx or the ingress.
+None of these ports goes through nginx or the ingress; `cantus-edge` is the
+one check that does.
 
 Apply **after** the merge that adds the metrics code has deployed, the reverse
 of the MEI-files order: the celery Deployment now runs `/code/celery-worker.sh`,
@@ -358,6 +360,27 @@ Verify that all five jobs are UP at http://prometheus.internal.simssa.ca/
 
 ```bash
 kubectl exec deploy/app -n cantus-ultimus -- curl -s localhost:9100/metrics | grep -c '^cantus_'
+```
+
+### Alerts
+
+`monitoring/alerts.yaml` is a PrometheusRule (`cantus-ultimus-alerts`) on the
+metrics above. Each alert's `description` says what to check. Every alert is
+labelled `service: cantus-ultimus`, which Alertmanager routes to
+`#cantus-ultimus-alerts`. That route must come **before** the global
+`severity = "critical"` route in the Alertmanager config, or critical Cantus
+alerts go to `#alerts-critical` instead. The kube-prometheus-stack defaults
+(KubePodCrashLooping, ...) still fire for this namespace and go to the
+general channels.
+
+Check a rule change before applying it (the operator validates it again on
+the server):
+
+```bash
+python3 -c "import yaml,sys; yaml.safe_dump(yaml.safe_load(open('k8s/cantus-ultimus/monitoring/alerts.yaml'))['spec'], sys.stdout)" \
+  | docker run --rm -i --entrypoint promtool quay.io/prometheus/prometheus:v3.12.0 check rules
+kubectl apply --dry-run=server -f k8s/cantus-ultimus/monitoring/alerts.yaml
+kubectl apply -f k8s/cantus-ultimus/monitoring/alerts.yaml
 ```
 
 ---

@@ -1,0 +1,550 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cantus-ultimus-alerts
+  namespace: cantus-ultimus
+  labels:
+    release: kube-prom-stack
+# Every alert carries service: cantus-ultimus, which Alertmanager routes to
+# #cantus-ultimus-alerts. That route must come before the global
+# severity="critical" one, or critical alerts land in #alerts-critical instead.
+#
+# Counters labelled per task, route, ... only appear at their first increment,
+# which increase() cannot see (it needs two samples). "Did it happen" rules
+# therefore also catch a series that is new since the window began: in a fresh
+# pod every counter starts at 0, so a new series means it happened since.
+spec:
+  groups:
+  - name: cantus-availability
+    rules:
+    - alert: CantusSiteDown
+      expr: probe_success{job="cantus-edge"} == 0
+      for: 5m
+      labels:
+        service: cantus-ultimus
+        severity: critical
+      annotations:
+        summary: Readers cannot reach {{ $labels.instance }}
+        description: >-
+          The blackbox probe has failed for 5 minutes. The targets go one layer
+          deeper each: / is DNS, TLS, ingress, nginx and Django;
+          /manuscripts/?format=json adds Postgres; /search/?q=kyrie adds Solr.
+          If only the deepest fails, look at the dependency it adds (CantusAppDown,
+          CantusWorkloadUnavailable). If all fail, check
+          `kubectl -n cantus-ultimus get pods,ingress` and the nginx logs.
+
+    - alert: CantusAppDown
+      expr: up{job="cantus-app", env="production"} == 0
+      for: 5m
+      labels:
+        service: cantus-ultimus
+        severity: critical
+      annotations:
+        summary: The Django app is not answering its metrics port
+        description: >-
+          Prometheus cannot scrape the gunicorn master on :9100 of
+          {{ $labels.pod }}. The app is most likely down or restarting:
+          `kubectl -n cantus-ultimus describe pod {{ $labels.pod }}` and
+          `kubectl -n cantus-ultimus logs deploy/app --previous`.
+
+    - alert: CantusTargetDown
+      expr: up{job=~"cantus-(celery|metrics-exporter|rabbitmq|solr)", env="production"} == 0
+      for: 10m
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: "{{ $labels.job }} cannot be scraped"
+        description: >-
+          Prometheus has failed to scrape {{ $labels.job }} ({{ $labels.pod }})
+          for 10 minutes, so its alerts are blind. Check the pod
+          (`kubectl -n cantus-ultimus describe pod {{ $labels.pod }}`); for
+          cantus-solr the metrics come from the solr-exporter sidecar.
+
+    - alert: CantusMetricsMissing
+      expr: |
+        absent(up{job="cantus-app", env="production"})
+        or absent(up{job="cantus-celery", env="production"})
+        or absent(up{job="cantus-metrics-exporter", env="production"})
+        or absent(up{job="cantus-rabbitmq", env="production"})
+        or absent(up{job="cantus-solr", env="production"})
+      for: 15m
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: Prometheus has no {{ $labels.job }} target at all
+        description: >-
+          The ServiceMonitor or PodMonitor for {{ $labels.job }} matches nothing,
+          so none of its alerts can fire. Usually a Service or pod lost its `app`
+          label, or the monitor was deleted: compare
+          k8s/cantus-ultimus/monitoring/ with
+          `kubectl -n cantus-ultimus get servicemonitors,podmonitors`.
+
+    - alert: CantusHighErrorRate
+      expr: |
+        (
+          sum(rate(cantus_http_requests_total{env="production", status=~"5..", route!="retrieve-manifest"}[5m]))
+          / sum(rate(cantus_http_requests_total{env="production", route!="retrieve-manifest"}[5m]))
+        ) > 0.05
+        and
+        sum(increase(cantus_http_requests_total{env="production", status=~"5..", route!="retrieve-manifest"}[10m])) >= 10
+      for: 10m
+      labels:
+        service: cantus-ultimus
+        severity: critical
+      annotations:
+        summary: "{{ $value | humanizePercentage }} of requests are failing with 5xx"
+        description: >-
+          More than 5% of responses (manifest proxy excluded, see
+          CantusManifestHostFailing) have been 5xx for 10 minutes. Find the route:
+          `sum by (route, status) (rate(cantus_http_requests_total{status=~"5.."}[5m]))`,
+          then `kubectl -n cantus-ultimus logs deploy/app` for the traceback.
+
+    - alert: CantusUnhandledExceptions
+      expr: |
+        sum by (route, exception) (increase(cantus_http_exceptions_total{env="production"}[15m])) > 0
+        or
+        sum by (route, exception) (
+          cantus_http_exceptions_total{env="production"}
+          unless cantus_http_exceptions_total{env="production"} offset 15m
+        ) > 0
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: "{{ $labels.exception }} escaped a view on {{ $labels.route }}"
+        description: >-
+          A request on route {{ $labels.route }} raised {{ $labels.exception }}
+          (about {{ $value | humanize }} in 15 minutes) and the reader got a 500.
+          The traceback is in `kubectl -n cantus-ultimus logs deploy/app`.
+
+    - alert: CantusSlowResponses
+      expr: |
+        histogram_quantile(0.95,
+          sum by (le) (rate(cantus_http_request_duration_seconds_bucket{env="production", route!="retrieve-manifest"}[10m]))
+        ) > 2
+      for: 15m
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: Pages are slow, p95 is {{ $value | humanizeDuration }}
+        description: >-
+          The 95th percentile of Django response time (manifest proxy excluded)
+          has been above 2s for 15 minutes; it is normally under 0.1s. Find the
+          route with
+          `histogram_quantile(0.95, sum by (le, route) (rate(cantus_http_request_duration_seconds_bucket[10m])))`
+          and check Solr (cantus_solr_request_duration_seconds) and Postgres
+          (cantus_db_query_duration_seconds).
+
+    - alert: CantusWorkersSaturated
+      expr: |
+        avg_over_time(cantus_http_requests_in_progress{job="cantus-app", env="production"}[5m])
+        / cantus_gunicorn_workers{job="cantus-app", env="production"}
+        >= 0.9
+      for: 10m
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: All gunicorn workers are busy
+        description: >-
+          On average {{ $value | humanizePercentage }} of the sync workers have
+          been busy for 10 minutes, so new requests queue. Look for slow routes
+          (CantusSlowResponses) or a crawler burst:
+          `sum by (client) (rate(cantus_http_requests_total[5m]))`.
+
+    - alert: CantusWorkerTimeouts
+      expr: |
+        sum by (pod) (increase(cantus_gunicorn_worker_timeouts_total{env="production"}[15m])) > 0
+        or
+        sum by (pod) (
+          cantus_gunicorn_worker_timeouts_total{env="production"}
+          unless cantus_gunicorn_worker_timeouts_total{env="production"} offset 15m
+        ) > 0
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: A gunicorn worker was killed for exceeding the request timeout
+        description: >-
+          A request ran past gunicorn's 600s timeout and its worker was aborted;
+          the reader got an error. `kubectl -n cantus-ultimus logs deploy/app`
+          shows the request that was running.
+
+  - name: cantus-tasks
+    rules:
+    - alert: CantusCeleryNoConsumer
+      expr: |
+        rabbitmq_detailed_queue_consumers{job="cantus-rabbitmq", queue="celery"} == 0
+        or absent(rabbitmq_detailed_queue_consumers{job="cantus-rabbitmq", queue="celery"})
+      for: 5m
+      labels:
+        service: cantus-ultimus
+        severity: critical
+      annotations:
+        summary: No Celery worker is consuming the task queue
+        description: >-
+          Nothing consumes the `celery` queue, so chant imports, MEI publishing
+          and search reindexing after visibility changes are not running. Check
+          `kubectl -n cantus-ultimus get pods -l app=celery` and
+          `kubectl -n cantus-ultimus logs deploy/celery`. RabbitMQ has no PVC:
+          if it restarted, tasks queued before the restart are gone.
+
+    - alert: CantusCeleryQueueStalled
+      expr: |
+        sum(rabbitmq_detailed_queue_messages_ready{job="cantus-rabbitmq", queue="celery"}) > 0
+        and on ()
+        (sum(cantus_celery_tasks_in_progress{env="production"}) or on () vector(0)) == 0
+      for: 15m
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: Tasks are waiting but the Celery worker is idle
+        description: >-
+          {{ $value }} task(s) have waited in the `celery` queue for 15 minutes
+          while the worker runs nothing: it is connected but stuck. Check
+          `kubectl -n cantus-ultimus logs deploy/celery`; restarting the
+          Deployment is safe once you know why.
+
+    - alert: CantusCeleryTaskFailed
+      expr: |
+        sum by (task) (increase(cantus_celery_task_runs_total{env="production", outcome="failure"}[30m])) > 0
+        or
+        sum by (task) (
+          cantus_celery_task_runs_total{env="production", outcome="failure"}
+          unless cantus_celery_task_runs_total{env="production", outcome="failure"} offset 30m
+        ) > 0
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: Celery task {{ $labels.task }} failed
+        description: >-
+          {{ $labels.task }} raised. The admin's Task Results page has the
+          traceback; `kubectl -n cantus-ultimus logs deploy/celery` too. A failed
+          import-chants leaves the old chants in place; a failed
+          refresh-manuscript-chants will also show as CantusSolrVisibilityMismatch.
+
+    - alert: CantusCeleryTaskStuck
+      expr: max by (task) (cantus_celery_oldest_unfinished_task_age_seconds{env="production"}) > 6 * 3600
+      for: 10m
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: A {{ $labels.task }} task has not finished in {{ $value | humanizeDuration }}
+        description: >-
+          A task result has been queued or started for over 6 hours; no task
+          normally takes more than 4. It was likely lost (RabbitMQ restarted
+          without a PVC, or the worker was killed mid-task). Check the admin's
+          Task Results and re-run it from the admin if needed.
+
+    - alert: CantusRabbitMQAlarm
+      expr: |
+        label_replace(
+          {__name__=~"rabbitmq_alarms_.+", job="cantus-rabbitmq"},
+          "alarm", "$1", "__name__", "rabbitmq_alarms_(.+)"
+        ) > 0
+      for: 2m
+      labels:
+        service: cantus-ultimus
+        severity: critical
+      annotations:
+        summary: "RabbitMQ alarm: {{ $labels.alarm }}"
+        description: >-
+          RabbitMQ raised its {{ $labels.alarm }} alarm and blocks publishers, so
+          the app cannot queue tasks. Check
+          `kubectl -n cantus-ultimus exec deploy/rabbitmq -- rabbitmq-diagnostics alarms`
+          and the pod's memory and disk.
+
+    - alert: CantusMEIPublishingStuck
+      expr: max(cantus_mei_oldest_publishing_age_seconds{env="production"}) > 3600
+      for: 10m
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: An MEI submission has been publishing for {{ $value | humanizeDuration }}
+        description: >-
+          An approved MEI submission has been in PUBLISHING for over an hour;
+          publishing normally takes seconds. The publish-mei-submission task was
+          probably lost: see CantusCeleryNoConsumer, and the submission in the
+          admin.
+
+    - alert: CantusMEIReviewOverdue
+      expr: max(cantus_mei_oldest_pending_age_seconds{env="production"}) > 14 * 86400
+      for: 1h
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: An MEI submission has waited {{ $value | humanizeDuration }} for review
+        description: >-
+          The oldest pending MEI deposit is over 14 days old. Review it in the
+          admin (MEI submissions, status Pending).
+
+  - name: cantus-search-data
+    rules:
+    - alert: CantusSolrIndexIncomplete
+      # A type missing from Solr altogether counts as 0, but only when the
+      # exporter did read Solr (it reports per-manuscript n-gram counts then);
+      # a failed read is CantusInventoryFailing's business.
+      expr: |
+        (
+          (
+            max by (record_type) (
+              label_replace(
+                cantus_solr_documents{env="production", type=~"cantusdata_(chant|folio|manuscript)"},
+                "record_type", "$1", "type", "cantusdata_(.+)"
+              )
+            )
+            or
+            0 * max by (record_type) (cantus_db_records{env="production", record_type=~"chant|folio|manuscript"})
+          )
+          < 0.99 * max by (record_type) (cantus_db_records{env="production"})
+        )
+        and on ()
+        (count(cantus_solr_omr_ngrams{env="production"}) > 0)
+      for: 30m
+      labels:
+        service: cantus-ultimus
+        severity: critical
+      annotations:
+        summary: Solr is missing {{ $labels.record_type }} records, so search results are incomplete
+        description: >-
+          Solr holds {{ $value }} {{ $labels.record_type }} documents, under 99%
+          of the database's count (cantus_db_records). Rebuild the index from
+          the database:
+          `kubectl -n cantus-ultimus exec deploy/app -- python manage.py refresh_solr --all_types`.
+
+    - alert: CantusSolrRequestErrors
+      expr: sum(increase(cantus_solr_requests_total{env="production", operation!="inventory", outcome!="success"}[15m])) >= 3
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: Solr requests are failing
+        description: >-
+          About {{ $value | humanize }} Solr requests from the app or worker
+          failed or timed out in 15 minutes. By operation:
+          `sum by (operation, outcome) (increase(cantus_solr_requests_total[15m]))`.
+          Check `kubectl -n cantus-ultimus logs solr-0 -c solr`.
+
+    - alert: CantusSolrSyncFailing
+      expr: |
+        sum(increase(cantus_solr_sync_sessions_total{env="production", outcome!="success"}[30m])) > 0
+        or
+        sum(
+          cantus_solr_sync_sessions_total{env="production", outcome!="success"}
+          unless cantus_solr_sync_sessions_total{env="production", outcome!="success"} offset 30m
+        ) > 0
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: Database changes are not reaching Solr
+        description: >-
+          A batch of saved or deleted records failed to sync to Solr, so search
+          now disagrees with the database. Once Solr is healthy, re-sync the
+          affected manuscripts with `python manage.py refresh_solr` in the app
+          pod.
+
+    - alert: CantusSolrVisibilityMismatch
+      expr: max by (manuscript_id) (cantus_solr_chant_visibility_mismatch{env="production"}) > 0
+      for: 30m
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: Search shows or hides {{ $value }} chants of manuscript {{ $labels.manuscript_id }} wrongly
+        description: >-
+          The manuscript's public flag changed but its chants in Solr kept the
+          old visibility; refresh-manuscript-chants should have fixed this within
+          minutes. Check CantusCeleryTaskFailed, then
+          `kubectl -n cantus-ultimus exec deploy/app -- python manage.py refresh_solr --record_type chants --manuscript_ids {{ $labels.manuscript_id }}`.
+
+    - alert: CantusSolrHeapHigh
+      expr: |
+        max(solr_metrics_jvm_memory_heap_bytes{job="cantus-solr", item="used"})
+        / max(solr_metrics_jvm_memory_heap_bytes{job="cantus-solr", item="max"})
+        > 0.9
+      for: 15m
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: Solr's heap is {{ $value | humanizePercentage }} full
+        description: >-
+          Solr has used more than 90% of its JVM heap for 15 minutes; it will
+          slow down in garbage collection and then fail with OutOfMemoryError.
+          Solr runs with its default 512 MB heap; raise it by setting SOLR_HEAP
+          on the solr container in k8s/cantus-ultimus/solr/statefulset.yaml,
+          within the container's memory limit.
+
+    - alert: CantusInventoryFailing
+      expr: sum by (source) (rate(cantus_inventory_collect_errors_total{env="production"}[10m])) > 0
+      for: 15m
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: The metrics exporter cannot read {{ $labels.source }}
+        description: >-
+          Every collection from {{ $labels.source }} has failed for 15 minutes,
+          so the inventory gauges and the alerts built on them (Solr index,
+          visibility, MEI, Celery stuck tasks) are blind. See
+          `kubectl -n cantus-ultimus logs deploy/metrics-exporter`.
+
+    - alert: CantusUnappliedMigrations
+      expr: max(cantus_django_unapplied_migrations{env="production"}) > 0
+      for: 30m
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: "{{ $value }} database migration(s) have not been applied"
+        description: >-
+          The deployed code expects migrations the database does not have yet.
+          Run `kubectl -n cantus-ultimus exec deploy/app -- python manage.py migrate`.
+
+  - name: cantus-platform
+    rules:
+    - alert: CantusPodRestarted
+      expr: |
+        sum by (pod, container) (
+          increase(kube_pod_container_status_restarts_total{namespace="cantus-ultimus", pod!~".*staging.*"}[15m])
+        ) > 0
+        unless on (pod, container)
+        kube_pod_container_status_last_terminated_reason{namespace="cantus-ultimus", reason="OOMKilled"} == 1
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: "{{ $labels.pod }} ({{ $labels.container }}) restarted"
+        description: >-
+          The container restarted.
+          {{- with printf "kube_pod_container_status_last_terminated_reason{namespace=\"cantus-ultimus\", pod=\"%s\", container=\"%s\"} == 1" $labels.pod $labels.container | query }}
+          Last termination: {{ range . }}{{ .Labels.reason }}{{ end }}.
+          {{- end }}
+          {{- with printf "kube_pod_container_status_last_terminated_exitcode{namespace=\"cantus-ultimus\", pod=\"%s\", container=\"%s\"}" $labels.pod $labels.container | query }}
+          Exit code {{ range . }}{{ .Value }}{{ end }} (137 is SIGKILL: memory, or a failed liveness probe).
+          {{- end }}
+          `kubectl -n cantus-ultimus describe pod {{ $labels.pod }}` and
+          `kubectl -n cantus-ultimus logs {{ $labels.pod }} -c {{ $labels.container }} --previous`.
+
+    - alert: CantusContainerOOMKilled
+      expr: |
+        (
+          max by (pod, container) (
+            kube_pod_container_status_last_terminated_reason{namespace="cantus-ultimus", pod!~".*staging.*", reason="OOMKilled"}
+          ) == 1
+        )
+        and on (pod, container)
+        (
+          sum by (pod, container) (increase(kube_pod_container_status_restarts_total{namespace="cantus-ultimus"}[15m])) > 0
+        )
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: "{{ $labels.pod }} ({{ $labels.container }}) was killed for running out of memory"
+        description: >-
+          The container exceeded its memory limit and was OOM-killed. Compare
+          its usage with the limit:
+          `container_memory_working_set_bytes{namespace="cantus-ultimus", pod="{{ $labels.pod }}"}`;
+          for the app, a single heavy request can do it, so check what was
+          running in `kubectl -n cantus-ultimus logs {{ $labels.pod }} -c {{ $labels.container }} --previous`.
+
+    - alert: CantusMemoryNearLimit
+      expr: |
+        max by (pod, container) (
+          container_memory_working_set_bytes{namespace="cantus-ultimus", pod!~".*staging.*", container!=""}
+        )
+        / on (pod, container)
+        max by (pod, container) (
+          kube_pod_container_resource_limits{namespace="cantus-ultimus", resource="memory"}
+        )
+        > 0.9
+      for: 15m
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: "{{ $labels.pod }} ({{ $labels.container }}) is at {{ $value | humanizePercentage }} of its memory limit"
+        description: >-
+          The container has used over 90% of its memory limit for 15 minutes and
+          will be OOM-killed (exit 137) if it grows. Raise the limit in its
+          manifest under k8s/cantus-ultimus/, or find what is holding memory.
+
+    - alert: CantusWorkloadUnavailable
+      expr: |
+        (
+          kube_deployment_status_replicas_available{namespace="cantus-ultimus", deployment!~".*staging.*"}
+          < kube_deployment_spec_replicas{namespace="cantus-ultimus", deployment!~".*staging.*"}
+        )
+        or
+        (
+          kube_statefulset_status_replicas_ready{namespace="cantus-ultimus", statefulset!~".*staging.*"}
+          < kube_statefulset_replicas{namespace="cantus-ultimus", statefulset!~".*staging.*"}
+        )
+      for: 10m
+      labels:
+        service: cantus-ultimus
+        severity: critical
+      annotations:
+        summary: "{{ $labels.deployment }}{{ $labels.statefulset }} has no ready replica"
+        description: >-
+          {{ $labels.deployment }}{{ $labels.statefulset }} has had fewer ready
+          replicas than desired for 10 minutes (each runs one, so it is down).
+          `kubectl -n cantus-ultimus get pods` and describe the failing pod;
+          a rollout stuck on a bad image shows ImagePullBackOff or CrashLoopBackOff.
+
+    - alert: CantusVolumeFillingUp
+      expr: |
+        min by (persistentvolumeclaim) (
+          kubelet_volume_stats_available_bytes{namespace="cantus-ultimus", persistentvolumeclaim!~".*staging.*"}
+        )
+        / max by (persistentvolumeclaim) (
+          kubelet_volume_stats_capacity_bytes{namespace="cantus-ultimus", persistentvolumeclaim!~".*staging.*"}
+        )
+        < 0.15
+      for: 30m
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: "{{ $labels.persistentvolumeclaim }} has {{ $value | humanizePercentage }} space left"
+        description: >-
+          The volume behind {{ $labels.persistentvolumeclaim }} is over 85% full.
+          Most of these are node disks shared with other workloads, so the space
+          may be going elsewhere on the node. Solr cannot index or merge
+          segments on a full disk.
+
+    - alert: CantusManifestHostFailing
+      # Only hosts that worked in the last week: Gallica has been blocked by
+      # BnF's Cloudflare for months and would otherwise fire forever.
+      expr: |
+        (
+          sum by (upstream_host) (rate(cantus_external_requests_total{env="production", target="manifest_proxy", outcome!="success"}[30m]))
+          / sum by (upstream_host) (rate(cantus_external_requests_total{env="production", target="manifest_proxy"}[30m]))
+        ) > 0.5
+        and
+        sum by (upstream_host) (increase(cantus_external_requests_total{env="production", target="manifest_proxy"}[30m])) >= 5
+        and
+        sum by (upstream_host) (increase(cantus_external_requests_total{env="production", target="manifest_proxy", outcome="success"}[7d])) > 0
+      for: 15m
+      labels:
+        service: cantus-ultimus
+        severity: warning
+      annotations:
+        summary: Viewers cannot load manifests from {{ $labels.upstream_host }}
+        description: >-
+          {{ $value | humanizePercentage }} of manifest fetches from
+          {{ $labels.upstream_host }} have failed over 30 minutes, so its
+          manuscripts do not open in the viewer
+          (`sum by (manuscript_id, outcome) (rate(cantus_viewer_manifest_loads_total[30m]))`).
+          Try the fetch from the app pod; e-codices once started dropping
+          connections from python-requests' User-Agent (helpers/manifests.py).
