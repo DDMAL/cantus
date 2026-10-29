@@ -35,7 +35,11 @@ class ClassifyClientTestCase(SimpleTestCase):
         )
 
     def test_monitoring_is_a_probe_not_a_bot(self) -> None:
-        for agent in ("kube-probe/1.30", "Blackbox Exporter/0.25.0"):
+        for agent in (
+            "kube-probe/1.30",
+            "Blackbox Exporter/0.25.0",
+            "Blackbox-Exporter/0.28.0",
+        ):
             with self.subTest(agent=agent):
                 self.assertEqual(self.classify(HTTP_USER_AGENT=agent), "probe")
 

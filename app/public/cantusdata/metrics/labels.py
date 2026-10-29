@@ -17,7 +17,8 @@ OTHER = "other"
 
 # Client classification -------------------------------------------------------
 
-_PROBE_AGENTS = re.compile(r"kube-probe|blackbox exporter|prometheus", re.IGNORECASE)
+# The blackbox exporter sends "Blackbox-Exporter/0.28.0"; older versions a space.
+_PROBE_AGENTS = re.compile(r"kube-probe|blackbox[- ]exporter|prometheus", re.IGNORECASE)
 _BOT_AGENTS = re.compile(
     r"bot|crawl|spider|slurp|archiver|facebookexternalhit|curl|wget|"
     r"python-requests|python-urllib|httpx|aiohttp|go-http-client|java/|okhttp|"
