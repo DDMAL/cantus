@@ -149,6 +149,21 @@ class ManifestProxyTestCase(TestCase):
             get.call_args.args[0], "https://cdn.example-library.org/m.json"
         )
 
+    def test_every_hop_announces_cantus_ultimus(self) -> None:
+        with patch.object(
+            requests.Session,
+            "get",
+            side_effect=[
+                response(301, location="https://cdn.example-library.org/m.json"),
+                manifest_response(),
+            ],
+        ) as get:
+            self.assertEqual(self.proxy(self.STORED).status_code, 200)
+        self.assertEqual(
+            [call.kwargs["headers"]["User-Agent"] for call in get.call_args_list],
+            [manifests.USER_AGENT] * 2,
+        )
+
     def test_redirect_loops_are_cut_off(self) -> None:
         loop = response(302, location=self.STORED)
         with patch.object(requests.Session, "get", return_value=loop) as get:
