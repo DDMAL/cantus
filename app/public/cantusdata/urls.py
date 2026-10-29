@@ -28,10 +28,10 @@ from cantusdata.views.neume_exemplars import (
 from cantusdata.views import staticpages
 from django.contrib.admin.views.decorators import staff_member_required
 
-urlpatterns = [
-    # Admin pages
-    # All custom admin pages should be added above the root
-    # admin path. Root admin path is a catch-all.
+# DRF views, which accept a format suffix (".json", ".api").
+api_patterns = [
+    # Custom admin API views; they must come before the admin catch-all, which
+    # is in page_patterns below, after these.
     path(
         "admin/map_folios/",
         staff_member_required(MapFoliosView.as_view()),
@@ -42,18 +42,6 @@ urlpatterns = [
         staff_member_required(LoadChantsView.as_view()),
         name="load-chants-view",
     ),
-    path(
-        "admin/cantusdata/manuscript/<int:pk>/pick_neume_exemplars/",
-        staff_member_required(PickNeumeExemplarsView.as_view()),
-        name="pick-neume-exemplars-view",
-    ),
-    path("admin/", admin.site.urls),
-    # Static pages
-    path("", staticpages.homepage, name="homepage"),
-    path("about/", staticpages.about, name="about"),
-    path("team/", staticpages.team, name="team"),
-    path("activities/", staticpages.activities, name="activities"),
-    path("manifests/", staticpages.manifests, name="manifests"),
     path("browse/", browse_view, name="api-root"),
     # Main pages
     path("manuscripts/", ManuscriptList.as_view(), name="manuscript-list"),
@@ -138,8 +126,27 @@ urlpatterns = [
     ),
 ]
 
+# Plain Django views. They take no format argument, so a suffix ("/.env",
+# "/about.json") must not reach them: it would crash the view with a 500.
+page_patterns = [
+    # All custom admin pages should be added above the root
+    # admin path. Root admin path is a catch-all.
+    path(
+        "admin/cantusdata/manuscript/<int:pk>/pick_neume_exemplars/",
+        staff_member_required(PickNeumeExemplarsView.as_view()),
+        name="pick-neume-exemplars-view",
+    ),
+    path("admin/", admin.site.urls),
+    # Static pages
+    path("", staticpages.homepage, name="homepage"),
+    path("about/", staticpages.about, name="about"),
+    path("team/", staticpages.team, name="team"),
+    path("activities/", staticpages.activities, name="activities"),
+    path("manifests/", staticpages.manifests, name="manifests"),
+]
+
 # Disambiguates json/html/browsable-api urls
-urlpatterns = format_suffix_patterns(urlpatterns)
+urlpatterns = format_suffix_patterns(api_patterns) + page_patterns
 
 if settings.DEBUG:
     from debug_toolbar.toolbar import debug_toolbar_urls  # type: ignore
