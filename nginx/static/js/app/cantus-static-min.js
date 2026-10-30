@@ -28443,7 +28443,8 @@ __webpack_require__.r(__webpack_exports__);
         } else {
           newElement.volpiano = (0,utils_VolpianoDisplayHelper__WEBPACK_IMPORTED_MODULE_2__.parseVolpianoSyllables)(newElement.full_text, result.volpiano);
         }
-        newElement.url = "/manuscript/" + result.manuscript_id + "/?folio=" + result.folio + "&chant=" + result.sequence;
+        newElement.folioUrl = "/manuscript/" + result.manuscript_id + "/?folio=" + encodeURIComponent(result.folio);
+        newElement.url = newElement.folioUrl + "&chant=" + result.sequence;
         break;
       case "folio":
         newElement.name = result.name;
@@ -28560,7 +28561,8 @@ var viewError = function viewError(message) {
  * Options:
  *   - `getSearchMetadata` (required): The function called to get metadata on the search.
  *     It needs to return `query` and can optionally return `fieldName` (used to build a
- *     header) and `numFound` (overriding the collection's length).
+ *     header), `numFound` (overriding the collection's length) and `shownCount` (how many
+ *     results were fetched, when that can be fewer than `numFound`).
  *
  *   - `showLoading` (default false): Whether to show a loading state while the request loads
  */
@@ -28597,6 +28599,7 @@ var viewError = function viewError(message) {
     var defaults = {
       fieldName: null,
       numFound: this.collection.length,
+      shownCount: null,
       errorMessage: this.error ? this.getErrorMessage(this.error) : null
     };
     if (this.metadata) return underscore__WEBPACK_IMPORTED_MODULE_0__["default"].defaults(underscore__WEBPACK_IMPORTED_MODULE_0__["default"].clone(this.metadata), defaults);
@@ -29562,18 +29565,22 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default().ch
   tagName: 'tbody',
   ui: {
     chantLink: '.chant-link',
+    folioLink: '.folio-link',
     quickView: '.quick-view',
     fullRecord: '.full-result-record'
   },
   events: {
     'click @ui.quickView': '_onQuickViewClicked',
-    'click @ui.chantLink': '_onChantLinkClicked'
+    'click @ui.chantLink': '_onResultLinkClicked',
+    'click @ui.folioLink': '_onResultLinkClicked'
   },
   _onQuickViewClicked: function _onQuickViewClicked(evt) {
     evt.preventDefault();
     this.ui.fullRecord.toggle();
   },
-  _onChantLinkClicked: function _onChantLinkClicked() {
+  _onResultLinkClicked: function _onResultLinkClicked(evt) {
+    // Ctrl/Cmd-click opens the link in a new tab; leave this one alone.
+    if (evt.ctrlKey || evt.metaKey) return;
     manuscriptChannel.request('set:imageURI', this.model.get('image_uri'), {
       replaceState: true
     });
@@ -29712,9 +29719,11 @@ __p+='\n    <td>'+
 ((__t=( result.manuscript ))==null?'':__t)+
 '</td>\n    ';
  } 
-__p+='\n    \n    <td>'+
-((__t=( result.folio ))==null?'':__t)+
-'</td>\n\n    <td>\n        <a href="'+
+__p+='\n    \n    <td><a href="'+
+((__t=( result.folioUrl ))==null?'':_.escape(__t))+
+'" class="folio-link">'+
+((__t=( result.folio ))==null?'':_.escape(__t))+
+'</a></td>\n\n    <td>\n        <a href="'+
 ((__t=( result.url ))==null?'':__t)+
 '" class="chant-link">'+
 ((__t=( result.name ))==null?'':__t)+
@@ -29900,7 +29909,13 @@ var _ = __webpack_require__(/*! underscore */ "../../node_modules/underscore/mod
 module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
-__p+='<p class="h5"><i>'+
+__p+='<p class="h5"><i>';
+ if (shownCount !== null && shownCount < numFound) { 
+__p+='Showing the first '+
+((__t=( shownCount ))==null?'':_.escape(__t))+
+' of ';
+ } 
+__p+=''+
 ((__t=( numFound ))==null?'':_.escape(__t))+
 ' '+
 ((__t=( numFound === 1 ? 'result' : 'results' ))==null?'':_.escape(__t))+
