@@ -68,12 +68,18 @@ export default Marionette.Object.extend({
      *   search type is Volpiano) the chant's Volpiano
      * - `restriction`: object with field: value mappings of restrictions
      *   to apply to all queries made by the controller
+     * - `excludedFields`: types of search fields not to offer
      */
     initialize: function () {
         _.bindAll(this, 'search', 'setRestriction', 'getSearchMetadata');
 
         // Set options
         this.restrictions = this.getOption('restrictions') || {};
+
+        var excludedFields = this.getOption('excludedFields') || [];
+        this.fields = _.reject(this.fields, function (field) {
+            return _.contains(excludedFields, field.type);
+        });
 
         // Initialize search input model
         this.searchParameters = new SearchInput();

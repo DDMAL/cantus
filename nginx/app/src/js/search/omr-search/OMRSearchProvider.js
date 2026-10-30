@@ -10,6 +10,7 @@ import SearchResultHeadingView from "../SearchResultHeadingView";
 import NeumeGalleryView from "./NeumeGalleryView";
 import ContourChoiceView from "./ContourChoiceView";
 import IntervalChoiceView from "./IntervalChoiceView";
+import VolpianoHelpView from "./VolpianoHelpView";
 import InputView from "./InputView";
 import ResultView from "./ResultView";
 
@@ -20,6 +21,10 @@ var manuscriptChannel = Radio.channel('manuscript');
  * initialization parameters:
  *
  *  - `manuscript`: the manuscript model to initialize with
+ *
+ * Optional initialization parameters:
+ *
+ *  - `volpianoSearch`: offer a Volpiano field that searches the MEI by pitch
  *
  * See SearchView for a further description of the contract this class fulfills.
  */
@@ -81,6 +86,9 @@ export default Marionette.Object.extend({
             if (manuscriptModel.isPluginActivated(plugin.name))
                 this.fields.push.apply(this.fields, plugin.fields);
         }, this);
+
+        if (options.volpianoSearch)
+            this.fields.push({ name: 'Volpiano', type: 'volpiano' });
 
         this.results = new SearchNotationResultCollection();
         this.displayedResults = new SearchNotationResultCollection();
@@ -219,6 +227,10 @@ export default Marionette.Object.extend({
                 inputView.insertSearchString(newQuery, true);
             });
             regions.searchHelper.show(intervalChoices);
+        }
+        else if (field.type === 'volpiano')
+        {
+            regions.searchHelper.show(new VolpianoHelpView());
         }
         else
         {

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Union
 from os import path, listdir
 import re
 
@@ -8,6 +8,10 @@ from solr.core import SolrConnection  # type: ignore[import-untyped]
 
 from cantusdata.helpers.solr_client import make_solr
 from cantusdata.helpers.mei_processing.mei_tokenizer import MEITokenizer
+from cantusdata.helpers.mei_processing.mei_parsing_types import (
+    NgramDocument,
+    TextLineDocument,
+)
 from cantusdata.models.folio import Folio
 
 MEI4_DIR = path.join("/code", "production-mei-files")
@@ -174,14 +178,17 @@ class Command(BaseCommand):
                 min_ngram=options["min_ngram"],
                 max_ngram=options["max_ngram"],
             )
-            ngram_docs = tokenizer.create_ngram_documents()
-            for doc in ngram_docs:
+            docs: List[Union[NgramDocument, TextLineDocument]] = [
+                *tokenizer.create_ngram_documents(),
+                *tokenizer.create_text_line_documents(),
+            ]
+            for doc in docs:
                 doc["manuscript_id"] = manuscript_id
                 doc["folio"] = folio_number
                 # `or ""` because Folio.image_uri is nullable: a None here would
                 # be dropped by Solr, leaving the document without the field.
                 doc["image_uri"] = folio_map.get(folio_number) or ""
-            solr_conn.add_many(ngram_docs)
+            solr_conn.add_many(docs)
             solr_conn.commit()
         return None
 
@@ -192,13 +199,16 @@ class Command(BaseCommand):
         folio: Optional[str] = None,
     ) -> None:
         """
-        Deletes n-gram documents for a given manuscript from the Solr index.
+        Deletes the documents built from a manuscript's MEI (n-grams and text
+        lines) from the Solr index.
 
-        Deletes every n-gram of the manuscript unless `folio` is given, in which
-        case only that folio's n-grams are deleted. The folio number is matched
+        Deletes every such document of the manuscript unless `folio` is given,
+        in which case only that folio's are deleted. The folio number is matched
         exactly: `folio` is a Solr string field.
         """
-        query = f"type:omr_ngram AND manuscript_id:{manuscript_id}"
+        query = (
+            f"(type:omr_ngram OR type:mei_text_line) AND manuscript_id:{manuscript_id}"
+        )
         if folio is not None:
             query += f' AND folio:"{escape_solr_phrase(folio)}"'
         solr_conn.delete_query(query)
