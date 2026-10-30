@@ -32053,7 +32053,23 @@ function loadOpenSeadragon() {
     // The vendored UMD build assigns the OpenSeadragon function to
     // module.exports; expose it under the global Diva reads.
     window.OpenSeadragon = module.default || module;
+    ignoreEmptyIIIFSizes(window.OpenSeadragon);
   });
+}
+
+/**
+ * OpenSeadragon 6.0.2's IIIFTileSource throws when an image's info.json has an
+ * empty `sizes` array (Fragmentarium's server sends one), so the page never
+ * loads. Treat an empty array as absent. Fixed in OpenSeadragon 6.1.1;
+ * remove this once Diva is tested against that version.
+ */
+function ignoreEmptyIIIFSizes(OpenSeadragon) {
+  var configure = OpenSeadragon.IIIFTileSource.prototype.configure;
+  OpenSeadragon.IIIFTileSource.prototype.configure = function () {
+    var options = configure.apply(this, arguments);
+    if (Array.isArray(options.sizes) && options.sizes.length === 0) delete options.sizes;
+    return options;
+  };
 }
 
 // OMR result focus: Diva's zoomToRegion padding is a fraction of the region, so
@@ -36555,7 +36571,7 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_3___default().ch
       type: 'pitch_names'
     }, {
       name: 'Pitch (invariant)',
-      type: 'pitch_names_invariant'
+      type: 'pitch_names_transposed'
     }, {
       name: 'Contour',
       type: 'contour'
