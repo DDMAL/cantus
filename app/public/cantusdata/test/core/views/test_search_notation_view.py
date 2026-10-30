@@ -83,6 +83,16 @@ class TestSearchNotationView(APITestCase):
             )
             expected_query_string = "intervals:2_-3_1_12"
             self.assertEqual(query_string, expected_query_string)
+        # A volpiano query is converted to pitch names, keeping case so that
+        # liquescents (uppercase) are recognized.
+        with self.subTest("Test volpiano query"):
+            query_string = self.search_notation_view.create_query_string(
+                "1---f--G--h---3", "volpiano"
+            )
+            self.assertEqual(query_string, "pitch_names:f_g_a")
+        with self.subTest("Test invalid volpiano query"):
+            with self.assertRaises(NotationSearchException):
+                self.search_notation_view.create_query_string("1---3", "volpiano")
 
     def test_do_query(self) -> None:
         with self.subTest("Test fields returned"):
@@ -165,6 +175,15 @@ class TestSearchNotationView(APITestCase):
             response_data = response.json()
             self.assertIn("results", response_data)
             self.assertIn("numFound", response_data)
+        with self.subTest("Test volpiano finds the same results as pitch"):
+            pitch_response = self.client.get(
+                url, {"q": "f g a", "type": "pitch_names", "manuscript_id": 123723}
+            ).json()
+            volpiano_response = self.client.get(
+                url, {"q": "1---f--g--h", "type": "volpiano", "manuscript_id": 123723}
+            ).json()
+            self.assertGreater(pitch_response["numFound"], 0)
+            self.assertEqual(volpiano_response, pitch_response)
 
     def test_get_result_whose_document_has_no_image_uri(self) -> None:
         """
