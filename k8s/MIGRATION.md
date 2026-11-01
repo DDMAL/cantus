@@ -339,7 +339,7 @@ which does not exist in older images. As above, name the files, never the
 kubectl apply -f k8s/cantus-ultimus/app/deployment.yaml
 kubectl apply -f k8s/cantus-ultimus/app/service.yaml
 kubectl apply -f k8s/cantus-ultimus/celery/deployment.yaml
-kubectl apply -f k8s/cantus-ultimus/solr/statefulset.yaml   # restarts Solr: ~100s to reopen the core
+kubectl apply -f k8s/cantus-ultimus/solr/statefulset.yaml   # restarts Solr: ~100s to reopen the core, minutes on a busy node
 kubectl apply -f k8s/cantus-ultimus/solr/service.yaml
 
 # RabbitMQ has no PVC, so the restart this apply causes drops any queued
@@ -353,7 +353,10 @@ kubectl apply -f k8s/cantus-ultimus/monitoring/
 ```
 
 CI only updates `metrics-exporter` and the `solr-exporter` sidecar once they
-exist, so the deploy that runs before these applies does not fail.
+exist, so the deploy that runs before these applies does not fail. Solr and
+Cantaloupe are deployed with a `src-<tree hash>` tag of their own folder rather
+than the commit, so a push that does not touch `solr/` or `cantaloupe/` leaves
+them running.
 
 Verify that all five jobs are UP at http://prometheus.internal.simssa.ca/
 → Status → Targets, or from the cluster:
