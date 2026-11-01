@@ -32,8 +32,9 @@ spec:
         - name: solr-data
           mountPath: /var/solr/data/cantus_ultimus_1/data
         # startupProbe holds liveness/readiness off until the core is actually
-        # serving. Opening a cold core takes ~100s on the larger index, which
-        # is close enough to liveness's 60s+3x20s budget to risk a kill loop.
+        # serving. Opening a cold core takes ~100s on the larger index, and far
+        # longer when a deploy keeps the node's disk busy: a 300s budget once
+        # killed a load still in progress, so it has 10 minutes.
         # timeoutSeconds is set explicitly everywhere: the 1s default is under
         # the ~800ms a cold admin/ping takes (warm is ~4ms).
         startupProbe:
@@ -42,7 +43,7 @@ spec:
             port: 8983
           periodSeconds: 10
           timeoutSeconds: 5
-          failureThreshold: 30
+          failureThreshold: 60
         readinessProbe:
           httpGet:
             path: /solr/cantus_ultimus_1/admin/ping?wt=json
