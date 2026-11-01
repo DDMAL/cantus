@@ -3,7 +3,7 @@
     <td><%= result.manuscript %></td>
     <% } %>
     
-    <td><%= result.folio %></td>
+    <td><a href="<%- result.folioUrl %>" class="folio-link"><%- result.folio %></a></td>
 
     <td>
         <a href="<%= result.url %>" class="chant-link"><%= result.name %></a>

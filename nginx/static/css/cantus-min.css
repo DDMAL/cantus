@@ -12657,6 +12657,24 @@ body.propagate-height {
 #manuscript-data-container {
   position: relative;
 }
+#manuscript-data-container #manuscript-search-pane.active {
+  position: absolute;
+  inset: 0;
+  padding: inherit;
+  display: flex;
+  flex-direction: column;
+}
+#manuscript-data-container #manuscript-search {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+#manuscript-data-container #manuscript-search > .propagate-height {
+  min-height: 0;
+}
+#manuscript-data-container #manuscript-search .search-results {
+  min-height: 200px;
+}
 
 .resizer {
   cursor: col-resize;

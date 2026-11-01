@@ -471,6 +471,34 @@ body.propagate-height {
 #manuscript-data-container {
     // Relative-position the container so that percentage-based dimensions are calculated relative to it
     position: relative;
+
+    // The result list only loads more rows when it scrolls, which needs a
+    // fixed height. Positioning the tab provides one and leaves the Folio
+    // Chants tab untouched.
+    #manuscript-search-pane.active {
+        position: absolute;
+        inset: 0;
+        // A positioned tab skips .tab-content's padding.
+        padding: inherit;
+        display: flex;
+        flex-direction: column;
+    }
+
+    // Without min-height: 0, flex items won't shrink below their content.
+    #manuscript-search {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+
+        > .propagate-height {
+            min-height: 0;
+        }
+    }
+
+    // Keep room for the list in a short column; the column scrolls instead.
+    #manuscript-search .search-results {
+        min-height: 200px;
+    }
 }
 
 .resizer {
