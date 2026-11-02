@@ -321,7 +321,7 @@ spec:
           `kubectl -n cantus-ultimus exec deploy/app -- python manage.py refresh_solr --all_types`.
 
     - alert: CantusSolrRequestErrors
-      expr: sum(increase(cantus_solr_requests_total{env="production", operation!="inventory", outcome!="success"}[15m])) >= 3
+      expr: sum(increase(cantus_solr_requests_total{env="production", operation!="inventory", outcome=~"error|timeout"}[15m])) >= 3
       labels:
         service: cantus-ultimus
         severity: warning
