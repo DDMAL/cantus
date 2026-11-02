@@ -68,10 +68,36 @@ spec:
       # Polls Solr's metrics API over localhost every SCRAPE_INTERVAL seconds and
       # serves the result on :9854. It ships in the Solr image, so it is set to
       # the same tag as the solr container.
+      #
+      # It must not poll while the core is loading: reading the core's metrics
+      # then opens a second searcher, which deadlocks the load until the
+      # startupProbe kills Solr (seen 3 times, 7-11 minutes without search).
+      # So it only runs while the core answers its ping, and is stopped as
+      # soon as Solr's port closes (the solr container restarting in the pod).
       - name: solr-exporter
         image: ghcr.io/ddmal/cantus-solr:main-latest
         imagePullPolicy: Always
-        command: ["/opt/solr/modules/prometheus-exporter/bin/solr-exporter"]
+        command:
+        - /bin/bash
+        - -c
+        - |
+          PING="$SOLR_URL/cantus_ultimus_1/admin/ping?wt=json"
+          trap 'kill "$pid" 2>/dev/null; exit 0' TERM INT
+          while true; do
+            until curl -sf -m 5 -o /dev/null "$PING"; do sleep 5; done
+            echo "Solr core is up; starting solr-exporter"
+            /opt/solr/modules/prometheus-exporter/bin/solr-exporter &
+            pid=$!
+            # curl exits 7 when nothing listens on the port: the solr
+            # container is restarting and will load the core again.
+            while kill -0 "$pid" 2>/dev/null; do
+              curl -s -m 5 -o /dev/null "$SOLR_URL/"
+              [ $? -eq 7 ] && break
+              sleep 2
+            done
+            echo "Solr is down; stopping solr-exporter until the core is back"
+            kill "$pid" 2>/dev/null; wait "$pid"
+          done
         ports:
         - name: metrics
           containerPort: 9854
