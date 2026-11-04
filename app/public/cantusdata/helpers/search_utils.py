@@ -3,7 +3,48 @@ A collection of functions used by search views to validate and process
 queries.
 """
 
+from typing import Optional
+
 from cantusdata.helpers.neume_helpers import NEUME_NAMES
+
+# Volpiano note characters and the pitch names they represent. Uppercase
+# letters are liquescent forms of the same pitch; "(" and ")" are the
+# liquescent forms of "8" and "9".
+VOLPIANO_PITCH_NAMES: dict[str, str] = {
+    "8": "f",
+    "9": "g",
+    "a": "a",
+    "b": "b",
+    "c": "c",
+    "d": "d",
+    "e": "e",
+    "f": "f",
+    "g": "g",
+    "h": "a",
+    "j": "b",
+    "k": "c",
+    "l": "d",
+    "m": "e",
+    "n": "f",
+    "o": "g",
+    "p": "a",
+    "q": "b",
+    "r": "c",
+    "s": "d",
+}
+VOLPIANO_PITCH_NAMES.update(
+    {
+        char.upper(): pname
+        for char, pname in VOLPIANO_PITCH_NAMES.items()
+        if char.isalpha()
+    }
+)
+VOLPIANO_PITCH_NAMES.update({"(": "f", ")": "g"})
+
+# Volpiano characters that are not notes: clefs, spacing, barlines, and
+# flat/natural signs. OMR n-grams store pitch names without accidentals,
+# so none of these can narrow a search of the MEI.
+VOLPIANO_IGNORED_CHARS = set("12-34567 iwxyzIWXYZ")
 
 
 def validate_intervals_query_word(word: str) -> bool:
@@ -71,6 +112,28 @@ def get_transpositions(sequence: list[str]) -> list[list[str]]:
         transposed_chars = list(map(chr, asciinum))
         transpositions.append(transposed_chars)
     return transpositions
+
+
+def volpiano_to_pitch_names(volpiano: str) -> Optional[list[str]]:
+    """
+    Convert a Volpiano string into the sequence of pitch names it contains,
+    so that it can be searched against OMR n-grams.
+
+    Octave is dropped (OMR n-grams do not record it), and clefs, spacing,
+    barlines and accidentals are skipped (see VOLPIANO_IGNORED_CHARS).
+
+    e.g. volpiano_to_pitch_names("1---f--gh--3") returns ["f", "g", "a"]
+
+    :return: the pitch names, or None if the string contains a character
+        that is not Volpiano or contains no notes
+    """
+    pitch_names: list[str] = []
+    for char in volpiano:
+        if char in VOLPIANO_PITCH_NAMES:
+            pitch_names.append(VOLPIANO_PITCH_NAMES[char])
+        elif char not in VOLPIANO_IGNORED_CHARS:
+            return None
+    return pitch_names or None
 
 
 def translate_interval_query_direction(query_terms: list[str]) -> list[str]:

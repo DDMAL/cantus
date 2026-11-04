@@ -4,6 +4,7 @@ from cantusdata.helpers.search_utils import (
     validate_query,
     get_transpositions,
     translate_interval_query_direction,
+    volpiano_to_pitch_names,
 )
 
 
@@ -67,3 +68,25 @@ class SearchUtilsTestCase(TestCase):
         expected_translated_query = ["2", "-3", "1", "-14", "12"]
         translated_query = translate_interval_query_direction(query_elems)
         self.assertEqual(translated_query, expected_translated_query)
+
+    def test_volpiano_to_pitch_names(self) -> None:
+        with self.subTest("Clef, spacing and barlines are skipped"):
+            self.assertEqual(
+                volpiano_to_pitch_names("1---f--gh--3---k"), ["f", "g", "a", "c"]
+            )
+        with self.subTest("Octaves map to the same pitch names"):
+            self.assertEqual(
+                volpiano_to_pitch_names("9abcdefghjklmnopqrs"),
+                list("gabcdefgabcdefgabcd"),
+            )
+            self.assertEqual(volpiano_to_pitch_names("8"), ["f"])
+        with self.subTest("Liquescents map to their plain pitch"):
+            self.assertEqual(volpiano_to_pitch_names("fG()H"), list("fgfga"))
+        with self.subTest("Accidentals are skipped"):
+            self.assertEqual(volpiano_to_pitch_names("1-ij-Ij"), ["b", "b"])
+        with self.subTest("Invalid characters"):
+            self.assertIsNone(volpiano_to_pitch_names("1-f-t"))
+            self.assertIsNone(volpiano_to_pitch_names("f g?"))
+        with self.subTest("No notes"):
+            self.assertIsNone(volpiano_to_pitch_names("1---3"))
+            self.assertIsNone(volpiano_to_pitch_names(""))
