@@ -32044,8 +32044,9 @@ function suppressDivaGlobalStyles() {
 /**
  * Load OpenSeadragon and expose it as the window.OpenSeadragon global that
  * Diva's bundle reads before it runs. OSD is vendored locally
- * (dependencies/openseadragon/, version paired with Diva's README) and pulled in
- * as its own lazy chunk; the global check short-circuits once it has loaded.
+ * (dependencies/openseadragon/) and pulled in as its own lazy chunk; the global
+ * check short-circuits once it has loaded. Cantus uses version 6.1.1, because
+ * it loads IIIF images whose info.json has an empty `sizes` array.
  */
 function loadOpenSeadragon() {
   if (window.OpenSeadragon) return Promise.resolve();
@@ -36555,7 +36556,7 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_3___default().ch
       type: 'pitch_names'
     }, {
       name: 'Pitch (invariant)',
-      type: 'pitch_names_invariant'
+      type: 'pitch_names_transposed'
     }, {
       name: 'Contour',
       type: 'contour'
