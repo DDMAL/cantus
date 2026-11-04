@@ -1,0 +1,21 @@
+<p class="help-block">
+    This manuscript has no chant records, so its text is searched as encoded on each page,
+    which may include OCR errors. A line matches when it contains every word you enter;
+    accents and capitals are ignored.
+</p>
+<div class="form-check form-check-inline">
+    <input class="form-check-input" type="checkbox" id="mei-text-ignore-hyphens"
+           data-option="ignoreHyphens" <%= ignoreHyphens ? 'checked' : '' %>>
+    <label class="form-check-label" for="mei-text-ignore-hyphens"
+           title="Join syllables split by hyphens, so that whole words match">
+        Ignore hyphens
+    </label>
+</div>
+<div class="form-check form-check-inline">
+    <input class="form-check-input" type="checkbox" id="mei-text-multiline"
+           data-option="multiline" <%= multiline ? 'checked' : '' %>>
+    <label class="form-check-label" for="mei-text-multiline"
+           title="Let words continue onto the next line in the encoding, which may not follow the page where the text is in several columns">
+        Search across lines
+    </label>
+</div>

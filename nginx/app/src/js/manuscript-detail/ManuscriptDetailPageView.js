@@ -5,6 +5,7 @@ import Marionette from 'marionette';
 import SearchView from "search/SearchView";
 import ChantSearchProvider from "search/chant-search/ChantSearchProvider";
 import OMRSearchProvider from "search/omr-search/OMRSearchProvider";
+import MEITextSearchProvider from "search/mei-text-search/MEITextSearchProvider";
 import fillViewportHeight from "behaviors/FillViewportHeightBehavior";
 
 import SidenavView from 'ui/SidenavView';
@@ -111,20 +112,43 @@ export default Marionette.View.extend({
         });
 
         // Initialize the search view
+        // Volpiano normally searches chant records from Cantus Database. A
+        // manuscript without them can still be searched by Volpiano through
+        // its MEI, which the notation search provider then handles instead.
+        // Volpiano and text normally search chant records from Cantus Database.
+        // A manuscript without them is searched through its MEI instead.
+        var hasChants = this.model.get('chants_loaded');
+        var volpianoFromMei = !hasChants && this.model.isPluginActivated('pitch-search');
+
+        var excludedChantFields = [];
+        if (volpianoFromMei)
+            excludedChantFields.push('volpiano', 'volpiano_literal');
+        if (!hasChants)
+            excludedChantFields.push('all');
+
         var chantSearchProvider = new ChantSearchProvider({
-            additionalResultFields: ['genre', 'mode', 'feast', 'office', 'position']
+            additionalResultFields: ['genre', 'mode', 'feast', 'office', 'position'],
+            excludedFields: excludedChantFields
         });
 
         chantSearchProvider.setRestriction('manuscript_id', '"' + this.model.get("id") + '"');
 
         var notationSearchProvider = new OMRSearchProvider({
-            manuscript: this.model
+            manuscript: this.model,
+            volpianoSearch: volpianoFromMei
         });
+
+        var providers = [chantSearchProvider, notationSearchProvider];
+
+        // Listed first so that its text field is the default, as "All Text
+        // Fields" is for manuscripts with chant records
+        if (!hasChants)
+            providers.unshift(new MEITextSearchProvider({ manuscript: this.model }));
 
         var searchTerm = manuscriptStateChannel.request('search');
         var searchView = new SearchView({
             searchTerm: searchTerm,
-            providers: [chantSearchProvider, notationSearchProvider]
+            providers: providers
         });
 
         // Set the global search state when the search term changes
