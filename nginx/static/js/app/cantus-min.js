@@ -31327,6 +31327,10 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+// Fetch every match so each can be listed and highlighted, capped because a
+// bare single-element query can match tens of thousands.
+var RESULT_LIMIT = 5000;
+
 /**
  * Collection for results of notation searches
  *
@@ -31347,7 +31351,8 @@ __webpack_require__.r(__webpack_exports__);
   url: function url() {
     var queryParams = {
       q: underscore__WEBPACK_IMPORTED_MODULE_0__["default"].result(this.parameters, 'query'),
-      type: underscore__WEBPACK_IMPORTED_MODULE_0__["default"].result(this.parameters, 'field')
+      type: underscore__WEBPACK_IMPORTED_MODULE_0__["default"].result(this.parameters, 'field'),
+      rows: RESULT_LIMIT
     };
     var manuscript = underscore__WEBPACK_IMPORTED_MODULE_0__["default"].result(this.parameters, 'manuscript');
     if (manuscript) queryParams.manuscript_id = manuscript;
@@ -32020,8 +32025,9 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
 /**
  * Load OpenSeadragon and expose it as the window.OpenSeadragon global that
  * Diva's bundle reads before it runs. OSD is vendored locally
- * (dependencies/openseadragon/, version paired with Diva's README) and pulled in
- * as its own lazy chunk; the global check short-circuits once it has loaded.
+ * (dependencies/openseadragon/) and pulled in as its own lazy chunk; the global
+ * check short-circuits once it has loaded. Cantus uses version 6.1.1, because
+ * it loads IIIF images whose info.json has an empty `sizes` array.
  */
 function loadOpenSeadragon() {
   if (window.OpenSeadragon) return Promise.resolve();
@@ -34512,7 +34518,8 @@ __webpack_require__.r(__webpack_exports__);
         } else {
           newElement.volpiano = (0,utils_VolpianoDisplayHelper__WEBPACK_IMPORTED_MODULE_2__.parseVolpianoSyllables)(newElement.full_text, result.volpiano);
         }
-        newElement.url = "/manuscript/" + result.manuscript_id + "/?folio=" + result.folio + "&chant=" + result.sequence;
+        newElement.folioUrl = "/manuscript/" + result.manuscript_id + "/?folio=" + encodeURIComponent(result.folio);
+        newElement.url = newElement.folioUrl + "&chant=" + result.sequence;
         break;
       case "folio":
         newElement.name = result.name;
@@ -35029,7 +35036,8 @@ var viewError = function viewError(message) {
  * Options:
  *   - `getSearchMetadata` (required): The function called to get metadata on the search.
  *     It needs to return `query` and can optionally return `fieldName` (used to build a
- *     header) and `numFound` (overriding the collection's length).
+ *     header), `numFound` (overriding the collection's length) and `shownCount` (how many
+ *     results were fetched, when that can be fewer than `numFound`).
  *
  *   - `showLoading` (default false): Whether to show a loading state while the request loads
  */
@@ -35066,6 +35074,7 @@ var viewError = function viewError(message) {
     var defaults = {
       fieldName: null,
       numFound: this.collection.length,
+      shownCount: null,
       errorMessage: this.error ? this.getErrorMessage(this.error) : null
     };
     if (this.metadata) return underscore__WEBPACK_IMPORTED_MODULE_0__["default"].defaults(underscore__WEBPACK_IMPORTED_MODULE_0__["default"].clone(this.metadata), defaults);
@@ -36031,18 +36040,22 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default().ch
   tagName: 'tbody',
   ui: {
     chantLink: '.chant-link',
+    folioLink: '.folio-link',
     quickView: '.quick-view',
     fullRecord: '.full-result-record'
   },
   events: {
     'click @ui.quickView': '_onQuickViewClicked',
-    'click @ui.chantLink': '_onChantLinkClicked'
+    'click @ui.chantLink': '_onResultLinkClicked',
+    'click @ui.folioLink': '_onResultLinkClicked'
   },
   _onQuickViewClicked: function _onQuickViewClicked(evt) {
     evt.preventDefault();
     this.ui.fullRecord.toggle();
   },
-  _onChantLinkClicked: function _onChantLinkClicked() {
+  _onResultLinkClicked: function _onResultLinkClicked(evt) {
+    // Ctrl/Cmd-click opens the link in a new tab; leave this one alone.
+    if (evt.ctrlKey || evt.metaKey) return;
     manuscriptChannel.request('set:imageURI', this.model.get('image_uri'), {
       replaceState: true
     });
@@ -36181,9 +36194,11 @@ __p+='\n    <td>'+
 ((__t=( result.manuscript ))==null?'':__t)+
 '</td>\n    ';
  } 
-__p+='\n    \n    <td>'+
-((__t=( result.folio ))==null?'':__t)+
-'</td>\n\n    <td>\n        <a href="'+
+__p+='\n    \n    <td><a href="'+
+((__t=( result.folioUrl ))==null?'':_.escape(__t))+
+'" class="folio-link">'+
+((__t=( result.folio ))==null?'':_.escape(__t))+
+'</a></td>\n\n    <td>\n        <a href="'+
 ((__t=( result.url ))==null?'':__t)+
 '" class="chant-link">'+
 ((__t=( result.name ))==null?'':__t)+
@@ -36601,7 +36616,7 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_3___default().ch
       type: 'pitch_names'
     }, {
       name: 'Pitch (invariant)',
-      type: 'pitch_names_invariant'
+      type: 'pitch_names_transposed'
     }, {
       name: 'Contour',
       type: 'contour'
@@ -36690,7 +36705,8 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_3___default().ch
       fieldName: this.field.name,
       query: this.query,
       displayedQuery: this.query,
-      numFound: numFound
+      numFound: numFound,
+      shownCount: this.results.length
     };
   },
   display: function display(field, query, regions) {
@@ -36799,6 +36815,16 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default().ch
     'click .result-target': function click_ResultTarget(event) {
       event.preventDefault();
       this.trigger('showResult', this.model);
+    },
+    'click .folio-link': function click_FolioLink(event) {
+      // Ctrl/Cmd-click opens the folio in a new tab; leave this one alone.
+      if (event.ctrlKey || event.metaKey) return;
+      event.preventDefault();
+      // Results on a folio with no image mapping have an empty image URI.
+      var imageURI = underscore__WEBPACK_IMPORTED_MODULE_0__["default"].result(this.model.get('boxes')[0], 'p');
+      if (imageURI) manuscriptChannel.request('set:imageURI', imageURI, {
+        replaceState: true
+      });
     }
   },
   initialize: function initialize() {
@@ -36846,7 +36872,8 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default().ch
         return '<svg width="' + width + '" height="' + height + '" viewBox="' + viewBox + '">' + '<path stroke="black" fill="none" d="' + path + '"/>' + circles + '</svg>';
       },
       thumbnailUrl: underscore__WEBPACK_IMPORTED_MODULE_0__["default"].bind(this.getThumbnail, this),
-      neumeImageHeight: this.neumeImageHeight
+      neumeImageHeight: this.neumeImageHeight,
+      folioUrl: '/manuscript/' + manuscriptChannel.request('manuscript') + '/?folio=' + encodeURIComponent(underscore__WEBPACK_IMPORTED_MODULE_0__["default"].result(this.model.get('boxes')[0], 'f'))
     };
   }
 }));
@@ -36919,18 +36946,37 @@ __webpack_require__.r(__webpack_exports__);
     this.trigger('zoomToResult', model);
   },
   onRender: function onRender() {
+    var _this = this;
     this.updateTable();
 
     // We can't use the events hash for this because it relies on events
     // bubbling, and the scroll event does not bubble
     this.ui.tableWrapper.on('scroll', this._handleScroll);
+
+    // On a tall screen the first rows may not fill the panel, leaving
+    // nothing to scroll, so also check whenever the list changes size. Do
+    // it on the next frame, or the browser logs a ResizeObserver error.
+    this._resizeObserver = new ResizeObserver(function () {
+      return requestAnimationFrame(function () {
+        return _this._loadResultsIfAtEnd();
+      });
+    });
+    this._resizeObserver.observe(this.ui.tableWrapper[0]);
+  },
+  onDestroy: function onDestroy() {
+    this._resizeObserver.disconnect();
   },
   /**
    * If the last item in the results list is scrolled into view, then request more items
    * @private
    */
   _loadResultsIfAtEnd: function _loadResultsIfAtEnd() {
-    if ((0,utils_lastChildVisible__WEBPACK_IMPORTED_MODULE_2__["default"])(this, this.ui.tableWrapper)) this.trigger('continue:loading');
+    // A queued frame or throttled scroll call can run after the view is
+    // destroyed, when this.ui holds selectors instead of elements.
+    if (this.isDestroyed()) return;
+
+    // A hidden list reports every row as in view, which would load them all.
+    if (this.ui.tableWrapper.is(':visible') && (0,utils_lastChildVisible__WEBPACK_IMPORTED_MODULE_2__["default"])(this, this.ui.tableWrapper)) this.trigger('continue:loading');
   }
 }));
 
@@ -37042,9 +37088,11 @@ var _ = __webpack_require__(/*! underscore */ "../../node_modules/underscore/mod
 module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
-__p+='<td>'+
-((__t=( _.result(boxes[0], 'f') ))==null?'':__t)+
-'</td>\n<td>\n    <a href="#" class="result-target neume-images">\n        ';
+__p+='<td><a href="'+
+((__t=( folioUrl ))==null?'':_.escape(__t))+
+'" class="folio-link">'+
+((__t=( _.result(boxes[0], 'f') ))==null?'':_.escape(__t))+
+'</a></td>\n<td>\n    <a href="#" class="result-target neume-images">\n        ';
  _.forEach(boxes, function (box) { 
 __p+='\n            <img src="'+
 ((__t=( thumbnailUrl(box) ))==null?'':__t)+
@@ -37132,7 +37180,13 @@ var _ = __webpack_require__(/*! underscore */ "../../node_modules/underscore/mod
 module.exports = function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
-__p+='<p class="h5"><i>'+
+__p+='<p class="h5"><i>';
+ if (shownCount !== null && shownCount < numFound) { 
+__p+='Showing the first '+
+((__t=( shownCount ))==null?'':_.escape(__t))+
+' of ';
+ } 
+__p+=''+
 ((__t=( numFound ))==null?'':_.escape(__t))+
 ' '+
 ((__t=( numFound === 1 ? 'result' : 'results' ))==null?'':_.escape(__t))+

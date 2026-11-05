@@ -1,12 +1,11 @@
 import re
 import time
 
-import requests
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from cantusdata.helpers.solr_client import solr_get
+from cantusdata.helpers.solr_client import SolrUnavailable, solr_get
 from cantusdata.metrics.definitions import SUGGEST_REQUESTS
 from cantusdata.metrics.events import elapsed_ms
 from cantusdata.metrics.labels import classify_client
@@ -61,7 +60,7 @@ class SuggestionView(APIView):
                     "facet.contains.ignoreCase": "true",
                 },
             )
-        except requests.RequestException:
+        except SolrUnavailable:
             results = None
         succeeded = results is not None and results.status_code == 200
         SUGGEST_REQUESTS.labels(field, "success" if succeeded else "error").inc()

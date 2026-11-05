@@ -70,8 +70,9 @@ export default Backbone.Model.extend({
                     newElement.volpiano = parseVolpianoSyllables(newElement.full_text, result.volpiano);
                 }
 
-                newElement.url = "/manuscript/" + result.manuscript_id + "/?folio=" + result.folio +
-                    "&chant=" + result.sequence;
+                newElement.folioUrl = "/manuscript/" + result.manuscript_id + "/?folio=" +
+                    encodeURIComponent(result.folio);
+                newElement.url = newElement.folioUrl + "&chant=" + result.sequence;
                 break;
 
             case "folio":

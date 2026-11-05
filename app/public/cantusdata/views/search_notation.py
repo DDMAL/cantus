@@ -13,6 +13,7 @@ from cantusdata.helpers.search_utils import (
     get_transpositions,
     translate_interval_query_direction,
 )
+from cantusdata.helpers.solr_client import SolrUnavailable
 from cantusdata.metrics.definitions import (
     NOTATION_SEARCH_QUERY_LENGTH,
     NOTATION_SEARCH_REQUESTS,
@@ -193,12 +194,17 @@ class SearchNotationView(APIView):
             f"{settings.SOLR_SERVER}/select?q=*:*&fq={query_str_w_manuscript}"
             f"&fl={','.join(RETURNED_FIELDS)}&sort=folio+asc&rows={rows}&start={start}"
         )
-        with track_solr("notation_search") as tracked:
-            solr_response = requests.get(
-                complete_query_str, timeout=settings.SOLR_TIMEOUT
-            )
-            if not solr_response.ok:
-                tracked.outcome = "error"
+        try:
+            with track_solr("notation_search") as tracked:
+                solr_response = requests.get(
+                    complete_query_str, timeout=settings.SOLR_TIMEOUT
+                )
+                if not solr_response.ok:
+                    tracked.outcome = "error"
+        except requests.RequestException as exc:
+            raise SolrUnavailable() from exc
+        if solr_response.status_code >= 500:
+            raise SolrUnavailable()
         response = solr_response.json()
         request_results: list[SolrQueryResultItem] = response["response"]["docs"]
         num_found = response["response"]["numFound"]

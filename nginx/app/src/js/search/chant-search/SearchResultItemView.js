@@ -22,13 +22,15 @@ export default Marionette.View.extend({
 
     ui: {
         chantLink: '.chant-link',
+        folioLink: '.folio-link',
         quickView: '.quick-view',
         fullRecord: '.full-result-record',
     },
 
     events: {
         'click @ui.quickView': '_onQuickViewClicked',
-        'click @ui.chantLink': '_onChantLinkClicked'
+        'click @ui.chantLink': '_onResultLinkClicked',
+        'click @ui.folioLink': '_onResultLinkClicked'
     },
 
     _onQuickViewClicked: function (evt) {
@@ -37,7 +39,11 @@ export default Marionette.View.extend({
         this.ui.fullRecord.toggle();
     },
 
-    _onChantLinkClicked: function () {
+    _onResultLinkClicked: function (evt) {
+        // Ctrl/Cmd-click opens the link in a new tab; leave this one alone.
+        if (evt.ctrlKey || evt.metaKey)
+            return;
+
         manuscriptChannel.request('set:imageURI', this.model.get('image_uri'), { replaceState: true });
     },
 

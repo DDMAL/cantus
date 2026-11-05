@@ -1,0 +1,27 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: cantus-edge
+  namespace: cantus-ultimus
+  labels:
+    release: kube-prom-stack
+spec:
+  # The site as a reader reaches it: DNS, TLS, the ingress and nginx, which the
+  # app's own metrics cannot see. Each target goes one layer deeper; the
+  # CantusSiteDown alert names which one failed. The exporter's User-Agent is
+  # counted as client="probe", so these requests stay out of usage numbers.
+  jobName: cantus-edge
+  interval: 60s
+  module: http_2xx
+  prober:
+    url: blackbox-prometheus-blackbox-exporter.monitoring.svc:9115
+    path: /probe
+  targets:
+    staticConfig:
+      static:
+      # Django
+      - https://cantus.simssa.ca/
+      # + Postgres
+      - https://cantus.simssa.ca/manuscripts/?format=json
+      # + Solr
+      - https://cantus.simssa.ca/search/?q=kyrie&format=json

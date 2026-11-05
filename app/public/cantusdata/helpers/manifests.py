@@ -24,6 +24,8 @@ MAX_MANIFEST_BYTES = 20 * 1024 * 1024
 # read timeout applies per read, so a server dripping bytes would never trip it.
 TIMEOUT = (5, 30)
 TOTAL_DEADLINE_SECONDS = 45
+# Some libraries (e-codices) drop connections that announce python-requests.
+USER_AGENT = "Mozilla/5.0 (compatible; CantusUltimus/1.0; +https://cantus.simssa.ca)"
 
 _DEFAULT_PORTS = {"http": 80, "https": 443}
 _NAT64 = ipaddress.ip_network("64:ff9b::/96")
@@ -158,7 +160,11 @@ def fetch_manifest(url: str) -> bytes:
             _check_hop(url, stored_port)
             try:
                 response = session.get(
-                    url, timeout=TIMEOUT, allow_redirects=False, stream=True
+                    url,
+                    headers={"User-Agent": USER_AGENT},
+                    timeout=TIMEOUT,
+                    allow_redirects=False,
+                    stream=True,
                 )
             except requests.RequestException as exc:
                 raise ManifestUnavailable(str(exc)) from exc
