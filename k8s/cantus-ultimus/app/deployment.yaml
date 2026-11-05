@@ -49,16 +49,22 @@ spec:
           mountPath: /code/mei-files
         - name: prometheus-multiproc
           mountPath: /tmp/prometheus-multiproc
+        # A cold start waits on the node's disk while a deploy starts several
+        # pods at once (over 100s seen, against ~1s warm), so liveness only
+        # begins once gunicorn listens; until then it has 10 minutes.
+        startupProbe:
+          tcpSocket:
+            port: 8001
+          periodSeconds: 10
+          failureThreshold: 60
         readinessProbe:
           tcpSocket:
             port: 8001
-          initialDelaySeconds: 30
           periodSeconds: 10
           failureThreshold: 6
         livenessProbe:
           tcpSocket:
             port: 8001
-          initialDelaySeconds: 60
           periodSeconds: 20
         resources:
           requests:
