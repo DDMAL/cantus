@@ -18,6 +18,8 @@ import template from './search.template.html';
  *
  * Providers are expected to implement those methods, to provide an array `fields` with field
  * types and names, and to provide a string `description` which describes the search type provided.
+ * A field that cannot be searched for the current source sets `disabled: true` and a
+ * `disabledReason`; it is listed greyed out and cannot be selected.
  *
  *  TODO: Make this API less confusing. As a historical note, it works this way because it merges
  *  two search views which had different implementations. Refactoring those to make the abstraction
@@ -86,15 +88,39 @@ export default Marionette.View.extend({
             this._setQuery(searchTerm.query);
         }
         else {
-            this.activeProvider = this.providers[0];
-            this.activeField = this.activeProvider.fields[0];
+            this._setFirstEnabledField();
             this._setQuery('');
         }
     },
 
+    /** Set the active provider and field to the first field that is not
+     * disabled, or to the very first field if every field is disabled.
+     * @private
+     */
+    _setFirstEnabledField: function () {
+        var found = _.some(this.providers, function (provider) {
+            var field = _.find(provider.fields, function (field) {
+                return !field.disabled;
+            });
+
+            if (field) {
+                this.activeProvider = provider;
+                this.activeField = field;
+                return true;
+            }
+
+            return false;
+        }, this);
+
+        if (!found) {
+            this.activeProvider = this.providers[0];
+            this.activeField = this.activeProvider.fields[0];
+        }
+    },
+
     /** Iterate through the providers and their fields to find one
-     * with the type `type`. Set the active provider and field if
-     * a match is found.
+     * with the type `type` that is not disabled. Set the active provider
+     * and field if a match is found.
      *
      * @param {String} type
      * @returns {Boolean} Whether a match was found
@@ -103,7 +129,7 @@ export default Marionette.View.extend({
     _findSearchField: function (type) {
         return _.some(this.providers, function (provider) {
             return _.some(provider.fields, function (field) {
-                if (field.type === type) {
+                if (field.type === type && !field.disabled) {
                     this.activeProvider = provider;
                     this.activeField = field;
                     return true;
@@ -140,6 +166,13 @@ export default Marionette.View.extend({
         var menuItem = $(event.target);
         var provider = this.providers[menuItem.data('provider-index')];
         var field = provider.fields[menuItem.data('field-index')];
+
+        // Bootstrap's disabled class already blocks clicks; this also covers
+        // anything that gets past it
+        if (field.disabled) {
+            event.preventDefault();
+            return;
+        }
 
         if (field !== this.activeField) {
             if (provider !== this.activeProvider) {
