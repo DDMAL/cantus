@@ -94,6 +94,7 @@ export default Marionette.Object.extend({
     {
         this.query = query;
 
+        this.abortPendingSearch();
         this.clearDivaBoxes();
 
         // Handle the empty case
@@ -110,9 +111,16 @@ export default Marionette.Object.extend({
                 manuscript: this.manuscript
             });
 
-            this.resultLoadingHandler.fetch();
+            this.pendingSearch = this.resultLoadingHandler.fetch();
         }
         return false;
+    },
+
+    /** Drop the search in flight, so its late response can't replace newer results. */
+    abortPendingSearch: function ()
+    {
+        if (this.pendingSearch)
+            this.pendingSearch.abort();
     },
 
     getDivaAdapter: function ()
@@ -122,10 +130,8 @@ export default Marionette.Object.extend({
 
     resultFetchCallback: function()
     {
-        // A response landing after a switch to text search would redraw the
-        // highlights the list's teardown cleared.
         var divaAdapter = this.getDivaAdapter();
-        if (!divaAdapter || this.resultView.isDestroyed())
+        if (!divaAdapter)
             return;
 
         divaAdapter.setHighlights(this.results.pluck('boxes'));
@@ -260,6 +266,7 @@ export default Marionette.Object.extend({
         this.listenTo(resultView, 'zoomToResult', this.zoomToResult);
 
         // Clear results from Diva when the results are no longer displayed
+        this.listenTo(resultView, 'destroy', this.abortPendingSearch);
         this.listenTo(resultView, 'destroy', this.clearDivaBoxes);
 
         regions.searchResults.show(resultView);

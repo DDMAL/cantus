@@ -92,6 +92,11 @@ export default Marionette.View.extend({
     },
 
     searchFailed: function (collection, resp) {
+        // A superseded search is aborted; the search or reset that replaced it
+        // sets the heading.
+        if (resp.statusText === 'abort')
+            return;
+
         this.setState(FAILURE, { error: resp });
         this.render();
     },
