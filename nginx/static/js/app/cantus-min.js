@@ -36414,7 +36414,8 @@ __webpack_require__.r(__webpack_exports__);
     searchBox: ".query-input"
   },
   events: {
-    'submit @ui.form': 'triggerSearch'
+    'submit @ui.form': 'triggerSearch',
+    'input @ui.searchBox': 'clearSearchIfEmpty'
   },
   serializeData: function serializeData() {
     return {
@@ -36425,6 +36426,14 @@ __webpack_require__.r(__webpack_exports__);
   triggerSearch: function triggerSearch(event) {
     event.preventDefault();
     this.trigger('search', this.ui.searchBox.val());
+  },
+  /**
+   * Clear the results once the search box is emptied, including by the
+   * browser's clear button, as chant search does. Other edits still wait
+   * for a submit.
+   */
+  clearSearchIfEmpty: function clearSearchIfEmpty() {
+    if (!this.ui.searchBox.val()) this.trigger('search', '');
   },
   /** Insert a string into the search input at the current caret position */
   insertSearchString: function insertSearchString(newQuery, addSpace) {
@@ -36677,6 +36686,9 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_3___default().ch
   },
   /** Mark the result whose box was clicked in the viewer; its row may not be loaded yet. */
   selectResultAt: function selectResultAt(selection) {
+    // The clicked box belongs to another field's search when OMR's list is
+    // gone or was never shown.
+    if (!this.resultView || this.resultView.isDestroyed()) return;
     while (this.displayedResults.length <= selection.resultIndex && this.resultLoadingHandler.hasMore()) this.resultLoadingHandler.continueLoading();
     this.resultView.setSelectedResult(this.displayedResults.at(selection.resultIndex) || null);
   },

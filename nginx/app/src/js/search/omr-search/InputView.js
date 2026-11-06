@@ -14,7 +14,8 @@ export default Marionette.View.extend({
     },
 
     events: {
-        'submit @ui.form': 'triggerSearch'
+        'submit @ui.form': 'triggerSearch',
+        'input @ui.searchBox': 'clearSearchIfEmpty'
     },
 
     serializeData: function () {
@@ -27,6 +28,16 @@ export default Marionette.View.extend({
     triggerSearch: function (event) {
         event.preventDefault();
         this.trigger('search', this.ui.searchBox.val());
+    },
+
+    /**
+     * Clear the results once the search box is emptied, including by the
+     * browser's clear button, as chant search does. Other edits still wait
+     * for a submit.
+     */
+    clearSearchIfEmpty: function () {
+        if (!this.ui.searchBox.val())
+            this.trigger('search', '');
     },
 
     /** Insert a string into the search input at the current caret position */

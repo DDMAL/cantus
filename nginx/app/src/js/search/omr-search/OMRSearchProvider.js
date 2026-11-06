@@ -146,6 +146,11 @@ export default Marionette.Object.extend({
     /** Mark the result whose box was clicked in the viewer; its row may not be loaded yet. */
     selectResultAt: function (selection)
     {
+        // The clicked box belongs to another field's search when OMR's list is
+        // gone or was never shown.
+        if (!this.resultView || this.resultView.isDestroyed())
+            return;
+
         while (this.displayedResults.length <= selection.resultIndex && this.resultLoadingHandler.hasMore())
             this.resultLoadingHandler.continueLoading();
 
