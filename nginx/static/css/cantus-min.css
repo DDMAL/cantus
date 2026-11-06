@@ -12647,6 +12647,12 @@ body.propagate-height {
   --diva-annotation-fill-hover: rgba(194, 52, 46, 0.15);
   --diva-annotation-stroke-hover: #c2342e;
 }
+#diva-column #diva-wrapper .diva-annotation-overlay g {
+  cursor: pointer;
+}
+#diva-column #diva-wrapper .diva-annotation-panel {
+  display: none;
+}
 
 .search-notation-result-list {
   --bs-table-active-bg: rgba(194, 52, 46, 0.12);

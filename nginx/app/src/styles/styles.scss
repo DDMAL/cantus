@@ -464,6 +464,18 @@ body.propagate-height {
     // Diva reuses the hover tokens for `.is-selected`.
     --diva-annotation-fill-hover: #{rgba($brand-primary, 0.15)};
     --diva-annotation-stroke-hover: #{$brand-primary};
+
+    // Clicking a box marks its result row; Diva's default cursor is `help`.
+    .diva-annotation-overlay g {
+        cursor: pointer;
+    }
+
+    // Diva opens this panel on every box selection, including the one each
+    // OMR search makes, and has no option to keep it closed. Its preview
+    // repeats the result row's thumbnail.
+    .diva-annotation-panel {
+        display: none;
+    }
 }
 
 // Selected OMR result row (ResultView sets table-active).
