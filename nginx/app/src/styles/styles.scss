@@ -454,6 +454,35 @@ body.propagate-height {
     }
 }
 
+// OMR search-result boxes. Fills stay faint: any fill lowers the contrast
+// between ink and parchment by its alpha.
+#diva-column #diva-wrapper {
+    --diva-annotation-fill: #{rgba($brand-primary, 0.1)};
+    --diva-annotation-stroke: #555;
+    --diva-annotation-stroke-width: 1.5;
+
+    // Diva reuses the hover tokens for `.is-selected`.
+    --diva-annotation-fill-hover: #{rgba($brand-primary, 0.15)};
+    --diva-annotation-stroke-hover: #{$brand-primary};
+
+    // Clicking a box marks its result row; Diva's default cursor is `help`.
+    .diva-annotation-overlay g {
+        cursor: pointer;
+    }
+
+    // Diva opens this panel on every box selection, including the one each
+    // OMR search makes, and has no option to keep it closed. Its preview
+    // repeats the result row's thumbnail.
+    .diva-annotation-panel {
+        display: none;
+    }
+}
+
+// Selected OMR result row (ResultView sets table-active).
+.search-notation-result-list {
+    --bs-table-active-bg: #{rgba($brand-primary, 0.12)};
+}
+
 .modal-dialog {
     max-width: 90%;
     width: 50%;

@@ -45,12 +45,12 @@ export default class DivaAdapter {
         return this.backend.goToPreviousPage();
     }
 
-    setHighlights(regions) {
-        return this.backend.setHighlights(regions);
+    setHighlights(resultRegions) {
+        return this.backend.setHighlights(resultRegions);
     }
 
-    focusRegion(region) {
-        return this.backend.focusRegion(region);
+    focusResult(resultIndex) {
+        return this.backend.focusResult(resultIndex);
     }
 
     destroy() {

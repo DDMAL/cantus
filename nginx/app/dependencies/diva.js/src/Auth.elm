@@ -18,6 +18,7 @@ module Auth exposing
     , logoutActions
     , prompt
     , registerSources
+    , requiresAuthorization
     , sourceIsAuthorized
     , thumbnailCrossOrigin
     , update
@@ -218,6 +219,16 @@ registerSources sources model =
         , activeInteractive = Nothing
         , promptQueue = []
     }
+
+
+requiresAuthorization : SourceAuth -> Bool
+requiresAuthorization sourceAuth =
+    case sourceAuth of
+        Discovered discovery ->
+            not (List.isEmpty discovery.probes)
+
+        _ ->
+            False
 
 
 sourceIsAuthorized : String -> Model -> Bool
@@ -1043,16 +1054,6 @@ releaseInteractive flowId model =
 
     else
         withoutPrompt
-
-
-requiresAuthorization : SourceAuth -> Bool
-requiresAuthorization sourceAuth =
-    case sourceAuth of
-        Discovered discovery ->
-            not (List.isEmpty discovery.probes)
-
-        _ ->
-            False
 
 
 resolve : String -> String -> Model -> ( Model, List Effect )

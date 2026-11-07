@@ -87,12 +87,14 @@ export default Marionette.Object.extend({
         this.resultLoadingHandler = new IncrementalClientSideLoader(this.displayedResults, this.results);
 
         this.listenTo(this.results, "sync", this.resultFetchCallback);
+        this.listenTo(manuscriptChannel, 'highlight:selected', this.selectResultAt);
     },
 
     onSearch: function (query)
     {
         this.query = query;
 
+        this.abortPendingSearch();
         this.clearDivaBoxes();
 
         // Handle the empty case
@@ -109,9 +111,16 @@ export default Marionette.Object.extend({
                 manuscript: this.manuscript
             });
 
-            this.resultLoadingHandler.fetch();
+            this.pendingSearch = this.resultLoadingHandler.fetch();
         }
         return false;
+    },
+
+    /** Drop the search in flight, so its late response can't replace newer results. */
+    abortPendingSearch: function ()
+    {
+        if (this.pendingSearch)
+            this.pendingSearch.abort();
     },
 
     getDivaAdapter: function ()
@@ -125,10 +134,7 @@ export default Marionette.Object.extend({
         if (!divaAdapter)
             return;
 
-        divaAdapter.setHighlights(_.flatten(this.results.map(function (model)
-        {
-            return _.map(model.get('boxes'), _.clone);
-        })));
+        divaAdapter.setHighlights(this.results.pluck('boxes'));
 
         if (this.results.length > 0)
             this.zoomToResult(this.results.at(0));
@@ -143,23 +149,29 @@ export default Marionette.Object.extend({
             divaAdapter.setHighlights([]);
     },
 
+    /** Mark the result whose box was clicked in the viewer; its row may not be loaded yet. */
+    selectResultAt: function (selection)
+    {
+        // The clicked box belongs to another field's search when OMR's list is
+        // gone or was never shown.
+        if (!this.resultView || this.resultView.isDestroyed())
+            return;
+
+        while (this.displayedResults.length <= selection.resultIndex && this.resultLoadingHandler.hasMore())
+            this.resultLoadingHandler.continueLoading();
+
+        this.resultView.setSelectedResult(this.displayedResults.at(selection.resultIndex) || null);
+    },
+
     zoomToResult: function(model)
     {
         var divaAdapter = this.getDivaAdapter();
         if (!divaAdapter)
             return;
 
-        var box = model.get('boxes')[0];
-        if (!box)
-            return;
+        this.resultView.setSelectedResult(model);
 
-        divaAdapter.focusRegion({
-            imageURI: box.p,
-            x: box.x,
-            y: box.y,
-            width: box.w,
-            height: box.h
-        });
+        divaAdapter.focusResult(this.results.indexOf(model));
     },
 
     serializeData: function()
@@ -238,10 +250,13 @@ export default Marionette.Object.extend({
             collection: this.displayedResults
         });
 
+        this.resultView = resultView;
+
         this.listenTo(resultView, 'continue:loading', this._continueLoadingResults);
         this.listenTo(resultView, 'zoomToResult', this.zoomToResult);
 
         // Clear results from Diva when the results are no longer displayed
+        this.listenTo(resultView, 'destroy', this.abortPendingSearch);
         this.listenTo(resultView, 'destroy', this.clearDivaBoxes);
 
         regions.searchResults.show(resultView);

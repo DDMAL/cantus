@@ -54,6 +54,16 @@ export type DivaPageTarget = number | DivaPageSelector;
  */
 export type DivaSidebarPanel = "thumbnails" | "contents" | "metadata";
 /**
+ * Controls how Diva loads static image bodies that do not use the IIIF Image API.
+ *
+ * @remarks
+ * `required` preserves Diva's canvas-safe CORS behavior. `fallback` retries a
+ * failed anonymous-CORS static image once without CORS, while `none` uses that
+ * non-CORS path immediately. Images loaded without CORS can be viewed but cannot
+ * use Page View pixel filters or be saved from the filter view.
+ */
+export type DivaStaticImageCorsPolicy = "required" | "fallback" | "none";
+/**
  * A painted image described by a IIIF canvas.
  */
 export interface DivaImage {
@@ -125,6 +135,35 @@ export interface DivaRegion {
     height: number;
 }
 /**
+ * A JSON Web Annotation accepted and returned by Diva's annotation API.
+ *
+ * `target` (or the IIIF Presentation 2 `on` alias) must identify a loaded
+ * Canvas and use either an `xywh` fragment/selector or an inline SVG selector.
+ */
+export interface DivaAnnotation {
+    /**
+     * Stable Web Annotation identifier. Required when setting annotations.
+     */
+    id: string;
+    /**
+     * Usually `"Annotation"`; retained without interpretation.
+     */
+    type?: string;
+    /**
+     * Web Annotation body, commonly a TextualBody or string.
+     */
+    body?: unknown;
+    /**
+     * Web Annotation target.
+     */
+    target?: unknown;
+    /**
+     * IIIF Presentation 2 alias for `target`.
+     */
+    on?: unknown;
+    [key: string]: unknown;
+}
+/**
  * Options controlling how an image region is framed.
  */
 export interface ZoomToRegionOptions {
@@ -194,6 +233,13 @@ export interface DivaState {
  * Typed details for events dispatched by a Diva instance.
  */
 export interface DivaEventMap {
+    /**
+     * Fired when an annotation is activated in the viewer.
+     */
+    annotationselect: CustomEvent<{
+        /** Stable identifier of the selected annotation. */
+        annotationId: string;
+    }>;
     /**
      * Fired once after the initial resource and selected initial page are ready.
      */
@@ -308,6 +354,30 @@ export interface DivaOptions {
      * Preferred HTTP Accept values for IIIF resource requests.
      */
     acceptHeaders?: string[];
+    /**
+     * Enable manifest-driven IIIF annotation overlays. @defaultValue `false`
+     */
+    enableAnnotations?: boolean;
+    /**
+     * Enable selecting annotations by clicking or keyboard activation. @defaultValue `true`
+     */
+    enableAnnotationSelection?: boolean;
+    /**
+     * Optional GET endpoint used when a canvas declares no annotation resources.
+     */
+    annotationServer?: string;
+    /**
+     * CORS policy for static image bodies without an IIIF Image API service.
+     *
+     * @remarks
+     * `fallback` attempts anonymous CORS first and makes one non-CORS retry when
+     * that load fails. `none` loads static images without CORS immediately.
+     * Non-CORS images remain viewable, but Page View pixel filters and saving are
+     * unavailable because the browser taints their canvas.
+     *
+     * @defaultValue `"required"`
+     */
+    staticImageCorsPolicy?: DivaStaticImageCorsPolicy;
     /**
      * Show the navigation sidebar.
      *

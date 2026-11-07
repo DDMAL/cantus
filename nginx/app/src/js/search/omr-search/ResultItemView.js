@@ -91,6 +91,7 @@ export default Marionette.View.extend({
             },
             thumbnailUrl: _.bind(this.getThumbnail, this),
             neumeImageHeight: this.neumeImageHeight,
+            resultNumber: this.model.collection.indexOf(this.model) + 1,
             folioUrl: '/manuscript/' + manuscriptChannel.request('manuscript') + '/?folio=' +
                 encodeURIComponent(_.result(this.model.get('boxes')[0], 'f'))
         };

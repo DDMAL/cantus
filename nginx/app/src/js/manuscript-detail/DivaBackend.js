@@ -26,6 +26,10 @@ const OMR_MIN_VIEW_FRACTION = 0.4;
 // Padding kept around a region already larger than that minimum span.
 const OMR_MIN_ZOOM_PADDING = 2;
 
+// omr-highlight-<generation>-<result>-<box>. The generation changes with each
+// highlight set because Diva never clears its selected id.
+const OMR_HIGHLIGHT_ID_PATTERN = /^omr-highlight-\d+-(\d+)-\d+$/;
+
 /**
  * Diva backend for DivaAdapter. Lazily loads OpenSeadragon and the vendored Diva
  * bundle, mounts the viewer, and adapts Diva's public API to the adapter's
@@ -45,7 +49,8 @@ export default class DivaBackend {
         this.subscribers = {
             'viewer:loaded': [],
             'page:changed': [],
-            'manifest:loaded': []
+            'manifest:loaded': [],
+            'highlight:selected': []
         };
 
         // Current page index, tracked from Diva's pagechange event.
@@ -54,11 +59,21 @@ export default class DivaBackend {
         // Page image URIs in Diva's page order, filled once the viewer is ready.
         this.pageURIs = [];
 
+        // Canvas ids in the same order; Diva keys annotations by canvas.
+        this.pageCanvasIds = [];
+
+        this.pendingHighlights = null;
+        this.pendingFocusIndex = null;
+        // Each result's first drawn box: { id, pageIndex, region }.
+        this.highlightsByResult = new Map();
+        this.highlightGeneration = 0;
+
         // True once Diva's `ready` promise has resolved; page state must not be
         // read nor viewer commands issued before then.
         this.ready = false;
 
         this.onPageChange = this.handlePageChange.bind(this);
+        this.onAnnotationSelect = this.handleAnnotationSelect.bind(this);
     }
 
     initialize() {
@@ -93,6 +108,7 @@ export default class DivaBackend {
                 });
 
                 this.instance.addEventListener('pagechange', this.onPageChange);
+                this.instance.addEventListener('annotationselect', this.onAnnotationSelect);
 
                 // Cantus's folio label and chants panel track one folio at a
                 // time, so open single-page.
@@ -133,13 +149,28 @@ export default class DivaBackend {
         if (this.destroyed)
             return;
 
+        var pages = this.instance.getPages();
+
         // Strip "/info.json" so each URI matches Folio.image_uri in Django/Solr.
-        this.pageURIs = this.instance.getPages().map(
+        this.pageURIs = pages.map(
             page => page.primaryImage.id.replace(/\/info\.json$/, ''));
+        this.pageCanvasIds = pages.map(page => page.canvasId);
         this.currentIndex = this.instance.getState().currentPageIndex || 0;
         this.ready = true;
 
+        // Before the deferred focus below, which frames one of these boxes.
+        if (this.pendingHighlights) {
+            this.applyHighlights(this.pendingHighlights);
+            this.pendingHighlights = null;
+        }
+
         this.emit('viewer:loaded');
+
+        if (this.pendingFocusIndex !== null) {
+            this.focusResult(this.pendingFocusIndex);
+            this.pendingFocusIndex = null;
+        }
+
         this.emitPageChanged();
     }
 
@@ -148,6 +179,13 @@ export default class DivaBackend {
 
         if (this.ready)
             this.emitPageChanged();
+    }
+
+    // Diva also fires this for focusResult()'s selection, re-reporting the result.
+    handleAnnotationSelect(event) {
+        var match = OMR_HIGHLIGHT_ID_PATTERN.exec(event.detail.annotationId);
+        if (match)
+            this.emit('highlight:selected', { resultIndex: Number(match[1]) });
     }
 
     emitPageChanged() {
@@ -190,26 +228,76 @@ export default class DivaBackend {
         this.instance.previous();
     }
 
-    // Placeholder for a future OMR result-highlight overlay; no overlay is drawn yet.
-    setHighlights() {}
+    /**
+     * Replace the drawn OMR boxes with one array of Solr boxes ({ p: imageURI,
+     * x, y, w, h } in full-resolution pixels) per result. [] clears them.
+     */
+    setHighlights(resultRegions) {
+        if (this.ready)
+            this.applyHighlights(resultRegions);
+        else
+            this.pendingHighlights = resultRegions;
+    }
+
+    /** Requires the page tables, so only call this once the viewer is ready. */
+    applyHighlights(resultRegions) {
+        var annotations = [];
+
+        this.highlightGeneration += 1;
+        this.highlightsByResult.clear();
+
+        resultRegions.forEach((regions, resultIndex) => {
+            regions.forEach((region, boxIndex) => {
+                // Diva rejects the whole batch over one box off the manifest or
+                // one invalid rectangle. Folios with no image have an empty URI.
+                // Diva can't zoom to negative coordinates either; some OMR
+                // boxes start at -1 and span most of the page.
+                var pageIndex = this.pageURIs.indexOf(region.p);
+                var xywh = [region.x, region.y, region.w, region.h];
+                if (pageIndex < 0 || !xywh.every(Number.isFinite) || region.x < 0 || region.y < 0
+                    || region.w <= 0 || region.h <= 0)
+                    return;
+
+                var id = ['omr-highlight', this.highlightGeneration, resultIndex, boxIndex].join('-');
+                if (!this.highlightsByResult.has(resultIndex)) {
+                    this.highlightsByResult.set(resultIndex, {
+                        id: id,
+                        pageIndex: pageIndex,
+                        region: { x: region.x, y: region.y, width: region.w, height: region.h }
+                    });
+                }
+
+                annotations.push({
+                    id: id,
+                    // No body, so Diva shows no hover tooltip.
+                    target: this.pageCanvasIds[pageIndex] + '#xywh=' + xywh.join(',')
+                });
+            });
+        });
+
+        this.instance.setAnnotations(annotations);
+    }
 
     /**
-     * Go to an OMR result's page and zoom to its region, given in
-     * full-resolution image pixels.
+     * Go to the page of the OMR result at `resultIndex`, zoom to its first
+     * drawn box, and select it. Diva selects one annotation at a time, so a
+     * multi-system result marks only that box. A result with no drawn box
+     * leaves the viewer where it is.
      */
-    focusRegion(region) {
-        // A search can run before the viewer is ready; retry once it is, so
-        // pageURIs is populated.
+    focusResult(resultIndex) {
+        // A search can run before the viewer is ready; handleViewerReady
+        // focuses the latest such request once the boxes are drawn.
         if (!this.ready) {
-            this.on('viewer:loaded', () => this.focusRegion(region));
+            this.pendingFocusIndex = resultIndex;
             return;
         }
 
-        var index = this.pageURIs.indexOf(region.imageURI);
-        if (index < 0)
+        var highlight = this.highlightsByResult.get(resultIndex);
+        if (!highlight)
             return;
 
-        var page = this.instance.getPages()[index];
+        var page = this.instance.getPages()[highlight.pageIndex];
+        var region = highlight.region;
         // pageSpan is 0 when the manifest omits page dimensions; the max() below
         // then falls back to OMR_MIN_ZOOM_PADDING.
         var pageSpan = Math.max(page.width || 0, page.height || 0);
@@ -219,12 +307,8 @@ export default class DivaBackend {
             (pageSpan * OMR_MIN_VIEW_FRACTION / boxSpan - 1) / 2
         );
 
-        this.instance.zoomToRegion(index, {
-            x: region.x,
-            y: region.y,
-            width: region.width,
-            height: region.height
-        }, { padding: padding });
+        this.instance.zoomToRegion(highlight.pageIndex, region, { padding: padding });
+        this.instance.selectAnnotation(highlight.id);
     }
 
     destroy() {
@@ -233,6 +317,7 @@ export default class DivaBackend {
 
         if (this.instance) {
             this.instance.removeEventListener('pagechange', this.onPageChange);
+            this.instance.removeEventListener('annotationselect', this.onAnnotationSelect);
             this.instance.destroy();
         }
 

@@ -31980,13 +31980,13 @@ var DivaAdapter = /*#__PURE__*/function () {
     }
   }, {
     key: "setHighlights",
-    value: function setHighlights(regions) {
-      return this.backend.setHighlights(regions);
+    value: function setHighlights(resultRegions) {
+      return this.backend.setHighlights(resultRegions);
     }
   }, {
-    key: "focusRegion",
-    value: function focusRegion(region) {
-      return this.backend.focusRegion(region);
+    key: "focusResult",
+    value: function focusResult(resultIndex) {
+      return this.backend.focusResult(resultIndex);
     }
   }, {
     key: "destroy",
@@ -32045,6 +32045,10 @@ var OMR_MIN_VIEW_FRACTION = 0.4;
 // Padding kept around a region already larger than that minimum span.
 var OMR_MIN_ZOOM_PADDING = 2;
 
+// omr-highlight-<generation>-<result>-<box>. The generation changes with each
+// highlight set because Diva never clears its selected id.
+var OMR_HIGHLIGHT_ID_PATTERN = /^omr-highlight-\d+-(\d+)-\d+$/;
+
 /**
  * Diva backend for DivaAdapter. Lazily loads OpenSeadragon and the vendored Diva
  * bundle, mounts the viewer, and adapts Diva's public API to the adapter's
@@ -32064,7 +32068,8 @@ var DivaBackend = /*#__PURE__*/function () {
     this.subscribers = {
       'viewer:loaded': [],
       'page:changed': [],
-      'manifest:loaded': []
+      'manifest:loaded': [],
+      'highlight:selected': []
     };
 
     // Current page index, tracked from Diva's pagechange event.
@@ -32073,10 +32078,19 @@ var DivaBackend = /*#__PURE__*/function () {
     // Page image URIs in Diva's page order, filled once the viewer is ready.
     this.pageURIs = [];
 
+    // Canvas ids in the same order; Diva keys annotations by canvas.
+    this.pageCanvasIds = [];
+    this.pendingHighlights = null;
+    this.pendingFocusIndex = null;
+    // Each result's first drawn box: { id, pageIndex, region }.
+    this.highlightsByResult = new Map();
+    this.highlightGeneration = 0;
+
     // True once Diva's `ready` promise has resolved; page state must not be
     // read nor viewer commands issued before then.
     this.ready = false;
     this.onPageChange = this.handlePageChange.bind(this);
+    this.onAnnotationSelect = this.handleAnnotationSelect.bind(this);
   }
   return _createClass(DivaBackend, [{
     key: "initialize",
@@ -32107,6 +32121,7 @@ var DivaBackend = /*#__PURE__*/function () {
           showSidebar: false
         });
         _this.instance.addEventListener('pagechange', _this.onPageChange);
+        _this.instance.addEventListener('annotationselect', _this.onAnnotationSelect);
 
         // Cantus's folio label and chants panel track one folio at a
         // time, so open single-page.
@@ -32150,14 +32165,28 @@ var DivaBackend = /*#__PURE__*/function () {
     key: "handleViewerReady",
     value: function handleViewerReady() {
       if (this.destroyed) return;
+      var pages = this.instance.getPages();
 
       // Strip "/info.json" so each URI matches Folio.image_uri in Django/Solr.
-      this.pageURIs = this.instance.getPages().map(function (page) {
+      this.pageURIs = pages.map(function (page) {
         return page.primaryImage.id.replace(/\/info\.json$/, '');
+      });
+      this.pageCanvasIds = pages.map(function (page) {
+        return page.canvasId;
       });
       this.currentIndex = this.instance.getState().currentPageIndex || 0;
       this.ready = true;
+
+      // Before the deferred focus below, which frames one of these boxes.
+      if (this.pendingHighlights) {
+        this.applyHighlights(this.pendingHighlights);
+        this.pendingHighlights = null;
+      }
       this.emit('viewer:loaded');
+      if (this.pendingFocusIndex !== null) {
+        this.focusResult(this.pendingFocusIndex);
+        this.pendingFocusIndex = null;
+      }
       this.emitPageChanged();
     }
   }, {
@@ -32165,6 +32194,16 @@ var DivaBackend = /*#__PURE__*/function () {
     value: function handlePageChange(event) {
       this.currentIndex = event.detail.pageIndex;
       if (this.ready) this.emitPageChanged();
+    }
+
+    // Diva also fires this for focusResult()'s selection, re-reporting the result.
+  }, {
+    key: "handleAnnotationSelect",
+    value: function handleAnnotationSelect(event) {
+      var match = OMR_HIGHLIGHT_ID_PATTERN.exec(event.detail.annotationId);
+      if (match) this.emit('highlight:selected', {
+        resultIndex: Number(match[1])
+      });
     }
   }, {
     key: "emitPageChanged",
@@ -32218,43 +32257,84 @@ var DivaBackend = /*#__PURE__*/function () {
       this.instance.previous();
     }
 
-    // Placeholder for a future OMR result-highlight overlay; no overlay is drawn yet.
-  }, {
-    key: "setHighlights",
-    value: function setHighlights() {}
-
     /**
-     * Go to an OMR result's page and zoom to its region, given in
-     * full-resolution image pixels.
+     * Replace the drawn OMR boxes with one array of Solr boxes ({ p: imageURI,
+     * x, y, w, h } in full-resolution pixels) per result. [] clears them.
      */
   }, {
-    key: "focusRegion",
-    value: function focusRegion(region) {
+    key: "setHighlights",
+    value: function setHighlights(resultRegions) {
+      if (this.ready) this.applyHighlights(resultRegions);else this.pendingHighlights = resultRegions;
+    }
+
+    /** Requires the page tables, so only call this once the viewer is ready. */
+  }, {
+    key: "applyHighlights",
+    value: function applyHighlights(resultRegions) {
       var _this3 = this;
-      // A search can run before the viewer is ready; retry once it is, so
-      // pageURIs is populated.
-      if (!this.ready) {
-        this.on('viewer:loaded', function () {
-          return _this3.focusRegion(region);
+      var annotations = [];
+      this.highlightGeneration += 1;
+      this.highlightsByResult.clear();
+      resultRegions.forEach(function (regions, resultIndex) {
+        regions.forEach(function (region, boxIndex) {
+          // Diva rejects the whole batch over one box off the manifest or
+          // one invalid rectangle. Folios with no image have an empty URI.
+          // Diva can't zoom to negative coordinates either; some OMR
+          // boxes start at -1 and span most of the page.
+          var pageIndex = _this3.pageURIs.indexOf(region.p);
+          var xywh = [region.x, region.y, region.w, region.h];
+          if (pageIndex < 0 || !xywh.every(Number.isFinite) || region.x < 0 || region.y < 0 || region.w <= 0 || region.h <= 0) return;
+          var id = ['omr-highlight', _this3.highlightGeneration, resultIndex, boxIndex].join('-');
+          if (!_this3.highlightsByResult.has(resultIndex)) {
+            _this3.highlightsByResult.set(resultIndex, {
+              id: id,
+              pageIndex: pageIndex,
+              region: {
+                x: region.x,
+                y: region.y,
+                width: region.w,
+                height: region.h
+              }
+            });
+          }
+          annotations.push({
+            id: id,
+            // No body, so Diva shows no hover tooltip.
+            target: _this3.pageCanvasIds[pageIndex] + '#xywh=' + xywh.join(',')
+          });
         });
+      });
+      this.instance.setAnnotations(annotations);
+    }
+
+    /**
+     * Go to the page of the OMR result at `resultIndex`, zoom to its first
+     * drawn box, and select it. Diva selects one annotation at a time, so a
+     * multi-system result marks only that box. A result with no drawn box
+     * leaves the viewer where it is.
+     */
+  }, {
+    key: "focusResult",
+    value: function focusResult(resultIndex) {
+      // A search can run before the viewer is ready; handleViewerReady
+      // focuses the latest such request once the boxes are drawn.
+      if (!this.ready) {
+        this.pendingFocusIndex = resultIndex;
         return;
       }
-      var index = this.pageURIs.indexOf(region.imageURI);
-      if (index < 0) return;
-      var page = this.instance.getPages()[index];
+      var highlight = this.highlightsByResult.get(resultIndex);
+      if (!highlight) return;
+      var page = this.instance.getPages()[highlight.pageIndex];
+      var region = highlight.region;
       // pageSpan is 0 when the manifest omits page dimensions; the max() below
       // then falls back to OMR_MIN_ZOOM_PADDING.
       var pageSpan = Math.max(page.width || 0, page.height || 0);
       var boxSpan = Math.max(region.width, region.height);
       var padding = Math.max(OMR_MIN_ZOOM_PADDING, (pageSpan * OMR_MIN_VIEW_FRACTION / boxSpan - 1) / 2);
-      this.instance.zoomToRegion(index, {
-        x: region.x,
-        y: region.y,
-        width: region.width,
-        height: region.height
-      }, {
+      this.instance.zoomToRegion(highlight.pageIndex, region, {
         padding: padding
       });
+      this.instance.selectAnnotation(highlight.id);
     }
   }, {
     key: "destroy",
@@ -32263,6 +32343,7 @@ var DivaBackend = /*#__PURE__*/function () {
       this.destroyed = true;
       if (this.instance) {
         this.instance.removeEventListener('pagechange', this.onPageChange);
+        this.instance.removeEventListener('annotationselect', this.onAnnotationSelect);
         this.instance.destroy();
       }
       this.instance = null;
@@ -32466,6 +32547,9 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default().ch
     this.divaAdapter.on("viewer:loaded", this.propagateFolioChange);
     this.divaAdapter.on("page:changed", this.propagateFolioChange);
     this.divaAdapter.on("manifest:loaded", this.onManifestLoad);
+    this.divaAdapter.on("highlight:selected", function (selection) {
+      return manuscriptChannel.trigger('highlight:selected', selection);
+    });
   },
   /**
    * Update the folio label in the Cantus toolbar row, e.g. "Folio 006v (3 of 500)"
@@ -35011,6 +35095,9 @@ var viewError = function viewError(message) {
     this.render();
   },
   searchFailed: function searchFailed(collection, resp) {
+    // A superseded search is aborted; the search or reset that replaced it
+    // sets the heading.
+    if (resp.statusText === 'abort') return;
     this.setState(FAILURE, {
       error: resp
     });
@@ -36334,7 +36421,8 @@ __webpack_require__.r(__webpack_exports__);
     searchBox: ".query-input"
   },
   events: {
-    'submit @ui.form': 'triggerSearch'
+    'submit @ui.form': 'triggerSearch',
+    'input @ui.searchBox': 'clearSearchIfEmpty'
   },
   serializeData: function serializeData() {
     return {
@@ -36345,6 +36433,14 @@ __webpack_require__.r(__webpack_exports__);
   triggerSearch: function triggerSearch(event) {
     event.preventDefault();
     this.trigger('search', this.ui.searchBox.val());
+  },
+  /**
+   * Clear the results once the search box is emptied, including by the
+   * browser's clear button, as chant search does. Other edits still wait
+   * for a submit.
+   */
+  clearSearchIfEmpty: function clearSearchIfEmpty() {
+    if (!this.ui.searchBox.val()) this.trigger('search', '');
   },
   /** Insert a string into the search input at the current caret position */
   insertSearchString: function insertSearchString(newQuery, addSpace) {
@@ -36558,9 +36654,11 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_3___default().ch
     this.displayedResults = new collections_SearchNotationResultCollection__WEBPACK_IMPORTED_MODULE_4__["default"]();
     this.resultLoadingHandler = new utils_IncrementalClientSideLoader__WEBPACK_IMPORTED_MODULE_5__["default"](this.displayedResults, this.results);
     this.listenTo(this.results, "sync", this.resultFetchCallback);
+    this.listenTo(manuscriptChannel, 'highlight:selected', this.selectResultAt);
   },
   onSearch: function onSearch(query) {
     this.query = query;
+    this.abortPendingSearch();
     this.clearDivaBoxes();
 
     // Handle the empty case
@@ -36573,9 +36671,13 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_3___default().ch
         query: this.query,
         manuscript: this.manuscript
       });
-      this.resultLoadingHandler.fetch();
+      this.pendingSearch = this.resultLoadingHandler.fetch();
     }
     return false;
+  },
+  /** Drop the search in flight, so its late response can't replace newer results. */
+  abortPendingSearch: function abortPendingSearch() {
+    if (this.pendingSearch) this.pendingSearch.abort();
   },
   getDivaAdapter: function getDivaAdapter() {
     return manuscriptChannel.request('diva');
@@ -36583,9 +36685,7 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_3___default().ch
   resultFetchCallback: function resultFetchCallback() {
     var divaAdapter = this.getDivaAdapter();
     if (!divaAdapter) return;
-    divaAdapter.setHighlights(underscore__WEBPACK_IMPORTED_MODULE_0__["default"].flatten(this.results.map(function (model) {
-      return underscore__WEBPACK_IMPORTED_MODULE_0__["default"].map(model.get('boxes'), underscore__WEBPACK_IMPORTED_MODULE_0__["default"].clone);
-    })));
+    divaAdapter.setHighlights(this.results.pluck('boxes'));
     if (this.results.length > 0) this.zoomToResult(this.results.at(0));
   },
   /** Stop displaying Diva highlights */
@@ -36594,18 +36694,19 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_3___default().ch
     // If we pass an empty array, then all highlights are erased.
     if (divaAdapter) divaAdapter.setHighlights([]);
   },
+  /** Mark the result whose box was clicked in the viewer; its row may not be loaded yet. */
+  selectResultAt: function selectResultAt(selection) {
+    // The clicked box belongs to another field's search when OMR's list is
+    // gone or was never shown.
+    if (!this.resultView || this.resultView.isDestroyed()) return;
+    while (this.displayedResults.length <= selection.resultIndex && this.resultLoadingHandler.hasMore()) this.resultLoadingHandler.continueLoading();
+    this.resultView.setSelectedResult(this.displayedResults.at(selection.resultIndex) || null);
+  },
   zoomToResult: function zoomToResult(model) {
     var divaAdapter = this.getDivaAdapter();
     if (!divaAdapter) return;
-    var box = model.get('boxes')[0];
-    if (!box) return;
-    divaAdapter.focusRegion({
-      imageURI: box.p,
-      x: box.x,
-      y: box.y,
-      width: box.w,
-      height: box.h
-    });
+    this.resultView.setSelectedResult(model);
+    divaAdapter.focusResult(this.results.indexOf(model));
   },
   serializeData: function serializeData() {
     return {
@@ -36669,10 +36770,12 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_3___default().ch
     var resultView = new _ResultView__WEBPACK_IMPORTED_MODULE_11__["default"]({
       collection: this.displayedResults
     });
+    this.resultView = resultView;
     this.listenTo(resultView, 'continue:loading', this._continueLoadingResults);
     this.listenTo(resultView, 'zoomToResult', this.zoomToResult);
 
     // Clear results from Diva when the results are no longer displayed
+    this.listenTo(resultView, 'destroy', this.abortPendingSearch);
     this.listenTo(resultView, 'destroy', this.clearDivaBoxes);
     regions.searchResults.show(resultView);
 
@@ -36785,6 +36888,7 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default().ch
       },
       thumbnailUrl: underscore__WEBPACK_IMPORTED_MODULE_0__["default"].bind(this.getThumbnail, this),
       neumeImageHeight: this.neumeImageHeight,
+      resultNumber: this.model.collection.indexOf(this.model) + 1,
       folioUrl: '/manuscript/' + manuscriptChannel.request('manuscript') + '/?folio=' + encodeURIComponent(underscore__WEBPACK_IMPORTED_MODULE_0__["default"].result(this.model.get('boxes')[0], 'f'))
     };
   }
@@ -36834,6 +36938,15 @@ __webpack_require__.r(__webpack_exports__);
   },
   initialize: function initialize() {
     this._handleScroll = underscore__WEBPACK_IMPORTED_MODULE_0__["default"].throttle(underscore__WEBPACK_IMPORTED_MODULE_0__["default"].bind(this._loadResultsIfAtEnd, this), 250);
+  },
+  setSelectedResult: function setSelectedResult(model) {
+    this.children.each(function (childView) {
+      childView.$el.toggleClass('table-active', childView.model === model);
+    });
+    var selectedView = model && this.children.findByModel(model);
+    if (selectedView) selectedView.el.scrollIntoView({
+      block: 'nearest'
+    });
   },
   updateTable: function updateTable() {
     if (this.collection.length) {
@@ -36995,11 +37108,13 @@ __p+='<td><a href="'+
 ((__t=( folioUrl ))==null?'':_.escape(__t))+
 '" class="folio-link">'+
 ((__t=( _.result(boxes[0], 'f') ))==null?'':_.escape(__t))+
-'</a></td>\n<td>\n    <a href="#" class="result-target neume-images">\n        ';
+'</a></td>\n<td>\n    <a href="#" class="result-target neume-images" aria-label="Show result '+
+((__t=( resultNumber ))==null?'':_.escape(__t))+
+' in viewer">\n        ';
  _.forEach(boxes, function (box) { 
 __p+='\n            <img src="'+
 ((__t=( thumbnailUrl(box) ))==null?'':__t)+
-'"\n                 style="width: '+
+'" alt="" loading="lazy"\n                 style="width: '+
 ((__t=( box.w / box.h * neumeImageHeight ))==null?'':_.escape(__t))+
 'px; height: '+
 ((__t=( neumeImageHeight ))==null?'':_.escape(__t))+
