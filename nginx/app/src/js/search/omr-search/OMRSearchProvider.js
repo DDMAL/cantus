@@ -169,19 +169,9 @@ export default Marionette.Object.extend({
         if (!divaAdapter)
             return;
 
-        var box = model.get('boxes')[0];
-        if (!box)
-            return;
-
         this.resultView.setSelectedResult(model);
 
-        divaAdapter.focusRegion({
-            imageURI: box.p,
-            x: box.x,
-            y: box.y,
-            width: box.w,
-            height: box.h
-        }, this.results.indexOf(model));
+        divaAdapter.focusResult(this.results.indexOf(model));
     },
 
     serializeData: function()

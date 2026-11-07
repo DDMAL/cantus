@@ -49,8 +49,8 @@ export default class DivaAdapter {
         return this.backend.setHighlights(resultRegions);
     }
 
-    focusRegion(region, resultIndex) {
-        return this.backend.focusRegion(region, resultIndex);
+    focusResult(resultIndex) {
+        return this.backend.focusResult(resultIndex);
     }
 
     destroy() {

@@ -63,7 +63,8 @@ export default class DivaBackend {
         this.pageCanvasIds = [];
 
         this.pendingHighlights = null;
-        this.highlightIdsByResult = new Map();
+        // Each result's first drawn box: { id, pageIndex, region }.
+        this.highlightsByResult = new Map();
         this.highlightGeneration = 0;
 
         // True once Diva's `ready` promise has resolved; page state must not be
@@ -156,8 +157,7 @@ export default class DivaBackend {
         this.currentIndex = this.instance.getState().currentPageIndex || 0;
         this.ready = true;
 
-        // Before emitting: a deferred focusRegion selects one of these boxes,
-        // and Diva throws on selecting an annotation it doesn't hold.
+        // Before emitting: a deferred focusResult frames one of these boxes.
         if (this.pendingHighlights) {
             this.applyHighlights(this.pendingHighlights);
             this.pendingHighlights = null;
@@ -174,7 +174,7 @@ export default class DivaBackend {
             this.emitPageChanged();
     }
 
-    // Diva also fires this for selectHighlight(), re-reporting the selected result.
+    // Diva also fires this for focusResult()'s selection, re-reporting the result.
     handleAnnotationSelect(event) {
         var match = OMR_HIGHLIGHT_ID_PATTERN.exec(event.detail.annotationId);
         if (match)
@@ -237,20 +237,28 @@ export default class DivaBackend {
         var annotations = [];
 
         this.highlightGeneration += 1;
-        this.highlightIdsByResult.clear();
+        this.highlightsByResult.clear();
 
         resultRegions.forEach((regions, resultIndex) => {
             regions.forEach((region, boxIndex) => {
                 // Diva rejects the whole batch over one box off the manifest or
                 // one invalid rectangle. Folios with no image have an empty URI.
+                // Diva can't zoom to negative coordinates either; some OMR
+                // boxes start at -1 and span most of the page.
                 var pageIndex = this.pageURIs.indexOf(region.p);
                 var xywh = [region.x, region.y, region.w, region.h];
-                if (pageIndex < 0 || !xywh.every(Number.isFinite) || region.w <= 0 || region.h <= 0)
+                if (pageIndex < 0 || !xywh.every(Number.isFinite) || region.x < 0 || region.y < 0
+                    || region.w <= 0 || region.h <= 0)
                     return;
 
                 var id = ['omr-highlight', this.highlightGeneration, resultIndex, boxIndex].join('-');
-                if (!this.highlightIdsByResult.has(resultIndex))
-                    this.highlightIdsByResult.set(resultIndex, id);
+                if (!this.highlightsByResult.has(resultIndex)) {
+                    this.highlightsByResult.set(resultIndex, {
+                        id: id,
+                        pageIndex: pageIndex,
+                        region: { x: region.x, y: region.y, width: region.w, height: region.h }
+                    });
+                }
 
                 annotations.push({
                     id: id,
@@ -263,31 +271,26 @@ export default class DivaBackend {
         this.instance.setAnnotations(annotations);
     }
 
-    // Diva selects one annotation at a time, so a multi-system result marks
-    // only its first box, the one focusRegion() frames.
-    selectHighlight(resultIndex) {
-        var id = this.highlightIdsByResult.get(resultIndex);
-        if (id)
-            this.instance.selectAnnotation(id);
-    }
-
     /**
-     * Go to an OMR result's page and zoom to its region, given in
-     * full-resolution image pixels, selecting the box of `resultIndex` if given.
+     * Go to the page of the OMR result at `resultIndex`, zoom to its first
+     * drawn box, and select it. Diva selects one annotation at a time, so a
+     * multi-system result marks only that box. A result with no drawn box
+     * leaves the viewer where it is.
      */
-    focusRegion(region, resultIndex) {
+    focusResult(resultIndex) {
         // A search can run before the viewer is ready; retry once it is, so
-        // pageURIs is populated.
+        // the result's boxes are drawn.
         if (!this.ready) {
-            this.on('viewer:loaded', () => this.focusRegion(region, resultIndex));
+            this.on('viewer:loaded', () => this.focusResult(resultIndex));
             return;
         }
 
-        var index = this.pageURIs.indexOf(region.imageURI);
-        if (index < 0)
+        var highlight = this.highlightsByResult.get(resultIndex);
+        if (!highlight)
             return;
 
-        var page = this.instance.getPages()[index];
+        var page = this.instance.getPages()[highlight.pageIndex];
+        var region = highlight.region;
         // pageSpan is 0 when the manifest omits page dimensions; the max() below
         // then falls back to OMR_MIN_ZOOM_PADDING.
         var pageSpan = Math.max(page.width || 0, page.height || 0);
@@ -297,14 +300,8 @@ export default class DivaBackend {
             (pageSpan * OMR_MIN_VIEW_FRACTION / boxSpan - 1) / 2
         );
 
-        this.instance.zoomToRegion(index, {
-            x: region.x,
-            y: region.y,
-            width: region.width,
-            height: region.height
-        }, { padding: padding });
-
-        this.selectHighlight(resultIndex);
+        this.instance.zoomToRegion(highlight.pageIndex, region, { padding: padding });
+        this.instance.selectAnnotation(highlight.id);
     }
 
     destroy() {
