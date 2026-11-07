@@ -3,37 +3,30 @@
     {
       "kind": "AnnotationQuery",
       "spec": {
-        "query": {
-          "kind": "DataQuery",
-          "group": "grafana",
-          "version": "v0",
-          "datasource": {
-            "name": "-- Grafana --"
-          },
-          "spec": {}
-        },
+        "builtIn": true,
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
-        "builtIn": true,
-        "legacyOptions": {
-          "type": "dashboard"
+        "query": {
+          "datasource": {
+            "name": "-- Grafana --"
+          },
+          "group": "grafana",
+          "kind": "DataQuery",
+          "spec": {},
+          "version": "v0"
         }
       }
     }
   ],
   "cursorSync": "Crosshair",
-  "description": "How the site is used and what it holds: readers, searches, the viewer's IIIF libraries, manuscripts and the MEI pipeline.",
+  "description": "How the site is used and what it holds: readers, searches, the viewer's IIIF libraries, manuscripts, and the MEI pipeline.",
   "editable": true,
   "elements": {
     "panel-10": {
       "kind": "Panel",
       "spec": {
-        "id": 10,
-        "title": "Zero-hit searches",
-        "description": "Share of searches that found nothing, over the selected time range.",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -41,13 +34,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "sum(increase(cantus_search_requests_total{env=\"production\", client=~\"$client\", outcome=\"no_hits\"}[$__range])) / sum(increase(cantus_search_requests_total{env=\"production\", client=~\"$client\", outcome=~\"hits|no_hits\"}[$__range]))",
@@ -55,27 +48,50 @@
                       "instant": true,
                       "legendFormat": "__auto",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Share of searches that found nothing, over the selected time range.",
+        "id": 10,
+        "links": [],
+        "title": "Zero-hit searches",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "stat",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "decimals": 0,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "text",
+                      "value": 0
+                    }
+                  ]
+                },
+                "unit": "percentunit"
+              },
+              "overrides": []
+            },
             "options": {
               "colorMode": "none",
               "graphMode": "none",
               "justifyMode": "auto",
               "orientation": "auto",
+              "percentChangeColorMode": "standard",
               "reduceOptions": {
                 "calcs": [
                   "lastNotNull"
@@ -83,38 +99,18 @@
                 "fields": "",
                 "values": false
               },
-              "textMode": "auto"
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "percentunit",
-                "decimals": 0,
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "value": null,
-                      "color": "text"
-                    }
-                  ]
-                },
-                "color": {
-                  "mode": "thresholds"
-                }
-              },
-              "overrides": []
+              "showPercentChange": false,
+              "textMode": "auto",
+              "wideLayout": true
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-11": {
       "kind": "Panel",
       "spec": {
-        "id": 11,
-        "title": "Results per search",
-        "description": "How many chants searches match (all clients, selected time range).",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -122,13 +118,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "sum by (le) (increase(cantus_search_results_bucket{env=\"production\"}[$__range]))",
@@ -136,26 +132,59 @@
                       "instant": true,
                       "legendFormat": "{{le}}",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "How many chants searches match (all clients, selected time range).",
+        "id": 11,
+        "links": [],
+        "title": "Results per search",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "bargauge",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic-by-name"
+                },
+                "min": 0,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
             "options": {
               "displayMode": "basic",
+              "legend": {
+                "calcs": [],
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": false
+              },
               "maxVizHeight": 24,
               "minVizHeight": 16,
+              "minVizWidth": 8,
               "namePlacement": "left",
               "orientation": "horizontal",
               "reduceOptions": {
@@ -166,29 +195,17 @@
                 "values": false
               },
               "showUnfilled": true,
+              "sizing": "auto",
               "valueMode": "color"
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "short",
-                "min": 0,
-                "color": {
-                  "mode": "palette-classic-by-name"
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-12": {
       "kind": "Panel",
       "spec": {
-        "id": 12,
-        "title": "How deep readers page",
-        "description": "Offset of each page of results requested (0 = first page).",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -196,13 +213,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "sum by (le) (increase(cantus_search_result_offset_bucket{env=\"production\"}[$__range]))",
@@ -210,26 +227,59 @@
                       "instant": true,
                       "legendFormat": "{{le}}",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Offset of each page of results requested (0 = first page).",
+        "id": 12,
+        "links": [],
+        "title": "How deep readers page",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "bargauge",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic-by-name"
+                },
+                "min": 0,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
             "options": {
               "displayMode": "basic",
+              "legend": {
+                "calcs": [],
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": false
+              },
               "maxVizHeight": 24,
               "minVizHeight": 16,
+              "minVizWidth": 8,
               "namePlacement": "left",
               "orientation": "horizontal",
               "reduceOptions": {
@@ -240,29 +290,17 @@
                 "values": false
               },
               "showUnfilled": true,
+              "sizing": "auto",
               "valueMode": "color"
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "short",
-                "min": 0,
-                "color": {
-                  "mode": "palette-classic-by-name"
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-13": {
       "kind": "Panel",
       "spec": {
-        "id": 13,
-        "title": "Notation searches by type and outcome",
-        "description": "Neume, pitch, contour and interval searches.",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -270,13 +308,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "sum by (type, outcome) (increase(cantus_notation_search_requests_total{env=\"production\", client=~\"$client\", manuscript_id=~\"$manuscript\"}[$__rate_interval])) > 0",
@@ -284,68 +322,107 @@
                       "instant": false,
                       "legendFormat": "{{type}} {{outcome}}",
                       "range": true
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Neume, pitch, contour and interval searches.",
+        "id": 13,
+        "links": [],
+        "title": "Notation searches by type and outcome",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "timeseries",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic-by-name"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "axisSoftMin": 0,
+                  "barAlignment": 0,
+                  "barWidthFactor": 0.6,
+                  "drawStyle": "bars",
+                  "fillOpacity": 70,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "linear",
+                  "lineWidth": 2,
+                  "pointSize": 8,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "showValues": false,
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
             "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
               "legend": {
+                "calcs": [],
                 "displayMode": "list",
                 "placement": "bottom",
                 "showLegend": true
               },
               "tooltip": {
+                "hideZeros": false,
                 "mode": "multi",
                 "sort": "desc"
               }
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "short",
-                "color": {
-                  "mode": "palette-classic-by-name"
-                },
-                "custom": {
-                  "axisSoftMin": 0,
-                  "barAlignment": 0,
-                  "drawStyle": "bars",
-                  "fillOpacity": 70,
-                  "gradientMode": "none",
-                  "lineWidth": 2,
-                  "pointSize": 8,
-                  "showPoints": "never",
-                  "spanNulls": false,
-                  "stacking": {
-                    "group": "A",
-                    "mode": "none"
-                  }
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-14": {
       "kind": "Panel",
       "spec": {
-        "id": 14,
-        "title": "Suggestions by field and outcome",
-        "description": "Search-as-you-type requests (all clients).",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -353,13 +430,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "sum by (field, outcome) (increase(cantus_suggest_requests_total{env=\"production\"}[$__rate_interval])) > 0",
@@ -367,68 +444,107 @@
                       "instant": false,
                       "legendFormat": "{{field}} {{outcome}}",
                       "range": true
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Search-as-you-type requests (all clients).",
+        "id": 14,
+        "links": [],
+        "title": "Suggestions by field and outcome",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "timeseries",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic-by-name"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "axisSoftMin": 0,
+                  "barAlignment": 0,
+                  "barWidthFactor": 0.6,
+                  "drawStyle": "bars",
+                  "fillOpacity": 70,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "linear",
+                  "lineWidth": 2,
+                  "pointSize": 8,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "showValues": false,
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
             "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
               "legend": {
+                "calcs": [],
                 "displayMode": "list",
                 "placement": "bottom",
                 "showLegend": true
               },
               "tooltip": {
+                "hideZeros": false,
                 "mode": "multi",
                 "sort": "desc"
               }
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "short",
-                "color": {
-                  "mode": "palette-classic-by-name"
-                },
-                "custom": {
-                  "axisSoftMin": 0,
-                  "barAlignment": 0,
-                  "drawStyle": "bars",
-                  "fillOpacity": 70,
-                  "gradientMode": "none",
-                  "lineWidth": 2,
-                  "pointSize": 8,
-                  "showPoints": "never",
-                  "spanNulls": false,
-                  "stacking": {
-                    "group": "A",
-                    "mode": "none"
-                  }
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-16": {
       "kind": "Panel",
       "spec": {
-        "id": 16,
-        "title": "Manifest loads by manuscript and outcome",
-        "description": "Viewer manifest fetches through the proxy over the selected time range.",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -436,13 +552,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "sum by (manuscript_id, outcome) (increase(cantus_viewer_manifest_loads_total{env=\"production\", manuscript_id=~\"$manuscript\"}[$__range])) * on (manuscript_id) group_left (siglum, name) max by (manuscript_id, siglum, name) (cantus_manuscript_info{env=\"production\"})",
@@ -450,26 +566,59 @@
                       "instant": true,
                       "legendFormat": "{{siglum}} {{outcome}}",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Viewer manifest fetches through the proxy over the selected time range.",
+        "id": 16,
+        "links": [],
+        "title": "Manifest loads by manuscript and outcome",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "bargauge",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic-by-name"
+                },
+                "min": 0,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
             "options": {
               "displayMode": "basic",
+              "legend": {
+                "calcs": [],
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": false
+              },
               "maxVizHeight": 24,
               "minVizHeight": 16,
+              "minVizWidth": 8,
               "namePlacement": "left",
               "orientation": "horizontal",
               "reduceOptions": {
@@ -480,29 +629,17 @@
                 "values": false
               },
               "showUnfilled": true,
+              "sizing": "auto",
               "valueMode": "color"
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "short",
-                "min": 0,
-                "color": {
-                  "mode": "palette-classic-by-name"
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-17": {
       "kind": "Panel",
       "spec": {
-        "id": 17,
-        "title": "Manifest fetch failures by library",
-        "description": "Share of fetches that failed per upstream host. Gallica is blocked by BnF's Cloudflare.",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -510,13 +647,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "sum by (upstream_host) (rate(cantus_external_requests_total{env=\"production\", target=\"manifest_proxy\", outcome!=\"success\"}[$__rate_interval])) / sum by (upstream_host) (rate(cantus_external_requests_total{env=\"production\", target=\"manifest_proxy\"}[$__rate_interval]))",
@@ -524,69 +661,108 @@
                       "instant": false,
                       "legendFormat": "{{upstream_host}}",
                       "range": true
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Share of fetches that failed per upstream host. Gallica is blocked by BnF's Cloudflare.",
+        "id": 17,
+        "links": [],
+        "title": "Manifest fetch failures by library",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "timeseries",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic-by-name"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "axisSoftMax": 1,
+                  "axisSoftMin": 0,
+                  "barAlignment": 0,
+                  "barWidthFactor": 0.6,
+                  "drawStyle": "line",
+                  "fillOpacity": 8,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "linear",
+                  "lineWidth": 2,
+                  "pointSize": 8,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "showValues": false,
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "percentunit"
+              },
+              "overrides": []
+            },
             "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
               "legend": {
+                "calcs": [],
                 "displayMode": "list",
                 "placement": "bottom",
                 "showLegend": true
               },
               "tooltip": {
+                "hideZeros": false,
                 "mode": "multi",
                 "sort": "desc"
               }
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "percentunit",
-                "color": {
-                  "mode": "palette-classic-by-name"
-                },
-                "custom": {
-                  "axisSoftMax": 1,
-                  "axisSoftMin": 0,
-                  "barAlignment": 0,
-                  "drawStyle": "line",
-                  "fillOpacity": 8,
-                  "gradientMode": "none",
-                  "lineWidth": 2,
-                  "pointSize": 8,
-                  "showPoints": "never",
-                  "spanNulls": false,
-                  "stacking": {
-                    "group": "A",
-                    "mode": "none"
-                  }
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-18": {
       "kind": "Panel",
       "spec": {
-        "id": 18,
-        "title": "Manifest fetches by library and outcome",
-        "description": "Fetches per second to each IIIF host.",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -594,13 +770,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "sum by (upstream_host, outcome) (rate(cantus_external_requests_total{env=\"production\", target=\"manifest_proxy\"}[$__rate_interval]))",
@@ -608,68 +784,107 @@
                       "instant": false,
                       "legendFormat": "{{upstream_host}} {{outcome}}",
                       "range": true
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Fetches per second to each IIIF host.",
+        "id": 18,
+        "links": [],
+        "title": "Manifest fetches by library and outcome",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "timeseries",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic-by-name"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "axisSoftMin": 0,
+                  "barAlignment": 0,
+                  "barWidthFactor": 0.6,
+                  "drawStyle": "line",
+                  "fillOpacity": 8,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "linear",
+                  "lineWidth": 2,
+                  "pointSize": 8,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "showValues": false,
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "reqps"
+              },
+              "overrides": []
+            },
             "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
               "legend": {
+                "calcs": [],
                 "displayMode": "list",
                 "placement": "bottom",
                 "showLegend": true
               },
               "tooltip": {
+                "hideZeros": false,
                 "mode": "multi",
                 "sort": "desc"
               }
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "reqps",
-                "color": {
-                  "mode": "palette-classic-by-name"
-                },
-                "custom": {
-                  "axisSoftMin": 0,
-                  "barAlignment": 0,
-                  "drawStyle": "line",
-                  "fillOpacity": 8,
-                  "gradientMode": "none",
-                  "lineWidth": 2,
-                  "pointSize": 8,
-                  "showPoints": "never",
-                  "spanNulls": false,
-                  "stacking": {
-                    "group": "A",
-                    "mode": "none"
-                  }
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-19": {
       "kind": "Panel",
       "spec": {
-        "id": 19,
-        "title": "External fetch p95 by target",
-        "description": "Manifest proxy, IIIF mapping and CANTUS Database calls.",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -677,13 +892,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "histogram_quantile(0.95, sum by (le, target) (rate(cantus_external_request_duration_seconds_bucket{env=\"production\"}[$__rate_interval])))",
@@ -691,68 +906,107 @@
                       "instant": false,
                       "legendFormat": "{{target}}",
                       "range": true
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Manifest proxy, IIIF mapping and CANTUS Database calls.",
+        "id": 19,
+        "links": [],
+        "title": "External fetch p95 by target",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "timeseries",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic-by-name"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "axisSoftMin": 0,
+                  "barAlignment": 0,
+                  "barWidthFactor": 0.6,
+                  "drawStyle": "line",
+                  "fillOpacity": 8,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "linear",
+                  "lineWidth": 2,
+                  "pointSize": 8,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "showValues": false,
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": []
+            },
             "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
               "legend": {
+                "calcs": [],
                 "displayMode": "list",
                 "placement": "bottom",
                 "showLegend": true
               },
               "tooltip": {
+                "hideZeros": false,
                 "mode": "multi",
                 "sort": "desc"
               }
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "s",
-                "color": {
-                  "mode": "palette-classic-by-name"
-                },
-                "custom": {
-                  "axisSoftMin": 0,
-                  "barAlignment": 0,
-                  "drawStyle": "line",
-                  "fillOpacity": 8,
-                  "gradientMode": "none",
-                  "lineWidth": 2,
-                  "pointSize": 8,
-                  "showPoints": "never",
-                  "spanNulls": false,
-                  "stacking": {
-                    "group": "A",
-                    "mode": "none"
-                  }
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-2": {
       "kind": "Panel",
       "spec": {
-        "id": 2,
-        "title": "Page loads by page",
-        "description": "Full HTML loads of the app shell or a static page.",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -760,13 +1014,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "sum by (page) (increase(cantus_page_loads_total{env=\"production\", client=~\"$client\"}[$__rate_interval]))",
@@ -774,68 +1028,107 @@
                       "instant": false,
                       "legendFormat": "{{page}}",
                       "range": true
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Full HTML loads of the app shell or a static page.",
+        "id": 2,
+        "links": [],
+        "title": "Page loads by page",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "timeseries",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic-by-name"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "axisSoftMin": 0,
+                  "barAlignment": 0,
+                  "barWidthFactor": 0.6,
+                  "drawStyle": "bars",
+                  "fillOpacity": 70,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "linear",
+                  "lineWidth": 2,
+                  "pointSize": 8,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "showValues": false,
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "normal"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
             "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
               "legend": {
+                "calcs": [],
                 "displayMode": "list",
                 "placement": "bottom",
                 "showLegend": true
               },
               "tooltip": {
+                "hideZeros": false,
                 "mode": "multi",
                 "sort": "desc"
               }
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "short",
-                "color": {
-                  "mode": "palette-classic-by-name"
-                },
-                "custom": {
-                  "axisSoftMin": 0,
-                  "barAlignment": 0,
-                  "drawStyle": "bars",
-                  "fillOpacity": 70,
-                  "gradientMode": "none",
-                  "lineWidth": 2,
-                  "pointSize": 8,
-                  "showPoints": "never",
-                  "spanNulls": false,
-                  "stacking": {
-                    "group": "A",
-                    "mode": "normal"
-                  }
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-21": {
       "kind": "Panel",
       "spec": {
-        "id": 21,
-        "title": "Manuscripts",
-        "description": "Public manuscripts and those with chants loaded. Mapped = folios with an image.",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -843,13 +1136,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "max by (manuscript_id, siglum, name, public) (cantus_manuscript_info{env=\"production\", manuscript_id=~\"$manuscript\"})",
@@ -857,22 +1150,22 @@
                       "instant": true,
                       "legendFormat": "__auto",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               },
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "max by (manuscript_id) (cantus_chants{env=\"production\", manuscript_id=~\"$manuscript\"})",
@@ -880,22 +1173,22 @@
                       "instant": true,
                       "legendFormat": "__auto",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "B",
-                  "hidden": false
+                  "refId": "B"
                 }
               },
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "max by (manuscript_id) (cantus_chants_with_volpiano{env=\"production\", manuscript_id=~\"$manuscript\"})",
@@ -903,22 +1196,22 @@
                       "instant": true,
                       "legendFormat": "__auto",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "C",
-                  "hidden": false
+                  "refId": "C"
                 }
               },
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "max by (manuscript_id) (cantus_folios{env=\"production\", manuscript_id=~\"$manuscript\"})",
@@ -926,22 +1219,22 @@
                       "instant": true,
                       "legendFormat": "__auto",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "D",
-                  "hidden": false
+                  "refId": "D"
                 }
               },
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "max by (manuscript_id) (cantus_folios_with_image{env=\"production\", manuscript_id=~\"$manuscript\"}) / max by (manuscript_id) (cantus_folios{env=\"production\", manuscript_id=~\"$manuscript\"})",
@@ -949,22 +1242,22 @@
                       "instant": true,
                       "legendFormat": "__auto",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "E",
-                  "hidden": false
+                  "refId": "E"
                 }
               },
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "max by (manuscript_id) (cantus_solr_omr_ngrams{env=\"production\", manuscript_id=~\"$manuscript\"})",
@@ -972,17 +1265,18 @@
                       "instant": true,
                       "legendFormat": "__auto",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "F",
-                  "hidden": false
+                  "refId": "F"
                 }
               }
             ],
+            "queryOptions": {},
             "transformations": [
               {
-                "kind": "Transformation",
                 "group": "joinByField",
+                "kind": "Transformation",
                 "spec": {
                   "options": {
                     "byField": "manuscript_id",
@@ -991,8 +1285,8 @@
                 }
               },
               {
-                "kind": "Transformation",
                 "group": "organize",
+                "kind": "Transformation",
                 "spec": {
                   "options": {
                     "excludeByName": {
@@ -1031,8 +1325,8 @@
                 }
               },
               {
-                "kind": "Transformation",
                 "group": "sortBy",
+                "kind": "Transformation",
                 "spec": {
                   "options": {
                     "sort": [
@@ -1044,33 +1338,45 @@
                   }
                 }
               }
-            ],
-            "queryOptions": {}
+            ]
           }
         },
+        "description": "Public manuscripts and those with chants loaded. Mapped = folios with an image.",
+        "id": 21,
+        "links": [],
+        "title": "Manuscripts",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "table",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
-            "options": {
-              "cellHeight": "sm",
-              "footer": {
-                "show": false
-              },
-              "showHeader": true
-            },
             "fieldConfig": {
               "defaults": {
                 "color": {
-                  "mode": "fixed",
-                  "fixedColor": "text"
+                  "fixedColor": "text",
+                  "mode": "fixed"
                 },
                 "custom": {
                   "align": "auto",
                   "cellOptions": {
                     "type": "auto"
-                  }
+                  },
+                  "footer": {
+                    "reducers": []
+                  },
+                  "inspect": false
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
                 }
               },
               "overrides": [
@@ -1091,18 +1397,22 @@
                   ]
                 }
               ]
+            },
+            "options": {
+              "cellHeight": "sm",
+              "footer": {
+                "show": false
+              },
+              "showHeader": true
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-22": {
       "kind": "Panel",
       "spec": {
-        "id": 22,
-        "title": "Solr vs database",
-        "description": "Records per type in Postgres and documents in Solr; they should match (CantusSolrIndexIncomplete fires below 99%).",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -1110,13 +1420,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "max by (record_type) (cantus_db_records{env=\"production\"})",
@@ -1124,22 +1434,22 @@
                       "instant": true,
                       "legendFormat": "__auto",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               },
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "max by (record_type) (label_replace(cantus_solr_documents{env=\"production\", type=~\"cantusdata_(chant|folio|manuscript)\"}, \"record_type\", \"$1\", \"type\", \"cantusdata_(.+)\"))",
@@ -1147,17 +1457,18 @@
                       "instant": true,
                       "legendFormat": "__auto",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "B",
-                  "hidden": false
+                  "refId": "B"
                 }
               }
             ],
+            "queryOptions": {},
             "transformations": [
               {
-                "kind": "Transformation",
                 "group": "joinByField",
+                "kind": "Transformation",
                 "spec": {
                   "options": {
                     "byField": "record_type",
@@ -1166,8 +1477,8 @@
                 }
               },
               {
-                "kind": "Transformation",
                 "group": "organize",
+                "kind": "Transformation",
                 "spec": {
                   "options": {
                     "excludeByName": {
@@ -1183,41 +1494,60 @@
                   }
                 }
               }
-            ],
-            "queryOptions": {}
+            ]
           }
         },
+        "description": "Records per type in Postgres and documents in Solr; they should match (CantusSolrIndexIncomplete fires below 99%).",
+        "id": 22,
+        "links": [],
+        "title": "Solr vs database",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "table",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "custom": {
+                  "align": "auto",
+                  "cellOptions": {
+                    "type": "auto"
+                  },
+                  "footer": {
+                    "reducers": []
+                  },
+                  "inspect": false
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                }
+              },
+              "overrides": []
+            },
             "options": {
               "cellHeight": "sm",
               "footer": {
                 "show": false
               },
               "showHeader": true
-            },
-            "fieldConfig": {
-              "defaults": {
-                "custom": {
-                  "align": "auto"
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-23": {
       "kind": "Panel",
       "spec": {
-        "id": 23,
-        "title": "Visibility mismatch per manuscript",
-        "description": "Chants whose visibility in Solr differs from their manuscript's; should be 0.",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -1225,13 +1555,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "max by (manuscript_id) (cantus_solr_chant_visibility_mismatch{env=\"production\", manuscript_id=~\"$manuscript\"}) * on (manuscript_id) group_left (siglum, name) max by (manuscript_id, siglum, name) (cantus_manuscript_info{env=\"production\"})",
@@ -1239,68 +1569,107 @@
                       "instant": false,
                       "legendFormat": "{{siglum}}",
                       "range": true
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Chants whose visibility in Solr differs from their manuscript's; should be 0.",
+        "id": 23,
+        "links": [],
+        "title": "Visibility mismatch per manuscript",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "timeseries",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic-by-name"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "axisSoftMin": 0,
+                  "barAlignment": 0,
+                  "barWidthFactor": 0.6,
+                  "drawStyle": "line",
+                  "fillOpacity": 8,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "linear",
+                  "lineWidth": 2,
+                  "pointSize": 8,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "showValues": false,
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
             "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
               "legend": {
+                "calcs": [],
                 "displayMode": "list",
                 "placement": "bottom",
                 "showLegend": true
               },
               "tooltip": {
+                "hideZeros": false,
                 "mode": "multi",
                 "sort": "desc"
               }
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "short",
-                "color": {
-                  "mode": "palette-classic-by-name"
-                },
-                "custom": {
-                  "axisSoftMin": 0,
-                  "barAlignment": 0,
-                  "drawStyle": "line",
-                  "fillOpacity": 8,
-                  "gradientMode": "none",
-                  "lineWidth": 2,
-                  "pointSize": 8,
-                  "showPoints": "never",
-                  "spanNulls": false,
-                  "stacking": {
-                    "group": "A",
-                    "mode": "none"
-                  }
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-24": {
       "kind": "Panel",
       "spec": {
-        "id": 24,
-        "title": "Imports and mappings",
-        "description": "Chant imports from CANTUS Database and folio-to-image mapping runs, by outcome, over the selected time range.",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -1308,13 +1677,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "sum by (outcome) (increase(cantus_chant_import_runs_total{env=\"production\"}[$__range]))",
@@ -1322,22 +1691,22 @@
                       "instant": true,
                       "legendFormat": "import {{outcome}}",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               },
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "sum by (outcome) (increase(cantus_folio_mapping_runs_total{env=\"production\"}[$__range]))",
@@ -1345,26 +1714,59 @@
                       "instant": true,
                       "legendFormat": "mapping {{outcome}}",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "B",
-                  "hidden": false
+                  "refId": "B"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Chant imports from CANTUS Database and folio-to-image mapping runs, by outcome, over the selected time range.",
+        "id": 24,
+        "links": [],
+        "title": "Imports and mappings",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "bargauge",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic-by-name"
+                },
+                "min": 0,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
             "options": {
               "displayMode": "basic",
+              "legend": {
+                "calcs": [],
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": false
+              },
               "maxVizHeight": 24,
               "minVizHeight": 16,
+              "minVizWidth": 8,
               "namePlacement": "left",
               "orientation": "horizontal",
               "reduceOptions": {
@@ -1375,29 +1777,17 @@
                 "values": false
               },
               "showUnfilled": true,
+              "sizing": "auto",
               "valueMode": "color"
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "short",
-                "min": 0,
-                "color": {
-                  "mode": "palette-classic-by-name"
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-26": {
       "kind": "Panel",
       "spec": {
-        "id": 26,
-        "title": "Submissions by status",
-        "description": "MEI deposits in the database now.",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -1405,13 +1795,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "max by (status) (cantus_mei_submissions{env=\"production\"})",
@@ -1419,26 +1809,59 @@
                       "instant": true,
                       "legendFormat": "{{status}}",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "MEI deposits in the database now.",
+        "id": 26,
+        "links": [],
+        "title": "Submissions by status",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "bargauge",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic-by-name"
+                },
+                "min": 0,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
             "options": {
               "displayMode": "basic",
+              "legend": {
+                "calcs": [],
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": false
+              },
               "maxVizHeight": 24,
               "minVizHeight": 16,
+              "minVizWidth": 8,
               "namePlacement": "left",
               "orientation": "horizontal",
               "reduceOptions": {
@@ -1449,29 +1872,17 @@
                 "values": false
               },
               "showUnfilled": true,
+              "sizing": "auto",
               "valueMode": "color"
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "short",
-                "min": 0,
-                "color": {
-                  "mode": "palette-classic-by-name"
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-27": {
       "kind": "Panel",
       "spec": {
-        "id": 27,
-        "title": "Deposits received",
-        "description": "Deposits over the selected time range, by outcome and rejection reason.",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -1479,13 +1890,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "sum by (outcome, reason) (increase(cantus_mei_submissions_received_total{env=\"production\"}[$__range]))",
@@ -1493,26 +1904,59 @@
                       "instant": true,
                       "legendFormat": "{{outcome}} {{reason}}",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Deposits over the selected time range, by outcome and rejection reason.",
+        "id": 27,
+        "links": [],
+        "title": "Deposits received",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "bargauge",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic-by-name"
+                },
+                "min": 0,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
             "options": {
               "displayMode": "basic",
+              "legend": {
+                "calcs": [],
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": false
+              },
               "maxVizHeight": 24,
               "minVizHeight": 16,
+              "minVizWidth": 8,
               "namePlacement": "left",
               "orientation": "horizontal",
               "reduceOptions": {
@@ -1523,29 +1967,17 @@
                 "values": false
               },
               "showUnfilled": true,
+              "sizing": "auto",
               "valueMode": "color"
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "short",
-                "min": 0,
-                "color": {
-                  "mode": "palette-classic-by-name"
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-28": {
       "kind": "Panel",
       "spec": {
-        "id": 28,
-        "title": "Oldest waiting",
-        "description": "Oldest submission awaiting review (CantusMEIReviewOverdue at 14 days) and oldest publication in flight (CantusMEIPublishingStuck at 1 hour).",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -1553,13 +1985,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "max(cantus_mei_oldest_pending_age_seconds{env=\"production\"})",
@@ -1567,22 +1999,22 @@
                       "instant": false,
                       "legendFormat": "awaiting review",
                       "range": true
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               },
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "max(cantus_mei_oldest_publishing_age_seconds{env=\"production\"})",
@@ -1590,27 +2022,49 @@
                       "instant": false,
                       "legendFormat": "publishing",
                       "range": true
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "B",
-                  "hidden": false
+                  "refId": "B"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Oldest submission awaiting review (CantusMEIReviewOverdue at 14 days) and oldest publication in flight (CantusMEIPublishingStuck at 1 hour).",
+        "id": 28,
+        "links": [],
+        "title": "Oldest waiting",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "stat",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "text",
+                      "value": 0
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": []
+            },
             "options": {
               "colorMode": "none",
               "graphMode": "none",
               "justifyMode": "auto",
               "orientation": "auto",
+              "percentChangeColorMode": "standard",
               "reduceOptions": {
                 "calcs": [
                   "lastNotNull"
@@ -1618,37 +2072,18 @@
                 "fields": "",
                 "values": false
               },
-              "textMode": "auto"
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "s",
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "value": null,
-                      "color": "text"
-                    }
-                  ]
-                },
-                "color": {
-                  "mode": "thresholds"
-                }
-              },
-              "overrides": []
+              "showPercentChange": false,
+              "textMode": "auto",
+              "wideLayout": true
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-29": {
       "kind": "Panel",
       "spec": {
-        "id": 29,
-        "title": "Reviews by action",
-        "description": "Review decisions over the selected time range.",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -1656,13 +2091,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "sum by (action, via) (increase(cantus_mei_reviews_total{env=\"production\"}[$__range]))",
@@ -1670,22 +2105,35 @@
                       "instant": true,
                       "legendFormat": "{{action}} ({{via}})",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Review decisions over the selected time range.",
+        "id": 29,
+        "links": [],
+        "title": "Reviews by action",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "bargauge",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic-by-name"
+                },
+                "min": 0,
+                "unit": "short"
+              },
+              "overrides": []
+            },
             "options": {
               "displayMode": "basic",
               "maxVizHeight": 24,
@@ -1701,28 +2149,15 @@
               },
               "showUnfilled": true,
               "valueMode": "color"
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "short",
-                "min": 0,
-                "color": {
-                  "mode": "palette-classic-by-name"
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-3": {
       "kind": "Panel",
       "spec": {
-        "id": 3,
-        "title": "Requests by client type",
-        "description": "All Django requests per second, stacked by who sent them. Ignores the client filter, to show the bot share.",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -1730,13 +2165,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "sum by (client) (rate(cantus_http_requests_total{env=\"production\"}[$__rate_interval]))",
@@ -1744,54 +2179,79 @@
                       "instant": false,
                       "legendFormat": "{{client}}",
                       "range": true
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "All Django requests per second, stacked by who sent them. Ignores the client filter, to show the bot share.",
+        "id": 3,
+        "links": [],
+        "title": "Requests by client type",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "timeseries",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
-            "options": {
-              "legend": {
-                "displayMode": "list",
-                "placement": "bottom",
-                "showLegend": true
-              },
-              "tooltip": {
-                "mode": "multi",
-                "sort": "desc"
-              }
-            },
             "fieldConfig": {
               "defaults": {
-                "unit": "reqps",
                 "color": {
                   "mode": "palette-classic-by-name"
                 },
                 "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
                   "axisSoftMin": 0,
                   "barAlignment": 0,
+                  "barWidthFactor": 0.6,
                   "drawStyle": "line",
                   "fillOpacity": 20,
                   "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "linear",
                   "lineWidth": 2,
                   "pointSize": 8,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
                   "showPoints": "never",
+                  "showValues": false,
                   "spanNulls": false,
                   "stacking": {
                     "group": "A",
                     "mode": "normal"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
                   }
-                }
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "reqps"
               },
               "overrides": [
                 {
@@ -1855,18 +2315,32 @@
                   ]
                 }
               ]
+            },
+            "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
+              "legend": {
+                "calcs": [],
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "hideZeros": false,
+                "mode": "multi",
+                "sort": "desc"
+              }
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-30": {
       "kind": "Panel",
       "spec": {
-        "id": 30,
-        "title": "Review latency",
-        "description": "Time from a deposit arriving to its review decision, over the selected time range.",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -1874,13 +2348,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "histogram_quantile(0.5, sum by (le) (increase(cantus_mei_review_latency_seconds_bucket{env=\"production\"}[$__range])))",
@@ -1888,22 +2362,22 @@
                       "instant": true,
                       "legendFormat": "median",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               },
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "histogram_quantile(0.9, sum by (le) (increase(cantus_mei_review_latency_seconds_bucket{env=\"production\"}[$__range])))",
@@ -1911,22 +2385,43 @@
                       "instant": true,
                       "legendFormat": "p90",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "B",
-                  "hidden": false
+                  "refId": "B"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Time from a deposit arriving to its review decision, over the selected time range.",
+        "id": 30,
+        "links": [],
+        "title": "Review latency",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "stat",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "text",
+                      "value": 0
+                    }
+                  ]
+                },
+                "unit": "s"
+              },
+              "overrides": []
+            },
             "options": {
               "colorMode": "none",
               "graphMode": "none",
@@ -1940,36 +2435,15 @@
                 "values": false
               },
               "textMode": "auto"
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "s",
-                "thresholds": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "value": null,
-                      "color": "text"
-                    }
-                  ]
-                },
-                "color": {
-                  "mode": "thresholds"
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-31": {
       "kind": "Panel",
       "spec": {
-        "id": 31,
-        "title": "Publish runs",
-        "description": "Publication task runs by outcome over the selected time range.",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -1977,13 +2451,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "sum by (outcome) (increase(cantus_mei_publish_total{env=\"production\"}[$__range]))",
@@ -1991,45 +2465,32 @@
                       "instant": true,
                       "legendFormat": "{{outcome}}",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Publication task runs by outcome over the selected time range.",
+        "id": 31,
+        "links": [],
+        "title": "Publish runs",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "bargauge",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
-            "options": {
-              "displayMode": "basic",
-              "maxVizHeight": 24,
-              "minVizHeight": 16,
-              "namePlacement": "left",
-              "orientation": "horizontal",
-              "reduceOptions": {
-                "calcs": [
-                  "lastNotNull"
-                ],
-                "fields": "",
-                "values": false
-              },
-              "showUnfilled": true,
-              "valueMode": "color"
-            },
             "fieldConfig": {
               "defaults": {
-                "unit": "short",
-                "min": 0,
                 "color": {
                   "mode": "palette-classic-by-name"
-                }
+                },
+                "min": 0,
+                "unit": "short"
               },
               "overrides": [
                 {
@@ -2213,18 +2674,31 @@
                   ]
                 }
               ]
+            },
+            "options": {
+              "displayMode": "basic",
+              "maxVizHeight": 24,
+              "minVizHeight": 16,
+              "namePlacement": "left",
+              "orientation": "horizontal",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "showUnfilled": true,
+              "valueMode": "color"
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-4": {
       "kind": "Panel",
       "spec": {
-        "id": 4,
-        "title": "Manuscripts opened (top 10)",
-        "description": "Manuscript-detail loads in the viewer over the selected time range.",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -2232,13 +2706,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "topk(10, sum by (manuscript_id) (increase(cantus_manuscript_views_total{env=\"production\", client=~\"$client\", manuscript_id=~\"$manuscript\"}[$__range])) * on (manuscript_id) group_left (siglum, name) max by (manuscript_id, siglum, name) (cantus_manuscript_info{env=\"production\"}))",
@@ -2246,26 +2720,59 @@
                       "instant": true,
                       "legendFormat": "{{siglum}} — {{name}}",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Manuscript-detail loads in the viewer over the selected time range.",
+        "id": 4,
+        "links": [],
+        "title": "Manuscripts opened (top 10)",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "bargauge",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic-by-name"
+                },
+                "min": 0,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
             "options": {
               "displayMode": "basic",
+              "legend": {
+                "calcs": [],
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": false
+              },
               "maxVizHeight": 24,
               "minVizHeight": 16,
+              "minVizWidth": 8,
               "namePlacement": "left",
               "orientation": "horizontal",
               "reduceOptions": {
@@ -2276,29 +2783,17 @@
                 "values": false
               },
               "showUnfilled": true,
+              "sizing": "auto",
               "valueMode": "color"
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "short",
-                "min": 0,
-                "color": {
-                  "mode": "palette-classic-by-name"
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-5": {
       "kind": "Panel",
       "spec": {
-        "id": 5,
-        "title": "Folio page turns per manuscript",
-        "description": "Folios displayed in the viewer per second.",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -2306,13 +2801,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "sum by (manuscript_id) (rate(cantus_folio_views_total{env=\"production\", client=~\"$client\", manuscript_id=~\"$manuscript\"}[$__rate_interval])) * on (manuscript_id) group_left (siglum, name) max by (manuscript_id, siglum, name) (cantus_manuscript_info{env=\"production\"})",
@@ -2320,68 +2815,107 @@
                       "instant": false,
                       "legendFormat": "{{siglum}}",
                       "range": true
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Folios displayed in the viewer per second.",
+        "id": 5,
+        "links": [],
+        "title": "Folio page turns per manuscript",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "timeseries",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic-by-name"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "axisSoftMin": 0,
+                  "barAlignment": 0,
+                  "barWidthFactor": 0.6,
+                  "drawStyle": "line",
+                  "fillOpacity": 8,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "linear",
+                  "lineWidth": 2,
+                  "pointSize": 8,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "showValues": false,
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "reqps"
+              },
+              "overrides": []
+            },
             "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
               "legend": {
+                "calcs": [],
                 "displayMode": "list",
                 "placement": "bottom",
                 "showLegend": true
               },
               "tooltip": {
+                "hideZeros": false,
                 "mode": "multi",
                 "sort": "desc"
               }
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "reqps",
-                "color": {
-                  "mode": "palette-classic-by-name"
-                },
-                "custom": {
-                  "axisSoftMin": 0,
-                  "barAlignment": 0,
-                  "drawStyle": "line",
-                  "fillOpacity": 8,
-                  "gradientMode": "none",
-                  "lineWidth": 2,
-                  "pointSize": 8,
-                  "showPoints": "never",
-                  "spanNulls": false,
-                  "stacking": {
-                    "group": "A",
-                    "mode": "none"
-                  }
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-6": {
       "kind": "Panel",
       "spec": {
-        "id": 6,
-        "title": "Folio chant lookups",
-        "description": "Chant lists fetched for a displayed folio, by whether the folio had any chants (selected time range).",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -2389,13 +2923,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "sum by (has_chants) (increase(cantus_folio_chant_lookups_total{env=\"production\", manuscript_id=~\"$manuscript\"}[$__range]))",
@@ -2403,26 +2937,59 @@
                       "instant": true,
                       "legendFormat": "has chants: {{has_chants}}",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Chant lists fetched for a displayed folio, by whether the folio had any chants (selected time range).",
+        "id": 6,
+        "links": [],
+        "title": "Folio chant lookups",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "bargauge",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic-by-name"
+                },
+                "min": 0,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
             "options": {
               "displayMode": "basic",
+              "legend": {
+                "calcs": [],
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": false
+              },
               "maxVizHeight": 24,
               "minVizHeight": 16,
+              "minVizWidth": 8,
               "namePlacement": "left",
               "orientation": "horizontal",
               "reduceOptions": {
@@ -2433,29 +3000,17 @@
                 "values": false
               },
               "showUnfilled": true,
+              "sizing": "auto",
               "valueMode": "color"
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "short",
-                "min": 0,
-                "color": {
-                  "mode": "palette-classic-by-name"
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-8": {
       "kind": "Panel",
       "spec": {
-        "id": 8,
-        "title": "Chant searches by field",
-        "description": "First-page chant searches (later pages are not counted).",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -2463,13 +3018,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "sum by (field) (increase(cantus_search_requests_total{env=\"production\", client=~\"$client\"}[$__rate_interval])) > 0",
@@ -2477,68 +3032,107 @@
                       "instant": false,
                       "legendFormat": "{{field}}",
                       "range": true
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "First-page chant searches (later pages are not counted).",
+        "id": 8,
+        "links": [],
+        "title": "Chant searches by field",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "timeseries",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic-by-name"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "axisSoftMin": 0,
+                  "barAlignment": 0,
+                  "barWidthFactor": 0.6,
+                  "drawStyle": "bars",
+                  "fillOpacity": 70,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "linear",
+                  "lineWidth": 2,
+                  "pointSize": 8,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "never",
+                  "showValues": false,
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "normal"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "short"
+              },
+              "overrides": []
+            },
             "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
               "legend": {
+                "calcs": [],
                 "displayMode": "list",
                 "placement": "bottom",
                 "showLegend": true
               },
               "tooltip": {
+                "hideZeros": false,
                 "mode": "multi",
                 "sort": "desc"
               }
-            },
-            "fieldConfig": {
-              "defaults": {
-                "unit": "short",
-                "color": {
-                  "mode": "palette-classic-by-name"
-                },
-                "custom": {
-                  "axisSoftMin": 0,
-                  "barAlignment": 0,
-                  "drawStyle": "bars",
-                  "fillOpacity": 70,
-                  "gradientMode": "none",
-                  "lineWidth": 2,
-                  "pointSize": 8,
-                  "showPoints": "never",
-                  "spanNulls": false,
-                  "stacking": {
-                    "group": "A",
-                    "mode": "normal"
-                  }
-                }
-              },
-              "overrides": []
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     },
     "panel-9": {
       "kind": "Panel",
       "spec": {
-        "id": 9,
-        "title": "Chant search outcomes",
-        "description": "Over the selected time range. invalid_query = Solr could not parse it (the reader got a 400).",
-        "links": [],
         "data": {
           "kind": "QueryGroup",
           "spec": {
@@ -2546,13 +3140,13 @@
               {
                 "kind": "PanelQuery",
                 "spec": {
+                  "hidden": false,
                   "query": {
-                    "kind": "DataQuery",
-                    "group": "prometheus",
-                    "version": "v0",
                     "datasource": {
                       "name": "${datasource}"
                     },
+                    "group": "prometheus",
+                    "kind": "DataQuery",
                     "spec": {
                       "editorMode": "code",
                       "expr": "sum by (outcome) (increase(cantus_search_requests_total{env=\"production\", client=~\"$client\"}[$__range]))",
@@ -2560,45 +3154,45 @@
                       "instant": true,
                       "legendFormat": "{{outcome}}",
                       "range": false
-                    }
+                    },
+                    "version": "v0"
                   },
-                  "refId": "A",
-                  "hidden": false
+                  "refId": "A"
                 }
               }
             ],
-            "transformations": [],
-            "queryOptions": {}
+            "queryOptions": {},
+            "transformations": []
           }
         },
+        "description": "Over the selected time range. invalid_query = Solr could not parse it (the reader got a 400).",
+        "id": 9,
+        "links": [],
+        "title": "Chant search outcomes",
         "vizConfig": {
-          "kind": "VizConfig",
           "group": "bargauge",
-          "version": "13.0.2",
+          "kind": "VizConfig",
           "spec": {
-            "options": {
-              "displayMode": "basic",
-              "maxVizHeight": 24,
-              "minVizHeight": 16,
-              "namePlacement": "left",
-              "orientation": "horizontal",
-              "reduceOptions": {
-                "calcs": [
-                  "lastNotNull"
-                ],
-                "fields": "",
-                "values": false
-              },
-              "showUnfilled": true,
-              "valueMode": "color"
-            },
             "fieldConfig": {
               "defaults": {
-                "unit": "short",
-                "min": 0,
                 "color": {
                   "mode": "palette-classic-by-name"
-                }
+                },
+                "min": 0,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                },
+                "unit": "short"
               },
               "overrides": [
                 {
@@ -2782,8 +3376,33 @@
                   ]
                 }
               ]
+            },
+            "options": {
+              "displayMode": "basic",
+              "legend": {
+                "calcs": [],
+                "displayMode": "list",
+                "placement": "bottom",
+                "showLegend": false
+              },
+              "maxVizHeight": 24,
+              "minVizHeight": 16,
+              "minVizWidth": 8,
+              "namePlacement": "left",
+              "orientation": "horizontal",
+              "reduceOptions": {
+                "calcs": [
+                  "lastNotNull"
+                ],
+                "fields": "",
+                "values": false
+              },
+              "showUnfilled": true,
+              "sizing": "auto",
+              "valueMode": "color"
             }
-          }
+          },
+          "version": "13.0.2"
         }
       }
     }
@@ -2795,7 +3414,6 @@
         {
           "kind": "RowsLayoutRow",
           "spec": {
-            "title": "Readers",
             "collapse": false,
             "layout": {
               "kind": "GridLayout",
@@ -2804,77 +3422,77 @@
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 0,
-                      "y": 0,
-                      "width": 12,
-                      "height": 8,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-2"
-                      }
+                      },
+                      "height": 8,
+                      "width": 12,
+                      "x": 0,
+                      "y": 0
                     }
                   },
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 12,
-                      "y": 0,
-                      "width": 12,
-                      "height": 8,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-3"
-                      }
+                      },
+                      "height": 8,
+                      "width": 12,
+                      "x": 12,
+                      "y": 0
                     }
                   },
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 0,
-                      "y": 8,
-                      "width": 12,
-                      "height": 9,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-4"
-                      }
+                      },
+                      "height": 9,
+                      "width": 12,
+                      "x": 0,
+                      "y": 8
                     }
                   },
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 12,
-                      "y": 8,
-                      "width": 12,
-                      "height": 9,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-5"
-                      }
+                      },
+                      "height": 9,
+                      "width": 12,
+                      "x": 12,
+                      "y": 8
                     }
                   },
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 0,
-                      "y": 17,
-                      "width": 24,
-                      "height": 4,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-6"
-                      }
+                      },
+                      "height": 4,
+                      "width": 24,
+                      "x": 0,
+                      "y": 17
                     }
                   }
                 ]
               }
-            }
+            },
+            "title": "Readers"
           }
         },
         {
           "kind": "RowsLayoutRow",
           "spec": {
-            "title": "Search",
             "collapse": false,
             "layout": {
               "kind": "GridLayout",
@@ -2883,103 +3501,103 @@
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 0,
-                      "y": 0,
-                      "width": 12,
-                      "height": 8,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-8"
-                      }
+                      },
+                      "height": 8,
+                      "width": 24,
+                      "x": 0,
+                      "y": 0
                     }
                   },
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 12,
-                      "y": 0,
-                      "width": 6,
-                      "height": 8,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-9"
-                      }
-                    }
-                  },
-                  {
-                    "kind": "GridLayoutItem",
-                    "spec": {
-                      "x": 18,
-                      "y": 0,
-                      "width": 6,
+                      },
                       "height": 8,
-                      "element": {
-                        "kind": "ElementReference",
-                        "name": "panel-10"
-                      }
-                    }
-                  },
-                  {
-                    "kind": "GridLayoutItem",
-                    "spec": {
+                      "width": 10,
                       "x": 0,
-                      "y": 8,
-                      "width": 8,
-                      "height": 9,
-                      "element": {
-                        "kind": "ElementReference",
-                        "name": "panel-11"
-                      }
+                      "y": 8
                     }
                   },
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 8,
-                      "y": 8,
-                      "width": 8,
-                      "height": 9,
-                      "element": {
-                        "kind": "ElementReference",
-                        "name": "panel-12"
-                      }
-                    }
-                  },
-                  {
-                    "kind": "GridLayoutItem",
-                    "spec": {
-                      "x": 16,
-                      "y": 8,
-                      "width": 8,
-                      "height": 9,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-13"
-                      }
+                      },
+                      "height": 8,
+                      "width": 8,
+                      "x": 10,
+                      "y": 8
                     }
                   },
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
+                      "element": {
+                        "kind": "ElementReference",
+                        "name": "panel-10"
+                      },
+                      "height": 8,
+                      "width": 6,
+                      "x": 18,
+                      "y": 8
+                    }
+                  },
+                  {
+                    "kind": "GridLayoutItem",
+                    "spec": {
+                      "element": {
+                        "kind": "ElementReference",
+                        "name": "panel-11"
+                      },
+                      "height": 8,
+                      "width": 12,
                       "x": 0,
-                      "y": 17,
-                      "width": 24,
-                      "height": 7,
+                      "y": 16
+                    }
+                  },
+                  {
+                    "kind": "GridLayoutItem",
+                    "spec": {
+                      "element": {
+                        "kind": "ElementReference",
+                        "name": "panel-12"
+                      },
+                      "height": 8,
+                      "width": 12,
+                      "x": 12,
+                      "y": 16
+                    }
+                  },
+                  {
+                    "kind": "GridLayoutItem",
+                    "spec": {
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-14"
-                      }
+                      },
+                      "height": 7,
+                      "width": 24,
+                      "x": 0,
+                      "y": 24
                     }
                   }
                 ]
               }
-            }
+            },
+            "title": "Search"
           }
         },
         {
           "kind": "RowsLayoutRow",
           "spec": {
-            "title": "Viewer & IIIF libraries",
             "collapse": false,
             "layout": {
               "kind": "GridLayout",
@@ -2988,64 +3606,64 @@
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 0,
-                      "y": 0,
-                      "width": 12,
-                      "height": 10,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-16"
-                      }
+                      },
+                      "height": 10,
+                      "width": 12,
+                      "x": 0,
+                      "y": 0
                     }
                   },
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 12,
-                      "y": 0,
-                      "width": 12,
-                      "height": 10,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-17"
-                      }
+                      },
+                      "height": 10,
+                      "width": 12,
+                      "x": 12,
+                      "y": 0
                     }
                   },
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 0,
-                      "y": 10,
-                      "width": 12,
-                      "height": 8,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-18"
-                      }
+                      },
+                      "height": 8,
+                      "width": 12,
+                      "x": 0,
+                      "y": 10
                     }
                   },
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 12,
-                      "y": 10,
-                      "width": 12,
-                      "height": 8,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-19"
-                      }
+                      },
+                      "height": 8,
+                      "width": 12,
+                      "x": 12,
+                      "y": 10
                     }
                   }
                 ]
               }
-            }
+            },
+            "title": "Viewer & IIIF libraries"
           }
         },
         {
           "kind": "RowsLayoutRow",
           "spec": {
-            "title": "Content",
             "collapse": false,
             "layout": {
               "kind": "GridLayout",
@@ -3054,64 +3672,64 @@
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 0,
-                      "y": 0,
-                      "width": 24,
-                      "height": 10,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-21"
-                      }
+                      },
+                      "height": 10,
+                      "width": 24,
+                      "x": 0,
+                      "y": 0
                     }
                   },
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 0,
-                      "y": 10,
-                      "width": 8,
-                      "height": 6,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-22"
-                      }
+                      },
+                      "height": 6,
+                      "width": 8,
+                      "x": 0,
+                      "y": 10
                     }
                   },
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 8,
-                      "y": 10,
-                      "width": 8,
-                      "height": 6,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-23"
-                      }
+                      },
+                      "height": 6,
+                      "width": 8,
+                      "x": 8,
+                      "y": 10
                     }
                   },
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 16,
-                      "y": 10,
-                      "width": 8,
-                      "height": 6,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-24"
-                      }
+                      },
+                      "height": 6,
+                      "width": 8,
+                      "x": 16,
+                      "y": 10
                     }
                   }
                 ]
               }
-            }
+            },
+            "title": "Content"
           }
         },
         {
           "kind": "RowsLayoutRow",
           "spec": {
-            "title": "MEI pipeline",
             "collapse": false,
             "layout": {
               "kind": "GridLayout",
@@ -3120,84 +3738,85 @@
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 0,
-                      "y": 0,
-                      "width": 8,
-                      "height": 8,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-26"
-                      }
+                      },
+                      "height": 8,
+                      "width": 8,
+                      "x": 0,
+                      "y": 0
                     }
                   },
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 8,
-                      "y": 0,
-                      "width": 8,
-                      "height": 8,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-27"
-                      }
+                      },
+                      "height": 8,
+                      "width": 8,
+                      "x": 8,
+                      "y": 0
                     }
                   },
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 16,
-                      "y": 0,
-                      "width": 8,
-                      "height": 8,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-28"
-                      }
+                      },
+                      "height": 8,
+                      "width": 8,
+                      "x": 16,
+                      "y": 0
                     }
                   },
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 0,
-                      "y": 8,
-                      "width": 8,
-                      "height": 7,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-29"
-                      }
+                      },
+                      "height": 7,
+                      "width": 8,
+                      "x": 0,
+                      "y": 8
                     }
                   },
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 8,
-                      "y": 8,
-                      "width": 8,
-                      "height": 7,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-30"
-                      }
+                      },
+                      "height": 7,
+                      "width": 8,
+                      "x": 8,
+                      "y": 8
                     }
                   },
                   {
                     "kind": "GridLayoutItem",
                     "spec": {
-                      "x": 16,
-                      "y": 8,
-                      "width": 8,
-                      "height": 7,
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-31"
-                      }
+                      },
+                      "height": 7,
+                      "width": 8,
+                      "x": 16,
+                      "y": 8
                     }
                   }
                 ]
               }
-            }
+            },
+            "title": "MEI pipeline"
           }
         }
       ]
@@ -3205,40 +3824,35 @@
   },
   "links": [
     {
-      "title": "Cantus dashboards",
-      "type": "dashboards",
+      "asDropdown": false,
       "icon": "dashboard",
-      "tooltip": "",
+      "includeVars": false,
+      "keepTime": true,
       "tags": [
         "cantus-ultimus"
       ],
-      "asDropdown": false,
       "targetBlank": false,
-      "includeVars": false,
-      "keepTime": true
+      "title": "Cantus dashboards",
+      "tooltip": "",
+      "type": "dashboards"
     },
     {
-      "title": "Cantus alerts",
-      "type": "link",
-      "icon": "bolt",
-      "tooltip": "",
-      "url": "/alerting/list?search=label:service%3Dcantus-ultimus",
-      "tags": [],
       "asDropdown": false,
-      "targetBlank": false,
+      "icon": "bolt",
       "includeVars": false,
-      "keepTime": false
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Cantus alerts",
+      "tooltip": "",
+      "type": "link",
+      "url": "/alerting/list?search=label:service%3Dcantus-ultimus"
     }
   ],
   "liveNow": false,
   "preload": false,
-  "tags": [
-    "cantus-ultimus"
-  ],
+  "tags": [],
   "timeSettings": {
-    "timezone": "browser",
-    "from": "now-24h",
-    "to": "now",
     "autoRefresh": "1m",
     "autoRefreshIntervals": [
       "5s",
@@ -3252,36 +3866,38 @@
       "2h",
       "1d"
     ],
+    "fiscalYearStartMonth": 0,
+    "from": "2026-11-05T15:15:23.734Z",
     "hideTimepicker": false,
-    "fiscalYearStartMonth": 0
+    "timezone": "browser",
+    "to": "2026-11-07T15:15:23.734Z"
   },
   "title": "Cantus Ultimus — Usage & content",
   "variables": [
     {
       "kind": "DatasourceVariable",
       "spec": {
-        "name": "datasource",
-        "pluginId": "prometheus",
-        "refresh": "onDashboardLoad",
-        "regex": "",
+        "allowCustomValue": true,
         "current": {
           "text": "Prometheus",
           "value": "prometheus"
         },
-        "options": [],
-        "multi": false,
+        "hide": "dontHide",
         "includeAll": false,
         "label": "Data source",
-        "hide": "dontHide",
-        "skipUrlSync": false,
-        "allowCustomValue": true
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "pluginId": "prometheus",
+        "refresh": "onDashboardLoad",
+        "regex": "",
+        "skipUrlSync": false
       }
     },
     {
       "kind": "CustomVariable",
       "spec": {
-        "name": "client",
-        "query": "browser,bot,api,probe",
+        "allowCustomValue": true,
         "current": {
           "text": [
             "browser"
@@ -3290,72 +3906,50 @@
             "browser"
           ]
         },
-        "options": [
-          {
-            "selected": true,
-            "text": "browser",
-            "value": "browser"
-          },
-          {
-            "selected": false,
-            "text": "bot",
-            "value": "bot"
-          },
-          {
-            "selected": false,
-            "text": "api",
-            "value": "api"
-          },
-          {
-            "selected": false,
-            "text": "probe",
-            "value": "probe"
-          }
-        ],
-        "multi": true,
+        "hide": "dontHide",
         "includeAll": false,
         "label": "Client",
-        "hide": "dontHide",
+        "multi": true,
+        "name": "client",
+        "options": [],
+        "query": "browser,bot,api,probe",
         "skipUrlSync": false,
-        "allowCustomValue": true
+        "valuesFormat": "csv"
       }
     },
     {
       "kind": "QueryVariable",
       "spec": {
-        "name": "manuscript",
+        "allValue": ".*",
+        "allowCustomValue": true,
         "current": {
-          "text": [
-            "All"
-          ],
-          "value": [
-            "$__all"
-          ]
+          "text": "All",
+          "value": "$__all"
         },
-        "label": "Manuscript",
+        "definition": "query_result(cantus_manuscript_info{env=\"production\"})",
         "hide": "dontHide",
-        "refresh": "onTimeRangeChanged",
-        "skipUrlSync": false,
+        "includeAll": true,
+        "label": "Manuscript",
+        "multi": true,
+        "name": "manuscript",
+        "options": [],
         "query": {
-          "kind": "DataQuery",
-          "group": "prometheus",
-          "version": "v0",
           "datasource": {
             "name": "${datasource}"
           },
+          "group": "prometheus",
+          "kind": "DataQuery",
           "spec": {
             "query": "query_result(cantus_manuscript_info{env=\"production\"})",
             "refId": "manuscripts"
-          }
+          },
+          "version": "v0"
         },
+        "refresh": "onTimeRangeChanged",
         "regex": "/manuscript_id=\"(?<value>[^\"]+)\".*siglum=\"(?<text>[^\"]+)\"/",
-        "sort": "alphabeticalCaseInsensitiveAsc",
-        "definition": "query_result(cantus_manuscript_info{env=\"production\"})",
-        "options": [],
-        "multi": true,
-        "includeAll": true,
-        "allValue": ".*",
-        "allowCustomValue": true
+        "regexApplyTo": "value",
+        "skipUrlSync": false,
+        "sort": "disabled"
       }
     }
   ]
