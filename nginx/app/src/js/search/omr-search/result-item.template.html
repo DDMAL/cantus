@@ -1,8 +1,8 @@
 <td><a href="<%- folioUrl %>" class="folio-link"><%- _.result(boxes[0], 'f') %></a></td>
 <td>
-    <a href="#" class="result-target neume-images">
+    <a href="#" class="result-target neume-images" aria-label="Show result <%- resultNumber %> in viewer">
         <% _.forEach(boxes, function (box) { %>
-            <img src="<%= thumbnailUrl(box) %>" loading="lazy"
+            <img src="<%= thumbnailUrl(box) %>" alt="" loading="lazy"
                  style="width: <%- box.w / box.h * neumeImageHeight %>px; height: <%- neumeImageHeight %>px">
         <% }); %>
     </a>

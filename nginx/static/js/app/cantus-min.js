@@ -32081,6 +32081,7 @@ var DivaBackend = /*#__PURE__*/function () {
     // Canvas ids in the same order; Diva keys annotations by canvas.
     this.pageCanvasIds = [];
     this.pendingHighlights = null;
+    this.pendingFocusIndex = null;
     // Each result's first drawn box: { id, pageIndex, region }.
     this.highlightsByResult = new Map();
     this.highlightGeneration = 0;
@@ -32176,12 +32177,16 @@ var DivaBackend = /*#__PURE__*/function () {
       this.currentIndex = this.instance.getState().currentPageIndex || 0;
       this.ready = true;
 
-      // Before emitting: a deferred focusResult frames one of these boxes.
+      // Before the deferred focus below, which frames one of these boxes.
       if (this.pendingHighlights) {
         this.applyHighlights(this.pendingHighlights);
         this.pendingHighlights = null;
       }
       this.emit('viewer:loaded');
+      if (this.pendingFocusIndex !== null) {
+        this.focusResult(this.pendingFocusIndex);
+        this.pendingFocusIndex = null;
+      }
       this.emitPageChanged();
     }
   }, {
@@ -32311,13 +32316,10 @@ var DivaBackend = /*#__PURE__*/function () {
   }, {
     key: "focusResult",
     value: function focusResult(resultIndex) {
-      var _this4 = this;
-      // A search can run before the viewer is ready; retry once it is, so
-      // the result's boxes are drawn.
+      // A search can run before the viewer is ready; handleViewerReady
+      // focuses the latest such request once the boxes are drawn.
       if (!this.ready) {
-        this.on('viewer:loaded', function () {
-          return _this4.focusResult(resultIndex);
-        });
+        this.pendingFocusIndex = resultIndex;
         return;
       }
       var highlight = this.highlightsByResult.get(resultIndex);
@@ -36886,6 +36888,7 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_1___default().ch
       },
       thumbnailUrl: underscore__WEBPACK_IMPORTED_MODULE_0__["default"].bind(this.getThumbnail, this),
       neumeImageHeight: this.neumeImageHeight,
+      resultNumber: this.model.collection.indexOf(this.model) + 1,
       folioUrl: '/manuscript/' + manuscriptChannel.request('manuscript') + '/?folio=' + encodeURIComponent(underscore__WEBPACK_IMPORTED_MODULE_0__["default"].result(this.model.get('boxes')[0], 'f'))
     };
   }
@@ -37105,11 +37108,13 @@ __p+='<td><a href="'+
 ((__t=( folioUrl ))==null?'':_.escape(__t))+
 '" class="folio-link">'+
 ((__t=( _.result(boxes[0], 'f') ))==null?'':_.escape(__t))+
-'</a></td>\n<td>\n    <a href="#" class="result-target neume-images">\n        ';
+'</a></td>\n<td>\n    <a href="#" class="result-target neume-images" aria-label="Show result '+
+((__t=( resultNumber ))==null?'':_.escape(__t))+
+' in viewer">\n        ';
  _.forEach(boxes, function (box) { 
 __p+='\n            <img src="'+
 ((__t=( thumbnailUrl(box) ))==null?'':__t)+
-'" loading="lazy"\n                 style="width: '+
+'" alt="" loading="lazy"\n                 style="width: '+
 ((__t=( box.w / box.h * neumeImageHeight ))==null?'':_.escape(__t))+
 'px; height: '+
 ((__t=( neumeImageHeight ))==null?'':_.escape(__t))+

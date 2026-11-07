@@ -63,6 +63,7 @@ export default class DivaBackend {
         this.pageCanvasIds = [];
 
         this.pendingHighlights = null;
+        this.pendingFocusIndex = null;
         // Each result's first drawn box: { id, pageIndex, region }.
         this.highlightsByResult = new Map();
         this.highlightGeneration = 0;
@@ -157,13 +158,19 @@ export default class DivaBackend {
         this.currentIndex = this.instance.getState().currentPageIndex || 0;
         this.ready = true;
 
-        // Before emitting: a deferred focusResult frames one of these boxes.
+        // Before the deferred focus below, which frames one of these boxes.
         if (this.pendingHighlights) {
             this.applyHighlights(this.pendingHighlights);
             this.pendingHighlights = null;
         }
 
         this.emit('viewer:loaded');
+
+        if (this.pendingFocusIndex !== null) {
+            this.focusResult(this.pendingFocusIndex);
+            this.pendingFocusIndex = null;
+        }
+
         this.emitPageChanged();
     }
 
@@ -278,10 +285,10 @@ export default class DivaBackend {
      * leaves the viewer where it is.
      */
     focusResult(resultIndex) {
-        // A search can run before the viewer is ready; retry once it is, so
-        // the result's boxes are drawn.
+        // A search can run before the viewer is ready; handleViewerReady
+        // focuses the latest such request once the boxes are drawn.
         if (!this.ready) {
-            this.on('viewer:loaded', () => this.focusResult(resultIndex));
+            this.pendingFocusIndex = resultIndex;
             return;
         }
 
