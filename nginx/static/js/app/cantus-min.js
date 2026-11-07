@@ -31984,9 +31984,9 @@ var DivaAdapter = /*#__PURE__*/function () {
       return this.backend.setHighlights(resultRegions);
     }
   }, {
-    key: "focusRegion",
-    value: function focusRegion(region, resultIndex) {
-      return this.backend.focusRegion(region, resultIndex);
+    key: "focusResult",
+    value: function focusResult(resultIndex) {
+      return this.backend.focusResult(resultIndex);
     }
   }, {
     key: "destroy",
@@ -32081,7 +32081,8 @@ var DivaBackend = /*#__PURE__*/function () {
     // Canvas ids in the same order; Diva keys annotations by canvas.
     this.pageCanvasIds = [];
     this.pendingHighlights = null;
-    this.highlightIdsByResult = new Map();
+    // Each result's first drawn box: { id, pageIndex, region }.
+    this.highlightsByResult = new Map();
     this.highlightGeneration = 0;
 
     // True once Diva's `ready` promise has resolved; page state must not be
@@ -32175,8 +32176,7 @@ var DivaBackend = /*#__PURE__*/function () {
       this.currentIndex = this.instance.getState().currentPageIndex || 0;
       this.ready = true;
 
-      // Before emitting: a deferred focusRegion selects one of these boxes,
-      // and Diva throws on selecting an annotation it doesn't hold.
+      // Before emitting: a deferred focusResult frames one of these boxes.
       if (this.pendingHighlights) {
         this.applyHighlights(this.pendingHighlights);
         this.pendingHighlights = null;
@@ -32191,7 +32191,7 @@ var DivaBackend = /*#__PURE__*/function () {
       if (this.ready) this.emitPageChanged();
     }
 
-    // Diva also fires this for selectHighlight(), re-reporting the selected result.
+    // Diva also fires this for focusResult()'s selection, re-reporting the result.
   }, {
     key: "handleAnnotationSelect",
     value: function handleAnnotationSelect(event) {
@@ -32269,16 +32269,29 @@ var DivaBackend = /*#__PURE__*/function () {
       var _this3 = this;
       var annotations = [];
       this.highlightGeneration += 1;
-      this.highlightIdsByResult.clear();
+      this.highlightsByResult.clear();
       resultRegions.forEach(function (regions, resultIndex) {
         regions.forEach(function (region, boxIndex) {
           // Diva rejects the whole batch over one box off the manifest or
           // one invalid rectangle. Folios with no image have an empty URI.
+          // Diva can't zoom to negative coordinates either; some OMR
+          // boxes start at -1 and span most of the page.
           var pageIndex = _this3.pageURIs.indexOf(region.p);
           var xywh = [region.x, region.y, region.w, region.h];
-          if (pageIndex < 0 || !xywh.every(Number.isFinite) || region.w <= 0 || region.h <= 0) return;
+          if (pageIndex < 0 || !xywh.every(Number.isFinite) || region.x < 0 || region.y < 0 || region.w <= 0 || region.h <= 0) return;
           var id = ['omr-highlight', _this3.highlightGeneration, resultIndex, boxIndex].join('-');
-          if (!_this3.highlightIdsByResult.has(resultIndex)) _this3.highlightIdsByResult.set(resultIndex, id);
+          if (!_this3.highlightsByResult.has(resultIndex)) {
+            _this3.highlightsByResult.set(resultIndex, {
+              id: id,
+              pageIndex: pageIndex,
+              region: {
+                x: region.x,
+                y: region.y,
+                width: region.w,
+                height: region.h
+              }
+            });
+          }
           annotations.push({
             id: id,
             // No body, so Diva shows no hover tooltip.
@@ -32289,48 +32302,37 @@ var DivaBackend = /*#__PURE__*/function () {
       this.instance.setAnnotations(annotations);
     }
 
-    // Diva selects one annotation at a time, so a multi-system result marks
-    // only its first box, the one focusRegion() frames.
-  }, {
-    key: "selectHighlight",
-    value: function selectHighlight(resultIndex) {
-      var id = this.highlightIdsByResult.get(resultIndex);
-      if (id) this.instance.selectAnnotation(id);
-    }
-
     /**
-     * Go to an OMR result's page and zoom to its region, given in
-     * full-resolution image pixels, selecting the box of `resultIndex` if given.
+     * Go to the page of the OMR result at `resultIndex`, zoom to its first
+     * drawn box, and select it. Diva selects one annotation at a time, so a
+     * multi-system result marks only that box. A result with no drawn box
+     * leaves the viewer where it is.
      */
   }, {
-    key: "focusRegion",
-    value: function focusRegion(region, resultIndex) {
+    key: "focusResult",
+    value: function focusResult(resultIndex) {
       var _this4 = this;
       // A search can run before the viewer is ready; retry once it is, so
-      // pageURIs is populated.
+      // the result's boxes are drawn.
       if (!this.ready) {
         this.on('viewer:loaded', function () {
-          return _this4.focusRegion(region, resultIndex);
+          return _this4.focusResult(resultIndex);
         });
         return;
       }
-      var index = this.pageURIs.indexOf(region.imageURI);
-      if (index < 0) return;
-      var page = this.instance.getPages()[index];
+      var highlight = this.highlightsByResult.get(resultIndex);
+      if (!highlight) return;
+      var page = this.instance.getPages()[highlight.pageIndex];
+      var region = highlight.region;
       // pageSpan is 0 when the manifest omits page dimensions; the max() below
       // then falls back to OMR_MIN_ZOOM_PADDING.
       var pageSpan = Math.max(page.width || 0, page.height || 0);
       var boxSpan = Math.max(region.width, region.height);
       var padding = Math.max(OMR_MIN_ZOOM_PADDING, (pageSpan * OMR_MIN_VIEW_FRACTION / boxSpan - 1) / 2);
-      this.instance.zoomToRegion(index, {
-        x: region.x,
-        y: region.y,
-        width: region.width,
-        height: region.height
-      }, {
+      this.instance.zoomToRegion(highlight.pageIndex, region, {
         padding: padding
       });
-      this.selectHighlight(resultIndex);
+      this.instance.selectAnnotation(highlight.id);
     }
   }, {
     key: "destroy",
@@ -35091,6 +35093,9 @@ var viewError = function viewError(message) {
     this.render();
   },
   searchFailed: function searchFailed(collection, resp) {
+    // A superseded search is aborted; the search or reset that replaced it
+    // sets the heading.
+    if (resp.statusText === 'abort') return;
     this.setState(FAILURE, {
       error: resp
     });
@@ -36651,6 +36656,7 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_3___default().ch
   },
   onSearch: function onSearch(query) {
     this.query = query;
+    this.abortPendingSearch();
     this.clearDivaBoxes();
 
     // Handle the empty case
@@ -36663,18 +36669,20 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_3___default().ch
         query: this.query,
         manuscript: this.manuscript
       });
-      this.resultLoadingHandler.fetch();
+      this.pendingSearch = this.resultLoadingHandler.fetch();
     }
     return false;
+  },
+  /** Drop the search in flight, so its late response can't replace newer results. */
+  abortPendingSearch: function abortPendingSearch() {
+    if (this.pendingSearch) this.pendingSearch.abort();
   },
   getDivaAdapter: function getDivaAdapter() {
     return manuscriptChannel.request('diva');
   },
   resultFetchCallback: function resultFetchCallback() {
-    // A response landing after a switch to text search would redraw the
-    // highlights the list's teardown cleared.
     var divaAdapter = this.getDivaAdapter();
-    if (!divaAdapter || this.resultView.isDestroyed()) return;
+    if (!divaAdapter) return;
     divaAdapter.setHighlights(this.results.pluck('boxes'));
     if (this.results.length > 0) this.zoomToResult(this.results.at(0));
   },
@@ -36695,16 +36703,8 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_3___default().ch
   zoomToResult: function zoomToResult(model) {
     var divaAdapter = this.getDivaAdapter();
     if (!divaAdapter) return;
-    var box = model.get('boxes')[0];
-    if (!box) return;
     this.resultView.setSelectedResult(model);
-    divaAdapter.focusRegion({
-      imageURI: box.p,
-      x: box.x,
-      y: box.y,
-      width: box.w,
-      height: box.h
-    }, this.results.indexOf(model));
+    divaAdapter.focusResult(this.results.indexOf(model));
   },
   serializeData: function serializeData() {
     return {
@@ -36773,6 +36773,7 @@ var manuscriptChannel = backbone_radio__WEBPACK_IMPORTED_MODULE_3___default().ch
     this.listenTo(resultView, 'zoomToResult', this.zoomToResult);
 
     // Clear results from Diva when the results are no longer displayed
+    this.listenTo(resultView, 'destroy', this.abortPendingSearch);
     this.listenTo(resultView, 'destroy', this.clearDivaBoxes);
     regions.searchResults.show(resultView);
 
@@ -37108,7 +37109,7 @@ __p+='<td><a href="'+
  _.forEach(boxes, function (box) { 
 __p+='\n            <img src="'+
 ((__t=( thumbnailUrl(box) ))==null?'':__t)+
-'"\n                 style="width: '+
+'" loading="lazy"\n                 style="width: '+
 ((__t=( box.w / box.h * neumeImageHeight ))==null?'':_.escape(__t))+
 'px; height: '+
 ((__t=( neumeImageHeight ))==null?'':_.escape(__t))+

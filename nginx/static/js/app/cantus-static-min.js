@@ -28616,6 +28616,9 @@ var viewError = function viewError(message) {
     this.render();
   },
   searchFailed: function searchFailed(collection, resp) {
+    // A superseded search is aborted; the search or reset that replaced it
+    // sets the heading.
+    if (resp.statusText === 'abort') return;
     this.setState(FAILURE, {
       error: resp
     });

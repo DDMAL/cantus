@@ -2,7 +2,7 @@
 <td>
     <a href="#" class="result-target neume-images">
         <% _.forEach(boxes, function (box) { %>
-            <img src="<%= thumbnailUrl(box) %>"
+            <img src="<%= thumbnailUrl(box) %>" loading="lazy"
                  style="width: <%- box.w / box.h * neumeImageHeight %>px; height: <%- neumeImageHeight %>px">
         <% }); %>
     </a>
