@@ -35,6 +35,7 @@ export default Marionette.Object.extend({
     searchPlugins: [
         {
             name: 'neume-search',
+            unavailableReason: 'Neume search is not available for this manuscript',
             fields: [
                 {
                     name: 'Neume',
@@ -44,6 +45,7 @@ export default Marionette.Object.extend({
         },
         {
             name: 'pitch-search',
+            unavailableReason: 'Pitch search is not available for this manuscript',
             fields: [
                 {
                     name: 'Pitch',
@@ -76,10 +78,18 @@ export default Marionette.Object.extend({
 
         this.fields = [];
 
+        // List every field, disabling those whose plugin is not activated
         _.forEach(this.searchPlugins, function (plugin)
         {
-            if (manuscriptModel.isPluginActivated(plugin.name))
-                this.fields.push.apply(this.fields, plugin.fields);
+            var activated = manuscriptModel.isPluginActivated(plugin.name);
+
+            _.forEach(plugin.fields, function (field)
+            {
+                this.fields.push(activated ? field : _.extend({}, field, {
+                    disabled: true,
+                    disabledReason: plugin.unavailableReason
+                }));
+            }, this);
         }, this);
 
         this.results = new SearchNotationResultCollection();
