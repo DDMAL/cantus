@@ -22,10 +22,23 @@ def validate_intervals_query_word(word: str) -> bool:
     return False
 
 
+def split_query(q: str, q_type: str) -> list[str]:
+    """
+    Split a query into its lowercase elements. Each pitch name is one letter,
+    so "cde" means "c d e".
+    """
+    elements = q.lower().split()
+    if q_type in ("pitch_names", "pitch_names_transposed"):
+        return list("".join(elements))
+    return elements
+
+
 def validate_query(q: list[str], q_type: str) -> bool:
     """
     Depending on the type of the query, returns True if the query is valid
     """
+    if not q:
+        return False
     match q_type:
         case "neume_names":
             return all(neume in NEUME_NAMES for neume in q)
