@@ -73,6 +73,29 @@ class TestSearchNotationView(APITestCase):
             )
             expected_query_string = "pitch_names:(c_d_e OR d_e_f OR e_f_g OR f_g_a OR g_a_b OR a_b_c OR b_c_d)"
             self.assertEqual(query_string, expected_query_string)
+        with self.subTest("Test unspaced pitch_names query"):
+            query_string = self.search_notation_view.create_query_string(
+                "cD e", "pitch_names"
+            )
+            self.assertEqual(query_string, "pitch_names:c_d_e")
+        with self.subTest("Test unspaced pitch_names_transposed query"):
+            query_string = self.search_notation_view.create_query_string(
+                "cde", "pitch_names_transposed"
+            )
+            expected_query_string = "pitch_names:(c_d_e OR d_e_f OR e_f_g OR f_g_a OR g_a_b OR a_b_c OR b_c_d)"
+            self.assertEqual(query_string, expected_query_string)
+        with self.subTest("Test one-pitch pitch_names_transposed query"):
+            with self.assertRaises(NotationSearchException):
+                self.search_notation_view.create_query_string(
+                    "c", "pitch_names_transposed"
+                )
+            query_string = self.search_notation_view.create_query_string(
+                "c", "pitch_names"
+            )
+            self.assertEqual(query_string, "pitch_names:c")
+        with self.subTest("Test query of only spaces"):
+            with self.assertRaises(NotationSearchException):
+                self.search_notation_view.create_query_string("   ", "contour")
         # An intervals query translates interval directions before joining them
         # with underscores.
         with self.subTest("Test intervals query"):

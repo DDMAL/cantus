@@ -46,6 +46,10 @@ $accordion-button-focus-box-shadow: none;
 $accordion-button-icon: none;
 $accordion-button-active-icon: none;
 
+$form-check-input-checked-bg-color: $brand-primary;
+$form-check-input-focus-border: color.mix(white, $brand-primary, 50%);
+$form-check-input-focus-box-shadow: 0 0 0 .25rem color.change($brand-primary, $alpha: .25);
+
 // Color used for a lot of borders in the Bootstrap things
 $border-color: #ddd;
 
@@ -555,6 +559,10 @@ body.propagate-height {
 
 .search-input .form-group {
     margin-bottom: 0;
+}
+
+.search-field-variant .form-check-label {
+    font-weight: 300;
 }
 
 .search-suggestions {

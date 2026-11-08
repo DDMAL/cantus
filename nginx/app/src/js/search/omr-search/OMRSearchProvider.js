@@ -47,11 +47,13 @@ export default Marionette.Object.extend({
             fields: [
                 {
                     name: 'Pitch',
-                    type: 'pitch_names'
-                },
-                {
-                    name: 'Pitch (invariant)',
-                    type: 'pitch_names_transposed'
+                    type: 'pitch_names',
+                    variant: {
+                        label: 'Include transpositions',
+                        tooltip: 'Also finds the pattern on other notes (c d e → d e f, e f g, …).\n' +
+                            'Half steps may fall in different places.',
+                        type: 'pitch_names_transposed'
+                    }
                 },
                 {
                     name: 'Contour',
