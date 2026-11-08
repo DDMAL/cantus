@@ -28703,6 +28703,10 @@ __webpack_require__.r(__webpack_exports__);
  * Providers are expected to implement those methods, to provide an array `fields` with field
  * types and names, and to provide a string `description` which describes the search type provided.
  *
+ * A field can also have a `variant` ({label, tooltip, type}), shown as a checkbox under the search
+ * box. While it is checked, the field searches with the variant's type. The field's input view
+ * must implement `getQuery`, so that toggling the checkbox can search with the text in the box.
+ *
  *  TODO: Make this API less confusing. As a historical note, it works this way because it merges
  *  two search views which had different implementations. Refactoring those to make the abstraction
  *  better would be nice.
@@ -28720,10 +28724,14 @@ __webpack_require__.r(__webpack_exports__);
   },
   ui: {
     fieldSelectorLabel: '.search-field-selector .dropdown-toggle .field-label',
-    fieldSelectorMenuItem: '.search-field-selector .dropdown-menu a'
+    fieldSelectorMenuItem: '.search-field-selector .dropdown-menu a',
+    variant: '.search-field-variant',
+    variantCheckbox: '.search-field-variant input',
+    variantLabel: '.search-field-variant label'
   },
   events: {
-    'click @ui.fieldSelectorMenuItem': 'fieldSelected'
+    'click @ui.fieldSelectorMenuItem': 'fieldSelected',
+    'change @ui.variantCheckbox': 'variantToggled'
   },
   /**
    * Initialization parameters:
@@ -28733,6 +28741,7 @@ __webpack_require__.r(__webpack_exports__);
    */
   initialize: function initialize() {
     this.cachedQueries = {};
+    this.checkedVariants = {};
     this.providers = this.getOption('providers');
     this._setInitialSearchTerm();
   },
@@ -28767,8 +28776,9 @@ __webpack_require__.r(__webpack_exports__);
     }
   },
   /** Iterate through the providers and their fields to find one
-   * with the type `type`. Set the active provider and field if
-   * a match is found.
+   * with the type `type` or a variant of that type. Set the active
+   * provider and field if a match is found, and whether the variant
+   * is checked.
    *
    * @param {String} type
    * @returns {Boolean} Whether a match was found
@@ -28777,9 +28787,11 @@ __webpack_require__.r(__webpack_exports__);
   _findSearchField: function _findSearchField(type) {
     return underscore__WEBPACK_IMPORTED_MODULE_0__["default"].some(this.providers, function (provider) {
       return underscore__WEBPACK_IMPORTED_MODULE_0__["default"].some(provider.fields, function (field) {
-        if (field.type === type) {
+        var isVariant = !!field.variant && field.variant.type === type;
+        if (field.type === type || isVariant) {
           this.activeProvider = provider;
           this.activeField = field;
+          this.checkedVariants[field.type] = isVariant;
           return true;
         }
         return false;
@@ -28796,17 +28808,34 @@ __webpack_require__.r(__webpack_exports__);
   _setQuery: function _setQuery(query) {
     this.query = this.cachedQueries[this.activeField.type] = query;
   },
+  /** The active field, with the variant's type while its variant is checked
+   * @private
+   */
+  _searchedField: function _searchedField() {
+    var field = this.activeField;
+    if (field.variant && this.checkedVariants[field.type]) return {
+      name: field.name,
+      type: field.variant.type
+    };
+    return field;
+  },
   /** Add a binding to listen for `search` on the input view whenever an
    * input view is shown. */
   bindInputSearchEvent: function bindInputSearchEvent(inputView) {
     this.listenTo(inputView, 'search', function (query) {
       this._setQuery(query);
       this.trigger('search', {
-        type: this.activeField.type,
+        type: this._searchedField().type,
         query: query
       });
       this.activeProvider.triggerMethod('search', query);
     });
+  },
+  /** Search again with or without the variant, using the text in the search box */
+  variantToggled: function variantToggled() {
+    this.checkedVariants[this.activeField.type] = this.ui.variantCheckbox.prop('checked');
+    this._setQuery(this.getRegion('searchInput').currentView.getQuery());
+    this.renderActiveField();
   },
   fieldSelected: function fieldSelected(event) {
     var menuItem = jquery__WEBPACK_IMPORTED_MODULE_1___default()(event.target);
@@ -28825,16 +28854,31 @@ __webpack_require__.r(__webpack_exports__);
   serializeData: function serializeData() {
     return {
       searchProviders: this.providers,
-      activeField: this.activeField
+      activeField: this.activeField,
+      // Unique because a page can have more than one search view
+      variantInputId: underscore__WEBPACK_IMPORTED_MODULE_0__["default"].uniqueId('search-field-variant-')
     };
   },
   renderActiveField: function renderActiveField() {
+    this._renderVariant();
+    var field = this._searchedField();
     this.trigger('search', {
-      type: this.activeField.type,
+      type: field.type,
       query: this.query
     });
-    this.activeProvider.display(this.activeField, this.query, this.getRegions());
+    this.activeProvider.display(field, this.query, this.getRegions());
     this.bindInputSearchEvent(this.getRegion('searchInput').currentView);
+  },
+  _renderVariant: function _renderVariant() {
+    var variant = this.activeField.variant;
+    this.ui.variant.prop('hidden', !variant);
+    if (variant) {
+      this.ui.variant.attr('title', variant.tooltip);
+      // Screen readers announce the checkbox's title, not the row's
+      this.ui.variantCheckbox.attr('title', variant.tooltip);
+      this.ui.variantLabel.text(variant.label);
+      this.ui.variantCheckbox.prop('checked', !!this.checkedVariants[this.activeField.type]);
+    }
   },
   onRender: function onRender() {
     this.renderActiveField();
@@ -29989,7 +30033,11 @@ __p+='\n                    <li>\n                        <a href="#" class="dro
  }); 
 __p+='\n                ';
  }); 
-__p+='\n            </ul>\n        </div>\n        <div class="search-field">\n            <div class="search-input"></div>\n            <div class="search-suggestions"></div>\n        </div>\n    </div>\n</div>\n<div class="search-helper"></div>\n<div class="search-heading"></div>\n<div class="search-results propagate-height"></div>\n';
+__p+='\n            </ul>\n        </div>\n        <div class="search-field">\n            <div class="search-input"></div>\n            <div class="search-suggestions"></div>\n            <div class="form-check search-field-variant mt-1" hidden>\n                <input type="checkbox" class="form-check-input" id="'+
+((__t=( variantInputId ))==null?'':_.escape(__t))+
+'">\n                <label class="form-check-label" for="'+
+((__t=( variantInputId ))==null?'':_.escape(__t))+
+'"></label>\n            </div>\n        </div>\n    </div>\n</div>\n<div class="search-helper"></div>\n<div class="search-heading"></div>\n<div class="search-results propagate-height"></div>\n';
 }
 return __p;
 };
