@@ -26,6 +26,7 @@ from .mei_parsing_types import (
     ContourType,
     Neume,
     Syllable,
+    TextLine,
 )
 
 # Mapping from pitch names to integer pitch class where C = 0
@@ -410,6 +411,22 @@ class MEIParser:
             }
             syllables.append(syllable_dict)
         return syllables
+
+    def parse_text_lines(self) -> List[TextLine]:
+        """
+        Parses the lines of text ('l' elements) in the MEI file, in document
+        order. Lines without any text are skipped.
+
+        :return: A list of text lines
+        """
+        text_lines: List[TextLine] = []
+        for line in self.mei.iter(f"{self.MEINS}l"):
+            text = "".join(line.itertext()).strip()
+            if text:
+                text_lines.append(
+                    {"text": text, "bounding_box": self._get_element_zone(line)}
+                )
+        return text_lines
 
 
 def get_semitones_between_neume_components(
