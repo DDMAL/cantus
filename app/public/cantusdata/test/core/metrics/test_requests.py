@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.test import SimpleTestCase, TestCase
 
-from cantusdata.helpers.solr_client import make_solr
+from cantusdata.helpers.solr_client import SolrUnavailable, make_solr
 
 from .utils import BROWSER, sample
 
@@ -157,8 +157,9 @@ class SolrClientTestCase(SimpleTestCase):
         unreachable = make_solr(
             "unit_down", url="http://127.0.0.1:9/solr/none", timeout=1, max_retries=0
         )
-        with self.assertRaises(OSError):
+        with self.assertRaises(SolrUnavailable) as raised:
             unreachable.query("*:*")
+        self.assertIsInstance(raised.exception.__cause__, OSError)
         self.assertEqual(
             sample(
                 "cantus_solr_requests_total", operation="unit_down", outcome="error"

@@ -1,20 +1,20 @@
 /* App layout, canvas, and throbber styles. */
-
-:root {
+.diva-app {
   color-scheme: light;
 }
 
-* {
+.diva-app,
+.diva-app * {
   box-sizing: border-box;
 }
 
-.list-reset {
+.diva-list-reset {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.ui-button {
+.diva-ui-button {
   background-color: transparent;
   border: none;
   padding: 0;
@@ -24,22 +24,23 @@
   font-size: var(--diva-font-lg);
 }
 
-.ui-button:hover {
+.diva-ui-button:hover {
   background-color: var(--diva-surface);
 }
 
-.ui-card {
+.diva-ui-card {
   border-radius: 0;
   padding: 6px;
   cursor: pointer;
   width: 100%;
 }
 
-.ui-card--dark {
+.diva-ui-card--dark {
   background-color: var(--diva-dark-bg);
 }
 
 .diva-app {
+  color-scheme: light;
   padding: 12px 24px;
   height: 100%;
   display: flex;
@@ -95,6 +96,7 @@
   flex-direction: column;
   gap: 24px;
   flex: 1;
+  min-width: 0;
   min-height: 0;
 }
 
@@ -129,25 +131,25 @@
   border-radius: 0;
 }
 
-.metadata-panel {
+.diva-metadata-panel {
   padding: 12px;
   height: 100%;
   overflow: auto;
 }
 
-.metadata-body {
+.diva-metadata-body {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.metadata-item {
+.diva-metadata-item {
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-.metadata-label {
+.diva-metadata-label {
   font-size: var(--diva-font-lg);
   font-weight: 600;
   color: var(--diva-text-muted);
@@ -155,29 +157,29 @@
   line-height: 1.3;
 }
 
-.metadata-value {
+.diva-metadata-value {
   font-size: var(--diva-font-lg);
   color: var(--diva-text-muted);
   line-height: 1.3;
   padding-left: 12px;
 }
 
-.metadata-value > :first-child {
+.diva-metadata-value > :first-child {
   margin-top: 0;
 }
 
-.metadata-value > :last-child {
+.diva-metadata-value > :last-child {
   margin-bottom: 0;
 }
 
-.contents-empty {
+.diva-contents-empty {
   padding-left: 12px;
   font-size: var(--diva-font-lg);
   color: var(--diva-text-muted);
 }
 
-.sidebar-resizer,
-.collection-resizer {
+.diva-sidebar-resizer,
+.diva-collection-resizer {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -187,25 +189,32 @@
   line-height: 1;
   color: var(--diva-white);
   background-color: var(--diva-text-muted);
-  cursor: ew-resize;
+  cursor: col-resize;
   user-select: none;
   touch-action: none;
   align-self: stretch;
 }
 
-.sidebar-resizer.is-hidden,
-.collection-resizer.is-hidden {
+.diva-sidebar-resizer:hover,
+.diva-sidebar-resizer:active,
+.diva-collection-resizer:hover,
+.diva-collection-resizer:active {
+  cursor: col-resize;
+}
+
+.diva-sidebar-resizer.is-hidden,
+.diva-collection-resizer.is-hidden {
   display: none;
 }
 
-.sidebar-panel.is-fullscreen,
-.collection-panel.is-fullscreen {
+.diva-sidebar-panel.is-fullscreen,
+.diva-collection-panel.is-fullscreen {
   height: 100%;
   border-radius: 0;
 }
 
-.sidebar-panel.is-hidden,
-.collection-panel.is-hidden {
+.diva-sidebar-panel.is-hidden,
+.diva-collection-panel.is-hidden {
   border-width: 0;
   padding: 0;
   opacity: 0;
@@ -213,7 +222,7 @@
   overflow: hidden;
 }
 
-.required-statement-dock {
+.diva-required-statement-dock {
   display: flex;
   justify-content: flex-end;
   width: 100%;
@@ -221,7 +230,7 @@
   padding-right: 8px;
 }
 
-.required-statement {
+.diva-required-statement {
   font-size: var(--diva-font-md);
   color: var(--diva-text-muted);
   line-height: 1.4;
@@ -261,7 +270,7 @@
   background: var(--diva-dark-border);
 }
 
-.throbber-overlay {
+.diva-throbber-overlay {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -270,7 +279,7 @@
   pointer-events: none;
 }
 
-.viewer-zoom-indicator {
+.diva-viewer-zoom-indicator {
   position: absolute;
   left: 12px;
   bottom: 12px;
@@ -284,7 +293,7 @@
   background-color: rgb(0 0 0 / 55%);
 }
 
-.throbber {
+.diva-throbber {
   width: 64px;
   height: 64px;
   padding: 8px;
@@ -295,7 +304,7 @@
   flex-wrap: wrap;
 }
 
-.throbber-cube {
+.diva-throbber-cube {
   width: 16px;
   height: 16px;
   background-color: var(--diva-accent);
@@ -330,8 +339,8 @@
     gap: 12px;
   }
 
-  .sidebar-resizer,
-  .collection-resizer {
+  .diva-sidebar-resizer,
+  .diva-collection-resizer {
     display: none;
   }
 }

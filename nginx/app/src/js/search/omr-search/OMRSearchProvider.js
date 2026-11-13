@@ -186,7 +186,8 @@ export default Marionette.Object.extend({
             fieldName: this.field.name,
             query: this.query,
             displayedQuery: this.query,
-            numFound: numFound
+            numFound: numFound,
+            shownCount: this.results.length
         };
     },
 

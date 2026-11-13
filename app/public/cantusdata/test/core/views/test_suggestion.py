@@ -4,6 +4,8 @@ import requests
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from cantusdata.helpers.solr_client import SolrUnavailable
+
 SOLR_GET = "cantusdata.views.suggestion.solr_get"
 
 
@@ -45,7 +47,7 @@ class SuggestionViewTestCase(APITestCase):
         failed.status_code = 500
         for outcome in (
             {"return_value": failed},
-            {"side_effect": requests.ConnectionError("refused")},
+            {"side_effect": SolrUnavailable()},
         ):
             with self.subTest(outcome=outcome):
                 with patch(SOLR_GET, **outcome):
