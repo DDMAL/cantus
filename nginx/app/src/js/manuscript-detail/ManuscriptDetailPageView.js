@@ -111,14 +111,22 @@ export default Marionette.View.extend({
         });
 
         // Initialize the search view
+        // Volpiano normally searches chant records from Cantus Database. A
+        // manuscript without them can still be searched by Volpiano through
+        // its MEI, which the notation search provider then handles instead.
+        var volpianoFromMei = !this.model.get('chants_loaded') &&
+            this.model.isPluginActivated('pitch-search');
+
         var chantSearchProvider = new ChantSearchProvider({
-            additionalResultFields: ['genre', 'mode', 'feast', 'office', 'position']
+            additionalResultFields: ['genre', 'mode', 'feast', 'office', 'position'],
+            excludedFields: volpianoFromMei ? ['volpiano', 'volpiano_literal'] : []
         });
 
         chantSearchProvider.setRestriction('manuscript_id', '"' + this.model.get("id") + '"');
 
         var notationSearchProvider = new OMRSearchProvider({
-            manuscript: this.model
+            manuscript: this.model,
+            volpianoSearch: volpianoFromMei
         });
 
         var searchTerm = manuscriptStateChannel.request('search');
