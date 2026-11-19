@@ -89,9 +89,8 @@ class SearchMetricsTestCase(TestCase):
             sample("cantus_search_result_offset_count"), offsets_before + 1
         )
 
-    def test_invariant_pitch_search_is_reported_as_an_invalid_type(self) -> None:
-        # The type older clients sent for the transposed pitch search, which
-        # the server does not accept.
+    def test_an_unknown_notation_type_is_reported_as_invalid(self) -> None:
+        # A type the server does not accept.
         labels = dict(
             type="invalid",
             manuscript_id="other",

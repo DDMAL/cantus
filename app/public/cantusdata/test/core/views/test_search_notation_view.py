@@ -3,6 +3,7 @@ from django.core.management import call_command
 from django.urls import reverse
 from django.conf import settings
 
+from cantusdata.metrics.labels import NOTATION_SEARCH_TYPES
 from cantusdata.views.search_notation import SearchNotationView, NotationSearchException
 from cantusdata.models import Manuscript, Folio
 
@@ -93,9 +94,12 @@ class TestSearchNotationView(APITestCase):
                 "c", "pitch_names"
             )
             self.assertEqual(query_string, "pitch_names:c")
-        with self.subTest("Test query of only spaces"):
-            with self.assertRaises(NotationSearchException):
-                self.search_notation_view.create_query_string("   ", "contour")
+        for query_type in NOTATION_SEARCH_TYPES:
+            with self.subTest("Test query of only spaces", query_type=query_type):
+                with self.assertRaisesMessage(
+                    NotationSearchException, "Invalid query."
+                ):
+                    self.search_notation_view.create_query_string("   ", query_type)
         # An intervals query translates interval directions before joining them
         # with underscores.
         with self.subTest("Test intervals query"):
@@ -177,6 +181,20 @@ class TestSearchNotationView(APITestCase):
             }
             response_no_q = self.client.get(url, params_no_q)
             self.assertEqual(response_no_q.status_code, 400)
+        for query_type in ("pitch_names", "pitch_names_transposed"):
+            with self.subTest(
+                "Test pitches that aren't letters", query_type=query_type
+            ):
+                params_not_letters: dict[str, str | int] = {
+                    "q": "c, d, e",
+                    "type": query_type,
+                    "manuscript_id": 123723,
+                }
+                response = self.client.get(url, params_not_letters)
+                self.assertEqual(response.status_code, 400)
+                self.assertEqual(
+                    response.json()["detail"], "Pitches must be the letters a to g."
+                )
         with self.subTest("Test response"):
             params: dict[str, str | int] = {
                 "q": "u d u",
