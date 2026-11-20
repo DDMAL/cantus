@@ -19,8 +19,14 @@ export default Marionette.View.extend({
 
     serializeData: function () {
         return {
-            initialQuery: this.getOption('initialQuery')
+            initialQuery: this.getOption('initialQuery'),
+            placeholder: this.getOption('placeholder') || 'Notation'
         };
+    },
+
+    /** The query in the search box, whether or not it was submitted */
+    getQuery: function () {
+        return this.ui.searchBox.val();
     },
 
     /** Trigger a search event when the search form is submitted */

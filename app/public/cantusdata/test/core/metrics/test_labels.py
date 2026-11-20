@@ -81,7 +81,7 @@ class SearchLabelTestCase(SimpleTestCase):
 
     def test_notation_types_outside_the_known_set_are_invalid(self) -> None:
         self.assertEqual(notation_type_label("contour"), "contour")
-        # What the client sends for "Pitch (invariant)" (OMRSearchProvider.js).
+        # A type the server does not accept.
         self.assertEqual(notation_type_label("pitch_names_invariant"), "invalid")
         self.assertEqual(notation_type_label(None), "invalid")
 

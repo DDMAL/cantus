@@ -89,9 +89,8 @@ class SearchMetricsTestCase(TestCase):
             sample("cantus_search_result_offset_count"), offsets_before + 1
         )
 
-    def test_invariant_pitch_search_is_reported_as_an_invalid_type(self) -> None:
-        # The type the client sends for "Pitch (invariant)", which the server
-        # does not accept.
+    def test_an_unknown_notation_type_is_reported_as_invalid(self) -> None:
+        # A type the server does not accept.
         labels = dict(
             type="invalid",
             manuscript_id="other",
@@ -128,6 +127,21 @@ class SearchMetricsTestCase(TestCase):
         )
         self.assertEqual(
             sample("cantus_notation_search_query_length_sum", type="contour"),
+            lengths_before + 3,
+        )
+
+    def test_an_unspaced_pitch_search_records_each_pitch(self) -> None:
+        lengths_before = sample(
+            "cantus_notation_search_query_length_sum", type="pitch_names"
+        )
+        response = self.client.get(
+            "/notation-search/",
+            {"q": "cde", "type": "pitch_names", "manuscript_id": "1"},
+            HTTP_USER_AGENT=BROWSER,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            sample("cantus_notation_search_query_length_sum", type="pitch_names"),
             lengths_before + 3,
         )
 
