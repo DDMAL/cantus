@@ -22,6 +22,8 @@ import template from './search.template.html';
  * A field can also have a `variant` ({label, tooltip, type}), shown as a checkbox under the search
  * box. While it is checked, the field searches with the variant's type. The field's input view
  * must implement `getQuery`, so that toggling the checkbox can search with the text in the box.
+ * A variant's type must be unique among all fields' and variants' types, because a link's search
+ * type selects both the field and the checkbox state.
  *
  *  TODO: Make this API less confusing. As a historical note, it works this way because it merges
  *  two search views which had different implementations. Refactoring those to make the abstraction
@@ -145,7 +147,7 @@ export default Marionette.View.extend({
         var field = this.activeField;
 
         if (field.variant && this.checkedVariants[field.type])
-            return { name: field.name, type: field.variant.type };
+            return _.extend({}, field, { type: field.variant.type });
 
         return field;
     },

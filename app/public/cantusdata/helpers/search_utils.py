@@ -24,11 +24,11 @@ def validate_intervals_query_word(word: str) -> bool:
 
 def split_query(q: str, q_type: str) -> list[str]:
     """
-    Split a query into its lowercase elements. Each pitch name is one letter,
-    so "cde" means "c d e".
+    Split a query into its lowercase elements. Each pitch name and contour
+    direction is one letter, so "cde" means "c d e" and "udr" means "u d r".
     """
     elements = q.lower().split()
-    if q_type in ("pitch_names", "pitch_names_transposed"):
+    if q_type in ("pitch_names", "pitch_names_transposed", "contour"):
         return list("".join(elements))
     return elements
 

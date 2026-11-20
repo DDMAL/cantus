@@ -19,7 +19,8 @@ export default Marionette.View.extend({
 
     serializeData: function () {
         return {
-            initialQuery: this.getOption('initialQuery')
+            initialQuery: this.getOption('initialQuery'),
+            placeholder: this.getOption('placeholder') || 'Notation'
         };
     },
 

@@ -69,6 +69,14 @@ class NotationSearchException(APIException):
     default_detail = "Notation search request invalid."
 
 
+# Error messages for letter-based queries that contain other characters
+INVALID_LETTERS_MESSAGES = {
+    "pitch_names": "Pitches must be the letters a to g.",
+    "pitch_names_transposed": "Pitches must be the letters a to g.",
+    "contour": "Contour directions must be the letters u, d and r.",
+}
+
+
 class SearchNotationView(APIView):
     """
     Search algorithm adapted from the Liber Usualis code
@@ -148,11 +156,8 @@ class SearchNotationView(APIView):
         normalized_q_elems = split_query(q, q_type)
         q_valid = validate_query(normalized_q_elems, q_type)
         if not q_valid:
-            if normalized_q_elems and q_type in (
-                "pitch_names",
-                "pitch_names_transposed",
-            ):
-                raise NotationSearchException("Pitches must be the letters a to g.")
+            if normalized_q_elems and q_type in INVALID_LETTERS_MESSAGES:
+                raise NotationSearchException(INVALID_LETTERS_MESSAGES[q_type])
             raise NotationSearchException("Invalid query.")
         if q_type == "pitch_names_transposed":
             if len(normalized_q_elems) < 2:

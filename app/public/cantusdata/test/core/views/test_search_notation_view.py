@@ -63,6 +63,11 @@ class TestSearchNotationView(APITestCase):
             )
             expected_query_string = "contour:u_d_u_r"
             self.assertEqual(query_string, expected_query_string)
+        with self.subTest("Test unspaced contour query"):
+            query_string = self.search_notation_view.create_query_string(
+                "uDr d", "contour"
+            )
+            self.assertEqual(query_string, "contour:u_d_r_d")
         # We add a separate subtest for a "pitch_names_transposed" query since it
         # has a slightly different logic (we get transpositions and chain them
         # together with ORs).
@@ -181,20 +186,21 @@ class TestSearchNotationView(APITestCase):
             }
             response_no_q = self.client.get(url, params_no_q)
             self.assertEqual(response_no_q.status_code, 400)
-        for query_type in ("pitch_names", "pitch_names_transposed"):
-            with self.subTest(
-                "Test pitches that aren't letters", query_type=query_type
-            ):
+        invalid_letters_cases = [
+            ("pitch_names", "c, d, e", "Pitches must be the letters a to g."),
+            ("pitch_names_transposed", "c-d-e", "Pitches must be the letters a to g."),
+            ("contour", "uds", "Contour directions must be the letters u, d and r."),
+        ]
+        for query_type, query, message in invalid_letters_cases:
+            with self.subTest("Test invalid letters", query_type=query_type):
                 params_not_letters: dict[str, str | int] = {
-                    "q": "c, d, e",
+                    "q": query,
                     "type": query_type,
                     "manuscript_id": 123723,
                 }
                 response = self.client.get(url, params_not_letters)
                 self.assertEqual(response.status_code, 400)
-                self.assertEqual(
-                    response.json()["detail"], "Pitches must be the letters a to g."
-                )
+                self.assertEqual(response.json()["detail"], message)
         with self.subTest("Test response"):
             params: dict[str, str | int] = {
                 "q": "u d u",
