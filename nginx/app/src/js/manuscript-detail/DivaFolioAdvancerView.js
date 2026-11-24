@@ -54,15 +54,31 @@ export default Marionette.View.extend({
         this.getDivaAdapter().goToPreviousPage();
     },
 
+    /**
+     * Go to the first page, in viewer order, that has a folio record. Folio
+     * numbers can differ from viewer order (Salzinnes's 001r is page 21).
+     */
     firstChantFolioCallbackHandler: function (event) {
-        // Query which folio in the manuscript has the first chant
-        var manuscript = manuscriptChannel.request('manuscript');
-        var queryUrl = '/folio-set/manuscript/' + manuscript + '/';
+        // Prevent adding "#" to the end of the URL
+        event.preventDefault();
+
         var divaAdapter = this.getDivaAdapter();
-        $.get(queryUrl,
-            function (data) {
-                var firstFolioURI = data[0].image_uri;
+        // Empty until the viewer has loaded
+        var pageURIs = divaAdapter ? divaAdapter.getAllPageURIs() : [];
+        if (pageURIs.length === 0)
+            return;
+
+        var manuscript = manuscriptChannel.request('manuscript');
+        $.get('/folio-set/manuscript/' + manuscript + '/', (folios) => {
+            if (this.isDestroyed())
+                return;
+
+            var folioImageURIs = new Set(folios.map(folio => folio.image_uri));
+            var firstFolioURI = pageURIs.find(uri => folioImageURIs.has(uri));
+            if (firstFolioURI)
                 divaAdapter.gotoPageByURI(firstFolioURI);
-            })
+            else
+                alert("The first chant's page could not be found in the viewer.");
+        });
     }
 });
