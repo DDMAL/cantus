@@ -9,6 +9,7 @@ from rest_framework.request import Request
 from rest_framework.exceptions import APIException
 
 from cantusdata.helpers.search_utils import (
+    split_query,
     validate_query,
     get_transpositions,
     translate_interval_query_direction,
@@ -68,6 +69,14 @@ class NotationSearchException(APIException):
     default_detail = "Notation search request invalid."
 
 
+# Error messages for letter-based queries that contain other characters
+INVALID_LETTERS_MESSAGES = {
+    "pitch_names": "Pitches must be the letters a to g.",
+    "pitch_names_transposed": "Pitches must be the letters a to g.",
+    "contour": "Contour directions must be the letters u, d and r.",
+}
+
+
 class SearchNotationView(APIView):
     """
     Search algorithm adapted from the Liber Usualis code
@@ -102,7 +111,7 @@ class SearchNotationView(APIView):
             if num_found is not None:
                 NOTATION_SEARCH_RESULTS.labels(type_label).observe(num_found)
                 NOTATION_SEARCH_QUERY_LENGTH.labels(type_label).observe(
-                    len((q or "").split())
+                    len(split_query(q or "", stype or ""))
                 )
             log_search(
                 "notation",
@@ -144,11 +153,17 @@ class SearchNotationView(APIView):
         """
         Format the query and query type into a string for solr.
         """
-        normalized_q_elems = q.lower().split()
+        normalized_q_elems = split_query(q, q_type)
         q_valid = validate_query(normalized_q_elems, q_type)
         if not q_valid:
+            if normalized_q_elems and q_type in INVALID_LETTERS_MESSAGES:
+                raise NotationSearchException(INVALID_LETTERS_MESSAGES[q_type])
             raise NotationSearchException("Invalid query.")
         if q_type == "pitch_names_transposed":
+            if len(normalized_q_elems) < 2:
+                raise NotationSearchException(
+                    "Enter at least two pitches to include transpositions."
+                )
             transpositions = get_transpositions(normalized_q_elems)
             # Create a query string for the tranpositions:
             # e.g. if transpositions are [["a", "b" , "c"], "b","c","d"], etc.]

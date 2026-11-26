@@ -2390,13 +2390,13 @@ textarea.form-control-lg {
   filter: brightness(90%);
 }
 .form-check-input:focus {
-  border-color: rgb(127.5, 197.5, 220.5);
+  border-color: rgb(224.5, 153.5, 150.5);
   outline: 0;
-  box-shadow: 0 0 0 0.25rem rgba(0, 140, 186, 0.25);
+  box-shadow: 0 0 0 0.25rem rgba(194, 52, 46, 0.25);
 }
 .form-check-input:checked {
-  background-color: #008cba;
-  border-color: #008cba;
+  background-color: #c2342e;
+  border-color: #c2342e;
 }
 .form-check-input:checked[type=checkbox] {
   --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
@@ -12721,6 +12721,10 @@ body.propagate-height {
 
 .search-input .form-group {
   margin-bottom: 0;
+}
+
+.search-field-variant .form-check-label {
+  font-weight: 300;
 }
 
 .search-suggestions {

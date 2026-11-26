@@ -8,6 +8,9 @@ class ManuscriptSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.ReadOnlyField()
     siglum_slug = serializers.SlugField()
     plugins = serializers.SlugRelatedField(many=True, read_only=True, slug_field="slug")
+    # A property, so "__all__" leaves it out. The manuscript page uses it to
+    # tell whether there are chant records to search.
+    chant_count = serializers.ReadOnlyField()
 
     neume_exemplars = NeumeExemplarSerializer(many=True, read_only=True)
 

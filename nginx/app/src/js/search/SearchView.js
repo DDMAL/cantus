@@ -3,6 +3,10 @@ import $ from "jquery";
 import Marionette from "marionette";
 
 import template from './search.template.html';
+import unavailableTemplate from './search-unavailable.template.html';
+
+/** A disabled search box, for when no field can be searched */
+var UnavailableInputView = Marionette.View.extend({ template: unavailableTemplate });
 
 /**
  * Top-level search view. This view delegates to search provider classes
@@ -20,6 +24,12 @@ import template from './search.template.html';
  * types and names, and to provide a string `description` which describes the search type provided.
  * A field that cannot be searched for the current source sets `disabled: true` and a
  * `disabledReason`; it is listed greyed out and cannot be selected.
+ *
+ * A field can also have a `variant` ({label, tooltip, type}), shown as a checkbox under the search
+ * box. While it is checked, the field searches with the variant's type. The field's input view
+ * must implement `getQuery`, so that toggling the checkbox can search with the text in the box.
+ * A variant's type must be unique among all fields' and variants' types, because a link's search
+ * type selects both the field and the checkbox state.
  *
  *  TODO: Make this API less confusing. As a historical note, it works this way because it merges
  *  two search views which had different implementations. Refactoring those to make the abstraction
@@ -40,11 +50,15 @@ export default Marionette.View.extend({
 
     ui: {
         fieldSelectorLabel: '.search-field-selector .dropdown-toggle .field-label',
-        fieldSelectorMenuItem: '.search-field-selector .dropdown-menu a'
+        fieldSelectorMenuItem: '.search-field-selector .dropdown-menu a',
+        variant: '.search-field-variant',
+        variantCheckbox: '.search-field-variant input',
+        variantLabel: '.search-field-variant label'
     },
 
     events: {
-        'click @ui.fieldSelectorMenuItem': 'fieldSelected'
+        'click @ui.fieldSelectorMenuItem': 'fieldSelected',
+        'change @ui.variantCheckbox': 'variantToggled'
     },
 
     /**
@@ -55,6 +69,7 @@ export default Marionette.View.extend({
      */
     initialize: function () {
         this.cachedQueries = {};
+        this.checkedVariants = {};
 
         this.providers = this.getOption('providers');
         this._setInitialSearchTerm();
@@ -94,7 +109,8 @@ export default Marionette.View.extend({
     },
 
     /** Set the active provider and field to the first field that is not
-     * disabled, or to the very first field if every field is disabled.
+     * disabled. If every field is disabled, there is nothing to search:
+     * the view shows a disabled search box instead (see renderActiveField).
      * @private
      */
     _setFirstEnabledField: function () {
@@ -115,12 +131,14 @@ export default Marionette.View.extend({
         if (!found) {
             this.activeProvider = this.providers[0];
             this.activeField = this.activeProvider.fields[0];
+            this.noSearchAvailable = true;
         }
     },
 
     /** Iterate through the providers and their fields to find one
-     * with the type `type` that is not disabled. Set the active provider
-     * and field if a match is found.
+     * with the type `type` or a variant of that type, and that is not
+     * disabled. Set the active provider and field if a match is found,
+     * and whether the variant is checked.
      *
      * @param {String} type
      * @returns {Boolean} Whether a match was found
@@ -129,9 +147,12 @@ export default Marionette.View.extend({
     _findSearchField: function (type) {
         return _.some(this.providers, function (provider) {
             return _.some(provider.fields, function (field) {
-                if (field.type === type && !field.disabled) {
+                var isVariant = !!field.variant && field.variant.type === type;
+
+                if ((field.type === type || isVariant) && !field.disabled) {
                     this.activeProvider = provider;
                     this.activeField = field;
+                    this.checkedVariants[field.type] = isVariant;
                     return true;
                 }
 
@@ -151,15 +172,35 @@ export default Marionette.View.extend({
         this.query = this.cachedQueries[this.activeField.type] = query;
     },
 
+    /** The active field, with the variant's type while its variant is checked
+     * @private
+     */
+    _searchedField: function () {
+        var field = this.activeField;
+
+        if (field.variant && this.checkedVariants[field.type])
+            return _.extend({}, field, { type: field.variant.type });
+
+        return field;
+    },
+
     /** Add a binding to listen for `search` on the input view whenever an
      * input view is shown. */
     bindInputSearchEvent: function (inputView) {
         this.listenTo(inputView, 'search', function (query) {
             this._setQuery(query);
 
-            this.trigger('search', { type: this.activeField.type, query: query });
+            this.trigger('search', { type: this._searchedField().type, query: query });
             this.activeProvider.triggerMethod('search', query);
         });
+    },
+
+    /** Search again with or without the variant, using the text in the search box */
+    variantToggled: function () {
+        this.checkedVariants[this.activeField.type] = this.ui.variantCheckbox.prop('checked');
+
+        this._setQuery(this.getRegion('searchInput').currentView.getQuery());
+        this.renderActiveField();
     },
 
     fieldSelected: function (event) {
@@ -191,14 +232,40 @@ export default Marionette.View.extend({
     serializeData: function () {
         return {
             searchProviders: this.providers,
-            activeField: this.activeField
+            // The dropdown still opens, to show why each field is unavailable
+            activeField: this.noSearchAvailable ? { name: 'Search unavailable' } : this.activeField,
+            // Unique because a page can have more than one search view
+            variantInputId: _.uniqueId('search-field-variant-')
         };
     },
 
     renderActiveField: function () {
-        this.trigger('search', { type: this.activeField.type, query: this.query });
-        this.activeProvider.display(this.activeField, this.query, this.getRegions());
+        // No provider is displayed, so no input view exists to dispatch a search
+        if (this.noSearchAvailable) {
+            this.getRegion('searchInput').show(new UnavailableInputView());
+            return;
+        }
+
+        this._renderVariant();
+
+        var field = this._searchedField();
+        this.trigger('search', { type: field.type, query: this.query });
+        this.activeProvider.display(field, this.query, this.getRegions());
         this.bindInputSearchEvent(this.getRegion('searchInput').currentView);
+    },
+
+    _renderVariant: function () {
+        var variant = this.activeField.variant;
+
+        this.ui.variant.prop('hidden', !variant);
+
+        if (variant) {
+            this.ui.variant.attr('title', variant.tooltip);
+            // Screen readers announce the checkbox's title, not the row's
+            this.ui.variantCheckbox.attr('title', variant.tooltip);
+            this.ui.variantLabel.text(variant.label);
+            this.ui.variantCheckbox.prop('checked', !!this.checkedVariants[this.activeField.type]);
+        }
     },
 
     onRender: function () {
