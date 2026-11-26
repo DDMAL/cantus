@@ -1,4 +1,4 @@
-<p class="h5"><i><%- numFound %> <%- numFound === 1 ? 'result' : 'results' %> for query:</i>
+<p class="h5"><i><% if (shownCount !== null && shownCount < numFound) { %>Showing the first <%- shownCount %> of <% } %><%- numFound %> <%- numFound === 1 ? 'result' : 'results' %> for query:</i>
 <% if (fieldName == "volpiano" || fieldName == "volpiano_literal") { %>
 <span class = "volpiano">1-<%- displayedQuery %></span>
 <% } else { %>

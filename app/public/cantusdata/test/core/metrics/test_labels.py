@@ -35,7 +35,11 @@ class ClassifyClientTestCase(SimpleTestCase):
         )
 
     def test_monitoring_is_a_probe_not_a_bot(self) -> None:
-        for agent in ("kube-probe/1.30", "Blackbox Exporter/0.25.0"):
+        for agent in (
+            "kube-probe/1.30",
+            "Blackbox Exporter/0.25.0",
+            "Blackbox-Exporter/0.28.0",
+        ):
             with self.subTest(agent=agent):
                 self.assertEqual(self.classify(HTTP_USER_AGENT=agent), "probe")
 
@@ -77,7 +81,7 @@ class SearchLabelTestCase(SimpleTestCase):
 
     def test_notation_types_outside_the_known_set_are_invalid(self) -> None:
         self.assertEqual(notation_type_label("contour"), "contour")
-        # What the client sends for "Pitch (invariant)" (OMRSearchProvider.js).
+        # A type the server does not accept.
         self.assertEqual(notation_type_label("pitch_names_invariant"), "invalid")
         self.assertEqual(notation_type_label(None), "invalid")
 

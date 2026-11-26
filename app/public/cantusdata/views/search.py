@@ -1,5 +1,6 @@
 import time
 
+import solr
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -52,6 +53,18 @@ class SearchView(APIView):
         started = time.perf_counter()
         try:
             search_results = s.search()
+        except solr.SolrException:
+            # Solr being down is SolrUnavailable (a 502); what is left is Solr
+            # refusing the query itself, such as unbalanced quotes.
+            if not offset:
+                SEARCH_REQUESTS.labels(field, scope, "invalid_query", client).inc()
+            return Response(
+                {
+                    "detail": "This search could not be understood. "
+                    "Check its quotes and brackets."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except Exception:
             if not offset:
                 SEARCH_REQUESTS.labels(field, scope, "error", client).inc()

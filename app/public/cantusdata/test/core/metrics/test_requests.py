@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.test import SimpleTestCase, TestCase
 
-from cantusdata.helpers.solr_client import make_solr
+from cantusdata.helpers.solr_client import SolrUnavailable, make_solr
 
 from .utils import BROWSER, sample
 
@@ -89,9 +89,8 @@ class SearchMetricsTestCase(TestCase):
             sample("cantus_search_result_offset_count"), offsets_before + 1
         )
 
-    def test_invariant_pitch_search_is_reported_as_an_invalid_type(self) -> None:
-        # The type the client sends for "Pitch (invariant)", which the server
-        # does not accept.
+    def test_an_unknown_notation_type_is_reported_as_invalid(self) -> None:
+        # A type the server does not accept.
         labels = dict(
             type="invalid",
             manuscript_id="other",
@@ -131,6 +130,21 @@ class SearchMetricsTestCase(TestCase):
             lengths_before + 3,
         )
 
+    def test_an_unspaced_pitch_search_records_each_pitch(self) -> None:
+        lengths_before = sample(
+            "cantus_notation_search_query_length_sum", type="pitch_names"
+        )
+        response = self.client.get(
+            "/notation-search/",
+            {"q": "cde", "type": "pitch_names", "manuscript_id": "1"},
+            HTTP_USER_AGENT=BROWSER,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            sample("cantus_notation_search_query_length_sum", type="pitch_names"),
+            lengths_before + 3,
+        )
+
 
 class SolrClientTestCase(SimpleTestCase):
     def test_timeout_is_set_on_the_connection_solrpy_actually_uses(self) -> None:
@@ -157,8 +171,9 @@ class SolrClientTestCase(SimpleTestCase):
         unreachable = make_solr(
             "unit_down", url="http://127.0.0.1:9/solr/none", timeout=1, max_retries=0
         )
-        with self.assertRaises(OSError):
+        with self.assertRaises(SolrUnavailable) as raised:
             unreachable.query("*:*")
+        self.assertIsInstance(raised.exception.__cause__, OSError)
         self.assertEqual(
             sample(
                 "cantus_solr_requests_total", operation="unit_down", outcome="error"

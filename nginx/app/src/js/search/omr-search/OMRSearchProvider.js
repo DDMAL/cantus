@@ -39,7 +39,8 @@ export default Marionette.Object.extend({
             fields: [
                 {
                     name: 'Neume',
-                    type: 'neume_names'
+                    type: 'neume_names',
+                    placeholder: 'e.g. punctum clivis'
                 }
             ]
         },
@@ -49,19 +50,24 @@ export default Marionette.Object.extend({
             fields: [
                 {
                     name: 'Pitch',
-                    type: 'pitch_names'
-                },
-                {
-                    name: 'Pitch (invariant)',
-                    type: 'pitch_names_transposed'
+                    type: 'pitch_names',
+                    placeholder: 'e.g. c d e',
+                    variant: {
+                        label: 'Include transpositions',
+                        tooltip: 'Also finds the pattern on other notes (c d e → d e f, e f g, …).\n' +
+                            'Half steps may fall in different places.',
+                        type: 'pitch_names_transposed'
+                    }
                 },
                 {
                     name: 'Contour',
-                    type: 'contour'
+                    type: 'contour',
+                    placeholder: 'e.g. u d r'
                 },
                 {
                     name: 'Interval',
-                    type: 'intervals'
+                    type: 'intervals',
+                    placeholder: 'e.g. u2 d3 r'
                 }
             ]
         }
@@ -186,7 +192,8 @@ export default Marionette.Object.extend({
             fieldName: this.field.name,
             query: this.query,
             displayedQuery: this.query,
-            numFound: numFound
+            numFound: numFound,
+            shownCount: this.results.length
         };
     },
 
@@ -197,7 +204,7 @@ export default Marionette.Object.extend({
         this.results.reset();
 
         // Input
-        var inputView = new InputView({initialQuery: this.query});
+        var inputView = new InputView({initialQuery: this.query, placeholder: field.placeholder});
         regions.searchInput.show(inputView);
 
         // Neume gallery

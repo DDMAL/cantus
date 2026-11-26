@@ -47,6 +47,19 @@ spec:
           mountPath: /code/mei-files
         - name: prometheus-multiproc
           mountPath: /tmp/prometheus-multiproc
+        # The ping is itself a cold Python start; during a deploy the node's disk
+        # is busy, so the worker gets 10 minutes to answer before liveness runs.
+        startupProbe:
+          exec:
+            command:
+            - /code/.venv/bin/celery
+            - -A
+            - cantusdata
+            - inspect
+            - ping
+          periodSeconds: 10
+          timeoutSeconds: 10
+          failureThreshold: 60
         livenessProbe:
           exec:
             command:
@@ -55,7 +68,6 @@ spec:
             - cantusdata
             - inspect
             - ping
-          initialDelaySeconds: 30
           periodSeconds: 60
           timeoutSeconds: 10
         resources:

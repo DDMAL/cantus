@@ -10,6 +10,7 @@ from contextlib import contextmanager
 from typing import Iterator
 
 import requests
+import solr
 
 from cantusdata.metrics.definitions import (
     EXTERNAL_REQUEST_DURATION,
@@ -32,6 +33,10 @@ def outcome_of(exc: BaseException) -> str:
         return "timeout"
     if isinstance(getattr(exc, "reason", None), TimeoutError):
         return "timeout"
+    # Solr refusing the request itself (a search it cannot parse) is not Solr
+    # failing.
+    if isinstance(exc, solr.SolrException) and 400 <= (exc.httpcode or 0) < 500:
+        return "rejected"
     return "error"
 
 

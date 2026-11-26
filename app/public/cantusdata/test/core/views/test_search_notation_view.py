@@ -3,6 +3,7 @@ from django.core.management import call_command
 from django.urls import reverse
 from django.conf import settings
 
+from cantusdata.metrics.labels import NOTATION_SEARCH_TYPES
 from cantusdata.views.search_notation import SearchNotationView, NotationSearchException
 from cantusdata.models import Manuscript, Folio
 
@@ -62,6 +63,11 @@ class TestSearchNotationView(APITestCase):
             )
             expected_query_string = "contour:u_d_u_r"
             self.assertEqual(query_string, expected_query_string)
+        with self.subTest("Test unspaced contour query"):
+            query_string = self.search_notation_view.create_query_string(
+                "uDr d", "contour"
+            )
+            self.assertEqual(query_string, "contour:u_d_r_d")
         # We add a separate subtest for a "pitch_names_transposed" query since it
         # has a slightly different logic (we get transpositions and chain them
         # together with ORs).
@@ -73,6 +79,32 @@ class TestSearchNotationView(APITestCase):
             )
             expected_query_string = "pitch_names:(c_d_e OR d_e_f OR e_f_g OR f_g_a OR g_a_b OR a_b_c OR b_c_d)"
             self.assertEqual(query_string, expected_query_string)
+        with self.subTest("Test unspaced pitch_names query"):
+            query_string = self.search_notation_view.create_query_string(
+                "cD e", "pitch_names"
+            )
+            self.assertEqual(query_string, "pitch_names:c_d_e")
+        with self.subTest("Test unspaced pitch_names_transposed query"):
+            query_string = self.search_notation_view.create_query_string(
+                "cde", "pitch_names_transposed"
+            )
+            expected_query_string = "pitch_names:(c_d_e OR d_e_f OR e_f_g OR f_g_a OR g_a_b OR a_b_c OR b_c_d)"
+            self.assertEqual(query_string, expected_query_string)
+        with self.subTest("Test one-pitch pitch_names_transposed query"):
+            with self.assertRaises(NotationSearchException):
+                self.search_notation_view.create_query_string(
+                    "c", "pitch_names_transposed"
+                )
+            query_string = self.search_notation_view.create_query_string(
+                "c", "pitch_names"
+            )
+            self.assertEqual(query_string, "pitch_names:c")
+        for query_type in NOTATION_SEARCH_TYPES:
+            with self.subTest("Test query of only spaces", query_type=query_type):
+                with self.assertRaisesMessage(
+                    NotationSearchException, "Invalid query."
+                ):
+                    self.search_notation_view.create_query_string("   ", query_type)
         # An intervals query translates interval directions before joining them
         # with underscores.
         with self.subTest("Test intervals query"):
@@ -154,6 +186,21 @@ class TestSearchNotationView(APITestCase):
             }
             response_no_q = self.client.get(url, params_no_q)
             self.assertEqual(response_no_q.status_code, 400)
+        invalid_letters_cases = [
+            ("pitch_names", "c, d, e", "Pitches must be the letters a to g."),
+            ("pitch_names_transposed", "c-d-e", "Pitches must be the letters a to g."),
+            ("contour", "uds", "Contour directions must be the letters u, d and r."),
+        ]
+        for query_type, query, message in invalid_letters_cases:
+            with self.subTest("Test invalid letters", query_type=query_type):
+                params_not_letters: dict[str, str | int] = {
+                    "q": query,
+                    "type": query_type,
+                    "manuscript_id": 123723,
+                }
+                response = self.client.get(url, params_not_letters)
+                self.assertEqual(response.status_code, 400)
+                self.assertEqual(response.json()["detail"], message)
         with self.subTest("Test response"):
             params: dict[str, str | int] = {
                 "q": "u d u",

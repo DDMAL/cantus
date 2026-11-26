@@ -3,6 +3,10 @@ import Backbone from 'backbone';
 import Qs from 'qs';
 import GlobalVars from 'config/GlobalVars';
 
+// Fetch every match so each can be listed and highlighted, capped because a
+// bare single-element query can match tens of thousands.
+var RESULT_LIMIT = 5000;
+
 /**
  * Collection for results of notation searches
  *
@@ -28,7 +32,8 @@ export default Backbone.Collection.extend({
     {
         var queryParams = {
             q: _.result(this.parameters, 'query'),
-            type: _.result(this.parameters, 'field')
+            type: _.result(this.parameters, 'field'),
+            rows: RESULT_LIMIT
         };
 
         var manuscript = _.result(this.parameters, 'manuscript');

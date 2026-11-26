@@ -45,19 +45,24 @@ spec:
             secretKeyRef:
               name: app-secret
               key: POSTGRES_PASSWORD
+        # A cold start waits on the node's disk during a deploy; a fixed 20s
+        # delay once got it killed before it listened. 10 minutes to start.
+        startupProbe:
+          tcpSocket:
+            port: 9102
+          periodSeconds: 10
+          failureThreshold: 60
         # A readiness check is a full collection (DB and Solr queries), so it is
         # infrequent and given most of a scrape's time budget.
         readinessProbe:
           httpGet:
             path: /metrics
             port: 9102
-          initialDelaySeconds: 20
           periodSeconds: 60
           timeoutSeconds: 25
         livenessProbe:
           tcpSocket:
             port: 9102
-          initialDelaySeconds: 20
           periodSeconds: 30
         resources:
           requests:

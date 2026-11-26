@@ -25,7 +25,8 @@ var viewError = function (message) {
  * Options:
  *   - `getSearchMetadata` (required): The function called to get metadata on the search.
  *     It needs to return `query` and can optionally return `fieldName` (used to build a
- *     header) and `numFound` (overriding the collection's length).
+ *     header), `numFound` (overriding the collection's length) and `shownCount` (how many
+ *     results were fetched, when that can be fewer than `numFound`).
  *
  *   - `showLoading` (default false): Whether to show a loading state while the request loads
  */
@@ -68,6 +69,7 @@ export default Marionette.View.extend({
         var defaults = {
             fieldName: null,
             numFound: this.collection.length,
+            shownCount: null,
             errorMessage: this.error ? this.getErrorMessage(this.error) : null
         };
 

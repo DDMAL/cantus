@@ -17,6 +17,17 @@ export default Marionette.View.extend({
         'click .result-target': function (event) {
             event.preventDefault();
             this.trigger('showResult', this.model);
+        },
+        'click .folio-link': function (event) {
+            // Ctrl/Cmd-click opens the folio in a new tab; leave this one alone.
+            if (event.ctrlKey || event.metaKey)
+                return;
+
+            event.preventDefault();
+            // Results on a folio with no image mapping have an empty image URI.
+            var imageURI = _.result(this.model.get('boxes')[0], 'p');
+            if (imageURI)
+                manuscriptChannel.request('set:imageURI', imageURI, { replaceState: true });
         }
     },
 
@@ -79,7 +90,9 @@ export default Marionette.View.extend({
                     '</svg>';
             },
             thumbnailUrl: _.bind(this.getThumbnail, this),
-            neumeImageHeight: this.neumeImageHeight
+            neumeImageHeight: this.neumeImageHeight,
+            folioUrl: '/manuscript/' + manuscriptChannel.request('manuscript') + '/?folio=' +
+                encodeURIComponent(_.result(this.model.get('boxes')[0], 'f'))
         };
     }
 });

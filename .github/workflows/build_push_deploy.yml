@@ -30,14 +30,18 @@ jobs:
             context: .
             file: ./nginx/Dockerfile
             image: cantus-nginx
+          # Built only from their own folder, so they are also tagged with that
+          # folder's git tree hash (src-<hash>); the deploy uses it, see below.
           - name: solr
             context: ./solr
             file: ./solr/Dockerfile
             image: cantus-solr
+            content_tag: true
           - name: cantaloupe
             context: ./cantaloupe
             file: ./cantaloupe/Dockerfile
             image: cantus-cantaloupe
+            content_tag: true
 
     steps:
       - uses: actions/checkout@v4
@@ -53,6 +57,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Hash the build context
+        id: src
+        if: matrix.content_tag
+        run: echo "value=$(git rev-parse --short=12 HEAD:${CONTEXT#./})" >> $GITHUB_OUTPUT
+        env:
+          CONTEXT: ${{ matrix.context }}
+
       - name: Extract image metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -63,6 +74,7 @@ jobs:
             type=raw,value={{branch}}-latest
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=src-${{ steps.src.outputs.value }},enable=${{ matrix.content_tag == true }}
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -81,6 +93,9 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
+      # Only for the tree hashes of solr/ and cantaloupe/.
+      - uses: actions/checkout@v4
+
       - name: Set up kubeconfig
         run: |
           mkdir -p ~/.kube
@@ -93,15 +108,23 @@ jobs:
           BRANCH=$(echo "$GITHUB_REF_NAME" | sed 's/[^a-zA-Z0-9._-]/-/g')
           SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
           echo "value=${BRANCH}-${SHORT_SHA}" >> $GITHUB_OUTPUT
+          # Solr and Cantaloupe are tagged by their folder's content, not the
+          # commit: an unchanged folder gives the same image string, so `set
+          # image` is a no-op and they are not restarted (a Solr restart takes
+          # search down for minutes).
+          echo "solr=src-$(git rev-parse --short=12 HEAD:solr)" >> $GITHUB_OUTPUT
+          echo "cantaloupe=src-$(git rev-parse --short=12 HEAD:cantaloupe)" >> $GITHUB_OUTPUT
 
       - name: Update production images
         run: |
           TAG=${{ steps.tag.outputs.value }}
+          SOLR_TAG=${{ steps.tag.outputs.solr }}
+          CANTALOUPE_TAG=${{ steps.tag.outputs.cantaloupe }}
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           kubectl set image deployment/app app=ghcr.io/${OWNER}/cantus-app:${TAG} -n cantus-ultimus
           kubectl set image deployment/celery celery=ghcr.io/${OWNER}/cantus-app:${TAG} -n cantus-ultimus
           kubectl set image deployment/nginx nginx=ghcr.io/${OWNER}/cantus-nginx:${TAG} -n cantus-ultimus
-          kubectl set image deployment/cantaloupe cantaloupe=ghcr.io/${OWNER}/cantus-cantaloupe:${TAG} -n cantus-ultimus
+          kubectl set image deployment/cantaloupe cantaloupe=ghcr.io/${OWNER}/cantus-cantaloupe:${CANTALOUPE_TAG} -n cantus-ultimus
           # The metrics pieces are only updated once their manifests have been
           # applied (see k8s/MIGRATION.md#monitoring), so a deploy before that
           # does not fail on a missing Deployment or container.
@@ -109,10 +132,10 @@ jobs:
             -o jsonpath='{.spec.template.spec.containers[*].name}')
           if echo "$SOLR_CONTAINERS" | grep -qw solr-exporter; then
             kubectl set image statefulset/solr \
-              solr=ghcr.io/${OWNER}/cantus-solr:${TAG} \
-              solr-exporter=ghcr.io/${OWNER}/cantus-solr:${TAG} -n cantus-ultimus
+              solr=ghcr.io/${OWNER}/cantus-solr:${SOLR_TAG} \
+              solr-exporter=ghcr.io/${OWNER}/cantus-solr:${SOLR_TAG} -n cantus-ultimus
           else
-            kubectl set image statefulset/solr solr=ghcr.io/${OWNER}/cantus-solr:${TAG} -n cantus-ultimus
+            kubectl set image statefulset/solr solr=ghcr.io/${OWNER}/cantus-solr:${SOLR_TAG} -n cantus-ultimus
           fi
           if kubectl get deployment/metrics-exporter -n cantus-ultimus >/dev/null 2>&1; then
             kubectl set image deployment/metrics-exporter \
@@ -133,6 +156,9 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
+      # Only for the tree hashes of solr/ and cantaloupe/ (see deploy).
+      - uses: actions/checkout@v4
+
       - name: Set up kubeconfig
         run: |
           mkdir -p ~/.kube
@@ -145,17 +171,21 @@ jobs:
           BRANCH=$(echo "$GITHUB_REF_NAME" | sed 's/[^a-zA-Z0-9._-]/-/g')
           SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
           echo "value=${BRANCH}-${SHORT_SHA}" >> $GITHUB_OUTPUT
+          echo "solr=src-$(git rev-parse --short=12 HEAD:solr)" >> $GITHUB_OUTPUT
+          echo "cantaloupe=src-$(git rev-parse --short=12 HEAD:cantaloupe)" >> $GITHUB_OUTPUT
 
       - name: Update staging images
         run: |
           TAG=${{ steps.tag.outputs.value }}
+          SOLR_TAG=${{ steps.tag.outputs.solr }}
+          CANTALOUPE_TAG=${{ steps.tag.outputs.cantaloupe }}
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           kubectl set image deployment/app-staging app=ghcr.io/${OWNER}/cantus-app:${TAG} -n cantus-ultimus
           kubectl set image deployment/celery-staging celery=ghcr.io/${OWNER}/cantus-app:${TAG} -n cantus-ultimus
           kubectl set image deployment/nginx-staging nginx=ghcr.io/${OWNER}/cantus-nginx:${TAG} -n cantus-ultimus
           kubectl set image deployment/cantaloupe-staging \
-            cantaloupe=ghcr.io/${OWNER}/cantus-cantaloupe:${TAG} -n cantus-ultimus
-          kubectl set image statefulset/solr-staging solr=ghcr.io/${OWNER}/cantus-solr:${TAG} -n cantus-ultimus
+            cantaloupe=ghcr.io/${OWNER}/cantus-cantaloupe:${CANTALOUPE_TAG} -n cantus-ultimus
+          kubectl set image statefulset/solr-staging solr=ghcr.io/${OWNER}/cantus-solr:${SOLR_TAG} -n cantus-ultimus
 
       - name: Wait for staging rollouts
         run: |
