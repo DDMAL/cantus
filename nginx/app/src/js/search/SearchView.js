@@ -3,6 +3,10 @@ import $ from "jquery";
 import Marionette from "marionette";
 
 import template from './search.template.html';
+import unavailableTemplate from './search-unavailable.template.html';
+
+/** A disabled search box, for when no field can be searched */
+var UnavailableInputView = Marionette.View.extend({ template: unavailableTemplate });
 
 /**
  * Top-level search view. This view delegates to search provider classes
@@ -105,7 +109,8 @@ export default Marionette.View.extend({
     },
 
     /** Set the active provider and field to the first field that is not
-     * disabled, or to the very first field if every field is disabled.
+     * disabled. If every field is disabled, there is nothing to search:
+     * the view shows a disabled search box instead (see renderActiveField).
      * @private
      */
     _setFirstEnabledField: function () {
@@ -126,6 +131,7 @@ export default Marionette.View.extend({
         if (!found) {
             this.activeProvider = this.providers[0];
             this.activeField = this.activeProvider.fields[0];
+            this.noSearchAvailable = true;
         }
     },
 
@@ -226,13 +232,20 @@ export default Marionette.View.extend({
     serializeData: function () {
         return {
             searchProviders: this.providers,
-            activeField: this.activeField,
+            // The dropdown still opens, to show why each field is unavailable
+            activeField: this.noSearchAvailable ? { name: 'Search unavailable' } : this.activeField,
             // Unique because a page can have more than one search view
             variantInputId: _.uniqueId('search-field-variant-')
         };
     },
 
     renderActiveField: function () {
+        // No provider is displayed, so no input view exists to dispatch a search
+        if (this.noSearchAvailable) {
+            this.getRegion('searchInput').show(new UnavailableInputView());
+            return;
+        }
+
         this._renderVariant();
 
         var field = this._searchedField();
