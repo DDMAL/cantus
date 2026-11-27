@@ -24,6 +24,13 @@ class ManuscriptViewTestCase(APITransactionTestCase):
         response = self.client.get("/manuscript/{0}/".format(manuscript.id))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_detail_chant_count(self):
+        manuscript = Manuscript.objects.get(name="MyName")
+        response = self.client.get(
+            "/manuscript/{0}/".format(manuscript.id), HTTP_ACCEPT="application/json"
+        )
+        self.assertEqual(response.data["chant_count"], manuscript.chant_set.count())
+
     def test_get_nonexistent_detail(self):
         response = self.client.get("/manuscript/2f63f986449349769d7a313e0fc6edb3/")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

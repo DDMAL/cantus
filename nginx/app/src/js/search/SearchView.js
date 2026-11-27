@@ -3,6 +3,10 @@ import $ from "jquery";
 import Marionette from "marionette";
 
 import template from './search.template.html';
+import unavailableTemplate from './search-unavailable.template.html';
+
+/** A disabled search box, for when no field can be searched */
+var UnavailableInputView = Marionette.View.extend({ template: unavailableTemplate });
 
 /**
  * Top-level search view. This view delegates to search provider classes
@@ -18,6 +22,8 @@ import template from './search.template.html';
  *
  * Providers are expected to implement those methods, to provide an array `fields` with field
  * types and names, and to provide a string `description` which describes the search type provided.
+ * A field that cannot be searched for the current source sets `disabled: true` and a
+ * `disabledReason`; it is listed greyed out and cannot be selected.
  *
  * A field can also have a `variant` ({label, tooltip, type}), shown as a checkbox under the search
  * box. While it is checked, the field searches with the variant's type. The field's input view
@@ -97,16 +103,42 @@ export default Marionette.View.extend({
             this._setQuery(searchTerm.query);
         }
         else {
-            this.activeProvider = this.providers[0];
-            this.activeField = this.activeProvider.fields[0];
+            this._setFirstEnabledField();
             this._setQuery('');
         }
     },
 
+    /** Set the active provider and field to the first field that is not
+     * disabled. If every field is disabled, there is nothing to search:
+     * the view shows a disabled search box instead (see renderActiveField).
+     * @private
+     */
+    _setFirstEnabledField: function () {
+        var found = _.some(this.providers, function (provider) {
+            var field = _.find(provider.fields, function (field) {
+                return !field.disabled;
+            });
+
+            if (field) {
+                this.activeProvider = provider;
+                this.activeField = field;
+                return true;
+            }
+
+            return false;
+        }, this);
+
+        if (!found) {
+            this.activeProvider = this.providers[0];
+            this.activeField = this.activeProvider.fields[0];
+            this.noSearchAvailable = true;
+        }
+    },
+
     /** Iterate through the providers and their fields to find one
-     * with the type `type` or a variant of that type. Set the active
-     * provider and field if a match is found, and whether the variant
-     * is checked.
+     * with the type `type` or a variant of that type, and that is not
+     * disabled. Set the active provider and field if a match is found,
+     * and whether the variant is checked.
      *
      * @param {String} type
      * @returns {Boolean} Whether a match was found
@@ -117,7 +149,7 @@ export default Marionette.View.extend({
             return _.some(provider.fields, function (field) {
                 var isVariant = !!field.variant && field.variant.type === type;
 
-                if (field.type === type || isVariant) {
+                if ((field.type === type || isVariant) && !field.disabled) {
                     this.activeProvider = provider;
                     this.activeField = field;
                     this.checkedVariants[field.type] = isVariant;
@@ -176,6 +208,13 @@ export default Marionette.View.extend({
         var provider = this.providers[menuItem.data('provider-index')];
         var field = provider.fields[menuItem.data('field-index')];
 
+        // Bootstrap's disabled class already blocks clicks; this also covers
+        // anything that gets past it
+        if (field.disabled) {
+            event.preventDefault();
+            return;
+        }
+
         if (field !== this.activeField) {
             if (provider !== this.activeProvider) {
                 this.activeProvider = provider;
@@ -193,13 +232,20 @@ export default Marionette.View.extend({
     serializeData: function () {
         return {
             searchProviders: this.providers,
-            activeField: this.activeField,
+            // The dropdown still opens, to show why each field is unavailable
+            activeField: this.noSearchAvailable ? { name: 'Search unavailable' } : this.activeField,
             // Unique because a page can have more than one search view
             variantInputId: _.uniqueId('search-field-variant-')
         };
     },
 
     renderActiveField: function () {
+        // No provider is displayed, so no input view exists to dispatch a search
+        if (this.noSearchAvailable) {
+            this.getRegion('searchInput').show(new UnavailableInputView());
+            return;
+        }
+
         this._renderVariant();
 
         var field = this._searchedField();
